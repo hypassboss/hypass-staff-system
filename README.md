@@ -1,5 +1,5 @@
 Hypass 員工管理系統 - 海帕斯科技股份有限公司本系統為 海帕斯科技股份有限公司 內部專用之員工管理平台，透過 LINE Mini App 提供自動化考勤、薪資結算與請假核准功能。
-
+.
 一、 系統基本資訊管理帳號：hypass.boss@gmail.comLINE 官方帳號：hypass.boss基本 ID：@034qvauh開發架構：GitHub (Private) + Supabase + LINE LIFF
 
 二、 核心業務邏輯
