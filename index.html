@@ -11,13 +11,16 @@
 <body class="bg-gray-50 text-gray-800 font-sans">
 
     <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
-        <p class="text-blue-600 font-bold animate-pulse">Hypass 系統載入中...</p>
+        <div class="text-center">
+            <p class="text-blue-600 font-bold animate-pulse text-lg">Hypass 系統載入中...</p>
+            <p class="text-gray-400 text-xs mt-2">正在與資料庫進行安全連線</p>
+        </div>
     </div>
 
     <div id="app" class="hidden min-h-screen">
-        <header class="bg-blue-700 text-white p-6 shadow-lg">
+        <header class="bg-blue-700 text-white p-6 shadow-lg text-center">
             <h1 class="text-xl font-bold">海帕斯員工系統 (@034qvauh)</h1>
-            <p id="user-info" class="text-sm opacity-90 mt-1"></p>
+            <p id="user-info" class="text-sm opacity-90 mt-1 italic"></p>
         </header>
 
         <main class="p-6 space-y-6">
@@ -30,51 +33,55 @@
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="clock('上班')" class="bg-emerald-500 text-white py-8 rounded-3xl font-bold shadow-lg active:scale-95 transition">上班打卡</button>
-                <button onclick="clock('下班')" class="bg-rose-500 text-white py-8 rounded-3xl font-bold shadow-lg active:scale-95 transition">下班打卡</button>
+                <button onclick="handleClock('上班')" class="bg-emerald-500 text-white py-8 rounded-3xl font-bold shadow-lg active:scale-95 transition">上班打卡</button>
+                <button onclick="handleClock('下班')" class="bg-rose-500 text-white py-8 rounded-3xl font-bold shadow-lg active:scale-95 transition">下班打卡</button>
             </div>
-            <p class="text-center text-[10px] text-gray-400 italic">系統將自動驗證 100m 以內地理圍欄</p>
+            <p id="gps-status" class="text-center text-[10px] text-gray-400 italic">系統將自動驗證 100m 以內地理圍欄</p>
         </main>
     </div>
 
     <script>
-        // --- 初始化連線資訊 ---
-        // 使用引號包裹字串，並改用 _db 避免變數衝突
-        const URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
-        const KEY = 'sb_publishable_kmM4pKdI1OmLUNKjQeH0VQ_wr11fwKV';
-        const _db = supabase.createClient(URL, KEY);
+        // --- 核心連線設定 (已補上引號並修正變數衝突) ---
+        const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_kmM4pKdI1OmLUNKjQeH0VQ_wr11fwKV';
+        const LIFF_ID = '2009136875-gs1Va90A';
 
-        let userProfile = null;
+        // 初始化連線，使用 _db 避免名稱衝突
+        const _db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 核心啟動函數 ---
-        async function init() {
+        let currentUser = null;
+
+        // --- 啟動函數 ---
+        async function startApp() {
             try {
-                // 初始化 LIFF
-                await liff.init({ liffId: "2009136875-gs1Va90A" });
+                // 初始化 LINE LIFF
+                await liff.init({ liffId: LIFF_ID });
                 
                 if (!liff.isLoggedIn()) {
                     liff.login();
                 } else {
-                    const profile = await liff.getProfile();
-                    // 向 Supabase 查詢員工身分
+                    const lineProfile = await liff.getProfile();
+                    
+                    // 查詢員工資料
                     const { data, error } = await _db
                         .from('profiles')
                         .select('*')
-                        .eq('line_id', profile.userId)
+                        .eq('line_id', lineProfile.userId)
                         .single();
 
                     document.getElementById('loading').style.display = 'none';
 
                     if (data) {
-                        userProfile = data;
+                        // 已註冊員工
+                        currentUser = data;
                         document.getElementById('app').classList.remove('hidden');
                         document.getElementById('user-info').innerText = `你好，${data.full_name}`;
                     } else {
-                        // 初次登入註冊流程
+                        // 初次註冊流程
                         const name = prompt("首次登入，請輸入真實姓名：");
                         if (name) {
                             const { error: regError } = await _db.from('profiles').insert([
-                                { line_id: profile.userId, full_name: name }
+                                { line_id: lineProfile.userId, full_name: name }
                             ]);
                             if (regError) alert("註冊失敗：" + regError.message);
                             else location.reload();
@@ -83,17 +90,17 @@
                 }
             } catch (err) {
                 console.error(err);
-                document.getElementById('loading').innerText = "連線失敗，請聯繫管理員";
+                document.getElementById('loading').innerHTML = `<p class='text-red-500 font-bold'>系統連線失敗<br><span class='text-xs'>請確認網址與金鑰是否正確</span></p>`;
             }
         }
 
-        // --- 打卡邏輯 (含 GPS) ---
-        function clock(type) {
-            if (!navigator.geolocation) return alert("手機不支援 GPS");
+        // --- 打卡邏輯 (包含 GPS 抓取) ---
+        function handleClock(type) {
+            if (!navigator.geolocation) return alert("錯誤：您的手機不支援 GPS");
 
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 const { error } = await _db.from('attendance').insert([{
-                    user_id: userProfile.id,
+                    user_id: currentUser.id,
                     clock_type: type,
                     location_id: document.getElementById('loc').value,
                     u_lat: pos.coords.latitude,
@@ -101,17 +108,17 @@
                 }]);
 
                 if (!error) {
-                    alert(`${type} 成功！位置已記錄。`);
+                    alert(`${type} 成功！系統已記錄您的經緯度。`);
                 } else {
-                    alert("打卡失敗，請檢查網路或定位權限");
+                    alert("打卡儲存失敗，請檢查網路。");
                 }
             }, (err) => {
-                alert("無法取得位置，請開啟 GPS 授權");
-            });
+                alert("無法取得位置，請在手機設定中允許瀏覽器存取 GPS。");
+            }, { enableHighAccuracy: true });
         }
 
-        // 啟動程式
-        init();
+        // 正式執行
+        startApp();
     </script>
 </body>
 </html>
