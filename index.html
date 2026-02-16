@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hypass 員工管理系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <div id="loading" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+        <p class="text-lg font-bold">Hypass 系統載入中...</p>
+    </div>
+
+    <div id="registration-form" class="hidden min-h-screen p-6">
+        <h2 class="text-2xl font-bold mb-6 text-blue-600">新員工註冊</h2>
+        <div class="space-y-4 bg-white p-6 rounded-lg shadow">
+            <input type="text" id="reg-name" placeholder="真實姓名" class="w-full p-2 border rounded">
+            <input type="tel" id="reg-phone" placeholder="手機電話" class="w-full p-2 border rounded">
+            <input type="email" id="reg-email" placeholder="電子郵件" class="w-full p-2 border rounded">
+            <input type="date" id="reg-join-date" class="w-full p-2 border rounded">
+            <select id="reg-location" class="w-full p-2 border rounded">
+                <option value="">請選擇上班地點</option>
+                <option value="A">海帕斯科技股份有限公司 (安定區)</option>
+                <option value="B">HYPASS BOSS (善化區)</option>
+            </select>
+            <input type="text" id="reg-bank" placeholder="薪資匯款帳號" class="w-full p-2 border rounded">
+            <button onclick="handleRegistration()" class="w-full bg-blue-500 text-white p-3 rounded font-bold">提交申請並通知老闆</button>
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden min-h-screen pb-20">
+        <header class="bg-blue-600 text-white p-6 shadow-lg">
+            <h1 class="text-xl font-bold">Hypass 員工管理系統</h1>
+            <p id="user-display" class="text-sm opacity-80 mt-1">歡迎回來</p>
+        </header>
+
+        <section id="tab-a" class="tab-content active p-6">
+            <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                <h3 class="text-lg font-bold mb-4">今日考勤打卡</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="handleClockIn('上班')" class="bg-green-500 text-white py-4 rounded-lg font-bold shadow">上班打卡</button>
+                    <button onclick="handleClockIn('下班')" class="bg-red-500 text-white py-4 rounded-lg font-bold shadow">下班打卡</button>
+                </div>
+                <p id="location-status" class="mt-4 text-xs text-gray-500">正在確認 GPS 位置...</p>
+            </div>
+        </section>
+
+        <section id="tab-b" class="tab-content p-6">
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h3 class="text-lg font-bold border-b pb-2 mb-4">個人年度統計 (2026)</h3>
+                <ul class="space-y-3 text-sm">
+                    <li class="flex justify-between"><span>剩餘特休天數：</span><span id="stat-leave" class="font-bold text-blue-600">計算中</span></li>
+                    <li class="flex justify-between"><span>本月遲到次數：</span><span id="stat-late" class="font-bold text-red-600">0 次</span></li>
+                    <li class="flex justify-between"><span>本月薪資預估：</span><span id="stat-salary" class="font-bold">查詢中</span></li>
+                </ul>
+                <button class="mt-6 w-full py-2 border border-blue-500 text-blue-500 rounded">查看年度紀錄總表</button>
+            </div>
+        </section>
+
+        <section id="tab-c" class="tab-content p-6">
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h3 class="text-lg font-bold mb-4">申請假單</h3>
+                <select id="leave-type" class="w-full p-2 mb-4 border rounded">
+                    <option value="特休">年資假 (特休)</option>
+                    <option value="事假">事假</option>
+                    <option value="病假">病假</option>
+                    <option value="颱風假">颱風假</option>
+                </select>
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    <input type="datetime-local" id="leave-start" class="p-2 border rounded text-xs">
+                    <input type="datetime-local" id="leave-end" class="p-2 border rounded text-xs">
+                </div>
+                <button onclick="applyLeave()" class="w-full bg-blue-600 text-white py-3 rounded font-bold">送出申請 (1小時自動核准)</button>
+            </div>
+        </section>
+
+        <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around p-2 text-[10px] text-gray-500">
+            <button onclick="switchTab('tab-a')" class="flex flex-col items-center"><span>打卡</span></button>
+            <button onclick="switchTab('tab-b')" class="flex flex-col items-center"><span>資料</span></button>
+            <button onclick="switchTab('tab-c')" class="flex flex-col items-center"><span>請假</span></button>
+            <button onclick="switchTab('tab-d')" class="flex flex-col items-center"><span>薪資</span></button>
+            <button onclick="switchTab('tab-e')" class="flex flex-col items-center"><span>規定</span></button>
+        </nav>
+    </div>
+
+    <script>
+        // --- 1. 初始化 Supabase ---
+        const SUPABASE_URL = '您的_SUPABASE_URL';
+        const SUPABASE_KEY = '您的_SUPABASE_ANON_KEY';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- 2. 初始化 LIFF ---
+        async function initApp() {
+            try {
+                await liff.init({ liffId: "您的_LIFF_ID" });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                } else {
+                    const profile = await liff.getProfile();
+                    checkUserStatus(profile.userId, profile.displayName);
+                }
+            } catch (err) {
+                console.error("LIFF 初始化失敗", err);
+            }
+        }
+
+        // --- 3. 檢查員工狀態 ---
+        async function checkUserStatus(lineId, displayName) {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('line_id', lineId)
+                .single();
+
+            document.getElementById('loading').classList.add('hidden');
+            
+            if (data) {
+                document.getElementById('main-app').classList.remove('hidden');
+                document.getElementById('user-display').innerText = `你好，${data.name}`;
+            } else {
+                document.getElementById('registration-form').classList.remove('hidden');
+            }
+        }
+
+        // --- 4. 功能切換 ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // --- 5. 地點判定邏輯 ---
+        function handleClockIn(type) {
+            const locations = {
+                A: { lat: 23.1118, lng: 120.2452, name: "海帕斯科技" },
+                B: { lat: 23.1295, lng: 120.2975, name: "HYPASS BOSS" }
+            };
+
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                // 這裡應加入座標距離計算 (Haversine Formula)
+                // 若距離 < 100m 則寫入 Supabase
+                alert(`${type}成功！位置：確認中...`);
+                // TODO: 串接 Supabase insert 'attendance'
+            }, () => alert("請開啟 GPS 定位功能"));
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
