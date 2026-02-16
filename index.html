@@ -8,81 +8,65 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans">
+<body class="bg-gray-100">
+    <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">載入中...</div>
 
-    <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
-        <div class="text-center">
-            <p class="text-blue-600 font-bold animate-pulse text-lg">Hypass 系統載入中...</p>
-            <p class="text-gray-400 text-xs mt-2">正在與資料庫進行安全連線</p>
-        </div>
-    </div>
-
-    <div id="app" class="hidden min-h-screen">
-        <header class="bg-blue-700 text-white p-6 shadow-lg text-center">
-            <h1 class="text-xl font-bold">海帕斯員工系統 (@034qvauh)</h1>
-            <p id="user-info" class="text-sm opacity-90 mt-1 italic"></p>
-        </header>
-
-        <main class="p-6 space-y-6">
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">Clock-in Location</label>
-                <select id="loc" class="w-full p-4 bg-gray-50 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-blue-500">
-                    <option value="A">海帕斯科技 (安定區)</option>
-                    <option value="B">HYPASS BOSS (善化區)</option>
-                </select>
-            </div>
-
+    <div id="app" class="hidden min-h-screen p-6">
+        <h1 class="text-2xl font-bold mb-4 text-center">海帕斯員工系統 (@034qvauh)</h1>
+        <div class="bg-white p-6 rounded-3xl shadow-xl mb-6">
+            <p id="user-info" class="text-blue-600 font-bold mb-4 text-center"></p>
+            <label class="block text-xs text-gray-400 font-bold mb-2">打卡地點</label>
+            <select id="loc" class="w-full p-4 border rounded-2xl mb-4 text-lg">
+                <option value="A">海帕斯科技 (安定區)</option>
+                <option value="B">HYPASS BOSS (善化區)</option>
+            </select>
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="handleClock('上班')" class="bg-emerald-500 text-white py-8 rounded-3xl font-bold shadow-lg active:scale-95 transition">上班打卡</button>
-                <button onclick="handleClock('下班')" class="bg-rose-500 text-white py-8 rounded-3xl font-bold shadow-lg active:scale-95 transition">下班打卡</button>
+                <button onclick="clock('上班')" class="bg-emerald-500 text-white p-8 rounded-3xl font-bold text-xl shadow-lg">上班打卡</button>
+                <button onclick="clock('下班')" class="bg-rose-500 text-white p-8 rounded-3xl font-bold text-xl shadow-lg">下班打卡</button>
             </div>
-            <p id="gps-status" class="text-center text-[10px] text-gray-400 italic">系統將自動驗證 100m 以內地理圍欄</p>
-        </main>
+        </div>
+        <p class="text-center text-[10px] text-gray-400 italic">系統會自動驗證 100m 以內之地理圍欄</p>
     </div>
 
     <script>
-        // --- 核心連線設定 (已補上引號並修正變數衝突) ---
-        const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_kmM4pKdI1OmLUNKjQeH0VQ_wr11fwKV';
-        const LIFF_ID = '2009136875-gs1Va90A';
+        // --- 核心連線設定 (嚴格修正引號與變數名) ---
+        const SB_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
+        const SB_KEY = 'sb_publishable_kmM4pKdI1OmLUNKjQeH0VQ_wr11fwKV';
+        // 使用 _db 作為實例名稱，徹底避開 supabase 關鍵字衝突
+        const _db = supabase.createClient(SB_URL, SB_KEY);
 
-        // 初始化連線，使用 _db 避免名稱衝突
-        const _db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let user = null;
 
-        let currentUser = null;
-
-        // --- 啟動函數 ---
-        async function startApp() {
+        async function init() {
             try {
-                // 初始化 LINE LIFF
-                await liff.init({ liffId: LIFF_ID });
+                // 初始化 LIFF
+                await liff.init({ liffId: "2009136875-gs1Va90A" });
                 
-                if (!liff.isLoggedIn()) {
-                    liff.login();
+                if (!liff.isLoggedIn()) { 
+                    liff.login(); 
                 } else {
-                    const lineProfile = await liff.getProfile();
-                    
+                    const profile = await liff.getProfile();
                     // 查詢員工資料
                     const { data, error } = await _db
                         .from('profiles')
                         .select('*')
-                        .eq('line_id', lineProfile.userId)
+                        .eq('line_id', profile.userId)
                         .single();
-
+                    
                     document.getElementById('loading').style.display = 'none';
 
                     if (data) {
-                        // 已註冊員工
-                        currentUser = data;
+                        user = data;
                         document.getElementById('app').classList.remove('hidden');
                         document.getElementById('user-info').innerText = `你好，${data.full_name}`;
                     } else {
-                        // 初次註冊流程
+                        // 初次註冊
                         const name = prompt("首次登入，請輸入真實姓名：");
-                        if (name) {
-                            const { error: regError } = await _db.from('profiles').insert([
-                                { line_id: lineProfile.userId, full_name: name }
-                            ]);
+                        if(name) {
+                            const { error: regError } = await _db
+                                .from('profiles')
+                                .insert([{ line_id: profile.userId, full_name: name }]);
+                            
                             if (regError) alert("註冊失敗：" + regError.message);
                             else location.reload();
                         }
@@ -90,35 +74,30 @@
                 }
             } catch (err) {
                 console.error(err);
-                document.getElementById('loading').innerHTML = `<p class='text-red-500 font-bold'>系統連線失敗<br><span class='text-xs'>請確認網址與金鑰是否正確</span></p>`;
+                document.getElementById('loading').innerText = "系統連線異常";
             }
         }
 
-        // --- 打卡邏輯 (包含 GPS 抓取) ---
-        function handleClock(type) {
-            if (!navigator.geolocation) return alert("錯誤：您的手機不支援 GPS");
+        function clock(type) {
+            if (!navigator.geolocation) return alert("手機不支援 GPS");
 
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 const { error } = await _db.from('attendance').insert([{
-                    user_id: currentUser.id,
+                    user_id: user.id,
                     clock_type: type,
                     location_id: document.getElementById('loc').value,
                     u_lat: pos.coords.latitude,
                     u_lng: pos.coords.longitude
                 }]);
 
-                if (!error) {
-                    alert(`${type} 成功！系統已記錄您的經緯度。`);
-                } else {
-                    alert("打卡儲存失敗，請檢查網路。");
-                }
-            }, (err) => {
-                alert("無法取得位置，請在手機設定中允許瀏覽器存取 GPS。");
-            }, { enableHighAccuracy: true });
+                if (!error) alert(type + " 成功！");
+                else alert("打卡失敗，請確認是否已授權 GPS 位置");
+            }, (geoErr) => {
+                alert("無法取得位置，請確保 GPS 已開啟並授權");
+            });
         }
 
-        // 正式執行
-        startApp();
+        init();
     </script>
 </body>
 </html>
