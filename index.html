@@ -12,7 +12,7 @@
 
     <div id="loading" class="fixed inset-0 flex flex-col items-center justify-center bg-white z-50">
         <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-blue-700 font-bold tracking-widest animate-pulse">資料同步與驗證中...</p>
+        <p class="text-blue-700 font-bold tracking-widest animate-pulse">資料同步與運算中...</p>
     </div>
 
     <div id="register-view" class="hidden min-h-screen p-4 pb-10">
@@ -96,7 +96,7 @@
                 <h4 class="font-bold text-sm text-slate-700">假單申請</h4>
                 <p class="text-[10px] text-slate-400 mt-1">特休 / 加班 / 事病假</p>
             </div>
-            <div onclick="alert('出勤統計與薪資試算模組開發中，敬請期待！')" class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 text-center active:scale-95 transition-all cursor-pointer">
+            <div onclick="openSalaryModal()" class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 text-center active:scale-95 transition-all cursor-pointer">
                 <span class="text-2xl block mb-2">💰</span>
                 <h4 class="font-bold text-sm text-slate-700">薪資明細</h4>
                 <p class="text-[10px] text-slate-400 mt-1">當月結算與出勤表</p>
@@ -133,6 +133,54 @@
         </div>
     </div>
 
+    <div id="salary-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col justify-end">
+        <div class="bg-slate-50 rounded-t-3xl p-6 pb-10 w-full max-w-lg mx-auto max-h-[90vh] overflow-y-auto animate-[slideUp_0.3s_ease-out]">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-slate-800">💰 薪資明細 <span id="sal-month" class="text-sm font-normal text-slate-500 ml-2">載入中</span></h2>
+                <button onclick="closeSalaryModal()" class="text-slate-400 text-2xl font-bold px-2 hover:text-rose-500">&times;</button>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-xs font-bold text-emerald-600 mb-3 border-b border-slate-100 pb-2">應發金額 (Earnings)</h3>
+                    <div class="flex justify-between items-center mb-2 text-sm font-medium text-slate-700">
+                        <span>每月本薪</span><span id="sal-base">0</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm font-medium text-slate-700">
+                        <span>各項獎金</span><span id="sal-bonus">0</span>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-xs font-bold text-rose-500 mb-3 border-b border-slate-100 pb-2">應扣金額 (Deductions)</h3>
+                    <div class="flex justify-between items-center mb-2 text-sm font-medium text-slate-700">
+                        <span>事假扣款 <span class="text-[10px] text-slate-400 font-normal ml-1" id="sal-personal-hr">0</span><span class="text-[10px] text-slate-400 font-normal">h (全薪)</span></span>
+                        <span class="text-rose-500">- <span id="sal-personal-deduct">0</span></span>
+                    </div>
+                    <div class="flex justify-between items-center mb-2 text-sm font-medium text-slate-700">
+                        <span>病假扣款 <span class="text-[10px] text-slate-400 font-normal ml-1" id="sal-sick-hr">0</span><span class="text-[10px] text-slate-400 font-normal">h (半薪)</span></span>
+                        <span class="text-rose-500">- <span id="sal-sick-deduct">0</span></span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm font-medium text-slate-700 opacity-50">
+                        <span>遲到扣款 <span class="text-[10px] text-slate-400 font-normal">(由後台結算)</span></span>
+                        <span>- 0</span>
+                    </div>
+                </div>
+
+                <div class="bg-blue-600 p-5 rounded-2xl shadow-lg text-white mt-6">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium opacity-90">本月預估實發金額</span>
+                        <div class="text-right">
+                            <p class="text-[10px] opacity-70 mb-1">NTD</p>
+                            <p class="text-3xl font-black tracking-wider" id="sal-net">0</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-center text-[10px] text-slate-400 mt-2">※ 此為系統依據「已核准」假單之預估試算，實際撥款以公司最終結算為準。</p>
+            </div>
+        </div>
+    </div>
+
     <style>
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
@@ -147,7 +195,6 @@
         let userLineId = "";
         let currentUser = null;
 
-        // 計算特休天數 (基礎勞基法估算)
         function calculateLeaveDays(onboardDate) {
             const start = new Date(onboardDate);
             const today = new Date();
@@ -175,23 +222,14 @@
                     if (data) {
                         currentUser = data;
                         document.getElementById('app-view').classList.remove('hidden');
-                        
-                        // 恢復置中姓名顯示
                         document.getElementById('user-info').innerText = `您好，${data.full_name}`;
-                        
-                        // 載入模組 B：個人基本資料
                         document.getElementById('ui-onboard').innerText = data.onboard_date || "未設定";
                         if(data.work_start_time && data.work_end_time) {
                             document.getElementById('ui-schedule').innerText = `${data.work_start_time.substring(0,5)} - ${data.work_end_time.substring(0,5)}`;
                         }
-                        if(data.onboard_date) {
-                            document.getElementById('ui-leave-days').innerText = calculateLeaveDays(data.onboard_date);
-                        }
-                        
-                        // 載入薪資與獎金 (加入千分位逗號)
+                        if(data.onboard_date) document.getElementById('ui-leave-days').innerText = calculateLeaveDays(data.onboard_date);
                         document.getElementById('ui-salary').innerText = data.base_salary ? `NT$ ${data.base_salary.toLocaleString()}` : "未核定";
                         document.getElementById('ui-bonus').innerText = data.bonus ? `NT$ ${data.bonus.toLocaleString()}` : "NT$ 0";
-
                         if(data.default_location) document.getElementById('clock-loc').value = data.default_location;
                     } else {
                         document.getElementById('register-view').classList.remove('hidden');
@@ -225,23 +263,13 @@
             document.getElementById('gps-status').innerText = "📍 GPS 定位與圍欄驗證中...";
 
             navigator.geolocation.getCurrentPosition(async (pos) => {
-                const { error } = await _db.from('attendance').insert([{ 
-                    user_id: currentUser.id, 
-                    clock_type: type, 
-                    location_id: document.getElementById('clock-loc').value, 
-                    u_lat: pos.coords.latitude, 
-                    u_lng: pos.coords.longitude 
-                }]);
-                
+                const { error } = await _db.from('attendance').insert([{ user_id: currentUser.id, clock_type: type, location_id: document.getElementById('clock-loc').value, u_lat: pos.coords.latitude, u_lng: pos.coords.longitude }]);
                 if (!error) {
                     alert(`【${type}】打卡成功！\n\n系統提示：若下班打卡晚於規定時間 30 分鐘，系統將為您自動生成加班單。`);
                     document.getElementById('gps-status').innerText = `✅ 最後打卡時間：${new Date().toLocaleTimeString()}`;
                 } else {
-                    if(error.message && error.message.includes('今日已完成')) {
-                        alert(`❌ 打卡失敗\n\n${error.message}`);
-                    } else {
-                        alert("打卡失敗，請檢查範圍或網路連線。");
-                    }
+                    if(error.message && error.message.includes('今日已完成')) alert(`❌ 打卡失敗\n\n${error.message}`);
+                    else alert("打卡失敗，請檢查範圍或網路連線。");
                     document.getElementById('gps-status').innerText = "❌ 打卡驗證失敗";
                 }
             }, () => alert("無法取得位置"), { enableHighAccuracy: true });
@@ -257,29 +285,73 @@
             const reason = document.getElementById('leave-reason').value;
 
             if(!start || !end) return alert("請選擇開始與結束時間！");
-
             document.getElementById('loading').style.display = 'flex';
 
-            const { error } = await _db.from('leave_requests').insert([{
-                user_id: currentUser.id,
-                leave_type: type,
-                start_time: start,
-                end_time: end,
-                reason: reason
-            }]);
-
+            const { error } = await _db.from('leave_requests').insert([{ user_id: currentUser.id, leave_type: type, start_time: start, end_time: end, reason: reason }]);
             document.getElementById('loading').style.display = 'none';
 
-            if (error) {
-                alert("申請失敗：" + error.message);
-            } else {
-                alert("表單已送出！系統將即時通知老闆審核。");
-                closeLeaveModal();
-            }
+            if (error) alert("申請失敗：" + error.message);
+            else { alert("表單已送出！系統將即時通知老闆審核。"); closeLeaveModal(); }
         }
+
+        // ==========================================
+        // 模組 D：薪資明細計算邏輯 (結合規格書公式)
+        // ==========================================
+        async function openSalaryModal() {
+            document.getElementById('loading').style.display = 'flex';
+            
+            // 1. 取得薪資基準與時薪算法 (時薪 = 月薪/240)
+            const baseSalary = currentUser.base_salary || 0;
+            const bonus = currentUser.bonus || 0;
+            const hourlyRate = baseSalary / 240.0; 
+
+            // 2. 抓取本月「已核准」的假單來算扣款
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = now.getMonth();
+            const firstDay = new Date(y, m, 1).toISOString();
+            const lastDay = new Date(y, m + 1, 0, 23, 59, 59).toISOString();
+
+            const { data: leaves } = await _db.from('leave_requests')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .eq('status', 'approved')
+                .gte('start_time', firstDay)
+                .lte('start_time', lastDay);
+
+            let personalHrs = 0;
+            let sickHrs = 0;
+
+            if (leaves) {
+                leaves.forEach(l => {
+                    const hrs = (new Date(l.end_time) - new Date(l.start_time)) / (1000 * 60 * 60);
+                    if (l.leave_type === '事假') personalHrs += hrs;
+                    if (l.leave_type === '病假') sickHrs += hrs;
+                });
+            }
+
+            // 3. 套用規格書扣款邏輯：事假扣全薪、病假扣半薪
+            const personalDeduct = Math.round(personalHrs * hourlyRate);
+            const sickDeduct = Math.round(sickHrs * (hourlyRate * 0.5));
+            const netPay = baseSalary + bonus - personalDeduct - sickDeduct;
+
+            // 4. 將數據填入 UI
+            document.getElementById('sal-month').innerText = `${y}年 ${m + 1}月`;
+            document.getElementById('sal-base').innerText = baseSalary.toLocaleString();
+            document.getElementById('sal-bonus').innerText = bonus.toLocaleString();
+            document.getElementById('sal-personal-hr').innerText = personalHrs.toFixed(1);
+            document.getElementById('sal-personal-deduct').innerText = personalDeduct.toLocaleString();
+            document.getElementById('sal-sick-hr').innerText = sickHrs.toFixed(1);
+            document.getElementById('sal-sick-deduct').innerText = sickDeduct.toLocaleString();
+            document.getElementById('sal-net').innerText = netPay.toLocaleString();
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('salary-modal').classList.remove('hidden');
+        }
+
+        function closeSalaryModal() { document.getElementById('salary-modal').classList.add('hidden'); }
 
         initApp();
     </script>
 </body>
 </html>
-
