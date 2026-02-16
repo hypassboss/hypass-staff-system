@@ -3,82 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hypass 員工管理系統</title>
+    <title>海帕斯員工管理系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans">
+<body class="bg-slate-50 text-slate-800 font-sans">
 
-    <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
-        <div class="text-center">
-            <p class="text-blue-600 font-bold animate-pulse text-lg">Hypass 系統安全連線中...</p>
-        </div>
+    <div id="loading" class="fixed inset-0 flex flex-col items-center justify-center bg-white z-50">
+        <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-blue-700 font-bold tracking-widest animate-pulse">系統安全連線中...</p>
     </div>
 
-    <div id="register-view" class="hidden min-h-screen p-6">
-        <div class="bg-white rounded-3xl shadow-xl p-8 max-w-md mx-auto mt-4 border-t-4 border-blue-600">
-            <h2 class="text-2xl font-bold mb-2 text-center text-gray-800">員工資料建檔</h2>
-            <p class="text-xs text-red-500 mb-6 text-center">依公司規定，首次登入請務必補全以下資料</p>
+    <div id="register-view" class="hidden min-h-screen p-4 pb-10">
+        <div class="bg-white rounded-3xl shadow-xl p-6 sm:p-8 max-w-md mx-auto mt-4 border-t-4 border-blue-600">
+            <h2 class="text-2xl font-bold mb-1 text-center text-slate-800">員工資料建檔</h2>
+            <p class="text-xs text-rose-500 mb-6 text-center">依公司管理規範，首次登入需補全以下資料</p>
             
-            <div class="space-y-4 text-sm">
-                <div><label class="block font-bold mb-1 text-gray-600">真實姓名 <span class="text-red-500">*</span></label><input type="text" id="reg-name" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500"></div>
-                <div><label class="block font-bold mb-1 text-gray-600">手機號碼 <span class="text-red-500">*</span></label><input type="tel" id="reg-phone" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl"></div>
-                <div><label class="block font-bold mb-1 text-gray-600">聯絡信箱 <span class="text-red-500">*</span></label><input type="email" id="reg-email" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl"></div>
-                <div><label class="block font-bold mb-1 text-gray-600">入職日期 <span class="text-red-500">*</span></label><input type="date" id="reg-date" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl"></div>
+            <div class="space-y-4 text-sm font-medium">
+                <div><label class="block mb-1 text-slate-600">真實姓名 <span class="text-rose-500">*</span></label><input type="text" id="reg-name" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
+                <div><label class="block mb-1 text-slate-600">聯絡手機 <span class="text-rose-500">*</span></label><input type="tel" id="reg-phone" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
+                <div><label class="block mb-1 text-slate-600">電子郵件 <span class="text-rose-500">*</span></label><input type="email" id="reg-email" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
+                <div><label class="block mb-1 text-slate-600">入職日期 <span class="text-rose-500">*</span></label><input type="date" id="reg-date" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
                 <div>
-                    <label class="block font-bold mb-1 text-gray-600">主要上班地點 <span class="text-red-500">*</span></label>
-                    <select id="reg-loc" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl">
+                    <label class="block mb-1 text-slate-600">主要上班地點 <span class="text-rose-500">*</span></label>
+                    <select id="reg-loc" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="A">海帕斯科技 (安定區)</option>
                         <option value="B">HYPASS BOSS (善化區)</option>
                     </select>
                 </div>
-                <div><label class="block font-bold mb-1 text-gray-600">薪資匯款帳號 <span class="text-red-500">*</span></label><input type="text" id="reg-bank" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl" placeholder="銀行代碼+帳號"></div>
+                <div><label class="block mb-1 text-slate-600">薪資匯款帳號 <span class="text-rose-500">*</span></label><input type="text" id="reg-bank" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="銀行代碼 + 帳號"></div>
                 
-                <button onclick="submitRegistration()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg mt-6 active:scale-95 transition">送出審核</button>
+                <button onclick="submitRegistration()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold shadow-lg mt-8 active:scale-95 transition-all">送出資料並通知管理員</button>
             </div>
         </div>
     </div>
 
-    <div id="app-view" class="hidden min-h-screen p-6 flex flex-col">
-        <header class="bg-blue-700 text-white p-6 rounded-3xl shadow-lg mb-6 text-center relative overflow-hidden">
-            <h1 class="text-xl font-bold relative z-10">海帕斯員工系統</h1>
-            <p class="text-xs opacity-80 mt-1 relative z-10">@006rsfhs</p>
-            <p id="user-info" class="text-sm font-medium mt-3 bg-blue-800 py-2 rounded-xl relative z-10"></p>
+    <div id="app-view" class="hidden min-h-screen p-4 flex flex-col">
+        
+        <header class="bg-gradient-to-r from-blue-700 to-blue-800 text-white p-6 rounded-3xl shadow-lg mb-4 text-center">
+            <h1 class="text-xl font-bold tracking-wide">海帕斯員工系統</h1>
+            <p class="text-[10px] opacity-70 mt-1">@006rsfhs</p>
+            <div class="mt-4 inline-block bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl text-sm font-medium">
+                <span id="user-info">員工資料載入中...</span>
+            </div>
         </header>
 
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6 flex-grow">
-            <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Clock-in Location</label>
-            <select id="clock-loc" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl mb-6 text-lg font-medium focus:ring-2 focus:ring-blue-500">
+        <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mb-4">
+            <h3 class="text-sm font-bold text-slate-800 mb-4 flex items-center"><span class="w-1 h-4 bg-blue-500 rounded mr-2"></span>模組 A：GPS 考勤打卡</h3>
+            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">目前所在地點</label>
+            <select id="clock-loc" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl mb-6 text-base font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 <option value="A">海帕斯科技 (安定區)</option>
                 <option value="B">HYPASS BOSS (善化區)</option>
             </select>
             
-            <div class="grid grid-cols-2 gap-4">
-                <button onclick="clock('上班')" class="bg-emerald-500 text-white py-8 rounded-3xl font-bold text-lg shadow-md active:scale-95 transition flex flex-col items-center justify-center">
-                    <span class="text-2xl mb-1">🌤️</span>上班打卡
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="clock('上班')" class="bg-emerald-500 hover:bg-emerald-600 text-white py-6 rounded-2xl font-bold text-base shadow-md active:scale-95 transition-all flex flex-col items-center">
+                    <span class="text-2xl mb-1">💼</span>上班
                 </button>
-                <button onclick="clock('下班')" class="bg-rose-500 text-white py-8 rounded-3xl font-bold text-lg shadow-md active:scale-95 transition flex flex-col items-center justify-center">
-                    <span class="text-2xl mb-1">🌙</span>下班打卡
+                <button onclick="clock('下班')" class="bg-rose-500 hover:bg-rose-600 text-white py-6 rounded-2xl font-bold text-base shadow-md active:scale-95 transition-all flex flex-col items-center">
+                    <span class="text-2xl mb-1">🏠</span>下班
                 </button>
             </div>
-        </div>
-        
-        <div class="bg-blue-50 p-4 rounded-2xl">
-            <p class="text-center text-xs text-blue-600 font-medium">📍 GPS 圍欄半徑 100m 自動驗證系統</p>
-            <p id="gps-status" class="text-center text-[10px] text-gray-400 mt-1 italic">系統就緒</p>
-        </div>
+            <div class="mt-4 text-center">
+                <span id="gps-status" class="text-[10px] bg-slate-100 text-slate-500 px-3 py-1 rounded-full">📍 系統自動驗證半徑 100m 圍欄</span>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-2 gap-4 mb-4">
+            <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 text-center active:scale-95 transition-all cursor-pointer">
+                <span class="text-2xl block mb-2">📝</span>
+                <h4 class="font-bold text-sm text-slate-700">假單申請</h4>
+                <p class="text-[10px] text-slate-400 mt-1">特休 / 事病假</p>
+            </div>
+            <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 text-center active:scale-95 transition-all cursor-pointer">
+                <span class="text-2xl block mb-2">💰</span>
+                <h4 class="font-bold text-sm text-slate-700">薪資明細</h4>
+                <p class="text-[10px] text-slate-400 mt-1">當月結算表</p>
+            </div>
+        </section>
+
+        <section class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 text-center active:scale-95 transition-all cursor-pointer mb-8">
+            <span class="text-xl inline-block mr-2">📖</span>
+            <span class="font-bold text-sm text-slate-700">查閱公司規章與保密協定</span>
+        </section>
+
     </div>
 
     <script>
-        // ==========================================
-        // ⚠️ 金鑰設定區 ⚠️
-        // ==========================================
-        const SB_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co'; 
-        
-        // 【重要】請將下方引號內的中文，換成您在 Supabase "Legacy anon" 複製的 eyJ 開頭金鑰
+        // ⚠️ 【請在此貼上您的真實連線資訊】 ⚠️
+        const SB_URL = '請貼上_Supabase_Project_URL'; 
         const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'; 
-        
         const LIFF_ID = '2009136875-gs1Va90A';
         // ==========================================
 
@@ -86,7 +101,7 @@
         let userLineId = "";
         let currentUser = null;
 
-        // --- 1. 系統初始化 ---
+        // --- 啟動初始化 ---
         async function initApp() {
             try {
                 await liff.init({ liffId: LIFF_ID });
@@ -96,7 +111,7 @@
                     const profile = await liff.getProfile();
                     userLineId = profile.userId;
                     
-                    // 查詢資料庫是否已有此員工紀錄
+                    // 驗證員工是否已建檔
                     const { data, error } = await _db
                         .from('profiles')
                         .select('*')
@@ -106,25 +121,25 @@
                     document.getElementById('loading').style.display = 'none';
 
                     if (data) {
-                        // 已註冊：顯示打卡介面
+                        // 進入主控台
                         currentUser = data;
                         document.getElementById('app-view').classList.remove('hidden');
-                        document.getElementById('user-info').innerText = `員工：${data.full_name} ｜ 打卡準備就緒`;
+                        document.getElementById('user-info').innerText = `您好，${data.full_name}`;
                         if(data.default_location) {
                             document.getElementById('clock-loc').value = data.default_location;
                         }
                     } else {
-                        // 未註冊：顯示表單
+                        // 進入註冊畫面
                         document.getElementById('register-view').classList.remove('hidden');
                     }
                 }
             } catch (err) {
                 console.error("系統初始化失敗", err);
-                document.getElementById('loading').innerHTML = `<p class="text-red-500 font-bold">連線異常，請檢查網路或金鑰</p>`;
+                document.getElementById('loading').innerHTML = `<p class="text-rose-500 font-bold">連線異常，請聯繫管理員 (@006rsfhs)</p>`;
             }
         }
 
-        // --- 2. 註冊資料送出邏輯 ---
+        // --- 註冊資料提交邏輯 (對齊規格書：強制填寫) ---
         async function submitRegistration() {
             const name = document.getElementById('reg-name').value.trim();
             const phone = document.getElementById('reg-phone').value.trim();
@@ -134,10 +149,11 @@
             const bank = document.getElementById('reg-bank').value.trim();
 
             if(!name || !phone || !email || !date || !bank) {
-                return alert("請完整填寫所有必填資料！");
+                return alert("請完整填寫所有必填資料，方可啟用系統！");
             }
 
-            // 存入 Supabase Profiles 資料表
+            document.getElementById('loading').style.display = 'flex';
+
             const { error } = await _db.from('profiles').insert([{
                 line_id: userLineId,
                 full_name: name,
@@ -149,19 +165,19 @@
             }]);
 
             if (error) {
+                document.getElementById('loading').style.display = 'none';
                 alert("資料建檔失敗：" + error.message);
-                console.error(error);
             } else {
-                alert("資料建檔成功！請通知管理員審核。系統將重新載入。");
+                alert("建檔成功！系統將即時發送 LINE 訊息通知老闆審核。");
                 location.reload();
             }
         }
 
-        // --- 3. GPS 打卡邏輯 ---
+        // --- GPS 打卡邏輯 (對齊規格書：模組 A) ---
         function clock(type) {
-            if (!navigator.geolocation) return alert("您的設備不支援 GPS 定位");
+            if (!navigator.geolocation) return alert("系統錯誤：您的設備不支援 GPS 定位");
 
-            document.getElementById('gps-status').innerText = "GPS 定位與驗證中...";
+            document.getElementById('gps-status').innerText = "📍 GPS 定位與圍欄驗證中...";
 
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 const { latitude, longitude } = pos.coords;
@@ -175,20 +191,19 @@
                 }]);
 
                 if (!error) {
-                    alert(`【${type}】打卡成功！已精確記錄時間與座標。`);
-                    document.getElementById('gps-status').innerText = `最後打卡：${new Date().toLocaleTimeString()}`;
+                    alert(`【${type}】打卡成功！已記錄時間與精確座標。`);
+                    document.getElementById('gps-status').innerText = `✅ 最後打卡時間：${new Date().toLocaleTimeString()}`;
                 } else {
                     alert("打卡失敗，請檢查是否超出打卡範圍或網路異常。");
-                    document.getElementById('gps-status').innerText = "打卡失敗";
-                    console.error("打卡錯誤:", error);
+                    document.getElementById('gps-status').innerText = "❌ 打卡驗證失敗";
                 }
             }, (geoErr) => {
                 alert("無法取得位置，請在手機設定中允許 LINE 存取您的 GPS 權限。");
-                document.getElementById('gps-status').innerText = "定位授權失敗";
+                document.getElementById('gps-status').innerText = "❌ 定位授權失敗";
             }, { enableHighAccuracy: true });
         }
 
-        // 啟動程式
+        // 啟動應用程式
         initApp();
     </script>
 </body>
