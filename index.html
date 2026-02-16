@@ -32,7 +32,7 @@
                     </select>
                 </div>
                 <div><label class="block mb-1 text-slate-600">薪資匯款帳號</label><input type="text" id="reg-bank" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl"></div>
-                <button onclick="submitRegistration()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold mt-8">送出資料</button>
+                <button onclick="submitRegistration()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold mt-8 active:scale-95 transition-all">送出資料</button>
             </div>
         </div>
     </div>
@@ -106,11 +106,10 @@
     </style>
 
     <script>
-        // ⚠️ 【請在此貼上您的真實連線資訊】 ⚠️
+        // 您的專屬金鑰 (已保留)
         const SB_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co'; 
         const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'; 
         const LIFF_ID = '2009136875-gs1Va90A';
-        // ==========================================
 
         const _db = supabase.createClient(SB_URL, SB_KEY);
         let userLineId = "";
@@ -123,7 +122,10 @@
                 else {
                     const profile = await liff.getProfile();
                     userLineId = profile.userId;
-                    const { data, error } = await _db.from('profiles').select('*').eq('line_id', userLineId).single();
+                    
+                    // 【優化點】：改用 maybeSingle()，新進員工第一次登入才不會在後台報錯
+                    const { data, error } = await _db.from('profiles').select('*').eq('line_id', userLineId).maybeSingle();
+                    
                     document.getElementById('loading').style.display = 'none';
 
                     if (data) {
@@ -137,6 +139,7 @@
                 }
             } catch (err) {
                 document.getElementById('loading').innerHTML = `<p class="text-rose-500 font-bold">連線異常</p>`;
+                console.error(err);
             }
         }
 
@@ -170,11 +173,9 @@
             }, () => alert("無法取得位置"), { enableHighAccuracy: true });
         }
 
-        // --- 新增：請假視窗開關邏輯 ---
         function openLeaveModal() { document.getElementById('leave-modal').classList.remove('hidden'); }
         function closeLeaveModal() { document.getElementById('leave-modal').classList.add('hidden'); }
 
-        // --- 新增：送出假單邏輯 ---
         async function submitLeave() {
             const type = document.getElementById('leave-type').value;
             const start = document.getElementById('leave-start').value;
@@ -207,4 +208,3 @@
     </script>
 </body>
 </html>
-
