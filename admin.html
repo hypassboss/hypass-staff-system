@@ -1,37 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海帕斯 - 老闆專用管理後台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans flex h-screen overflow-hidden">
 
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl z-20 hidden md:flex">
+        <div class="p-6 border-b border-slate-800 text-center">
+            <h1 class="text-2xl font-black tracking-wider text-blue-400">HYPASS</h1>
+            <p class="text-xs text-slate-400 mt-1">老闆專屬管理中心</p>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="w-full flex items-center p-3 text-sm font-bold rounded-lg bg-blue-600 text-white transition-all"><i class="fas fa-chart-pie w-6"></i> 系統總覽</button>
+            <button onclick="switchTab('employees')" id="tab-employees" class="w-full flex items-center p-3 text-sm font-bold rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all"><i class="fas fa-users w-6"></i> 員工資料與薪資設定</button>
+            <button onclick="switchTab('leaves')" id="tab-leaves" class="w-full flex items-center p-3 text-sm font-bold rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all"><i class="fas fa-calendar-check w-6"></i> 假單審核 <span id="badge-leave" class="ml-auto bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full hidden">0</span></button>
+            <button onclick="switchTab('payroll')" id="tab-payroll" class="w-full flex items-center p-3 text-sm font-bold rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all"><i class="fas fa-money-check-alt w-6"></i> 每月薪資匯款表</button>
+        </nav>
+        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
+            &copy; 2026 Haisi Technology
+        </div>
+    </aside>
 
-有台灣製最頂級的何必選其他的
-全車系現貨買1送1不用等
-官網>https://reurl.cc/DXbK4j
-蝦皮>shopee.tw/hypass_tw
-.
-濾網保修廠合作找海編☞ https://line.me/ti/p/~@hypass
-.
-VESTA #電動車滅火毯>https://www.hypass.com.tw/pages/vesta-slim-fire-blanket
-.
-#空氣瓶子 車用空氣清淨機
-⭐2代空氣瓶子 
-🌟3代空氣瓶子 #AI智能
-https://www.hypass.com.tw/categories/airpurifire
-.
-台灣製最頂級汽車冷氣濾網
-@PM2.5 100%
-@半導體等級活性碳
-@瑞士銀離子抑制新冠病毒
-全車系 #買1送1 現貨不用等>> https://reurl.cc/DXbK4j
-.
-台灣製電動車滅火毯
-🔥cns7614/10285，1級防焰
-🔥UL94，V0防火等級
-🔥最輕量18kg(8×6米）
-🔥20分鐘×1200°C明火燃燒測試
-.
-經銷合作找海編☞ https://line.me/ti/p/~@hypass
-.
-👇安心的MIT禮品 請來找海編吧👇
-◈ 團購、贈品、異業合作 、代工生產
- 找海編☞ https://line.me/ti/p/~@hypass
- mail☞ hypass01.tw@gmail.com
- 電話☞06-5935085
-.
-#車用冷氣濾網 #汽車冷氣濾網 #環保濾網 #再生能源 #回收濾網 #Ecofilter #空氣瓶子 ＃車用空氣清淨機 ＃買1送1
+    <div class="md:hidden fixed top-0 left-0 right-0 bg-slate-900 text-white p-4 flex justify-between items-center z-30 shadow-md">
+        <h1 class="text-lg font-black tracking-wider text-blue-400">HYPASS <span class="text-xs font-normal text-slate-300">管理後台</span></h1>
+        <select onchange="switchTab(this.value)" class="bg-slate-800 text-white text-sm p-2 rounded-lg border-none outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="dashboard">系統總覽</option>
+            <option value="employees">員工設定</option>
+            <option value="leaves">假單審核</option>
+            <option value="payroll">薪資匯款表</option>
+        </select>
+    </div>
+
+    <main class="flex-1 flex flex-col h-screen overflow-y-auto bg-slate-50 md:pt-0 pt-16">
+        
+        <div id="loading" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
+            <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p class="text-blue-800 font-bold tracking-widest">資料處理中...</p>
+        </div>
+
+        <div class="p-6 md:p-10 max-w-6xl mx-auto w-full">
+            
+            <div id="view-dashboard" class="view-section">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6 border-l-4 border-blue-600 pl-3">早安，老闆！</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center">
+                        <div class="w-14 h-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-2xl mr-4"><i class="fas fa-users"></i></div>
+                        <div><p class="text-sm text-slate-500 font-bold">在職員工總數</p><p class="text-3xl font-black text-slate-800" id="stat-emp">0 <span class="text-sm font-normal text-slate-400">人</span></p></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center cursor-pointer hover:bg-slate-50" onclick="switchTab('leaves')">
+                        <div class="w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mr-4"><i class="fas fa-bell"></i></div>
+                        <div><p class="text-sm text-slate-500 font-bold">待審核假單</p><p class="text-3xl font-black text-slate-800" id="stat-leave">0 <span class="text-sm font-normal text-slate-400">件</span></p></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center">
+                        <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mr-4"><i class="fas fa-check-circle"></i></div>
+                        <div><p class="text-sm text-slate-500 font-bold">今日已打卡</p><p class="text-3xl font-black text-slate-800" id="stat-clock">0 <span class="text-sm font-normal text-slate-400">人次</span></p></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-employees" class="view-section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800 border-l-4 border-blue-600 pl-3">員工資料維護</h2>
+                    <button onclick="fetchEmployees()" class="text-blue-600 hover:text-blue-800 text-sm font-bold"><i class="fas fa-sync-alt mr-1"></i>重新整理</button>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-600 text-sm border-b border-slate-200">
+                                    <th class="p-4 font-bold">姓名</th>
+                                    <th class="p-4 font-bold">入職日期</th>
+                                    <th class="p-4 font-bold">每月本薪</th>
+                                    <th class="p-4 font-bold">預設獎金</th>
+                                    <th class="p-4 font-bold">規定時間</th>
+                                    <th class="p-4 font-bold text-center">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="emp-table-body" class="divide-y divide-slate-100 text-sm">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-leaves" class="view-section hidden">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6 border-l-4 border-blue-600 pl-3">待審核假單</h2>
+                <div id="leaves-container" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <p class="text-slate-500 text-sm col-span-2 p-6 bg-white rounded-2xl text-center border border-dashed border-slate-300">目前沒有待審核的單據喔！</p>
+                </div>
+            </div>
+
+            <div id="view-payroll" class="view-section hidden">
+                <div class="flex flex-col md:flex-row justify-between items-end md:items-center mb-6 gap-4">
+                    <h2 class="text-2xl font-bold text-slate-800 border-l-4 border-blue-600 pl-3">每月薪資匯款表</h2>
+                    <div class="flex items-center space-x-3 w-full md:w-auto">
+                        <input type="month" id="payroll-month" class="p-2 border border-slate-300 rounded-lg text-sm flex-1 md:flex-none">
+                        <button onclick="generatePayroll()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-bold shadow-md transition-all text-sm whitespace-nowrap"><i class="fas fa-calculator mr-2"></i>結算薪資</button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-blue-50 text-blue-800 text-sm border-b border-blue-100">
+                                    <th class="p-4 font-bold">姓名</th>
+                                    <th class="p-4 font-bold">銀行匯款帳號</th>
+                                    <th class="p-4 font-bold text-right">應發總計</th>
+                                    <th class="p-4 font-bold text-right">請假扣款</th>
+                                    <th class="p-4 font-bold text-right text-emerald-700 text-base">本月實發金額</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payroll-table-body" class="divide-y divide-slate-100 text-sm font-medium text-slate-700">
+                                <tr><td colspan="5" class="p-8 text-center text-slate-400">請選擇月份並點擊「結算薪資」</td></tr>
+                            </tbody>
+                            <tfoot id="payroll-footer" class="hidden bg-slate-50 border-t-2 border-slate-200">
+                                <tr>
+                                    <td colspan="4" class="p-4 font-bold text-right text-slate-600">全公司應付總額：</td>
+                                    <td class="p-4 font-black text-right text-emerald-600 text-xl" id="payroll-total-sum">NT$ 0</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center">
+                        <i class="fas fa-file-excel mr-2 text-xl"></i>一鍵確認並下載報表 (Excel/CSV)
+                    </button>
+                </div>
+                <p class="text-xs text-slate-400 text-right mt-2">※ 報表下載後，您可直接轉寄至 hypass.boss@gmail.com 備份或交由會計處理。</p>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="edit-emp-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-[slideUp_0.2s_ease-out]">
+            <div class="bg-blue-600 p-4 text-white flex justify-between items-center">
+                <h3 class="font-bold text-lg"><i class="fas fa-user-edit mr-2"></i>編輯員工薪資與設定</h3>
+                <button onclick="closeEditModal()" class="text-white hover:text-blue-200 text-xl">&times;</button>
+            </div>
+            <div class="p-6 space-y-4 text-sm">
+                <input type="hidden" id="edit-id">
+                <p class="font-bold text-lg text-slate-800 border-b pb-2" id="edit-name"></p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block mb-1 text-slate-500 font-bold">每月本薪 (NT$)</label><input type="number" id="edit-base" class="w-full p-2 bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <div><label class="block mb-1 text-slate-500 font-bold">預設獎金 (NT$)</label><input type="number" id="edit-bonus" class="w-full p-2 bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block mb-1 text-slate-500 font-bold">規定上班時間</label><input type="time" id="edit-start" class="w-full p-2 bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <div><label class="block mb-1 text-slate-500 font-bold">規定下班時間</label><input type="time" id="edit-end" class="w-full p-2 bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+            </div>
+            <div class="bg-slate-50 p-4 flex justify-end space-x-3 border-t">
+                <button onclick="closeEditModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg font-bold transition-all">取消</button>
+                <button onclick="saveEmployeeData()" class="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-bold shadow-md transition-all">儲存變更</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0;} to { transform: translateY(0); opacity: 1;} }
+    </style>
+
+    <script>
+        // ⚠️ 【請在此貼上您的真實連線資訊】 ⚠️
+        const SB_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co'; 
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'; 
+        // ==========================================
+
+        const _db = supabase.createClient(SB_URL, SB_KEY);
+
+        // --- 介面切換控制 ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            
+            // 電腦版選單高亮切換
+            const tabs = ['dashboard', 'employees', 'leaves', 'payroll'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if(btn) {
+                    if(t === tabId) {
+                        btn.className = "w-full flex items-center p-3 text-sm font-bold rounded-lg bg-blue-600 text-white transition-all";
+                    } else {
+                        btn.className = "w-full flex items-center p-3 text-sm font-bold rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all";
+                    }
+                }
+            });
+
+            if(tabId === 'employees') fetchEmployees();
+            if(tabId === 'leaves') fetchPendingLeaves();
+            if(tabId === 'dashboard') fetchDashboardStats();
+        }
+
+        function showLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
+
+        // --- 模組：Dashboard 數據 ---
+        async function fetchDashboardStats() {
+            const { count: empCount } = await _db.from('profiles').select('*', { count: 'exact', head: true });
+            const { count: leaveCount } = await _db.from('leave_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+            
+            // 抓取今日打卡數
+            const today = new Date().toISOString().split('T')[0];
+            const { count: clockCount } = await _db.from('attendance').select('*', { count: 'exact', head: true }).gte('clock_time', today);
+
+            document.getElementById('stat-emp').innerHTML = `${empCount || 0} <span class="text-sm font-normal text-slate-400">人</span>`;
+            document.getElementById('stat-leave').innerHTML = `${leaveCount || 0} <span class="text-sm font-normal text-slate-400">件</span>`;
+            document.getElementById('stat-clock').innerHTML = `${clockCount || 0} <span class="text-sm font-normal text-slate-400">人次</span>`;
+            
+            // 側邊欄紅點數字
+            const badge = document.getElementById('badge-leave');
+            if(leaveCount > 0) { badge.innerText = leaveCount; badge.classList.remove('hidden'); } 
+            else { badge.classList.add('hidden'); }
+        }
+
+        // --- 模組：員工資料維護 (讀取與編輯) ---
+        async function fetchEmployees() {
+            showLoading(true);
+            const { data, error } = await _db.from('profiles').select('*').order('created_at', { ascending: false });
+            const tbody = document.getElementById('emp-table-body');
+            tbody.innerHTML = '';
+
+            if (data) {
+                data.forEach(emp => {
+                    const base = emp.base_salary ? emp.base_salary.toLocaleString() : '未設定';
+                    const start = emp.work_start_time ? emp.work_start_time.substring(0,5) : '09:00';
+                    const end = emp.work_end_time ? emp.work_end_time.substring(0,5) : '18:00';
+                    
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-blue-50 transition-colors">
+                            <td class="p-4"><div class="font-bold text-slate-800">${emp.full_name}</div><div class="text-[10px] text-slate-400">${emp.phone}</div></td>
+                            <td class="p-4 text-slate-600">${emp.onboard_date || '-'}</td>
+                            <td class="p-4 text-emerald-600 font-bold">NT$ ${base}</td>
+                            <td class="p-4 text-slate-600">NT$ ${emp.bonus ? emp.bonus.toLocaleString() : '0'}</td>
+                            <td class="p-4 text-slate-600">${start} - ${end}</td>
+                            <td class="p-4 text-center">
+                                <button onclick='openEditModal(${JSON.stringify(emp)})' class="text-blue-600 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 px-3 py-1 rounded shadow-sm text-xs font-bold transition-all"><i class="fas fa-edit mr-1"></i>設定</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            showLoading(false);
+        }
+
+        function openEditModal(emp) {
+            document.getElementById('edit-id').value = emp.id;
+            document.getElementById('edit-name').innerText = emp.full_name;
+            document.getElementById('edit-base').value = emp.base_salary || 0;
+            document.getElementById('edit-bonus').value = emp.bonus || 0;
+            document.getElementById('edit-start').value = emp.work_start_time || '09:00';
+            document.getElementById('edit-end').value = emp.work_end_time || '18:00';
+            document.getElementById('edit-emp-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() { document.getElementById('edit-emp-modal').classList.add('hidden'); }
+
+        async function saveEmployeeData() {
+            showLoading(true);
+            const id = document.getElementById('edit-id').value;
+            const updates = {
+                base_salary: document.getElementById('edit-base').value,
+                bonus: document.getElementById('edit-bonus').value,
+                work_start_time: document.getElementById('edit-start').value,
+                work_end_time: document.getElementById('edit-end').value
+            };
+
+            const { error } = await _db.from('profiles').update(updates).eq('id', id);
+            if(error) alert('儲存失敗：' + error.message);
+            else { alert('儲存成功！'); closeEditModal(); fetchEmployees(); }
+            showLoading(false);
+        }
+
+        // --- 模組：假單審核 ---
+        async function fetchPendingLeaves() {
+            showLoading(true);
+            const { data, error } = await _db.from('leave_requests')
+                .select(`*, profiles(full_name)`)
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false });
+            
+            const container = document.getElementById('leaves-container');
+            container.innerHTML = '';
+
+            if (data && data.length > 0) {
+                data.forEach(req => {
+                    const s = new Date(req.start_time).toLocaleString('zh-TW', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+                    const e = new Date(req.end_time).toLocaleString('zh-TW', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+                    const color = req.leave_type === '特休' ? 'blue' : (req.leave_type === '加班' ? 'amber' : 'rose');
+                    
+                    container.innerHTML += `
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-${color}-500 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start mb-2">
+                                    <h4 class="font-black text-lg text-slate-800">${req.profiles.full_name} <span class="bg-${color}-100 text-${color}-700 text-xs px-2 py-1 rounded ml-2">${req.leave_type}</span></h4>
+                                    <span class="text-[10px] text-slate-400 border border-slate-200 px-2 py-0.5 rounded-full">等待審核</span>
+                                </div>
+                                <p class="text-sm font-bold text-slate-600 mb-1"><i class="far fa-clock mr-1 text-slate-400"></i> ${s} ~ ${e}</p>
+                                <p class="text-sm text-slate-500 bg-slate-50 p-2 rounded mt-2 border border-slate-100">事由：${req.reason || '無填寫'}</p>
+                            </div>
+                            <div class="flex space-x-2 mt-4 pt-4 border-t border-slate-100">
+                                <button onclick="processLeave(${req.id}, 'approved')" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded-lg font-bold shadow-sm transition-colors">核准</button>
+                                <button onclick="processLeave(${req.id}, 'rejected')" class="flex-1 bg-slate-200 hover:bg-rose-500 hover:text-white text-slate-600 py-2 rounded-lg font-bold transition-colors">駁回</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML = `<p class="text-slate-500 text-sm col-span-2 p-6 bg-white rounded-2xl text-center border border-dashed border-slate-300"><i class="fas fa-mug-hot text-2xl mb-2 block text-slate-300"></i>目前沒有待辦假單喔！</p>`;
+            }
+            showLoading(false);
+            fetchDashboardStats();
+        }
+
+        async function processLeave(id, newStatus) {
+            if(!confirm(`確定要「${newStatus === 'approved' ? '核准' : '駁回'}」這張假單嗎？`)) return;
+            showLoading(true);
+            const { error } = await _db.from('leave_requests').update({ status: newStatus }).eq('id', id);
+            if(error) alert('處理失敗：' + error.message);
+            else fetchPendingLeaves();
+            showLoading(false);
+        }
+
+        // --- 模組：每月薪資匯款表計算與匯出 ---
+        let payrollDataForExport = []; // 儲存計算結果以便匯出
+
+        async function generatePayroll() {
+            const monthVal = document.getElementById('payroll-month').value;
+            if(!monthVal) return alert('請先選擇要結算的「月份」！');
+
+            showLoading(true);
+            const [y, m] = monthVal.split('-');
+            const firstDay = new Date(y, m - 1, 1).toISOString();
+            const lastDay = new Date(y, m, 0, 23, 59, 59).toISOString();
+
+            // 抓取全體員工與當月核准假單
+            const { data: emps } = await _db.from('profiles').select('*');
+            const { data: leaves } = await _db.from('leave_requests').select('*').eq('status', 'approved').gte('start_time', firstDay).lte('start_time', lastDay);
+
+            const tbody = document.getElementById('payroll-table-body');
+            tbody.innerHTML = '';
+            payrollDataForExport = [];
+            let totalCompanyPay = 0;
+
+            emps.forEach(emp => {
+                const base = emp.base_salary || 0;
+                const bonus = emp.bonus || 0;
+                const hourlyRate = base / 240.0;
+                
+                let personalHrs = 0;
+                let sickHrs = 0;
+
+                // 篩選該員工的假單並計算時數
+                const empLeaves = leaves.filter(l => l.user_id === emp.id);
+                empLeaves.forEach(l => {
+                    const hrs = (new Date(l.end_time) - new Date(l.start_time)) / (1000 * 60 * 60);
+                    if (l.leave_type === '事假') personalHrs += hrs;
+                    if (l.leave_type === '病假') sickHrs += hrs;
+                });
+
+                // 規格書扣款公式
+                const personalDeduct = Math.round(personalHrs * hourlyRate);
+                const sickDeduct = Math.round(sickHrs * (hourlyRate * 0.5));
+                const totalDeduct = personalDeduct + sickDeduct;
+                const netPay = base + bonus - totalDeduct;
+
+                totalCompanyPay += netPay;
+
+                // 存入報表資料陣列
+                payrollDataForExport.push({
+                    "員工姓名": emp.full_name,
+                    "銀行帳號": emp.bank_account || "未提供",
+                    "本薪": base,
+                    "獎金": bonus,
+                    "事假扣款": personalDeduct,
+                    "病假扣款": sickDeduct,
+                    "實發薪資": netPay
+                });
+
+                // 渲染至網頁表格
+                tbody.innerHTML += `
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-4 font-bold">${emp.full_name}</td>
+                        <td class="p-4 font-mono text-slate-500 text-xs tracking-wider">${emp.bank_account || '<span class="text-rose-400">尚未填寫</span>'}</td>
+                        <td class="p-4 text-right text-slate-500">NT$ ${(base+bonus).toLocaleString()}</td>
+                        <td class="p-4 text-right text-rose-500">- NT$ ${totalDeduct.toLocaleString()}</td>
+                        <td class="p-4 text-right font-black text-emerald-600 text-base border-l border-slate-100 bg-emerald-50/30">NT$ ${netPay.toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('payroll-total-sum').innerText = `NT$ ${totalCompanyPay.toLocaleString()}`;
+            document.getElementById('payroll-footer').classList.remove('hidden');
+            showLoading(false);
+        }
+
+        // CSV 匯出功能
+        function exportCSV() {
+            if(payrollDataForExport.length === 0) return alert('請先點擊「結算薪資」產生數據後再下載！');
+            
+            const monthVal = document.getElementById('payroll-month').value;
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // 加上 BOM 讓 Excel 讀取中文不亂碼
+            
+            // 標題列
+            csvContent += Object.keys(payrollDataForExport[0]).join(",") + "\r\n";
+            
+            // 資料列
+            payrollDataForExport.forEach(row => {
+                const values = Object.values(row).map(val => `"${val}"`); // 用雙引號包住避免逗號錯誤
+                csvContent += values.join(",") + "\r\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `HYPASS_薪資匯款表_${monthVal}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 初始化
+        switchTab('dashboard');
+        
+        // 預設月份為上個月 (通常發放上個月的薪水)
+        const d = new Date();
+        d.setMonth(d.getMonth() - 1);
+        document.getElementById('payroll-month').value = d.toISOString().substring(0,7);
+
+    </script>
+</body>
+</html>
