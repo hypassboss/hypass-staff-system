@@ -3,102 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hypass 管理系統</title>
+    <title>Hypass 員工管理系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-100">
-    <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">載入中...</div>
+<body class="bg-gray-50 text-gray-800 font-sans">
 
-    <div id="app" class="hidden min-h-screen p-6">
-        <h1 class="text-2xl font-bold mb-4 text-center">海帕斯員工系統 (@034qvauh)</h1>
-        <div class="bg-white p-6 rounded-3xl shadow-xl mb-6">
-            <p id="user-info" class="text-blue-600 font-bold mb-4 text-center"></p>
-            <label class="block text-xs text-gray-400 font-bold mb-2">打卡地點</label>
-            <select id="loc" class="w-full p-4 border rounded-2xl mb-4 text-lg">
+    <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
+        <div class="text-center">
+            <p class="text-blue-600 font-bold animate-pulse text-lg">Hypass 系統安全連線中...</p>
+        </div>
+    </div>
+
+    <div id="register-view" class="hidden min-h-screen p-6">
+        <div class="bg-white rounded-3xl shadow-xl p-8 max-w-md mx-auto mt-4 border-t-4 border-blue-600">
+            <h2 class="text-2xl font-bold mb-2 text-center text-gray-800">員工資料建檔</h2>
+            <p class="text-xs text-red-500 mb-6 text-center">依公司規定，首次登入請務必補全以下資料</p>
+            
+            <div class="space-y-4 text-sm">
+                <div><label class="block font-bold mb-1 text-gray-600">真實姓名 <span class="text-red-500">*</span></label><input type="text" id="reg-name" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500"></div>
+                <div><label class="block font-bold mb-1 text-gray-600">手機號碼 <span class="text-red-500">*</span></label><input type="tel" id="reg-phone" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl"></div>
+                <div><label class="block font-bold mb-1 text-gray-600">聯絡信箱 <span class="text-red-500">*</span></label><input type="email" id="reg-email" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl"></div>
+                <div><label class="block font-bold mb-1 text-gray-600">入職日期 <span class="text-red-500">*</span></label><input type="date" id="reg-date" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl"></div>
+                <div>
+                    <label class="block font-bold mb-1 text-gray-600">主要上班地點 <span class="text-red-500">*</span></label>
+                    <select id="reg-loc" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl">
+                        <option value="A">海帕斯科技 (安定區)</option>
+                        <option value="B">HYPASS BOSS (善化區)</option>
+                    </select>
+                </div>
+                <div><label class="block font-bold mb-1 text-gray-600">薪資匯款帳號 <span class="text-red-500">*</span></label><input type="text" id="reg-bank" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl" placeholder="銀行代碼+帳號"></div>
+                
+                <button onclick="submitRegistration()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg mt-6 active:scale-95 transition">送出審核</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-view" class="hidden min-h-screen p-6 flex flex-col">
+        <header class="bg-blue-700 text-white p-6 rounded-3xl shadow-lg mb-6 text-center relative overflow-hidden">
+            <h1 class="text-xl font-bold relative z-10">海帕斯員工系統</h1>
+            <p class="text-xs opacity-80 mt-1 relative z-10">@006rsfhs</p>
+            <p id="user-info" class="text-sm font-medium mt-3 bg-blue-800 py-2 rounded-xl relative z-10"></p>
+        </header>
+
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6 flex-grow">
+            <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Clock-in Location</label>
+            <select id="clock-loc" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl mb-6 text-lg font-medium focus:ring-2 focus:ring-blue-500">
                 <option value="A">海帕斯科技 (安定區)</option>
                 <option value="B">HYPASS BOSS (善化區)</option>
             </select>
+            
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="clock('上班')" class="bg-emerald-500 text-white p-8 rounded-3xl font-bold text-xl shadow-lg">上班打卡</button>
-                <button onclick="clock('下班')" class="bg-rose-500 text-white p-8 rounded-3xl font-bold text-xl shadow-lg">下班打卡</button>
+                <button onclick="clock('上班')" class="bg-emerald-500 text-white py-8 rounded-3xl font-bold text-lg shadow-md active:scale-95 transition flex flex-col items-center justify-center">
+                    <span class="text-2xl mb-1">🌤️</span>上班打卡
+                </button>
+                <button onclick="clock('下班')" class="bg-rose-500 text-white py-8 rounded-3xl font-bold text-lg shadow-md active:scale-95 transition flex flex-col items-center justify-center">
+                    <span class="text-2xl mb-1">🌙</span>下班打卡
+                </button>
             </div>
         </div>
-        <p class="text-center text-[10px] text-gray-400 italic">系統會自動驗證 100m 以內之地理圍欄</p>
+        
+        <div class="bg-blue-50 p-4 rounded-2xl">
+            <p class="text-center text-xs text-blue-600 font-medium">📍 GPS 圍欄半徑 100m 自動驗證系統</p>
+            <p id="gps-status" class="text-center text-[10px] text-gray-400 mt-1 italic">系統就緒</p>
+        </div>
     </div>
 
     <script>
-        // --- 核心連線設定 (嚴格修正引號與變數名) ---
-        const SB_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
-        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0';
-        // 使用 _db 作為實例名稱，徹底避開 supabase 關鍵字衝突
+        // ==========================================
+        // ⚠️ 金鑰設定區 ⚠️
+        // ==========================================
+        const SB_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co'; 
+        
+        // 【重要】請將下方引號內的中文，換成您在 Supabase "Legacy anon" 複製的 eyJ 開頭金鑰
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'; 
+        
+        const LIFF_ID = '2009136875-gs1Va90A';
+        // ==========================================
+
         const _db = supabase.createClient(SB_URL, SB_KEY);
+        let userLineId = "";
+        let currentUser = null;
 
-        let user = null;
-
-        async function init() {
+        // --- 1. 系統初始化 ---
+        async function initApp() {
             try {
-                // 初始化 LIFF
-                await liff.init({ liffId: "2009136875-gs1Va90A" });
-                
-                if (!liff.isLoggedIn()) { 
-                    liff.login(); 
+                await liff.init({ liffId: LIFF_ID });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
                 } else {
                     const profile = await liff.getProfile();
-                    // 查詢員工資料
+                    userLineId = profile.userId;
+                    
+                    // 查詢資料庫是否已有此員工紀錄
                     const { data, error } = await _db
                         .from('profiles')
                         .select('*')
-                        .eq('line_id', profile.userId)
+                        .eq('line_id', userLineId)
                         .single();
                     
                     document.getElementById('loading').style.display = 'none';
 
                     if (data) {
-                        user = data;
-                        document.getElementById('app').classList.remove('hidden');
-                        document.getElementById('user-info').innerText = `你好，${data.full_name}`;
-                    } else {
-                        // 初次註冊
-                        const name = prompt("首次登入，請輸入真實姓名：");
-                        if(name) {
-                            const { error: regError } = await _db
-                                .from('profiles')
-                                .insert([{ line_id: profile.userId, full_name: name }]);
-                            
-                            if (regError) alert("註冊失敗：" + regError.message);
-                            else location.reload();
+                        // 已註冊：顯示打卡介面
+                        currentUser = data;
+                        document.getElementById('app-view').classList.remove('hidden');
+                        document.getElementById('user-info').innerText = `員工：${data.full_name} ｜ 打卡準備就緒`;
+                        if(data.default_location) {
+                            document.getElementById('clock-loc').value = data.default_location;
                         }
+                    } else {
+                        // 未註冊：顯示表單
+                        document.getElementById('register-view').classList.remove('hidden');
                     }
                 }
             } catch (err) {
-                console.error(err);
-                document.getElementById('loading').innerText = "系統連線異常";
+                console.error("系統初始化失敗", err);
+                document.getElementById('loading').innerHTML = `<p class="text-red-500 font-bold">連線異常，請檢查網路或金鑰</p>`;
             }
         }
 
-        function clock(type) {
-            if (!navigator.geolocation) return alert("手機不支援 GPS");
+        // --- 2. 註冊資料送出邏輯 ---
+        async function submitRegistration() {
+            const name = document.getElementById('reg-name').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const date = document.getElementById('reg-date').value;
+            const loc = document.getElementById('reg-loc').value;
+            const bank = document.getElementById('reg-bank').value.trim();
 
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-                const { error } = await _db.from('attendance').insert([{
-                    user_id: user.id,
-                    clock_type: type,
-                    location_id: document.getElementById('loc').value,
-                    u_lat: pos.coords.latitude,
-                    u_lng: pos.coords.longitude
-                }]);
+            if(!name || !phone || !email || !date || !bank) {
+                return alert("請完整填寫所有必填資料！");
+            }
 
-                if (!error) alert(type + " 成功！");
-                else alert("打卡失敗，請確認是否已授權 GPS 位置");
-            }, (geoErr) => {
-                alert("無法取得位置，請確保 GPS 已開啟並授權");
-            });
+            // 存入 Supabase Profiles 資料表
+            const { error } = await _db.from('profiles').insert([{
+                line_id: userLineId,
+                full_name: name,
+                phone: phone,
+                email: email,
+                onboard_date: date,
+                default_location: loc,
+                bank_account: bank
+            }]);
+
+            if (error) {
+                alert("資料建檔失敗：" + error.message);
+                console.error(error);
+            } else {
+                alert("資料建檔成功！請通知管理員審核。系統將重新載入。");
+                location.reload();
+            }
         }
 
-        init();
+        // --- 3. GPS 打卡邏輯 ---
+        function clock(type) {
+            if (!navigator.geolocation) return alert("您的設備不支援 GPS 定位");
+
+            document.getElementById('gps-status').innerText = "GPS 定位與驗證中...";
+
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const { latitude, longitude } = pos.coords;
+
+                const { error } = await _db.from('attendance').insert([{
+                    user_id: currentUser.id,
+                    clock_type: type,
+                    location_id: document.getElementById('clock-loc').value,
+                    u_lat: latitude,
+                    u_lng: longitude
+                }]);
+
+                if (!error) {
+                    alert(`【${type}】打卡成功！已精確記錄時間與座標。`);
+                    document.getElementById('gps-status').innerText = `最後打卡：${new Date().toLocaleTimeString()}`;
+                } else {
+                    alert("打卡失敗，請檢查是否超出打卡範圍或網路異常。");
+                    document.getElementById('gps-status').innerText = "打卡失敗";
+                    console.error("打卡錯誤:", error);
+                }
+            }, (geoErr) => {
+                alert("無法取得位置，請在手機設定中允許 LINE 存取您的 GPS 權限。");
+                document.getElementById('gps-status').innerText = "定位授權失敗";
+            }, { enableHighAccuracy: true });
+        }
+
+        // 啟動程式
+        initApp();
     </script>
 </body>
 </html>
-
