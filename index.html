@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,67 +8,109 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-50">
-    <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">載入中...</div>
+<body class="bg-gray-50 text-gray-800 font-sans">
 
-    <div id="app" class="hidden p-6">
-        <h1 class="text-2xl font-bold mb-4">海帕斯員工系統 (@034qvauh)</h1>
-        <div class="bg-white p-6 rounded-2xl shadow-md mb-6">
-            <p id="user-info" class="text-blue-600 font-bold mb-4"></p>
-            <select id="loc" class="w-full p-3 border rounded-xl mb-4">
-                <option value="A">海帕斯科技 (安定區)</option>
-                <option value="B">HYPASS BOSS (善化區)</option>
-            </select>
-            <div class="grid grid-cols-2 gap-4">
-                <button onclick="clock('上班')" class="bg-green-500 text-white p-4 rounded-xl font-bold">上班打卡</button>
-                <button onclick="clock('下班')" class="bg-red-500 text-white p-4 rounded-xl font-bold">下班打卡</button>
+    <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
+        <p class="text-blue-600 font-bold animate-pulse">Hypass 系統載入中...</p>
+    </div>
+
+    <div id="app" class="hidden min-h-screen">
+        <header class="bg-blue-700 text-white p-6 shadow-lg">
+            <h1 class="text-xl font-bold">海帕斯員工系統 (@034qvauh)</h1>
+            <p id="user-info" class="text-sm opacity-90 mt-1"></p>
+        </header>
+
+        <main class="p-6 space-y-6">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">Clock-in Location</label>
+                <select id="loc" class="w-full p-4 bg-gray-50 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-blue-500">
+                    <option value="A">海帕斯科技 (安定區)</option>
+                    <option value="B">HYPASS BOSS (善化區)</option>
+                </select>
             </div>
-        </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="clock('上班')" class="bg-emerald-500 text-white py-8 rounded-3xl font-bold shadow-lg active:scale-95 transition">上班打卡</button>
+                <button onclick="clock('下班')" class="bg-rose-500 text-white py-8 rounded-3xl font-bold shadow-lg active:scale-95 transition">下班打卡</button>
+            </div>
+            <p class="text-center text-[10px] text-gray-400 italic">系統將自動驗證 100m 以內地理圍欄</p>
+        </main>
     </div>
 
     <script>
-        // 修正後的連線資訊
+        // --- 初始化連線資訊 ---
+        // 使用引號包裹字串，並改用 _db 避免變數衝突
         const URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
         const KEY = 'sb_publishable_kmM4pKdI1OmLUNKjQeH0VQ_wr11fwKV';
         const _db = supabase.createClient(URL, KEY);
 
-        let user = null;
+        let userProfile = null;
 
+        // --- 核心啟動函數 ---
         async function init() {
-            await liff.init({ liffId: "2009136875-gs1Va90A" });
-            if (!liff.isLoggedIn()) { liff.login(); }
-            else {
-                const profile = await liff.getProfile();
-                const { data } = await _db.from('profiles').select('*').eq('line_id', profile.userId).single();
+            try {
+                // 初始化 LIFF
+                await liff.init({ liffId: "2009136875-gs1Va90A" });
                 
-                document.getElementById('loading').style.display = 'none';
-                if (data) {
-                    user = data;
-                    document.getElementById('app').classList.remove('hidden');
-                    document.getElementById('user-info').innerText = `你好，${data.full_name}`;
+                if (!liff.isLoggedIn()) {
+                    liff.login();
                 } else {
-                    const name = prompt("首次登入，請輸入真實姓名：");
-                    if(name) {
-                        const { data: newUser } = await _db.from('profiles').insert([{ line_id: profile.userId, full_name: name }]).select().single();
-                        location.reload();
+                    const profile = await liff.getProfile();
+                    // 向 Supabase 查詢員工身分
+                    const { data, error } = await _db
+                        .from('profiles')
+                        .select('*')
+                        .eq('line_id', profile.userId)
+                        .single();
+
+                    document.getElementById('loading').style.display = 'none';
+
+                    if (data) {
+                        userProfile = data;
+                        document.getElementById('app').classList.remove('hidden');
+                        document.getElementById('user-info').innerText = `你好，${data.full_name}`;
+                    } else {
+                        // 初次登入註冊流程
+                        const name = prompt("首次登入，請輸入真實姓名：");
+                        if (name) {
+                            const { error: regError } = await _db.from('profiles').insert([
+                                { line_id: profile.userId, full_name: name }
+                            ]);
+                            if (regError) alert("註冊失敗：" + regError.message);
+                            else location.reload();
+                        }
                     }
                 }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading').innerText = "連線失敗，請聯繫管理員";
             }
         }
 
+        // --- 打卡邏輯 (含 GPS) ---
         function clock(type) {
+            if (!navigator.geolocation) return alert("手機不支援 GPS");
+
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 const { error } = await _db.from('attendance').insert([{
-                    user_id: user.id,
+                    user_id: userProfile.id,
                     clock_type: type,
                     location_id: document.getElementById('loc').value,
                     u_lat: pos.coords.latitude,
                     u_lng: pos.coords.longitude
                 }]);
-                if (!error) alert(type + " 成功！");
-                else alert("打卡失敗，請檢查網路或 GPS");
+
+                if (!error) {
+                    alert(`${type} 成功！位置已記錄。`);
+                } else {
+                    alert("打卡失敗，請檢查網路或定位權限");
+                }
+            }, (err) => {
+                alert("無法取得位置，請開啟 GPS 授權");
             });
         }
+
+        // 啟動程式
         init();
     </script>
 </body>
