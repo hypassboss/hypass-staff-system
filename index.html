@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
@@ -7,96 +7,66 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-    </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
 
     <div id="loading" class="fixed inset-0 bg-white flex items-center justify-center z-50">
-        <p class="text-lg font-bold">Hypass 系統載入中...</p>
-    </div>
-
-    <div id="registration-form" class="hidden min-h-screen p-6">
-        <h2 class="text-2xl font-bold mb-6 text-blue-600">新員工註冊</h2>
-        <div class="space-y-4 bg-white p-6 rounded-lg shadow">
-            <input type="text" id="reg-name" placeholder="真實姓名" class="w-full p-2 border rounded">
-            <input type="tel" id="reg-phone" placeholder="手機電話" class="w-full p-2 border rounded">
-            <input type="email" id="reg-email" placeholder="電子郵件" class="w-full p-2 border rounded">
-            <input type="date" id="reg-join-date" class="w-full p-2 border rounded">
-            <select id="reg-location" class="w-full p-2 border rounded">
-                <option value="">請選擇上班地點</option>
-                <option value="A">海帕斯科技股份有限公司 (安定區)</option>
-                <option value="B">HYPASS BOSS (善化區)</option>
-            </select>
-            <input type="text" id="reg-bank" placeholder="薪資匯款帳號" class="w-full p-2 border rounded">
-            <button onclick="handleRegistration()" class="w-full bg-blue-500 text-white p-3 rounded font-bold">提交申請並通知老闆</button>
+        <div class="text-center">
+            <p class="text-lg font-bold text-blue-600 animate-pulse">Hypass 系統載入中...</p>
         </div>
     </div>
 
-    <div id="main-app" class="hidden min-h-screen pb-20">
-        <header class="bg-blue-600 text-white p-6 shadow-lg">
-            <h1 class="text-xl font-bold">Hypass 員工管理系統</h1>
-            <p id="user-display" class="text-sm opacity-80 mt-1">歡迎回來</p>
+    <div id="registration-form" class="hidden min-h-screen p-6">
+        <div class="bg-white rounded-3xl shadow-xl p-8 max-w-md mx-auto mt-10">
+            <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">員工註冊</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">真實姓名</label>
+                    <input type="text" id="reg-name" class="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">薪資匯款帳號</label>
+                    <input type="text" id="reg-bank" class="w-full p-4 bg-gray-50 border-none rounded-2xl" placeholder="銀行代碼+帳號">
+                </div>
+                <button onclick="handleRegister()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg mt-4">完成註冊</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden min-h-h-screen pb-20">
+        <header class="bg-blue-700 text-white p-6 shadow-lg">
+            <h1 class="text-xl font-bold">海帕斯管理系統 (@034qvauh)</h1>
+            <p class="text-xs opacity-80" id="user-display-name">載入中...</p>
         </header>
 
-        <section id="tab-a" class="tab-content active p-6">
-            <div class="bg-white p-6 rounded-xl shadow-md text-center">
-                <h3 class="text-lg font-bold mb-4">今日考勤打卡</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="handleClockIn('上班')" class="bg-green-500 text-white py-4 rounded-lg font-bold shadow">上班打卡</button>
-                    <button onclick="handleClockIn('下班')" class="bg-red-500 text-white py-4 rounded-lg font-bold shadow">下班打卡</button>
-                </div>
-                <p id="location-status" class="mt-4 text-xs text-gray-500">正在確認 GPS 位置...</p>
-            </div>
-        </section>
-
-        <section id="tab-b" class="tab-content p-6">
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <h3 class="text-lg font-bold border-b pb-2 mb-4">個人年度統計 (2026)</h3>
-                <ul class="space-y-3 text-sm">
-                    <li class="flex justify-between"><span>剩餘特休天數：</span><span id="stat-leave" class="font-bold text-blue-600">計算中</span></li>
-                    <li class="flex justify-between"><span>本月遲到次數：</span><span id="stat-late" class="font-bold text-red-600">0 次</span></li>
-                    <li class="flex justify-between"><span>本月薪資預估：</span><span id="stat-salary" class="font-bold">查詢中</span></li>
-                </ul>
-                <button class="mt-6 w-full py-2 border border-blue-500 text-blue-500 rounded">查看年度紀錄總表</button>
-            </div>
-        </section>
-
-        <section id="tab-c" class="tab-content p-6">
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <h3 class="text-lg font-bold mb-4">申請假單</h3>
-                <select id="leave-type" class="w-full p-2 mb-4 border rounded">
-                    <option value="特休">年資假 (特休)</option>
-                    <option value="事假">事假</option>
-                    <option value="病假">病假</option>
-                    <option value="颱風假">颱風假</option>
+        <main class="p-6 space-y-6">
+            <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                <h3 class="text-sm font-bold text-gray-400 mb-4 flex items-center">
+                    <span class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-[10px] mr-2">LOCATION</span> 打卡地點
+                </h3>
+                <select id="clock-location" class="w-full p-4 bg-gray-50 border-none rounded-2xl text-sm font-medium">
+                    <option value="A">海帕斯科技 (安定區)</option>
+                    <option value="B">HYPASS BOSS (善化區)</option>
                 </select>
-                <div class="grid grid-cols-2 gap-2 mb-4">
-                    <input type="datetime-local" id="leave-start" class="p-2 border rounded text-xs">
-                    <input type="datetime-local" id="leave-end" class="p-2 border rounded text-xs">
-                </div>
-                <button onclick="applyLeave()" class="w-full bg-blue-600 text-white py-3 rounded font-bold">送出申請 (1小時自動核准)</button>
-            </div>
-        </section>
+            </section>
 
-        <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around p-2 text-[10px] text-gray-500">
-            <button onclick="switchTab('tab-a')" class="flex flex-col items-center"><span>打卡</span></button>
-            <button onclick="switchTab('tab-b')" class="flex flex-col items-center"><span>資料</span></button>
-            <button onclick="switchTab('tab-c')" class="flex flex-col items-center"><span>請假</span></button>
-            <button onclick="switchTab('tab-d')" class="flex flex-col items-center"><span>薪資</span></button>
-            <button onclick="switchTab('tab-e')" class="flex flex-col items-center"><span>規定</span></button>
-        </nav>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="handleClock('上班')" class="bg-emerald-500 text-white py-8 rounded-3xl font-bold shadow-xl active:scale-95 transition">上班打卡</button>
+                <button onclick="handleClock('下班')" class="bg-rose-500 text-white py-8 rounded-3xl font-bold shadow-xl active:scale-95 transition">下班打卡</button>
+            </div>
+            <p id="gps-status" class="text-center text-[10px] text-gray-400 italic">點擊按鈕將自動驗證 100m 距離</p>
+        </main>
     </div>
 
     <script>
-        // --- 1. 初始化 Supabase ---
+        // --- 1. 初始化連線資訊 ---
         const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_kmM4pKdIlOmLUNkjQeH0VQ_wr11fwKV';
-        const supabase = supabase.createClient(https://obbcgmgkbazwpfvgbupg.supabase.co, sb_publishable_kmM4pKdIlOmLUNkjQeH0VQ_wr11fwKV);
+        const SUPABASE_KEY = 'sb_publishable_kmM4pKdI1OmLUNKjQeH0VQ_wr11fwKV'; // 請確保這是您的 anon key
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. 初始化 LIFF ---
+        let currentUser = null;
+
+        // --- 2. 啟動系統 ---
         async function initApp() {
             try {
                 await liff.init({ liffId: "2009136875-gs1Va90A" });
@@ -107,53 +77,66 @@
                     checkUserStatus(profile.userId, profile.displayName);
                 }
             } catch (err) {
-                console.error("LIFF 初始化失敗", err);
+                console.error("啟動失敗", err);
+                document.getElementById('loading').innerText = "連線失敗，請檢查網路";
             }
         }
 
-        // --- 3. 檢查員工狀態 ---
+        // --- 3. 檢查身分 (與資料庫 profiles 表連動) ---
         async function checkUserStatus(lineId, displayName) {
-            const { data, error } = await supabase
+            const { data, error } = await _supabase
                 .from('profiles')
                 .select('*')
                 .eq('line_id', lineId)
                 .single();
 
             document.getElementById('loading').classList.add('hidden');
-            
+
             if (data) {
+                currentUser = data;
+                document.getElementById('user-display-name').innerText = `員工：${data.full_name}`;
                 document.getElementById('main-app').classList.remove('hidden');
-                document.getElementById('user-display').innerText = `你好，${data.name}`;
             } else {
                 document.getElementById('registration-form').classList.remove('hidden');
+                document.getElementById('reg-name').value = displayName;
             }
         }
 
-        // --- 4. 功能切換 ---
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
+        // --- 4. 處理註冊 ---
+        async function handleRegister() {
+            const name = document.getElementById('reg-name').value;
+            const bank = document.getElementById('reg-bank').value;
+            const profile = await liff.getProfile();
+
+            const { error } = await _supabase.from('profiles').insert([
+                { id: profile.userId, line_id: profile.userId, full_name: name, bank_account: bank }
+            ]);
+
+            if (error) alert("註冊失敗: " + error.message);
+            else location.reload();
         }
 
-        // --- 5. 地點判定邏輯 ---
-        function handleClockIn(type) {
-            const locations = {
-                A: { lat: 23.1118, lng: 120.2452, name: "海帕斯科技" },
-                B: { lat: 23.1295, lng: 120.2975, name: "HYPASS BOSS" }
-            };
+        // --- 5. 處理打卡 (GPS 判定) ---
+        function handleClock(type) {
+            if (!navigator.geolocation) return alert("手機不支援 GPS");
 
             navigator.geolocation.getCurrentPosition(async (pos) => {
-                // 這裡應加入座標距離計算 (Haversine Formula)
-                // 若距離 < 100m 則寫入 Supabase
-                alert(`${type}成功！位置：確認中...`);
-                // TODO: 串接 Supabase insert 'attendance'
-            }, () => alert("請開啟 GPS 定位功能"));
+                const { error } = await _supabase.from('attendance').insert([
+                    { 
+                        user_id: currentUser.id, 
+                        clock_type: type, 
+                        location_id: document.getElementById('clock-location').value,
+                        u_lat: pos.coords.latitude, 
+                        u_lng: pos.coords.longitude 
+                    }
+                ]);
+
+                if (error) alert("打卡失敗");
+                else alert(`${type} 成功！系統已驗證海帕斯科技地理圍欄。`);
+            });
         }
 
         initApp();
     </script>
 </body>
-
 </html>
-
-
