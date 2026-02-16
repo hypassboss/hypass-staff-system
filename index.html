@@ -1,143 +1,75 @@
-\<!DOCTYPE html>
-<html lang="zh-Hant">
+<!DOCTYPE html>
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hypass 員工管理系統</title>
+    <title>Hypass 管理系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans">
+<body class="bg-gray-50">
+    <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">載入中...</div>
 
-    <div id="loading" class="fixed inset-0 bg-white flex items-center justify-center z-50">
-        <div class="text-center">
-            <p class="text-lg font-bold text-blue-600 animate-pulse">Hypass 系統載入中...</p>
-        </div>
-    </div>
-
-    <div id="registration-form" class="hidden min-h-screen p-6">
-        <div class="bg-white rounded-3xl shadow-xl p-8 max-w-md mx-auto mt-10">
-            <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">員工註冊</h2>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-500 mb-1">真實姓名</label>
-                    <input type="text" id="reg-name" class="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-500 mb-1">薪資匯款帳號</label>
-                    <input type="text" id="reg-bank" class="w-full p-4 bg-gray-50 border-none rounded-2xl" placeholder="銀行代碼+帳號">
-                </div>
-                <button onclick="handleRegister()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg mt-4">完成註冊</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="main-app" class="hidden min-h-h-screen pb-20">
-        <header class="bg-blue-700 text-white p-6 shadow-lg">
-            <h1 class="text-xl font-bold">海帕斯管理系統 (@034qvauh)</h1>
-            <p class="text-xs opacity-80" id="user-display-name">載入中...</p>
-        </header>
-
-        <main class="p-6 space-y-6">
-            <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                <h3 class="text-sm font-bold text-gray-400 mb-4 flex items-center">
-                    <span class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-[10px] mr-2">LOCATION</span> 打卡地點
-                </h3>
-                <select id="clock-location" class="w-full p-4 bg-gray-50 border-none rounded-2xl text-sm font-medium">
-                    <option value="A">海帕斯科技 (安定區)</option>
-                    <option value="B">HYPASS BOSS (善化區)</option>
-                </select>
-            </section>
-
+    <div id="app" class="hidden p-6">
+        <h1 class="text-2xl font-bold mb-4">海帕斯員工系統 (@034qvauh)</h1>
+        <div class="bg-white p-6 rounded-2xl shadow-md mb-6">
+            <p id="user-info" class="text-blue-600 font-bold mb-4"></p>
+            <select id="loc" class="w-full p-3 border rounded-xl mb-4">
+                <option value="A">海帕斯科技 (安定區)</option>
+                <option value="B">HYPASS BOSS (善化區)</option>
+            </select>
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="handleClock('上班')" class="bg-emerald-500 text-white py-8 rounded-3xl font-bold shadow-xl active:scale-95 transition">上班打卡</button>
-                <button onclick="handleClock('下班')" class="bg-rose-500 text-white py-8 rounded-3xl font-bold shadow-xl active:scale-95 transition">下班打卡</button>
+                <button onclick="clock('上班')" class="bg-green-500 text-white p-4 rounded-xl font-bold">上班打卡</button>
+                <button onclick="clock('下班')" class="bg-red-500 text-white p-4 rounded-xl font-bold">下班打卡</button>
             </div>
-            <p id="gps-status" class="text-center text-[10px] text-gray-400 italic">點擊按鈕將自動驗證 100m 距離</p>
-        </main>
+        </div>
     </div>
 
     <script>
-        // --- 1. 初始化連線資訊 ---
-        const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_kmM4pKdIlOmLUNkjQeH0VQ_wr11fwKV'; // 請確保這是您的 anon key
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // 修正後的連線資訊
+        const URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
+        const KEY = 'sb_publishable_kmM4pKdI1OmLUNKjQeH0VQ_wr11fwKV';
+        const _db = supabase.createClient(URL, KEY);
 
-        let currentUser = null;
+        let user = null;
 
-        // --- 2. 啟動系統 ---
-        async function initApp() {
-            try {
-                await liff.init({ liffId: "2009136875-gs1Va90A" });
-                if (!liff.isLoggedIn()) {
-                    liff.login();
+        async function init() {
+            await liff.init({ liffId: "2009136875-gs1Va90A" });
+            if (!liff.isLoggedIn()) { liff.login(); }
+            else {
+                const profile = await liff.getProfile();
+                const { data } = await _db.from('profiles').select('*').eq('line_id', profile.userId).single();
+                
+                document.getElementById('loading').style.display = 'none';
+                if (data) {
+                    user = data;
+                    document.getElementById('app').classList.remove('hidden');
+                    document.getElementById('user-info').innerText = `你好，${data.full_name}`;
                 } else {
-                    const profile = await liff.getProfile();
-                    checkUserStatus(profile.userId, profile.displayName);
-                }
-            } catch (err) {
-                console.error("啟動失敗", err);
-                document.getElementById('loading').innerText = "連線失敗，請檢查網路";
-            }
-        }
-
-        // --- 3. 檢查身分 (與資料庫 profiles 表連動) ---
-        async function checkUserStatus(lineId, displayName) {
-            const { data, error } = await _supabase
-                .from('profiles')
-                .select('*')
-                .eq('line_id', lineId)
-                .single();
-
-            document.getElementById('loading').classList.add('hidden');
-
-            if (data) {
-                currentUser = data;
-                document.getElementById('user-display-name').innerText = `員工：${data.full_name}`;
-                document.getElementById('main-app').classList.remove('hidden');
-            } else {
-                document.getElementById('registration-form').classList.remove('hidden');
-                document.getElementById('reg-name').value = displayName;
-            }
-        }
-
-        // --- 4. 處理註冊 ---
-        async function handleRegister() {
-            const name = document.getElementById('reg-name').value;
-            const bank = document.getElementById('reg-bank').value;
-            const profile = await liff.getProfile();
-
-            const { error } = await _supabase.from('profiles').insert([
-                { id: profile.userId, line_id: profile.userId, full_name: name, bank_account: bank }
-            ]);
-
-            if (error) alert("註冊失敗: " + error.message);
-            else location.reload();
-        }
-
-        // --- 5. 處理打卡 (GPS 判定) ---
-        function handleClock(type) {
-            if (!navigator.geolocation) return alert("手機不支援 GPS");
-
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-                const { error } = await _supabase.from('attendance').insert([
-                    { 
-                        user_id: currentUser.id, 
-                        clock_type: type, 
-                        location_id: document.getElementById('clock-location').value,
-                        u_lat: pos.coords.latitude, 
-                        u_lng: pos.coords.longitude 
+                    const name = prompt("首次登入，請輸入真實姓名：");
+                    if(name) {
+                        const { data: newUser } = await _db.from('profiles').insert([{ line_id: profile.userId, full_name: name }]).select().single();
+                        location.reload();
                     }
-                ]);
+                }
+            }
+        }
 
-                if (error) alert("打卡失敗");
-                else alert(`${type} 成功！系統已驗證海帕斯科技地理圍欄。`);
+        function clock(type) {
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const { error } = await _db.from('attendance').insert([{
+                    user_id: user.id,
+                    clock_type: type,
+                    location_id: document.getElementById('loc').value,
+                    u_lat: pos.coords.latitude,
+                    u_lng: pos.coords.longitude
+                }]);
+                if (!error) alert(type + " 成功！");
+                else alert("打卡失敗，請檢查網路或 GPS");
             });
         }
-
-        initApp();
+        init();
     </script>
 </body>
 </html>
-
