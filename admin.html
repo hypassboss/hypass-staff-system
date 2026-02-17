@@ -1,212 +1,239 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>海帕斯 - 老闆管理後台</title>
+    <title>HYPASS | 管理員後台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        .view-section { display: none; }
+        .view-active { display: block; }
+        .tab-btn-active { border-bottom: 4px solid #0f172a; color: #0f172a; }
+    </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans flex h-screen overflow-hidden">
+<body class="bg-gray-100 min-h-screen">
 
-    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl z-20 hidden md:flex">
-        <div class="p-6 border-b border-slate-800 text-center">
-            <h1 class="text-2xl font-black tracking-wider text-blue-400">HYPASS</h1>
-            <p class="text-[10px] text-slate-400 mt-1">管理中心</p>
+    <nav class="bg-slate-900 text-white shadow-2xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl font-black italic tracking-tighter text-blue-400">HYPASS</span>
+                <span class="text-sm font-bold border-l pl-2 border-slate-700">管理中心</span>
+            </div>
+            <div id="admin-info" class="text-xs bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
+                管理員驗證中...
+            </div>
         </div>
-        <nav class="flex-1 p-4 space-y-2">
-            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="w-full flex items-center p-3 text-sm font-bold rounded-lg bg-blue-600 text-white"><i class="fas fa-chart-pie w-6"></i> 系統總覽</button>
-            <button onclick="switchTab('employees')" id="tab-employees" class="w-full flex items-center p-3 text-sm font-bold rounded-lg text-slate-400 hover:bg-slate-800"><i class="fas fa-users w-6"></i> 員工設定</button>
-            <button onclick="switchTab('leaves')" id="tab-leaves" class="w-full flex items-center p-3 text-sm font-bold rounded-lg text-slate-400 hover:bg-slate-800"><i class="fas fa-calendar-check w-6"></i> 假單審核 <span id="badge-leave" class="ml-auto bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full hidden">0</span></button>
-            <button onclick="switchTab('payroll')" id="tab-payroll" class="w-full flex items-center p-3 text-sm font-bold rounded-lg text-slate-400 hover:bg-slate-800"><i class="fas fa-money-check-alt w-6"></i> 薪資匯款表</button>
-        </nav>
-    </aside>
+        <div class="bg-white text-slate-500 border-b flex justify-around overflow-x-auto">
+            <button onclick="switchView('view-approvals')" class="tab-btn py-3 px-6 font-bold text-sm">待審核</button>
+            <button onclick="switchView('view-employees')" class="tab-btn py-3 px-6 font-bold text-sm">員工管理</button>
+            <button onclick="switchView('view-payroll')" class="tab-btn py-3 px-6 font-bold text-sm">薪資結算</button>
+            <button onclick="switchView('view-attendance')" class="tab-btn py-3 px-6 font-bold text-sm">打卡紀錄</button>
+        </div>
+    </nav>
 
-    <div class="md:hidden fixed top-0 left-0 right-0 bg-slate-900 text-white p-4 flex justify-between items-center z-30 shadow-md">
-        <h1 class="text-lg font-black tracking-wider text-blue-400">HYPASS</h1>
-        <select onchange="switchTab(this.value)" class="bg-slate-800 text-white text-xs p-2 rounded-lg border-none">
-            <option value="dashboard">系統總覽</option>
-            <option value="employees">員工設定</option>
-            <option value="leaves">假單審核</option>
-            <option value="payroll">薪資匯款表</option>
-        </select>
-    </div>
-
-    <main class="flex-1 flex flex-col h-screen overflow-y-auto bg-slate-50 md:pt-0 pt-16">
-        <div id="loading" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
-            <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <main id="main-content" class="max-w-7xl mx-auto p-4 md:p-8">
+        
+        <div id="status-unauthorized" class="view-section py-20 text-center">
+            <div class="text-6xl mb-4">🚫</div>
+            <h2 class="text-2xl font-black text-slate-800">無存取權限</h2>
+            <p class="text-slate-500 mt-2">只有在 system_admins 表中的管理員可進入此區。</p>
         </div>
 
-        <div class="p-4 md:p-10 max-w-6xl mx-auto w-full">
-            
-            <div id="view-dashboard" class="view-section">
-                <h2 class="text-xl font-bold text-slate-800 mb-6 border-l-4 border-blue-600 pl-3">老闆戰情室</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-                        <p class="text-xs text-slate-400 font-bold">在職員工</p>
-                        <p class="text-3xl font-black text-slate-800" id="stat-emp">0</p>
-                    </div>
-                    <div onclick="switchTab('leaves')" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 cursor-pointer">
-                        <p class="text-xs text-rose-400 font-bold">待審假單</p>
-                        <p class="text-3xl font-black text-rose-600" id="stat-leave">0</p>
-                    </div>
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-                        <p class="text-xs text-emerald-400 font-bold">今日打卡</p>
-                        <p class="text-3xl font-black text-emerald-600" id="stat-clock">0</p>
-                    </div>
-                </div>
+        <section id="view-approvals" class="view-section space-y-4">
+            <h3 class="text-xl font-black text-slate-800 mb-6">待核准入職人員</h3>
+            <div id="approval-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="animate-pulse bg-white p-6 rounded-2xl h-40"></div>
             </div>
+        </section>
 
-            <div id="view-employees" class="view-section hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold text-slate-800 border-l-4 border-blue-600 pl-3">員工資料維護</h2>
-                    <button onclick="fetchEmployees()" class="text-blue-600 font-bold text-xs"><i class="fas fa-sync-alt"></i> 整理</button>
+        <section id="view-employees" class="view-section">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">員工姓名</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">身分證/地址/電話</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">薪資/自提</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">特休餘額</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employee-table-body" class="bg-white divide-y divide-gray-200 text-sm">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="view-payroll" class="view-section space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl font-black">2026 年 02 月 薪資預估報表</h3>
+                    <p class="text-xs text-gray-400">依據 240 小時制與 30 日累加法計薪</p>
                 </div>
-                <p class="text-[10px] text-slate-400 mb-2">※ 手機版請直接點擊員工欄位進行設定</p>
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-100 text-slate-500 text-[10px] uppercase font-bold border-b">
-                                    <th class="p-4">姓名</th>
-                                    <th class="p-4">每月本薪</th>
-                                    <th class="p-4">預設獎金</th>
-                                    <th class="p-4">上班時間</th>
-                                </tr>
-                            </thead>
-                            <tbody id="emp-table-body" class="divide-y divide-slate-100 text-sm">
-                                </tbody>
-                        </table>
+                <button onclick="exportPayrollCSV()" class="bg-green-600 text-white px-6 py-2 rounded-lg font-bold text-sm">匯出薪資轉帳檔 (CSV)</button>
+            </div>
+            <div id="payroll-container" class="space-y-4">
+                </div>
+        </section>
+
+        <section id="view-attendance" class="view-section">
+            <div class="bg-white p-6 rounded-2xl shadow-sm">
+                <h3 class="text-xl font-black mb-4">全體出勤與特休抵扣日誌</h3>
+                <div id="attendance-logs" class="space-y-2 max-h-[600px] overflow-y-auto">
                     </div>
-                </div>
             </div>
+        </section>
 
-            <div id="view-leaves" class="view-section hidden">
-                <h2 class="text-xl font-bold text-slate-800 mb-6 border-l-4 border-blue-600 pl-3">待審核假單</h2>
-                <div id="leaves-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-            </div>
-
-            <div id="view-payroll" class="view-section hidden text-sm">
-                <div class="flex flex-col mb-6 gap-3">
-                    <h2 class="text-xl font-bold text-slate-800 border-l-4 border-blue-600 pl-3">每月薪資匯款表</h2>
-                    <div class="flex gap-2">
-                        <input type="month" id="payroll-month" class="p-2 border border-slate-300 rounded-lg flex-1">
-                        <button onclick="generatePayroll()" class="bg-slate-800 text-white px-4 rounded-lg font-bold">結算</button>
-                    </div>
-                </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-4">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-blue-50 text-blue-800"><tr class="border-b">
-                            <th class="p-3">姓名</th>
-                            <th class="p-3 text-right">扣款</th>
-                            <th class="p-3 text-right">本月實發</th>
-                        </tr></thead>
-                        <tbody id="payroll-table-body" class="divide-y"></tbody>
-                    </table>
-                </div>
-                <button onclick="exportCSV()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold shadow-lg"><i class="fas fa-file-excel"></i> 確認並下載 CSV 報表</button>
-            </div>
-
-        </div>
     </main>
 
-    <div id="edit-emp-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-end md:items-center justify-center">
-        <div class="bg-white rounded-t-3xl md:rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-[slideUp_0.2s_ease-out]">
-            <div class="bg-blue-600 p-4 text-white flex justify-between items-center">
-                <h3 class="font-bold"><i class="fas fa-user-cog mr-2"></i>員工資料與薪資設定</h3>
-                <button onclick="closeEditModal()" class="text-2xl">&times;</button>
-            </div>
-            <div class="p-6 space-y-4 text-sm">
-                <input type="hidden" id="edit-id">
-                <p class="font-bold text-xl text-slate-800" id="edit-name"></p>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block mb-1 text-slate-400 font-bold text-[10px]">每月本薪</label><input type="number" id="edit-base" class="w-full p-3 bg-slate-50 border rounded-xl outline-none"></div>
-                    <div><label class="block mb-1 text-slate-400 font-bold text-[10px]">預設獎金</label><input type="number" id="edit-bonus" class="w-full p-3 bg-slate-50 border rounded-xl outline-none"></div>
-                </div>
-                <div><label class="block mb-1 text-slate-400 font-bold text-[10px]">年終獎金 (結算用)</label><input type="number" id="edit-annual" class="w-full p-3 bg-slate-50 border rounded-xl outline-none"></div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block mb-1 text-slate-400 font-bold text-[10px]">上班時間</label><input type="time" id="edit-start" class="w-full p-3 bg-slate-50 border rounded-xl outline-none"></div>
-                    <div><label class="block mb-1 text-slate-400 font-bold text-[10px]">下班時間</label><input type="time" id="edit-end" class="w-full p-3 bg-slate-50 border rounded-xl outline-none"></div>
-                </div>
-                <button onclick="saveEmployeeData()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold mt-4 shadow-lg">儲存並套用設定</button>
-            </div>
-        </div>
-    </div>
-
-    <style>@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }</style>
+    
 
     <script>
-        const SB_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co'; 
-        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'; 
-        const _db = supabase.createClient(SB_URL, SB_KEY);
+        // --- 配置 ---
+        const SB_URL = 'YOUR_SUPABASE_URL';
+        const SB_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const LIFF_ID = 'YOUR_LIFF_ID';
+        const _sb = supabase.createClient(SB_URL, SB_KEY);
+        let adminUser = null;
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`view-${tabId}`).classList.remove('hidden');
-            if(tabId === 'employees') fetchEmployees();
-            if(tabId === 'leaves') fetchPendingLeaves();
-            if(tabId === 'dashboard') fetchDashboardStats();
+        async function init() {
+            await liff.init({ liffId: LIFF_ID });
+            if (!liff.isLoggedIn()) { liff.login(); return; }
+            const p = await liff.getProfile();
+            
+            // 權限檢核：查 system_admins 表
+            const { data: adminData } = await _sb.from('system_admins').select('*').eq('line_id', p.userId).single();
+            
+            if (!adminData) {
+                show('status-unauthorized');
+                document.getElementById('admin-info').innerText = "非管理員身分";
+                return;
+            }
+
+            adminUser = adminData;
+            document.getElementById('admin-info').innerText = `管理員: ${p.displayName}`;
+            switchView('view-approvals'); // 預設顯示待審核
         }
 
-        async function fetchDashboardStats() {
-            const { count: ec } = await _db.from('profiles').select('*', { count: 'exact', head: true });
-            const { count: lc } = await _db.from('leave_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending');
-            const { count: cc } = await _db.from('attendance').select('*', { count: 'exact', head: true }).gte('clock_time', new Date().toISOString().split('T')[0]);
-            document.getElementById('stat-emp').innerText = ec || 0;
-            document.getElementById('stat-leave').innerText = lc || 0;
-            document.getElementById('stat-clock').innerText = cc || 0;
+        function show(id) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('view-active'));
+            document.getElementById(id).classList.add('view-active');
         }
 
-        async function fetchEmployees() {
-            const { data } = await _db.from('profiles').select('*').order('full_name');
-            const tbody = document.getElementById('emp-table-body');
-            tbody.innerHTML = '';
-            if (data) {
-                data.forEach(emp => {
-                    tbody.innerHTML += `
-                        <tr onclick='openEditModal(${JSON.stringify(emp)})' class="active:bg-blue-100">
-                            <td class="p-4 font-bold text-slate-800">${emp.full_name}</td>
-                            <td class="p-4 text-emerald-600 font-bold">NT$ ${emp.base_salary?.toLocaleString() || 0}</td>
-                            <td class="p-4">NT$ ${emp.bonus?.toLocaleString() || 0}</td>
-                            <td class="p-4 text-slate-400 text-[10px]">${emp.work_start_time?.substring(0,5) || '09:00'}</td>
-                        </tr>`;
-                });
+        async function switchView(viewId) {
+            show(viewId);
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-btn-active'));
+            document.querySelector(`[onclick="switchView('${viewId}')"]`).classList.add('tab-btn-active');
+
+            if (viewId === 'view-approvals') loadApprovals();
+            if (viewId === 'view-employees') loadEmployees();
+            if (viewId === 'view-payroll') loadPayroll();
+            if (viewId === 'view-attendance') loadAttendance();
+        }
+
+        // --- 核心邏輯 1: 審核流程 ---
+        async function loadApprovals() {
+            const list = document.getElementById('approval-list');
+            const { data } = await _sb.from('employees').select('*').eq('is_approved', false);
+            
+            if (!data || data.length === 0) {
+                list.innerHTML = '<div class="p-8 text-center col-span-2 text-gray-400">目前無待核准人員</div>';
+                return;
+            }
+
+            list.innerHTML = data.map(emp => `
+                <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-yellow-400">
+                    <h4 class="font-black text-lg">${emp.full_name}</h4>
+                    <div class="text-xs text-gray-500 mt-2 space-y-1">
+                        <p>ID: ${emp.id_number}</p>
+                        <p>地址: ${emp.address}</p>
+                        <p>銀行: ${emp.bank_account}</p>
+                    </div>
+                    <button onclick="approveUser('${emp.id}')" class="mt-4 w-full bg-slate-900 text-white py-2 rounded-lg font-bold">核准入職</button>
+                </div>
+            `).join('');
+        }
+
+        async function approveUser(empId) {
+            if (!confirm('確認核准該員工入職？核准後將開啟打卡與薪資計算。')) return;
+            const { error } = await _sb.from('employees').update({ is_approved: true }).eq('id', empId);
+            if (!error) {
+                // 初始化特休帳戶
+                await _sb.from('leave_balances').insert({ employee_id: empId, annual_leave_hours: 0 });
+                loadApprovals();
             }
         }
 
-        function openEditModal(emp) {
-            document.getElementById('edit-id').value = emp.id;
-            document.getElementById('edit-name').innerText = emp.full_name;
-            document.getElementById('edit-base').value = emp.base_salary || 0;
-            document.getElementById('edit-bonus').value = emp.bonus || 0;
-            document.getElementById('edit-annual').value = emp.annual_bonus || 0;
-            document.getElementById('edit-start').value = emp.work_start_time || '09:00';
-            document.getElementById('edit-end').value = emp.work_end_time || '18:00';
-            document.getElementById('edit-emp-modal').classList.remove('hidden');
+        // --- 核心邏輯 2: 員工管理與 PII ---
+        async function loadEmployees() {
+            const { data } = await _sb.from('employees').select('*, leave_balances(annual_leave_hours)');
+            const tbody = document.getElementById('employee-table-body');
+            
+            tbody.innerHTML = data.map(emp => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 font-bold text-slate-800">${emp.full_name}<br><span class="text-[10px] text-gray-400">${emp.email}</span></td>
+                    <td class="px-6 py-4 text-[11px] leading-tight text-gray-600">身分證: ${emp.id_number}<br>地址: ${emp.address}<br>電話: ${emp.phone}</td>
+                    <td class="px-6 py-4 font-mono font-bold text-blue-700">$${emp.base_salary}<br><span class="text-[10px] text-gray-400">自提: ${emp.labor_percent}%</span></td>
+                    <td class="px-6 py-4 font-black">${emp.leave_balances?.[0]?.annual_leave_hours || 0} h</td>
+                    <td class="px-6 py-4">
+                        <button onclick="adjustLeave('${emp.id}')" class="text-blue-600 font-bold">調整特休</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        function closeEditModal() { document.getElementById('edit-emp-modal').classList.add('hidden'); }
+        // --- 核心邏輯 3: 薪資結算精算 (240h + 眷屬) ---
+        async function loadPayroll() {
+            const { data: employees } = await _sb.from('employees').select('*').eq('is_approved', true);
+            const container = document.getElementById('payroll-container');
 
-        async function saveEmployeeData() {
-            const updates = {
-                base_salary: parseInt(document.getElementById('edit-base').value),
-                bonus: parseInt(document.getElementById('edit-bonus').value),
-                annual_bonus: parseInt(document.getElementById('edit-annual').value),
-                work_start_time: document.getElementById('edit-start').value,
-                work_end_time: document.getElementById('edit-end').value
-            };
-            const { error } = await _db.from('profiles').update(updates).eq('id', document.getElementById('edit-id').value);
-            if(error) alert('失敗：' + error.message);
-            else { alert('儲存成功！'); closeEditModal(); fetchEmployees(); }
+            container.innerHTML = employees.map(emp => {
+                const hourlyRate = (emp.base_salary / 240).toFixed(2);
+                const dailyRate = (emp.base_salary / 30).toFixed(2);
+                // 簡易前端模擬健保封頂計算
+                const healthCount = Math.min(emp.family_insured_count + 1, 4);
+                
+                return `
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center">
+                        <div>
+                            <span class="text-xs bg-slate-100 px-2 py-0.5 rounded font-bold">${emp.full_name}</span>
+                            <div class="mt-2 text-sm text-gray-600 space-x-4">
+                                <span>時薪: <b class="text-slate-900">$${hourlyRate}</b></span>
+                                <span>健保計算人數: <b class="text-slate-900">${healthCount}</b></span>
+                            </div>
+                        </div>
+                        <div class="mt-4 md:mt-0 text-right">
+                            <p class="text-xs text-gray-400">本月預計實發 (未扣除考勤)</p>
+                            <h4 class="text-2xl font-black text-blue-900 italic">$${emp.base_salary}</h4>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        // ... 假單與薪資結算邏輯已鎖定 ...
-        async function fetchPendingLeaves() { /* 已部署 */ }
-        async function generatePayroll() { /* 已部署 */ }
-        function exportCSV() { /* 已部署 */ }
+        // --- 核心邏輯 4: 打卡日誌 (含自動抵扣註記) ---
+        async function loadAttendance() {
+            const { data } = await _sb.from('attendance_logs').select('*, employees(full_name)').order('punch_time', { ascending: false });
+            const logContainer = document.getElementById('attendance-logs');
 
-        switchTab('dashboard');
+            logContainer.innerHTML = data.map(log => `
+                <div class="p-3 bg-gray-50 rounded-lg flex justify-between items-center text-xs">
+                    <div class="flex items-center space-x-3">
+                        <span class="font-bold text-slate-700">${log.employees.full_name}</span>
+                        <span class="${log.punch_type === 'IN' ? 'text-green-600' : 'text-orange-600'} font-black">${log.punch_type}</span>
+                        <span class="text-gray-400">${new Date(log.punch_time).toLocaleString()}</span>
+                    </div>
+                    <div class="text-right">
+                        ${log.is_offset_applied ? '<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">特休已抵扣</span>' : ''}
+                        <p class="text-[10px] text-gray-400 mt-1">${log.note || ''}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        init();
     </script>
 </body>
 </html>
