@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <title>海帕斯科技 | 員工管理系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -16,10 +17,10 @@
 
     <header class="bg-slate-900 text-white p-5 flex justify-between items-center shadow-xl sticky top-0 z-50">
         <div class="flex flex-col">
-            <h1 class="text-xl font-black italic tracking-tighter">HYPASS</h1>
+            <h1 class="text-xl font-black italic tracking-tighter uppercase">Hypass</h1>
             <span class="text-[8px] tracking-widest opacity-60">TECHNOLOGY MANAGEMENT</span>
         </div>
-        <div id="user-status" class="text-xs bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20">
+        <div id="user-status" class="text-xs bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
             連線中...
         </div>
     </header>
@@ -28,41 +29,23 @@
 
         <section id="loading-section" class="active-section text-center py-20">
             <div class="animate-ping h-8 w-8 bg-slate-900 rounded-full mx-auto mb-6"></div>
-            <p class="text-slate-500 font-medium tracking-widest text-sm">系統初始化中</p>
+            <p class="text-slate-500 font-medium tracking-widest text-sm">身分驗證中...</p>
         </section>
 
         <section id="onboarding-section" class="hidden-section">
             <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
                 <h2 class="text-2xl font-black mb-6 text-slate-900 tracking-tight">新員工入職建檔</h2>
                 <form id="onboarding-form" class="space-y-5">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">真實姓名</label>
-                        <input type="text" name="full_name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-slate-900 outline-none transition">
-                    </div>
+                    <input type="text" name="full_name" placeholder="真實姓名" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-slate-900">
                     <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">身分證字號</label>
-                            <input type="text" name="id_number" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">手機號碼</label>
-                            <input type="tel" name="phone" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
-                        </div>
+                        <input type="text" name="id_number" placeholder="身分證字號" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
+                        <input type="tel" name="phone" placeholder="手機號碼" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">電子郵件 (Email)</label>
-                        <input type="email" name="email" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">詳細住址</label>
-                        <input type="text" name="address" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">薪資匯款帳號</label>
-                        <input type="text" name="bank_account" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
-                    </div>
-                    <button type="submit" class="w-full bg-slate-900 text-white font-black tracking-widest py-4 rounded-xl shadow-lg hover:bg-slate-800 transition active:scale-95 mt-4">
-                        送出審核
+                    <input type="email" name="email" placeholder="電子郵件 (Email)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
+                    <input type="text" name="address" placeholder="詳細住址" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
+                    <input type="text" name="bank_account" placeholder="薪資匯款帳號" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
+                    <button type="submit" class="w-full bg-slate-900 text-white font-black tracking-widest py-4 rounded-xl shadow-lg active:scale-95 transition">
+                        確認並建檔
                     </button>
                 </form>
             </div>
@@ -73,33 +56,32 @@
                 <h2 class="text-2xl font-black mb-4 text-slate-900 tracking-tight">保密協定與守則</h2>
                 <div class="h-64 overflow-y-scroll bg-slate-50 p-5 text-xs text-slate-600 mb-6 border border-slate-200 rounded-xl leading-relaxed">
                     <p class="font-black text-slate-900 mb-2">一、商業保密義務</p>
-                    <p class="mb-4">乙方承諾於任職期間及離職後，均不得洩漏甲方之技術資訊、產品設計及客戶名單。若有違反，願負損害賠償責任。</p>
+                    <p class="mb-4">乙方承諾不論在職或離職，皆不得洩漏甲方(海帕斯科技)之技術資訊、產品設計及客戶名單。若有違反，願負損害賠償責任。</p>
                     <p class="font-black text-slate-900 mb-2">二、考勤管理守則 (240H制)</p>
-                    <p>1. 須於公司據點 100m 內打卡。<br>2. 嚴禁代打卡，違者開除。<br>3. 系統不接受「忘記打卡」理由，未點擊視同遲到。<br>4. 遲到時數將由系統自動以特休時數抵扣。</p>
+                    <p>1. 須於公司據點 100m 內完成打卡。<br>2. 嚴禁代打卡，違者依公司規章開除。<br>3. 系統自動執行 10/3 遲到扣假規則：遲到超過 10 分鐘或每月超過 3 次遲到，將自動抵扣特休時數。</p>
                 </div>
                 <div class="flex items-start mb-8">
-                    <input id="nda-agree" type="checkbox" class="mt-1 h-5 w-5 rounded border-slate-300 text-slate-900 focus:ring-slate-900">
+                    <input id="nda-agree" type="checkbox" class="mt-1 h-5 w-5 rounded border-slate-300">
                     <label for="nda-agree" class="ml-3 text-sm text-slate-700 font-bold">本人已詳閱並同意上述守則，且確認個資屬實。</label>
                 </div>
-                <button id="sign-nda-btn" class="w-full bg-red-700 text-white font-black tracking-widest py-4 rounded-xl shadow-lg hover:bg-red-800 transition active:scale-95">
-                    簽署同意
+                <button id="sign-nda-btn" class="w-full bg-red-700 text-white font-black tracking-widest py-4 rounded-xl shadow-lg active:scale-95 transition">
+                    簽署同意協定
                 </button>
             </div>
         </section>
 
         <section id="pending-section" class="hidden-section text-center py-24">
-            <div class="bg-slate-200 p-8 rounded-full h-32 w-32 flex items-center justify-center mx-auto mb-8 shadow-inner">
-                <span class="text-5xl">⏳</span>
-            </div>
+            <div class="bg-slate-200 p-8 rounded-full h-32 w-32 flex items-center justify-center mx-auto mb-8 shadow-inner text-5xl">⏳</div>
             <h2 class="text-3xl font-black text-slate-900 mb-3 tracking-tight">帳號審核中</h2>
-            <p class="text-slate-500 font-medium">請等待 Stanley 審核您的入職資料。<br>開通後系統將自動顯示打卡功能。</p>
+            <p class="text-slate-500 font-medium px-10">請等待 Stanley 審核您的資料。<br>核准開通後，打卡與薪資單功能將自動顯示。</p>
+            <button onclick="location.reload()" class="mt-8 text-xs text-slate-400 underline">點擊重新整理</button>
         </section>
 
         <section id="dashboard-section" class="hidden-section space-y-6">
-            <div class="bg-gradient-to-br from-slate-900 to-blue-900 p-8 rounded-[2rem] text-white shadow-2xl text-center relative overflow-hidden">
+            <div class="bg-gradient-to-br from-slate-900 to-indigo-900 p-8 rounded-[2rem] text-white shadow-2xl text-center relative overflow-hidden">
                 <div class="absolute top-0 right-0 p-4 opacity-20 text-6xl">🌴</div>
                 <p class="text-[10px] font-bold opacity-60 uppercase tracking-widest mb-2">Leave Balance (Hrs)</p>
-                <h3 id="leave-balance" class="text-7xl font-black italic tracking-tighter shadow-sm">--</h3>
+                <h3 id="leave-balance" class="text-7xl font-black italic tracking-tighter">--</h3>
                 <div class="mt-6 bg-white/10 py-2.5 px-4 rounded-xl inline-flex items-center space-x-2 border border-white/10">
                     <span class="h-2 w-2 bg-emerald-400 rounded-full animate-pulse"></span>
                     <p class="text-[10px] font-bold tracking-widest">240H 薪資精算制運行中</p>
@@ -107,20 +89,20 @@
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="handlePunch('IN')" class="bg-white border border-slate-200 text-slate-900 font-black py-10 rounded-[2rem] shadow-sm active:scale-95 transition flex flex-col items-center hover:shadow-md">
+                <button onclick="handlePunch('IN')" class="bg-white border border-slate-200 text-slate-900 font-black py-10 rounded-[2rem] shadow-sm active:scale-95 transition flex flex-col items-center">
                     <span class="text-4xl mb-3">🏢</span> 上班打卡
                 </button>
-                <button onclick="handlePunch('OUT')" class="bg-slate-100 border border-slate-200 text-slate-500 font-black py-10 rounded-[2rem] shadow-sm active:scale-95 transition flex flex-col items-center hover:bg-slate-200">
+                <button onclick="handlePunch('OUT')" class="bg-slate-100 border border-slate-200 text-slate-500 font-black py-10 rounded-[2rem] shadow-sm active:scale-95 transition flex flex-col items-center">
                     <span class="text-4xl mb-3">🏠</span> 下班打卡
                 </button>
             </div>
 
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center active:scale-95 transition cursor-pointer mt-4">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center active:scale-95 transition cursor-pointer">
                 <div class="flex items-center">
                     <span class="text-2xl mr-4">💰</span>
                     <div>
-                        <p class="font-black text-slate-900">查看本月薪資單</p>
-                        <p class="text-[10px] text-slate-400 font-bold mt-0.5 tracking-wider">PAYROLL STATEMENT</p>
+                        <p class="font-black text-slate-900 text-sm">查看本月薪資單</p>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Payroll Statement</p>
                     </div>
                 </div>
                 <span class="text-slate-300 font-bold">❯</span>
@@ -130,137 +112,90 @@
     </main>
 
     <script>
-        // --- 1. 核心配置 ---
+        // --- 核心配置 ---
         const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
-        // ⚠️ 請務必將下方替換為你那串超長的 anon public 金鑰
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'; 
         const LIFF_ID = '2009148826-RoogHmxk';
 
         const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         let currentUser = null;
 
-        // --- 2. 初始化與狀態機 ---
-        async function initApp() {
+        // --- 狀態切換器 ---
+        function switchSection(id) {
+            document.querySelectorAll('main > section').forEach(s => s.classList.replace('active-section', 'hidden-section'));
+            document.getElementById(id).classList.replace('hidden-section', 'active-section');
+        }
+
+        // --- 1. 初始化 ---
+        async function init() {
             try {
                 await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                    return;
-                }
+                if (!liff.isLoggedIn()) { liff.login(); return; }
                 const profile = await liff.getProfile();
-                document.getElementById('user-status').innerHTML = `<span class="opacity-70 mr-1">👤</span> ${profile.displayName}`;
-                checkUserStatus(profile.userId);
-            } catch (err) {
-                alert('初始化失敗：' + err.message);
-                console.error(err);
-            }
+                document.getElementById('user-status').innerHTML = `<span class="opacity-50 mr-1">👤</span> ${profile.displayName}`;
+                checkUser(profile.userId);
+            } catch (err) { alert('系統初始化失敗：' + err.message); }
         }
 
-        async function checkUserStatus(lineId) {
+        // --- 2. 狀態檢查 ---
+        async function checkUser(lineId) {
             const { data, error } = await _sb.from('employees').select('*').eq('line_id', lineId).single();
             
-            // 隱藏載入畫面
-            document.querySelectorAll('main > section').forEach(s => s.className = 'hidden-section');
-
             if (!data) {
-                // 狀態 0：未建檔
-                document.getElementById('onboarding-section').className = 'active-section';
+                switchSection('onboarding-section'); // 系統 2：建檔
             } else if (!data.nda_signed_at) {
-                // 狀態 1：未簽保密
                 currentUser = data;
-                document.getElementById('nda-section').className = 'active-section';
+                switchSection('nda-section'); // 系統 3：簽約
             } else if (!data.is_approved) {
-                // 狀態 2：等待老闆審核
-                document.getElementById('pending-section').className = 'active-section';
+                switchSection('pending-section'); // 系統 4：等待審核
             } else {
-                // 狀態 3：正式開通
                 currentUser = data;
-                loadDashboardData();
-                document.getElementById('dashboard-section').className = 'active-section';
+                updateLeaveBalance();
+                switchSection('dashboard-section'); // 系統 5：正式開通
             }
         }
 
-        // --- 3. 資料庫互動邏輯 ---
-        
-        // 讀取特休餘額
-        async function loadDashboardData() {
-            const { data } = await _sb.from('leave_balances').select('annual_leave_hours').eq('employee_id', currentUser.id).single();
-            if (data) {
-                document.getElementById('leave-balance').innerText = data.annual_leave_hours;
-            } else {
-                document.getElementById('leave-balance').innerText = '0';
-            }
-        }
+        // --- 3. 功能操作 ---
 
-        // 送出建檔表單
+        // 入職建檔
         document.getElementById('onboarding-form').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = e.submitter;
-            btn.disabled = true;
-            btn.innerText = '處理中...';
-
+            const btn = e.submitter; btn.disabled = true;
             try {
                 const profile = await liff.getProfile();
                 const payload = Object.fromEntries(new FormData(e.target));
                 payload.line_id = profile.userId;
-
                 const { error } = await _sb.from('employees').insert([payload]);
                 if (error) throw error;
-
-                alert('個資儲存成功！請簽署保密協定。');
-                location.reload(); // 重新整理進入下一關
-            } catch (err) {
-                alert('發生錯誤：' + err.message);
-                btn.disabled = false;
-                btn.innerText = '送出審核';
-            }
+                alert('資料已存檔！請接續簽署協定。');
+                location.reload();
+            } catch (err) { alert('存取失敗：' + err.message); btn.disabled = false; }
         };
 
         // 簽署 NDA
         document.getElementById('sign-nda-btn').onclick = async () => {
-            if (!document.getElementById('nda-agree').checked) {
-                return alert('請先勾選同意條款');
-            }
-            const btn = document.getElementById('sign-nda-btn');
-            btn.disabled = true;
-            btn.innerText = '存證中...';
-
-            const { error } = await _sb.from('employees')
-                .update({ nda_signed_at: new Date().toISOString() })
-                .eq('id', currentUser.id);
-
-            if (error) {
-                alert('簽署失敗：' + error.message);
-                btn.disabled = false;
-                btn.innerText = '簽署同意';
-            } else {
-                alert('簽署完成！請等待老闆審核。');
-                location.reload(); // 重新整理進入下一關
-            }
+            if (!document.getElementById('nda-agree').checked) return alert('請先勾選同意');
+            const { error } = await _sb.from('employees').update({ nda_signed_at: new Date().toISOString() }).eq('id', currentUser.id);
+            if (error) alert('簽署失敗'); else { alert('簽署成功，等待審核。'); location.reload(); }
         };
 
-        // GPS 打卡
+        // 打卡邏輯
         function handlePunch(type) {
-            if (!navigator.geolocation) return alert('您的裝置不支援 GPS');
-            
             navigator.geolocation.getCurrentPosition(async (pos) => {
-                const { data, error } = await _sb.rpc('fn_process_punch', {
-                    p_emp_id: currentUser.id,
-                    p_type: type,
-                    p_lat: pos.coords.latitude,
-                    p_lng: pos.coords.longitude
+                const { error } = await _sb.rpc('fn_process_punch', {
+                    p_emp_id: currentUser.id, p_type: type, p_lat: pos.coords.latitude, p_lng: pos.coords.longitude
                 });
-                if (error) {
-                    alert('打卡失敗：' + error.message);
-                } else {
-                    alert(type === 'IN' ? '✅ 上班打卡成功！' : '🏠 下班打卡成功！');
-                    loadDashboardData(); // 刷新特休餘額
-                }
-            }, (err) => alert('請開啟手機 GPS 定位權限以完成打卡'));
+                if (error) alert('打卡失敗：' + error.message);
+                else { alert(type === 'IN' ? '✅ 上班打卡成功' : '🏠 下班打卡成功'); updateLeaveBalance(); }
+            }, (err) => alert('打卡需要 GPS 定位權限'));
         }
 
-        // 啟動應用程式
-        window.onload = initApp;
+        async function updateLeaveBalance() {
+            const { data } = await _sb.from('leave_balances').select('annual_leave_hours').eq('employee_id', currentUser.id).single();
+            if (data) document.getElementById('leave-balance').innerText = data.annual_leave_hours;
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
