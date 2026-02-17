@@ -4,148 +4,155 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <title>海帕斯科技 | 核心管理系統</title>
+    <title>海帕斯科技 | 員工專屬 App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         .hidden-section { display: none; }
         .active-section { display: block; }
-        .tab-btn.active { border-bottom: 3px solid #0f172a; color: #0f172a; font-weight: 900; }
+        .app-view { display: none; }
+        .app-view.active { display: block; }
+        .nav-item.active { color: #2563eb; font-weight: 900; }
+        .nav-item.active span:first-child { transform: translateY(-4px) scale(1.1); }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
 
-    <header class="bg-slate-900 text-white p-5 flex justify-between items-center shadow-2xl sticky top-0 z-50">
+    <header class="bg-slate-900 text-white p-5 flex justify-between items-center shadow-xl sticky top-0 z-50">
         <div class="flex flex-col">
             <h1 class="text-xl font-black italic tracking-tighter uppercase">Hypass</h1>
             <span class="text-[8px] tracking-widest opacity-60">TECHNOLOGY MANAGEMENT</span>
         </div>
-        <div id="user-status" class="text-xs bg-white/10 px-3 py-1.5 rounded-full border border-white/20">驗證中...</div>
+        <div id="user-status" class="text-xs bg-white/10 px-3 py-1.5 rounded-full border border-white/20 backdrop-blur-sm">連線中...</div>
     </header>
 
-    <main class="container mx-auto p-4 max-w-md pb-24">
+    <main class="container mx-auto p-4 max-w-md">
 
-        <section id="loading-section" class="active-section text-center py-20">
+        <section id="loading-section" class="active-section text-center py-24">
             <div class="animate-spin h-10 w-10 border-4 border-slate-900 border-t-transparent rounded-full mx-auto mb-6"></div>
-            <p class="text-slate-500 font-bold tracking-widest text-sm italic">SYSTEM INITIALIZING...</p>
+            <p class="text-slate-500 font-bold tracking-widest text-xs">身分權限驗證中...</p>
         </section>
 
         <section id="onboarding-section" class="hidden-section">
-            <div class="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-200">
-                <h2 class="text-2xl font-black mb-6 text-slate-900 tracking-tight">新員工入職建檔</h2>
+            <div class="bg-white p-8 rounded-[2rem] shadow-2xl border border-slate-100">
+                <h2 class="text-2xl font-black mb-6 text-slate-900 tracking-tight text-center">新員工入職建檔</h2>
                 <form id="onboarding-form" class="space-y-4">
                     <input type="text" name="full_name" placeholder="真實姓名" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-slate-900">
-                    <input type="text" name="id_number" placeholder="身分證字號" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
                     <div class="grid grid-cols-2 gap-4">
+                        <input type="text" name="id_number" placeholder="身分證字號" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
                         <input type="tel" name="phone" placeholder="手機號碼" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
-                        <input type="date" name="onboarding_date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none text-xs">
                     </div>
-                    <input type="email" name="email" placeholder="電子郵件 (Email)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
                     <div class="grid grid-cols-2 gap-4">
-                        <select name="city" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none text-sm">
-                            <option value="台南市">台南市</option>
-                            <option value="高雄市">高雄市</option>
-                            <option value="嘉義縣">嘉義縣</option>
+                        <input type="date" name="onboarding_date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none text-xs text-slate-500">
+                        <select name="city" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none text-xs">
+                            <option value="台南市">📍 台南市</option>
+                            <option value="高雄市">📍 高雄市</option>
                         </select>
-                        <input type="text" name="bank_account" placeholder="銀行帳號" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
                     </div>
-                    <input type="text" name="address" placeholder="詳細通訊住址" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
-                    <button type="submit" class="w-full bg-slate-900 text-white font-black tracking-widest py-4 rounded-xl shadow-lg active:scale-95 transition mt-4">確認送出審核</button>
+                    <input type="email" name="email" placeholder="電子郵件" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
+                    <input type="text" name="bank_account" placeholder="銀行帳號" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
+                    <input type="text" name="address" placeholder="詳細住址" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
+                    <button type="submit" class="w-full bg-blue-600 text-white font-black tracking-widest py-4 rounded-xl shadow-lg active:scale-95 transition mt-4">確認並送出</button>
                 </form>
             </div>
         </section>
 
         <section id="nda-section" class="hidden-section">
-            <div class="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-200 text-center">
-                <div class="text-5xl mb-4">📜</div>
+            <div class="bg-white p-8 rounded-[2rem] shadow-2xl border border-slate-100 text-center">
                 <h2 class="text-2xl font-black mb-4">簽署保密協定</h2>
-                <div class="h-48 overflow-y-scroll bg-slate-50 p-4 text-[10px] text-left text-slate-500 border rounded-xl mb-6">
-                    乙方承諾對於任職期間接觸之海帕斯科技之商業機密、產品設計圖、客戶清單負有絕對保密義務。若有違反，乙方願無條件補償甲方之經濟損失。
+                <div class="h-48 overflow-y-scroll bg-slate-50 p-4 text-[10px] text-left text-slate-500 border rounded-xl mb-6 leading-relaxed">
+                    乙方承諾對於任職期間接觸之海帕斯科技之商業機密、產品設計圖、客戶清單負有絕對保密義務。
                 </div>
                 <div class="flex items-center justify-center space-x-2 mb-8">
                     <input id="nda-check" type="checkbox" class="h-5 w-5 rounded">
-                    <label for="nda-check" class="text-xs font-bold text-slate-700">我已閱讀並同意以上條款</label>
+                    <label for="nda-check" class="text-xs font-bold text-slate-700">我已詳細閱讀並同意</label>
                 </div>
-                <button id="sign-nda-btn" class="w-full bg-red-700 text-white font-black py-4 rounded-xl active:scale-95">簽署電子保密合約</button>
+                <button id="sign-nda-btn" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl active:scale-95">數位簽署保密合約</button>
             </div>
         </section>
 
         <section id="pending-section" class="hidden-section text-center py-20">
-            <div class="text-6xl mb-6 animate-bounce">⏳</div>
+            <div class="text-6xl mb-6">⏳</div>
             <h2 class="text-2xl font-black text-slate-900">帳號審核中</h2>
-            <p class="text-slate-500 mt-2 px-10 text-sm">請聯繫老闆 Stanley Lu 進行核准。<br>開通後方可使用五大系統。</p>
-            <button onclick="location.reload()" class="mt-8 text-xs text-blue-600 font-bold underline">點擊刷新狀態</button>
+            <p class="text-slate-500 mt-2 px-10 text-sm">請聯繫老闆 Stanley Lu 進行核准開通。</p>
         </section>
 
-        <section id="dashboard-section" class="hidden-section space-y-6">
+        <section id="dashboard-section" class="hidden-section pb-24">
             
-            <div class="bg-white p-6 rounded-[2rem] shadow-lg border-l-8 border-slate-900">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <p id="user-city" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">--</p>
-                        <h3 id="user-name" class="text-2xl font-black tracking-tight">--</h3>
-                        <p id="tenure-info" class="text-[10px] text-blue-600 font-bold mt-1 tracking-tight">--</p>
+            <div id="view-home" class="app-view active space-y-6">
+                <div class="bg-gradient-to-br from-slate-900 to-blue-900 p-8 rounded-[2.5rem] shadow-2xl text-white">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p id="user-city" class="text-[10px] font-black text-blue-300 uppercase tracking-widest">--</p>
+                            <h3 id="user-name" class="text-3xl font-black tracking-tight">--</h3>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[8px] font-bold text-slate-400">特休餘額 (Hrs)</p>
+                            <p id="leave-val" class="text-5xl font-black italic tracking-tighter">--</p>
+                        </div>
                     </div>
-                    <div class="text-right">
-                        <p class="text-[8px] font-bold text-slate-400">特休餘額 (Hrs)</p>
-                        <p id="leave-val" class="text-4xl font-black italic tracking-tighter text-slate-900">--</p>
-                    </div>
+                    <div id="tenure-info" class="text-[10px] bg-white/10 py-2 px-4 rounded-full inline-block font-bold">載入年資中...</div>
                 </div>
-                <div class="bg-slate-900 text-white p-3 rounded-xl flex justify-between items-center">
-                    <span class="text-[10px] font-bold tracking-widest">🗓️ 2026 出勤行事曆</span>
-                    <button class="text-[10px] bg-white/20 px-2 py-1 rounded">查看假表</button>
-                </div>
-            </div>
 
-            <div class="bg-white p-6 rounded-[2rem] shadow-lg">
-                <div class="flex items-center justify-between mb-4">
-                    <h4 class="font-black text-sm tracking-widest">📍 GPS 智慧考勤</h4>
-                    <span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-bold">100M 圍欄生效中</span>
-                </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <button onclick="handlePunch('IN')" class="bg-slate-900 text-white py-12 rounded-3xl font-black text-lg active:scale-95 shadow-xl flex flex-col items-center">
-                        <span class="text-3xl mb-2">🏢</span> 上班打卡
+                    <button onclick="handlePunch('IN')" class="bg-blue-600 text-white py-12 rounded-3xl font-black text-xl shadow-lg active:scale-95 flex flex-col items-center">
+                        <span class="text-4xl mb-2">🏢</span> 上班打卡
                     </button>
-                    <button onclick="handlePunch('OUT')" class="bg-white border-2 border-slate-100 text-slate-400 py-12 rounded-3xl font-black text-lg active:scale-95 flex flex-col items-center hover:bg-slate-50 transition">
-                        <span class="text-3xl mb-2">🏠</span> 下班打卡
+                    <button onclick="handlePunch('OUT')" class="bg-white border-2 border-slate-100 text-slate-400 py-12 rounded-3xl font-black text-xl active:scale-95 flex flex-col items-center">
+                        <span class="text-4xl mb-2">🏠</span> 下班打卡
                     </button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-3">
-                <div class="bg-white p-4 rounded-2xl flex items-center justify-between border border-slate-200 active:scale-95 transition">
-                    <div class="flex items-center space-x-4">
-                        <span class="text-2xl">💰</span>
-                        <div>
-                            <p class="font-black text-sm text-slate-900">數位薪資明細</p>
-                            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Payroll & Bonus</p>
-                        </div>
-                    </div>
-                    <span class="text-slate-300">❯</span>
-                </div>
-                <div class="bg-white p-4 rounded-2xl flex items-center justify-between border border-slate-200 active:scale-95 transition">
-                    <div class="flex items-center space-x-4">
-                        <span class="text-2xl">📝</span>
-                        <div>
-                            <p class="font-black text-sm text-slate-900">智慧請假與抵扣</p>
-                            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Smart Leave Engine</p>
-                        </div>
-                    </div>
-                    <span class="text-slate-300">❯</span>
-                </div>
-                <div class="bg-white p-4 rounded-2xl flex items-center justify-between border border-slate-200 active:scale-95 transition">
-                    <div class="flex items-center space-x-4">
-                        <span class="text-2xl">📢</span>
-                        <div>
-                            <p class="font-black text-sm text-slate-900">電子看板與文件中心</p>
-                            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Bulletin & NDA Archive</p>
-                        </div>
-                    </div>
-                    <span class="text-slate-300">❯</span>
+            <div id="view-leave" class="app-view space-y-4">
+                <h3 class="font-black text-xl text-slate-900 border-l-4 border-amber-500 pl-3">請假與抵扣</h3>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center py-16">
+                    <p class="text-slate-400 font-bold">國定假日避讓邏輯計算中...</p>
                 </div>
             </div>
 
+            <div id="view-payroll" class="app-view space-y-4">
+                <h3 class="font-black text-xl text-slate-900 border-l-4 border-emerald-500 pl-3">240H 數位薪資單</h3>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center py-16">
+                    <p class="text-slate-400 font-bold">即時薪資試算模組建置中...</p>
+                </div>
+            </div>
+
+            <div id="view-docs" class="app-view space-y-4">
+                <h3 class="font-black text-xl text-slate-900 border-l-4 border-purple-500 pl-3">文件中心</h3>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center py-16">
+                    <p class="text-slate-400 font-bold">保密協定副本已存檔於雲端。</p>
+                </div>
+            </div>
+
+            <div id="view-settings" class="app-view space-y-4">
+                <h3 class="font-black text-xl text-slate-900 border-l-4 border-slate-500 pl-3">個人帳號設定</h3>
+                <div id="user-details" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-xs space-y-2"></div>
+            </div>
+
+            <nav class="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center pt-3 pb-6 shadow-2xl z-50">
+                <button onclick="switchAppView('home')" class="nav-item active flex flex-col items-center w-14 transition duration-300">
+                    <span class="text-2xl mb-1">🏠</span>
+                    <span class="text-[8px] tracking-widest uppercase">打卡</span>
+                </button>
+                <button onclick="switchAppView('leave')" class="nav-item flex flex-col items-center w-14 text-slate-400 transition duration-300">
+                    <span class="text-2xl mb-1">📅</span>
+                    <span class="text-[8px] tracking-widest uppercase">請假</span>
+                </button>
+                <button onclick="switchAppView('payroll')" class="nav-item flex flex-col items-center w-14 text-slate-400 transition duration-300">
+                    <span class="text-2xl mb-1">💰</span>
+                    <span class="text-[8px] tracking-widest uppercase">薪資</span>
+                </button>
+                <button onclick="switchAppView('docs')" class="nav-item flex flex-col items-center w-14 text-slate-400 transition duration-300">
+                    <span class="text-2xl mb-1">📂</span>
+                    <span class="text-[8px] tracking-widest uppercase">文件</span>
+                </button>
+                <button onclick="switchAppView('settings')" class="nav-item flex flex-col items-center w-14 text-slate-400 transition duration-300">
+                    <span class="text-2xl mb-1">⚙️</span>
+                    <span class="text-[8px] tracking-widest uppercase">設定</span>
+                </button>
+            </nav>
         </section>
 
     </main>
@@ -165,14 +172,14 @@
                 await liff.init({ liffId: LIFF_ID });
                 if (!liff.isLoggedIn()) { liff.login(); return; }
                 const profile = await liff.getProfile();
-                document.getElementById('user-status').innerHTML = `<span class="opacity-50 mr-1">ID:</span> ${profile.userId.substring(0,6)}...`;
-                checkUser(profile.userId);
-            } catch (err) { alert('系統初始化失敗：' + err.message); }
+                document.getElementById('user-status').innerText = '👤 ' + profile.displayName;
+                checkUserStatus(profile.userId);
+            } catch (err) { alert('LIFF 錯誤：' + err.message); }
         }
 
-        async function checkUser(lineId) {
+        async function checkUserStatus(lineId) {
             const { data, error } = await _sb.from('employees').select('*').eq('line_id', lineId).single();
-            document.getElementById('loading-section').className = 'hidden-section';
+            document.querySelectorAll('main > section').forEach(s => s.classList.replace('active-section', 'hidden-section'));
 
             if (!data) {
                 switchSection('onboarding-section'); // 系統 2：建檔
@@ -180,34 +187,47 @@
                 currentUser = data;
                 switchSection('nda-section'); // 系統 3：NDA
             } else if (!data.is_approved) {
-                switchSection('pending-section'); // 系統 4：等待審核
+                switchSection('pending-section'); // 系統 4：待審核
             } else {
                 currentUser = data;
                 renderDashboard();
-                switchSection('dashboard-section'); // 系統 5：正式開通
+                switchSection('dashboard-section'); // 系統 5：五大模組
             }
         }
 
         function switchSection(id) {
-            document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden-section'));
-            document.getElementById(id).classList.remove('hidden-section');
-            document.getElementById(id).classList.add('active-section');
+            document.getElementById(id).classList.replace('hidden-section', 'active-section');
         }
 
-        // --- 2. 各功能模組運作邏輯 ---
+        // --- 2. UI 切換邏輯 (五大系統切換) ---
+        function switchAppView(viewId) {
+            document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active', 'text-blue-600'));
+            const activeBtn = document.querySelector(`button[onclick="switchAppView('${viewId}')"]`);
+            activeBtn.classList.add('active');
+        }
 
-        // 模組 1：個人資料與年資計算
+        // --- 3. 功能邏輯 (打卡、年資、表單) ---
         function renderDashboard() {
             document.getElementById('user-name').innerText = currentUser.full_name;
             document.getElementById('user-city').innerText = currentUser.city || '台南市';
             
-            // 計算年資 (入職日期自動執行)
-            const onboardingDate = new Date(currentUser.onboarding_date);
+            // 計算年資
+            const onboard = new Date(currentUser.onboarding_date);
             const today = new Date();
-            const years = today.getFullYear() - onboardingDate.getFullYear();
-            document.getElementById('tenure-info').innerText = `已入職：${years} 年 (年資假換算生效中)`;
+            const diff = today.getFullYear() - onboard.getFullYear();
+            document.getElementById('tenure-info').innerText = `已入職：${diff} 年 (年資假換算生效中)`;
             
             updateLeaveBalance();
+            
+            // 設定頁面資訊
+            document.getElementById('user-details').innerHTML = `
+                <p><b>身分證：</b>${currentUser.id_number}</p>
+                <p><b>入職日：</b>${currentUser.onboarding_date}</p>
+                <p><b>薪資匯款：</b>${currentUser.bank_account}</p>
+            `;
         }
 
         async function updateLeaveBalance() {
@@ -215,46 +235,28 @@
             if (data) document.getElementById('leave-val').innerText = data.annual_leave_hours;
         }
 
-        // 模組 2：GPS 智慧打卡 (100M 地理圍欄)
-        
         function handlePunch(type) {
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 const { error } = await _sb.rpc('fn_process_punch', {
-                    p_emp_id: currentUser.id,
-                    p_type: type,
-                    p_lat: pos.coords.latitude,
-                    p_lng: pos.coords.longitude
+                    p_emp_id: currentUser.id, p_type: type, p_lat: pos.coords.latitude, p_lng: pos.coords.longitude
                 });
-                
-                if (error) {
-                    alert('打卡失敗：' + error.message);
-                } else {
-                    alert(type === 'IN' ? '✅ 上班打卡成功！' : '🏠 下班打卡成功！');
-                    updateLeaveBalance();
-                }
-            }, (err) => alert('打卡失敗：請開啟手機 GPS 定位權限並靠近據點 100M。'));
+                if (error) alert('打卡失敗：' + error.message);
+                else { alert('✅ 打卡成功！'); updateLeaveBalance(); }
+            }, (err) => alert('需開啟 GPS 權限且在 100M 範圍內。'));
         }
 
-        // 入職表單提交
         document.getElementById('onboarding-form').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = e.submitter; btn.disabled = true;
-            try {
-                const profile = await liff.getProfile();
-                const payload = Object.fromEntries(new FormData(e.target));
-                payload.line_id = profile.userId;
-                const { error } = await _sb.from('employees').insert([payload]);
-                if (error) throw error;
-                alert('入職資料已送出，請進行下一步簽署 NDA。');
-                location.reload();
-            } catch (err) { alert('儲存失敗：' + err.message); btn.disabled = false; }
+            const payload = Object.fromEntries(new FormData(e.target));
+            payload.line_id = (await liff.getProfile()).userId;
+            const { error } = await _sb.from('employees').insert([payload]);
+            if (error) alert(error.message); else location.reload();
         };
 
-        // NDA 簽署
         document.getElementById('sign-nda-btn').onclick = async () => {
-            if (!document.getElementById('nda-check').checked) return alert('請先勾選同意條款');
-            const { error } = await _sb.from('employees').update({ nda_signed_at: new Date().toISOString() }).eq('id', currentUser.id);
-            if (error) alert('簽署失敗'); else { alert('簽署完成！請等待老闆審核帳號。'); location.reload(); }
+            if (!document.getElementById('nda-check').checked) return alert('請先勾選同意');
+            const { error } = await _sb.from('employees').update({ nda_signed_at: new Date() }).eq('id', currentUser.id);
+            if (error) alert(error.message); else location.reload();
         };
 
         window.onload = init;
