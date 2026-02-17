@@ -2,270 +2,265 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>海帕斯科技 | 數位指揮中心</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>海帕斯科技 | 員工管理系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
-        body { font-family: 'Noto+Sans+TC', sans-serif; }
-        .card-glow { box-shadow: 0 0 20px rgba(0, 43, 91, 0.05); }
+        .hidden-section { display: none; }
+        .active-section { display: block; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen pb-20">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
 
-    <header class="bg-[#002B5B] text-white p-6 shadow-2xl sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex justify-between items-end">
-            <div>
-                <p class="text-[10px] font-black tracking-[0.3em] opacity-50 mb-1 uppercase">Management Console</p>
-                <h1 class="text-3xl font-black italic tracking-tighter">海帕斯數位指揮中心</h1>
-            </div>
-            <div class="text-right border-l border-white/20 pl-6">
-                <p class="text-[10px] font-bold opacity-50 uppercase">Salary System</p>
-                <p class="text-xl font-black text-yellow-400">240H / 30D</p>
-            </div>
+    <header class="bg-slate-900 text-white p-5 flex justify-between items-center shadow-xl sticky top-0 z-50">
+        <div class="flex flex-col">
+            <h1 class="text-xl font-black italic tracking-tighter">HYPASS</h1>
+            <span class="text-[8px] tracking-widest opacity-60">TECHNOLOGY MANAGEMENT</span>
+        </div>
+        <div id="user-status" class="text-xs bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20">
+            連線中...
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto p-6 space-y-8">
+    <main class="container mx-auto p-4 max-w-md">
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white rounded-[2rem] p-8 card-glow border-t-8 border-yellow-400">
-                <div class="flex justify-between items-start mb-6">
-                    <h2 class="text-lg font-black text-slate-800">⚡ 待核准入職</h2>
-                    <span id="pending-count" class="bg-yellow-100 text-yellow-700 text-xs font-black px-2 py-1 rounded-lg">0</span>
+        <section id="loading-section" class="active-section text-center py-20">
+            <div class="animate-ping h-8 w-8 bg-slate-900 rounded-full mx-auto mb-6"></div>
+            <p class="text-slate-500 font-medium tracking-widest text-sm">系統初始化中</p>
+        </section>
+
+        <section id="onboarding-section" class="hidden-section">
+            <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
+                <h2 class="text-2xl font-black mb-6 text-slate-900 tracking-tight">新員工入職建檔</h2>
+                <form id="onboarding-form" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">真實姓名</label>
+                        <input type="text" name="full_name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-slate-900 outline-none transition">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">身分證字號</label>
+                            <input type="text" name="id_number" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">手機號碼</label>
+                            <input type="tel" name="phone" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">電子郵件 (Email)</label>
+                        <input type="email" name="email" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">詳細住址</label>
+                        <input type="text" name="address" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">薪資匯款帳號</label>
+                        <input type="text" name="bank_account" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none">
+                    </div>
+                    <button type="submit" class="w-full bg-slate-900 text-white font-black tracking-widest py-4 rounded-xl shadow-lg hover:bg-slate-800 transition active:scale-95 mt-4">
+                        送出審核
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <section id="nda-section" class="hidden-section">
+            <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
+                <h2 class="text-2xl font-black mb-4 text-slate-900 tracking-tight">保密協定與守則</h2>
+                <div class="h-64 overflow-y-scroll bg-slate-50 p-5 text-xs text-slate-600 mb-6 border border-slate-200 rounded-xl leading-relaxed">
+                    <p class="font-black text-slate-900 mb-2">一、商業保密義務</p>
+                    <p class="mb-4">乙方承諾於任職期間及離職後，均不得洩漏甲方之技術資訊、產品設計及客戶名單。若有違反，願負損害賠償責任。</p>
+                    <p class="font-black text-slate-900 mb-2">二、考勤管理守則 (240H制)</p>
+                    <p>1. 須於公司據點 100m 內打卡。<br>2. 嚴禁代打卡，違者開除。<br>3. 系統不接受「忘記打卡」理由，未點擊視同遲到。<br>4. 遲到時數將由系統自動以特休時數抵扣。</p>
                 </div>
-                <div id="list-pending" class="space-y-4 max-h-60 overflow-y-auto pr-2">
-                    <p class="text-slate-300 text-sm italic text-center py-4">目前無待核准人員</p>
+                <div class="flex items-start mb-8">
+                    <input id="nda-agree" type="checkbox" class="mt-1 h-5 w-5 rounded border-slate-300 text-slate-900 focus:ring-slate-900">
+                    <label for="nda-agree" class="ml-3 text-sm text-slate-700 font-bold">本人已詳閱並同意上述守則，且確認個資屬實。</label>
+                </div>
+                <button id="sign-nda-btn" class="w-full bg-red-700 text-white font-black tracking-widest py-4 rounded-xl shadow-lg hover:bg-red-800 transition active:scale-95">
+                    簽署同意
+                </button>
+            </div>
+        </section>
+
+        <section id="pending-section" class="hidden-section text-center py-24">
+            <div class="bg-slate-200 p-8 rounded-full h-32 w-32 flex items-center justify-center mx-auto mb-8 shadow-inner">
+                <span class="text-5xl">⏳</span>
+            </div>
+            <h2 class="text-3xl font-black text-slate-900 mb-3 tracking-tight">帳號審核中</h2>
+            <p class="text-slate-500 font-medium">請等待 Stanley 審核您的入職資料。<br>開通後系統將自動顯示打卡功能。</p>
+        </section>
+
+        <section id="dashboard-section" class="hidden-section space-y-6">
+            <div class="bg-gradient-to-br from-slate-900 to-blue-900 p-8 rounded-[2rem] text-white shadow-2xl text-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-20 text-6xl">🌴</div>
+                <p class="text-[10px] font-bold opacity-60 uppercase tracking-widest mb-2">Leave Balance (Hrs)</p>
+                <h3 id="leave-balance" class="text-7xl font-black italic tracking-tighter shadow-sm">--</h3>
+                <div class="mt-6 bg-white/10 py-2.5 px-4 rounded-xl inline-flex items-center space-x-2 border border-white/10">
+                    <span class="h-2 w-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                    <p class="text-[10px] font-bold tracking-widest">240H 薪資精算制運行中</p>
                 </div>
             </div>
 
-            <div class="bg-white rounded-[2rem] p-8 card-glow border-t-8 border-red-500">
-                <h2 class="text-lg font-black text-slate-800 mb-6 text-red-600">🚨 考勤異常警示</h2>
-                <div id="list-alerts" class="space-y-4 text-xs">
-                    <p class="text-slate-300 italic text-center py-4">今日暫無嚴重遲到紀錄</p>
-                </div>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="handlePunch('IN')" class="bg-white border border-slate-200 text-slate-900 font-black py-10 rounded-[2rem] shadow-sm active:scale-95 transition flex flex-col items-center hover:shadow-md">
+                    <span class="text-4xl mb-3">🏢</span> 上班打卡
+                </button>
+                <button onclick="handlePunch('OUT')" class="bg-slate-100 border border-slate-200 text-slate-500 font-black py-10 rounded-[2rem] shadow-sm active:scale-95 transition flex flex-col items-center hover:bg-slate-200">
+                    <span class="text-4xl mb-3">🏠</span> 下班打卡
+                </button>
             </div>
 
-            <div class="bg-white rounded-[2rem] p-8 card-glow border-t-8 border-blue-900">
-                <h2 class="text-lg font-black text-slate-800 mb-6">⚖️ 合規檢查 (七休一)</h2>
-                <div id="compliance-status" class="space-y-2">
-                    <div class="flex justify-between items-center p-3 bg-green-50 rounded-xl">
-                        <span class="text-xs font-bold text-green-700">連續出勤天數控管</span>
-                        <span class="text-[10px] font-black bg-green-200 text-green-800 px-2 py-0.5 rounded">PASS</span>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center active:scale-95 transition cursor-pointer mt-4">
+                <div class="flex items-center">
+                    <span class="text-2xl mr-4">💰</span>
+                    <div>
+                        <p class="font-black text-slate-900">查看本月薪資單</p>
+                        <p class="text-[10px] text-slate-400 font-bold mt-0.5 tracking-wider">PAYROLL STATEMENT</p>
                     </div>
                 </div>
+                <span class="text-slate-300 font-bold">❯</span>
             </div>
-        </div>
-
-        <div class="bg-white rounded-[3rem] shadow-xl overflow-hidden border border-slate-100">
-            <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                <h2 class="text-xl font-black italic tracking-tight">STAFF OVERVIEW <span class="text-slate-300 font-normal ml-2">| 240H 薪資精算清單</span></h2>
-                <button onclick="loadData()" class="text-blue-900 font-bold text-xs hover:underline">🔄 刷新數據</button>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                            <th class="p-6">員工姓名</th>
-                            <th>240H 月薪</th>
-                            <th>精算時薪</th>
-                            <th>特休餘額</th>
-                            <th>眷屬保費</th>
-                            <th>操作選項</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-employees" class="text-sm font-bold text-slate-700">
-                        </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="severance-tool" class="bg-[#1A1A1A] text-white rounded-[3rem] p-10 shadow-2xl hidden">
-            <div class="flex justify-between items-start mb-10">
-                <h2 class="text-3xl font-black italic tracking-tighter">資遣自動結算引擎</h2>
-                <button onclick="closeTool()" class="text-white/40 hover:text-white">✕ 關閉視窗</button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <div class="space-y-6">
-                    <div class="bg-white/5 p-6 rounded-3xl border border-white/10">
-                        <p id="calc-name" class="text-2xl font-black mb-1">--</p>
-                        <p id="calc-id" class="text-[10px] font-bold opacity-40 uppercase">Employee ID</p>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black opacity-40">離職生效日</label>
-                        <input type="date" id="resign-date" class="w-full bg-white/10 border-none p-4 rounded-2xl outline-none focus:ring-2 ring-blue-500">
-                    </div>
-                    <button onclick="runCalculation()" class="w-full bg-blue-600 py-5 rounded-2xl font-black hover:bg-blue-500 transition-colors">執行法律試算</button>
-                </div>
-                <div class="bg-blue-900/30 p-8 rounded-[2rem] border border-blue-500/30 space-y-6">
-                    <div class="flex justify-between border-b border-white/10 pb-4">
-                        <span class="opacity-60 text-xs">平均工資 (前六個月)</span>
-                        <span id="res-avg" class="font-black">$0</span>
-                    </div>
-                    <div class="flex justify-between border-b border-white/10 pb-4">
-                        <span class="opacity-60 text-xs">資遣費 (勞退新制)</span>
-                        <span id="res-severance" class="font-black text-yellow-400">$0</span>
-                    </div>
-                    <div class="flex justify-between border-b border-white/10 pb-4">
-                        <span class="opacity-60 text-xs">預告工資</span>
-                        <span id="res-notice" class="font-black">$0</span>
-                    </div>
-                    <div class="pt-4 flex justify-between items-end">
-                        <span class="text-xs font-black">應付總額</span>
-                        <span id="res-total" class="text-4xl font-black tracking-tighter text-white">$0</span>
-                    </div>
-                    <button class="w-full mt-4 border border-white/20 py-3 rounded-xl text-[10px] font-black hover:bg-white/10">輸出法律棄權聲明協議書</button>
-                </div>
-            </div>
-        </div>
+        </section>
 
     </main>
 
-    <div id="modal-approve" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-[100] p-6">
-        <div class="bg-white rounded-[2.5rem] w-full max-w-sm p-10 shadow-2xl">
-            <h2 class="text-2xl font-black mb-2">核准入職</h2>
-            <p id="approve-target" class="text-slate-400 text-xs mb-8">正在核准新員工...</p>
-            <form id="form-approve" class="space-y-5">
-                <input type="hidden" id="approve-id">
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 ml-1">設定 240H 月薪</label>
-                    <input type="number" id="base_salary" required placeholder="例如 36000" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 ring-blue-900">
-                </div>
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 ml-1">初始特休時數 (Hrs)</label>
-                    <input type="number" id="init_leave" value="0" class="w-full p-4 bg-slate-50 rounded-2xl border-none">
-                </div>
-                <div class="flex gap-4 mt-6">
-                    <button type="button" onclick="closeModal()" class="flex-1 py-4 text-slate-400 font-bold">取消</button>
-                    <button type="submit" class="flex-1 bg-[#002B5B] text-white py-4 rounded-2xl font-black shadow-lg">正式啟用</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script>
-        // --- 核心配置 ---
-        const SB_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
-        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'; 
-        const _sb = supabase.createClient(SB_URL, SB_KEY);
+        // --- 1. 核心配置 ---
+        const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
+        // ⚠️ 請務必將下方替換為你那串超長的 anon public 金鑰
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'; 
+        const LIFF_ID = '2009148826-RoogHmxk';
 
-        let allEmps = [];
+        const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let currentUser = null;
 
-        async function loadData() {
-            const { data: emps, error } = await _sb.from('employees').select('*, leave_balances(annual_leave_hours)').order('created_at', { ascending: false });
-            if (error) return console.error(error);
-            allEmps = emps;
-
-            // 1. 待核准名單渲染
-            const pending = emps.filter(e => !e.is_approved && e.nda_signed_at);
-            document.getElementById('pending-count').innerText = pending.length;
-            const pList = document.getElementById('list-pending');
-            pList.innerHTML = pending.length ? '' : '<p class="text-slate-300 text-sm italic text-center py-4">目前無待核准人員</p>';
-            pending.forEach(e => {
-                pList.innerHTML += `
-                    <div class="p-4 bg-slate-50 rounded-2xl flex justify-between items-center group hover:bg-blue-50 transition-colors">
-                        <div>
-                            <p class="font-bold text-slate-800">${e.full_name}</p>
-                            <p class="text-[10px] text-slate-400">已簽 NDA: ${new Date(e.nda_signed_at).toLocaleDateString()}</p>
-                        </div>
-                        <button onclick="openApproveModal('${e.id}', '${e.full_name}')" class="bg-blue-900 text-white text-[10px] font-black px-4 py-2 rounded-lg shadow-sm">核准</button>
-                    </div>`;
-            });
-
-            // 2. 全體員工表格渲染
-            const tableBody = document.getElementById('table-employees');
-            tableBody.innerHTML = '';
-            emps.filter(e => e.is_approved).forEach(e => {
-                const hourly = (e.base_salary / 240).toFixed(1);
-                const healthUnits = Math.min((e.family_insured_count || 0) + 1, 4); //
-                
-                tableBody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition-colors group">
-                        <td class="p-6">
-                            <p class="font-black text-slate-800">${e.full_name}</p>
-                            <p class="text-[10px] text-slate-400 font-normal">ID: ${e.id_number}</p>
-                        </td>
-                        <td>$${e.base_salary.toLocaleString()}</td>
-                        <td class="text-blue-900 font-black tracking-tighter">$${hourly}/hr</td>
-                        <td>
-                            <span class="bg-slate-100 px-3 py-1 rounded-full text-xs font-black">
-                                ${e.leave_balances?.annual_leave_hours || 0} H
-                            </span>
-                        </td>
-                        <td>
-                            <span class="text-xs ${healthUnits >= 4 ? 'text-red-600' : 'text-slate-400'}">
-                                ${healthUnits} 人份 (含眷)
-                            </span>
-                        </td>
-                        <td>
-                            <button onclick="openSeverance('${e.id}')" class="text-[10px] bg-slate-900 text-white px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">資遣試算</button>
-                        </td>
-                    </tr>`;
-            });
+        // --- 2. 初始化與狀態機 ---
+        async function initApp() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+                const profile = await liff.getProfile();
+                document.getElementById('user-status').innerHTML = `<span class="opacity-70 mr-1">👤</span> ${profile.displayName}`;
+                checkUserStatus(profile.userId);
+            } catch (err) {
+                alert('初始化失敗：' + err.message);
+                console.error(err);
+            }
         }
 
-        // --- 核准功能 ---
-        function openApproveModal(id, name) {
-            document.getElementById('approve-id').value = id;
-            document.getElementById('approve-target').innerText = `正在為 ${name} 設定薪資與假額`;
-            document.getElementById('modal-approve').classList.remove('hidden');
+        async function checkUserStatus(lineId) {
+            const { data, error } = await _sb.from('employees').select('*').eq('line_id', lineId).single();
+            
+            // 隱藏載入畫面
+            document.querySelectorAll('main > section').forEach(s => s.className = 'hidden-section');
+
+            if (!data) {
+                // 狀態 0：未建檔
+                document.getElementById('onboarding-section').className = 'active-section';
+            } else if (!data.nda_signed_at) {
+                // 狀態 1：未簽保密
+                currentUser = data;
+                document.getElementById('nda-section').className = 'active-section';
+            } else if (!data.is_approved) {
+                // 狀態 2：等待老闆審核
+                document.getElementById('pending-section').className = 'active-section';
+            } else {
+                // 狀態 3：正式開通
+                currentUser = data;
+                loadDashboardData();
+                document.getElementById('dashboard-section').className = 'active-section';
+            }
         }
 
-        document.getElementById('form-approve').onsubmit = async (e) => {
+        // --- 3. 資料庫互動邏輯 ---
+        
+        // 讀取特休餘額
+        async function loadDashboardData() {
+            const { data } = await _sb.from('leave_balances').select('annual_leave_hours').eq('employee_id', currentUser.id).single();
+            if (data) {
+                document.getElementById('leave-balance').innerText = data.annual_leave_hours;
+            } else {
+                document.getElementById('leave-balance').innerText = '0';
+            }
+        }
+
+        // 送出建檔表單
+        document.getElementById('onboarding-form').onsubmit = async (e) => {
             e.preventDefault();
-            const id = document.getElementById('approve-id').value;
-            const salary = document.getElementById('base_salary').value;
-            const leave = document.getElementById('init_leave').value;
+            const btn = e.submitter;
+            btn.disabled = true;
+            btn.innerText = '處理中...';
 
-            // 寫入薪資與核准
-            await _sb.from('employees').update({ is_approved: true, base_salary: salary }).eq('id', id);
-            // 建立初始特休戶口
-            await _sb.from('leave_balances').upsert({ employee_id: id, annual_leave_hours: leave });
+            try {
+                const profile = await liff.getProfile();
+                const payload = Object.fromEntries(new FormData(e.target));
+                payload.line_id = profile.userId;
 
-            closeModal();
-            loadData();
-            alert('該員已正式啟用，240H 紀律引擎已同步。');
+                const { error } = await _sb.from('employees').insert([payload]);
+                if (error) throw error;
+
+                alert('個資儲存成功！請簽署保密協定。');
+                location.reload(); // 重新整理進入下一關
+            } catch (err) {
+                alert('發生錯誤：' + err.message);
+                btn.disabled = false;
+                btn.innerText = '送出審核';
+            }
         };
 
-        // --- 資遣試算引擎 ---
-        let selectedEmp = null;
-        function openSeverance(id) {
-            selectedEmp = allEmps.find(e => e.id === id);
-            document.getElementById('calc-name').innerText = selectedEmp.full_name;
-            document.getElementById('calc-id').innerText = selectedEmp.id_number;
-            document.getElementById('severance-tool').classList.remove('hidden');
-            window.scrollTo({ top: document.getElementById('severance-tool').offsetTop - 100, behavior: 'smooth' });
+        // 簽署 NDA
+        document.getElementById('sign-nda-btn').onclick = async () => {
+            if (!document.getElementById('nda-agree').checked) {
+                return alert('請先勾選同意條款');
+            }
+            const btn = document.getElementById('sign-nda-btn');
+            btn.disabled = true;
+            btn.innerText = '存證中...';
+
+            const { error } = await _sb.from('employees')
+                .update({ nda_signed_at: new Date().toISOString() })
+                .eq('id', currentUser.id);
+
+            if (error) {
+                alert('簽署失敗：' + error.message);
+                btn.disabled = false;
+                btn.innerText = '簽署同意';
+            } else {
+                alert('簽署完成！請等待老闆審核。');
+                location.reload(); // 重新整理進入下一關
+            }
+        };
+
+        // GPS 打卡
+        function handlePunch(type) {
+            if (!navigator.geolocation) return alert('您的裝置不支援 GPS');
+            
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const { data, error } = await _sb.rpc('fn_process_punch', {
+                    p_emp_id: currentUser.id,
+                    p_type: type,
+                    p_lat: pos.coords.latitude,
+                    p_lng: pos.coords.longitude
+                });
+                if (error) {
+                    alert('打卡失敗：' + error.message);
+                } else {
+                    alert(type === 'IN' ? '✅ 上班打卡成功！' : '🏠 下班打卡成功！');
+                    loadDashboardData(); // 刷新特休餘額
+                }
+            }, (err) => alert('請開啟手機 GPS 定位權限以完成打卡'));
         }
 
-        function runCalculation() {
-            const resignDate = new Date(document.getElementById('resign-date').value);
-            if (!resignDate || isNaN(resignDate)) return alert('請選擇離職日');
-            
-            const onDate = new Date(selectedEmp.onboarding_date || selectedEmp.created_at);
-            const seniorityDays = (resignDate - onDate) / (1000 * 60 * 60 * 24);
-            const seniorityYears = seniorityDays / 365;
-
-            // 勞退新制資遣費：0.5 個月平均工資 * 年資
-            const avgSalary = selectedEmp.base_salary; 
-            const severancePay = Math.round(avgSalary * 0.5 * seniorityYears);
-            
-            // 預告工資 (簡化逻辑：滿 3 年 30 天)
-            let noticeDays = 10;
-            if (seniorityYears >= 3) noticeDays = 30;
-            else if (seniorityYears >= 1) noticeDays = 20;
-            const noticePay = Math.round((avgSalary / 30) * noticeDays);
-
-            document.getElementById('res-avg').innerText = `$${avgSalary.toLocaleString()}`;
-            document.getElementById('res-severance').innerText = `$${severancePay.toLocaleString()}`;
-            document.getElementById('res-notice').innerText = `$${noticePay.toLocaleString()}`;
-            document.getElementById('res-total').innerText = `$${(severancePay + noticePay).toLocaleString()}`;
-        }
-
-        function closeModal() { document.getElementById('modal-approve').classList.add('hidden'); }
-        function closeTool() { document.getElementById('severance-tool').classList.add('hidden'); }
-
-        window.onload = loadData;
+        // 啟動應用程式
+        window.onload = initApp;
     </script>
 </body>
 </html>
