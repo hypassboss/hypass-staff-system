@@ -13,7 +13,6 @@
         .glass-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.5); }
         .nav-item.active { color: #0284c7; font-weight: 900; transform: translateY(-4px); transition: all 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
         /* 隱藏滾動條但保留滾動功能 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -53,7 +52,10 @@
                     </div>
                     <div class="flex justify-between items-center"><span class="text-[10px] font-bold">勞退自提 (0-6%)</span><input type="number" name="pension_rate" value="0" max="6" class="w-16 p-1 text-center border rounded"></div>
                 </div>
-                <div class="grid grid-cols-2 gap-3"><input type="text" name="emergency_name" placeholder="緊急聯絡人" required class="p-3 bg-white/80 border rounded-xl text-xs"><input type="tel" name="emergency_phone" placeholder="聯絡電話" required class="p-3 bg-white/80 border rounded-xl text-xs"></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="text" name="emergency_name" placeholder="緊急聯絡人" required class="p-3 bg-white/80 border rounded-xl text-xs">
+                    <input type="tel" name="emergency_phone" placeholder="聯絡電話" required class="p-3 bg-white/80 border rounded-xl text-xs">
+                </div>
                 
                 <div class="bg-slate-900 text-white p-5 rounded-2xl mt-4">
                     <h3 class="text-xs font-black text-amber-400 mb-3 border-b border-white/20 pb-2">⚖️ 數位簽署</h3>
@@ -73,11 +75,11 @@
                     <p id="ui-tenure" class="text-[10px] text-sky-300 font-bold mb-4">🕒 載入中</p>
                     <div class="flex justify-between items-center bg-white/10 p-4 rounded-2xl border border-white/10"><span class="text-[10px] font-black text-slate-300">特休餘額 (Hrs)</span><span id="ui-leave" class="text-4xl font-black">--</span></div>
                 </div>
-                <div class="glass-card p-5 rounded-3xl">
-                    <select id="punch-branch" class="w-full mb-4 text-sm font-bold bg-sky-50 text-sky-900 border border-sky-200 rounded-lg p-2"></select>
+                <div class="glass-card p-5 rounded-3xl shadow-sm">
+                    <select id="punch-branch" class="w-full mb-4 text-sm font-bold bg-sky-50 text-sky-900 border border-sky-200 rounded-lg p-3 outline-none"></select>
                     <div class="grid grid-cols-2 gap-3">
-                        <button onclick="punch('IN')" class="bg-sky-600 text-white py-12 rounded-2xl font-black text-xl shadow-lg active:scale-95"><span class="text-3xl block mb-2">🏢</span>上班</button>
-                        <button onclick="punch('OUT')" class="bg-white text-slate-700 border py-12 rounded-2xl font-black text-xl active:scale-95 shadow-sm"><span class="text-3xl block mb-2 grayscale">🏠</span>下班</button>
+                        <button onclick="punch('IN')" class="bg-sky-600 text-white py-12 rounded-2xl font-black text-xl shadow-lg active:scale-95 transition-transform"><span class="text-3xl block mb-2">🏢</span>上班</button>
+                        <button onclick="punch('OUT')" class="bg-white text-slate-700 border py-12 rounded-2xl font-black text-xl active:scale-95 shadow-sm transition-transform"><span class="text-3xl block mb-2 grayscale">🏠</span>下班</button>
                     </div>
                 </div>
             </div>
@@ -85,7 +87,7 @@
             <div id="tab-records" class="app-view space-y-4">
                 <h3 class="font-black text-xl text-slate-900 border-l-4 border-indigo-500 pl-3">個人考勤明細</h3>
                 <div class="glass-card p-4 rounded-3xl h-[60vh] overflow-y-auto no-scrollbar space-y-3" id="ui-records-list">
-                    <div class="text-center text-slate-400 text-xs py-10">載入中...</div>
+                    <div class="text-center text-slate-400 text-xs py-10">資料同步中...</div>
                 </div>
             </div>
 
@@ -103,14 +105,8 @@
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="text-[10px] font-bold text-slate-500">起始時間</label>
-                                <input type="date" name="start_date" required class="w-full bg-white border border-slate-200 p-3 rounded-xl text-xs outline-none">
-                            </div>
-                            <div>
-                                <label class="text-[10px] font-bold text-slate-500">結束時間</label>
-                                <input type="date" name="end_date" required class="w-full bg-white border border-slate-200 p-3 rounded-xl text-xs outline-none">
-                            </div>
+                            <div><label class="text-[10px] font-bold text-slate-500">起始時間</label><input type="date" name="start_date" required class="w-full bg-white border border-slate-200 p-3 rounded-xl text-xs outline-none"></div>
+                            <div><label class="text-[10px] font-bold text-slate-500">結束時間</label><input type="date" name="end_date" required class="w-full bg-white border border-slate-200 p-3 rounded-xl text-xs outline-none"></div>
                         </div>
                         <p class="text-[10px] text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-100 font-bold">💡 系統會自動避開週休二日與國定假日。送出後將由管理部核准。</p>
                         <button type="submit" id="btn-leave" class="w-full bg-amber-500 text-white font-black py-4 rounded-xl active:scale-95 shadow-md">送出假單</button>
@@ -138,7 +134,7 @@
                             <div class="w-11 h-6 bg-slate-300 rounded-full peer peer-checked:bg-sky-600 peer-checked:after:translate-x-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
                         </label>
                     </div>
-                    <div class="mt-6 text-center text-[10px] text-slate-400">HYPASS ENTERPRISE v21.0</div>
+                    <div class="mt-6 text-center text-[10px] text-slate-400 font-bold tracking-widest">HYPASS ENTERPRISE v21.0</div>
                 </div>
             </div>
 
@@ -153,9 +149,12 @@
     </main>
 
     <script>
-        // ⚠️ 工程師請替換為真實的金鑰
-        const _sb = supabase.createClient('https://obbcgmgkbazwpfvgbupg.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0');
+        // ⚠️ 您專屬的連線設定 (工程師僅需填入 ANON_KEY 即可)
+        const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'; 
         const LIFF_ID = '2009148826-RoogHmxk'; 
+
+        const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
 
         async function init() {
@@ -192,7 +191,7 @@
             document.querySelectorAll('.nav-item').forEach(btn => { btn.classList.remove('active', 'text-sky-600'); btn.classList.add('text-slate-400'); });
             document.querySelector(`button[onclick="switchTab('${id}')"]`).classList.add('active', 'text-sky-600');
             
-            // 若切換到紀錄頁，自動刷新考勤資料
+            // 若點擊「紀錄」，自動抓取最新資料
             if(id === 'records') loadMyRecords();
         }
 
@@ -223,7 +222,7 @@
             alert(chk ? '✅ 已開啟薪資保全' : '❌ 已關閉特休抵扣');
         }
 
-        // 打卡功能
+        // 打卡引擎
         function punch(type) {
             const bid = document.getElementById('punch-branch').value;
             navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -238,7 +237,7 @@
             }, () => alert('請開啟手機的 GPS 定位權限！'));
         }
 
-        // 載入歷史打卡紀錄 (NEW)
+        // 載入歷史紀錄
         async function loadMyRecords() {
             const list = document.getElementById('ui-records-list');
             list.innerHTML = '<div class="text-center text-slate-400 text-xs py-10">資料同步中...</div>';
@@ -248,10 +247,7 @@
                 .eq('employee_id', currentUser.id)
                 .order('punch_time', {ascending: false}).limit(20);
                 
-            if(!data || data.length === 0) {
-                list.innerHTML = '<div class="text-center text-slate-400 text-xs py-10">尚無考勤紀錄</div>';
-                return;
-            }
+            if(!data || data.length === 0) { list.innerHTML = '<div class="text-center text-slate-400 text-xs py-10">尚無考勤紀錄</div>'; return; }
 
             list.innerHTML = data.map(log => {
                 const isNormal = log.note.includes('正常');
@@ -260,10 +256,7 @@
                 return `
                 <div class="bg-white p-3 rounded-xl border-l-4 ${isNormal ? 'border-emerald-400' : 'border-amber-500'} shadow-sm flex justify-between items-center">
                     <div>
-                        <div class="flex items-center space-x-2 mb-1">
-                            <span class="text-xs font-black bg-slate-100 text-slate-600 px-2 py-0.5 rounded">${typeText}</span>
-                            <span class="text-xs font-bold text-slate-800">${time}</span>
-                        </div>
+                        <div class="flex items-center space-x-2 mb-1"><span class="text-xs font-black bg-slate-100 text-slate-600 px-2 py-0.5 rounded">${typeText}</span><span class="text-xs font-bold text-slate-800">${time}</span></div>
                         <p class="text-[10px] text-slate-500">📍 ${log.branch_locations?.branch_name || '未知據點'}</p>
                     </div>
                     ${!isNormal ? `<span class="text-[9px] bg-amber-50 text-amber-700 px-2 py-1 rounded font-bold border border-amber-100">${log.note}</span>` : ''}
@@ -271,29 +264,14 @@
             }).join('');
         }
 
-        // 送出請假單 (NEW)
+        // 送出請假單
         async function submitLeave(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btn-leave');
-            btn.disabled = true; btn.innerText = '傳送中...';
-            
+            e.preventDefault(); const btn = document.getElementById('btn-leave'); btn.disabled = true; btn.innerText = '傳送中...';
             const fd = new FormData(e.target);
-            const payload = {
-                employee_id: currentUser.id,
-                leave_type: fd.get('leave_type'),
-                start_date: fd.get('start_date'),
-                end_date: fd.get('end_date'),
-                status: '待審核'
-            };
-
+            const payload = { employee_id: currentUser.id, leave_type: fd.get('leave_type'), start_date: fd.get('start_date'), end_date: fd.get('end_date'), status: '待審核' };
             const { error } = await _sb.from('leave_requests').insert([payload]);
-            if(error) {
-                alert('⚠️ 送出失敗：' + error.message);
-            } else {
-                alert('✅ 假單已送出，請等待主管簽核！');
-                e.target.reset();
-                switchTab('home'); // 送出後跳回首頁
-            }
+            if(error) alert('⚠️ 送出失敗：' + error.message);
+            else { alert('✅ 假單已送出，請等待主管簽核！'); e.target.reset(); switchTab('home'); }
             btn.disabled = false; btn.innerText = '送出假單';
         }
 
