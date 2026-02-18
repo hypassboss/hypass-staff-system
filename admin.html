@@ -102,7 +102,7 @@
             <div class="bg-white p-5 rounded-2xl shadow-sm border">
                 <input type="text" id="blt-title" placeholder="公告標題" class="w-full p-3 border rounded-xl mb-3 text-sm font-bold">
                 <textarea id="blt-content" placeholder="內容..." class="w-full p-3 border rounded-xl mb-4 text-sm h-32 outline-none"></textarea>
-                <button onclick="postBlt()" class="w-full bg-amber-500 text-white font-black py-4 rounded-xl shadow-md">推播至員工首頁</button>
+                <button onclick="postBlt()" class="w-full bg-amber-500 text-white font-black py-4 rounded-xl shadow-md active:scale-95 transition">推播至員工首頁</button>
             </div>
         </section>
     </main>
@@ -117,7 +117,7 @@
         async function loadAll() {
             const { data: emps } = await _sb.from('employees').select('*');
             const p = emps.filter(e => !e.is_approved && e.employment_status === '在職');
-            document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="bg-white p-4 rounded-xl border flex justify-between items-center shadow-sm"><h4 class="font-black text-sm">${e.full_name}</h4><button onclick="appr('${e.id}')" class="bg-blue-600 text-white text-xs font-black px-4 py-2 rounded-lg">核准</button></div>`).join('') : '<p class="text-xs text-slate-400 text-center py-3 bg-slate-50 rounded-xl">無待審核名單</p>';
+            document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="bg-white p-4 rounded-xl border flex justify-between items-center shadow-sm"><h4 class="font-black text-sm">${e.full_name}</h4><button onclick="appr('${e.id}')" class="bg-blue-600 text-white text-xs font-black px-4 py-2 rounded-lg">核准開通</button></div>`).join('') : '<p class="text-xs text-slate-400 text-center py-3 bg-slate-50 rounded-xl">無待審核名單</p>';
             
             const activeEmps = emps.filter(e => e.is_approved && e.employment_status === '在職');
             activeEmps.forEach(e => { window.empData[e.id] = { base: e.base_salary, deps: e.dependents_count || 0 }; }); 
@@ -127,7 +127,7 @@
             const { data: lv } = await _sb.from('leave_requests').select('*, employees(full_name)').eq('status', '審核中');
             document.getElementById('list-leaves').innerHTML = lv.length ? lv.map(l => {
                 let t1 = new Date(l.start_time).toLocaleString('zh-TW').slice(5,-3); let t2 = new Date(l.end_time).toLocaleString('zh-TW').slice(5,-3);
-                return `<div class="bg-white p-4 rounded-xl border shadow-sm"><div class="flex justify-between mb-1"><span class="font-black text-sm">${l.employees?.full_name} - ${l.leave_type}</span><span class="text-[9px] text-sky-600 font-bold bg-sky-50 px-2 py-1 rounded">${l.salary_protection?'保薪':'不保薪'}</span></div><p class="text-[10px] text-slate-500 mb-3">${t1} ~ ${t2}</p><div class="flex space-x-2"><button onclick="updLeave('${l.id}', '核准')" class="flex-1 bg-emerald-100 text-emerald-800 py-3 rounded-xl text-sm font-black">核准</button><button onclick="updLeave('${l.id}', '核駁')" class="flex-1 bg-red-100 text-red-800 py-3 rounded-xl text-sm font-black">駁回</button></div></div>`
+                return `<div class="bg-white p-4 rounded-xl border shadow-sm"><div class="flex justify-between mb-1"><span class="font-black text-sm">${l.employees?.full_name} - ${l.leave_type}</span><span class="text-[9px] text-sky-600 font-bold bg-sky-50 px-2 py-1 rounded">${l.salary_protection?'保薪':'不保薪'}</span></div><p class="text-[10px] text-slate-500 mb-3">${t1} ~ ${t2}</p><div class="flex space-x-2"><button onclick="updLeave('${l.id}', '核准')" class="flex-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 py-3 rounded-xl text-sm font-black transition">核准</button><button onclick="updLeave('${l.id}', '核駁')" class="flex-1 bg-red-100 hover:bg-red-200 text-red-800 py-3 rounded-xl text-sm font-black transition">駁回</button></div></div>`
             }).join('') : '<p class="text-xs text-slate-400 text-center py-3 bg-slate-50 rounded-xl">無待審核假單</p>';
 
             const { data: br } = await _sb.from('branch_locations').select('*');
@@ -140,7 +140,6 @@
             const input = document.getElementById('b-a').value; if(!input) return;
             document.getElementById('b-la').placeholder = '解析中...'; document.getElementById('b-ln').placeholder = '解析中...';
             
-            // Regex 抓取 Google Maps 網址內的經緯度
             const mapRegex = /@(-?\d+\.\d+),(-?\d+\.\d+)/; const match = input.match(mapRegex);
             if(match) { document.getElementById('b-la').value = match[1]; document.getElementById('b-ln').value = match[2]; alert('✅ 從網址提取成功！'); return; }
 
@@ -152,16 +151,16 @@
             } catch (e) { alert('定位異常'); }
         }
 
+        // 🌟 匯出 CSV 檔加入銀行代碼
         async function exportBankCSV() {
             const month = document.getElementById('export-mon').value; if(!month) { alert('請選擇月份'); return; }
-            const { data } = await _sb.from('payroll_records').select('total_net_pay, employees(full_name, bank_name, bank_account)').eq('pay_month', month);
+            const { data } = await _sb.from('payroll_records').select('total_net_pay, employees(full_name, bank_code, bank_name, bank_account)').eq('pay_month', month);
             if(!data || data.length === 0) { alert('無紀錄'); return; }
-            let csv = "\uFEFF銀行名稱,收款帳號,戶名,匯款金額,備註\n";
-            data.forEach(r => { csv += `${r.employees.bank_name},="${r.employees.bank_account}",${r.employees.full_name},${r.total_net_pay},${month}薪資\n`; });
+            let csv = "\uFEFF銀行代碼,銀行名稱,收款帳號,戶名,匯款金額,備註\n";
+            data.forEach(r => { csv += `="${r.employees.bank_code}",${r.employees.bank_name},="${r.employees.bank_account}",${r.employees.full_name},${r.total_net_pay},${month}薪資\n`; });
             const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `HYPASS_${month}_匯款檔.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
-        // 自動精算勞健保與二代
         function autoFillLaw() {
             const empId = document.getElementById('p-emp').value; const emp = window.empData[empId]; if(!emp) return;
             if(!document.getElementById('p-base').value) { document.getElementById('p-base').value = emp.base; }
@@ -173,7 +172,6 @@
             document.getElementById('p-pen').value = Math.round(base * 0.06);
             document.getElementById('p-2nd').value = Math.round((bonus + yeb) * 0.0211);
             
-            // 勞健保公式：勞保 ~2.2%, 健保 ~1.55% 乘上 (1+眷屬人數)
             const labor_est = Math.round(base * 0.022);
             const health_est = Math.round(base * 0.0155 * (1 + emp.deps));
             document.getElementById('p-ins').value = labor_est + health_est;
@@ -214,7 +212,7 @@
         async function appr(id) { await _sb.from('employees').update({is_approved:true}).eq('id',id); loadAll(); alert('✅ 已開通'); }
         async function updLeave(id, st) { await _sb.from('leave_requests').update({status:st}).eq('id',id); loadAll(); alert('✅ 假單已' + st); }
         async function addBr() { const n = document.getElementById('b-n').value; const a = document.getElementById('b-a').value; const la = document.getElementById('b-la').value; const ln = document.getElementById('b-ln').value; if(!n||!a||!la||!ln){ alert('請填妥'); return;} await _sb.from('branch_locations').insert([{ branch_name: n, address: a, lat: parseFloat(la), lng: parseFloat(ln) }]); loadAll(); alert('✅ 新增成功'); }
-        async function postBlt() { await _sb.from('bulletin_board').insert([{ title: document.getElementById('blt-title').value, content: document.getElementById('blt-content').value }]); alert('✅ 公告已發布'); document.getElementById('blt-title').value=''; document.getElementById('blt-content').value=''; }
+        async function postBlt() { await _sb.from('bulletin_board').insert([{ title: document.getElementById('blt-title').value, content: document.getElementById('blt-content').value }]); alert('✅ 公告發布成功'); document.getElementById('blt-title').value=''; document.getElementById('blt-content').value=''; }
     </script>
 </body>
 </html>
