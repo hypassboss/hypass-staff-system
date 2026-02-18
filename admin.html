@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #f1f5f9; -webkit-tap-highlight-color: transparent; }
+        body { background: #f8fafc; -webkit-tap-highlight-color: transparent; }
         .tab-content { display: none; } .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; } 
         @keyframes fadeIn { from{opacity:0; transform: translateY(5px);} to{opacity:1; transform: translateY(0);} } 
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -37,12 +37,12 @@
 
     <main id="main-dash" class="container mx-auto p-4 max-w-2xl hidden mt-2">
         
-        <div class="flex space-x-2 mb-6 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200 overflow-x-auto no-scrollbar">
-            <button onclick="st('pend')" id="t-pend" class="t-btn active px-5 py-2.5 text-xs font-black bg-slate-900 text-white rounded-xl whitespace-nowrap shadow-sm transition-all">待辦 🔴</button>
-            <button onclick="st('pay')" id="t-pay" class="t-btn px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl whitespace-nowrap transition-all">薪資💰</button>
-            <button onclick="st('offboard')" id="t-offboard" class="t-btn px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl whitespace-nowrap transition-all">資遣⚔️</button>
-            <button onclick="st('brs')" id="t-brs" class="t-btn px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl whitespace-nowrap transition-all">據點📍</button>
-            <button onclick="st('bull')" id="t-bull" class="t-btn px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl whitespace-nowrap transition-all">公告📢</button>
+        <div class="grid grid-cols-3 gap-2 mb-6">
+            <button onclick="st('pend')" id="t-pend" class="t-btn active flex flex-col items-center justify-center py-3.5 bg-slate-900 text-white rounded-2xl shadow-md border border-transparent transition-all"><span class="text-2xl mb-1">🔴</span><span class="t-text text-[11px] font-black tracking-widest">待辦審核</span></button>
+            <button onclick="st('pay')" id="t-pay" class="t-btn flex flex-col items-center justify-center py-3.5 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all"><span class="text-2xl mb-1">💰</span><span class="t-text text-[11px] font-bold tracking-widest">薪資匯款</span></button>
+            <button onclick="st('offboard')" id="t-offboard" class="t-btn flex flex-col items-center justify-center py-3.5 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all"><span class="text-2xl mb-1">⚔️</span><span class="t-text text-[11px] font-bold tracking-widest">結算資遣</span></button>
+            <button onclick="st('brs')" id="t-brs" class="t-btn flex flex-col items-center justify-center py-3.5 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all"><span class="text-2xl mb-1">📍</span><span class="t-text text-[11px] font-bold tracking-widest">據點管理</span></button>
+            <button onclick="st('bull')" id="t-bull" class="t-btn flex flex-col items-center justify-center py-3.5 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all"><span class="text-2xl mb-1">📢</span><span class="t-text text-[11px] font-bold tracking-widest">企業公告</span></button>
         </div>
 
         <section id="pend" class="tab-content active space-y-6">
@@ -121,8 +121,8 @@
             <div class="glass-panel p-6 shadow-sm mb-4">
                 <h3 class="font-black text-slate-800 border-l-4 border-emerald-500 pl-3 text-lg mb-4">新增打卡據點</h3>
                 <input type="text" id="b-n" placeholder="分店名稱 (例:總部大樓)" class="admin-input mb-3 font-bold">
-                <input type="text" id="b-a" onblur="autoGeoCode()" placeholder="貼上 Google Maps 網址，自動解析" class="admin-input mb-1 bg-sky-50 focus:bg-white transition-colors">
-                <p class="text-[9px] text-slate-400 font-bold px-1 mb-3">輸入完點擊空白處，系統將自動擷取經緯度</p>
+                <input type="text" id="b-a" onblur="autoGeoCode()" placeholder="貼上 Google Maps 網址自動解析" class="admin-input mb-1 bg-sky-50 focus:bg-white transition-colors">
+                <p class="text-[9px] text-slate-400 font-bold px-1 mb-3">貼上網址或地址後點擊空白處</p>
                 <div class="grid grid-cols-2 gap-3 mb-5">
                     <input type="number" step="any" id="b-la" placeholder="緯度 (Lat)" class="admin-input bg-slate-50 font-mono text-sm">
                     <input type="number" step="any" id="b-ln" placeholder="經度 (Lng)" class="admin-input bg-slate-50 font-mono text-sm">
@@ -148,12 +148,28 @@
         let globalOffboardData = null; window.empData = {}; 
 
         function login() { if(document.getElementById('pin').value==='888888'){ document.getElementById('login-box').style.display='none'; document.getElementById('main-dash').style.display='block'; document.getElementById('logout').style.display='block'; loadAll(); } else alert('密碼錯誤'); }
-        function st(id) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active')); document.querySelectorAll('.t-btn').forEach(e=>{e.classList.remove('bg-slate-900','text-white','shadow-sm'); e.classList.add('text-slate-500');}); document.getElementById(id).classList.add('active'); document.getElementById('t-'+id).classList.add('bg-slate-900','text-white','shadow-sm'); document.getElementById('t-'+id).classList.remove('text-slate-500'); }
+        
+        // 🌟 九宮格導航切換邏輯
+        function st(id) { 
+            document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active')); 
+            document.querySelectorAll('.t-btn').forEach(e=>{
+                e.classList.remove('bg-slate-900','text-white','shadow-md','border-transparent'); 
+                e.classList.add('bg-white','text-slate-500','border-slate-200');
+                e.querySelector('.t-text').classList.remove('font-black');
+                e.querySelector('.t-text').classList.add('font-bold');
+            }); 
+            document.getElementById(id).classList.add('active'); 
+            const activeBtn = document.getElementById('t-'+id);
+            activeBtn.classList.remove('bg-white','text-slate-500','border-slate-200');
+            activeBtn.classList.add('bg-slate-900','text-white','shadow-md','border-transparent');
+            activeBtn.querySelector('.t-text').classList.remove('font-bold');
+            activeBtn.querySelector('.t-text').classList.add('font-black');
+        }
         
         async function loadAll() {
             const { data: emps } = await _sb.from('employees').select('*');
             const p = emps.filter(e => !e.is_approved && e.employment_status === '在職');
-            document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><span class="text-2xl mr-3">👤</span><div><h4 class="font-black text-sm text-slate-800">${e.full_name}</h4><p class="text-[10px] text-slate-500">${e.onboarding_date} 入職</p></div></div><button onclick="appr('${e.id}')" class="bg-blue-600 text-white text-xs font-black px-4 py-2 rounded-lg shadow-sm">核准</button></div>`).join('') : '<div class="text-center py-6 bg-slate-100/50 rounded-xl border border-dashed border-slate-300"><p class="text-xs text-slate-400 font-bold">目前無待審核名單</p></div>';
+            document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><span class="text-2xl mr-3">👤</span><div><h4 class="font-black text-sm text-slate-800">${e.full_name}</h4><p class="text-[10px] text-slate-500">${e.onboarding_date} 入職</p></div></div><button onclick="appr('${e.id}')" class="bg-blue-600 text-white text-xs font-black px-4 py-2 rounded-lg shadow-sm">手動核准</button></div>`).join('') : '<div class="text-center py-6 bg-slate-100/50 rounded-xl border border-dashed border-slate-300"><p class="text-xs text-slate-400 font-bold">目前無待審核名單</p></div>';
             
             const activeEmps = emps.filter(e => e.is_approved && e.employment_status === '在職');
             activeEmps.forEach(e => { window.empData[e.id] = { base: e.base_salary, deps: e.dependents_count || 0 }; }); 
@@ -188,7 +204,6 @@
             } catch (e) { alert('定位異常'); }
         }
 
-        // 🌟 匯出 CSV 檔加入銀行代碼
         async function exportBankCSV() {
             const month = document.getElementById('export-mon').value; if(!month) { alert('請選擇要匯出的月份'); return; }
             const { data } = await _sb.from('payroll_records').select('total_net_pay, employees(full_name, bank_code, bank_name, bank_user_name, bank_account)').eq('pay_month', month);
