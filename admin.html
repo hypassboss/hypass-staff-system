@@ -17,7 +17,7 @@
     <div id="login-box" class="flex flex-col items-center justify-center py-20 px-4">
         <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm text-center">
             <h2 class="text-xl font-black mb-6">最高權限解鎖</h2>
-            <input type="password" id="pin" placeholder="管理密碼" class="w-full border p-4 text-center text-2xl tracking-[0.5em] rounded-xl outline-none mb-6 bg-slate-50">
+            <input type="password" id="pin" placeholder="管理密碼" class="w-full border border-slate-200 p-4 text-center text-2xl tracking-[0.5em] rounded-xl outline-none mb-6 bg-slate-50">
             <button onclick="login()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl active:scale-95">解鎖進入</button>
         </div>
     </div>
@@ -42,26 +42,37 @@
             <div class="bg-white p-5 rounded-2xl shadow-sm border mb-4">
                 <input type="text" id="b-n" placeholder="分店名稱" class="w-full p-3 border rounded-xl mb-3 text-sm">
                 <input type="text" id="b-a" onblur="autoGeoCode()" placeholder="輸入地址 (輸入完點擊旁邊自動定位)" class="w-full p-3 border rounded-xl mb-3 text-sm bg-sky-50">
-                <div class="grid grid-cols-2 gap-3 mb-3"><input type="number" id="b-la" placeholder="緯度" class="p-3 border rounded-xl bg-slate-100 text-sm" readonly><input type="number" id="b-ln" placeholder="經度" class="p-3 border rounded-xl bg-slate-100 text-sm" readonly></div>
+                <p class="text-[10px] text-slate-400 mb-1">若無法定位，請手動輸入數字經緯度</p>
+                <div class="grid grid-cols-2 gap-3 mb-3"><input type="number" step="any" id="b-la" placeholder="緯度" class="p-3 border rounded-xl bg-slate-100 text-sm"><input type="number" step="any" id="b-ln" placeholder="經度" class="p-3 border rounded-xl bg-slate-100 text-sm"></div>
                 <button onclick="addBr()" class="w-full bg-emerald-600 text-white font-black py-3 rounded-xl">儲存據點</button>
             </div>
             <div id="list-brs" class="space-y-3"></div>
         </section>
 
         <section id="pay" class="tab-content space-y-4">
-            <h3 class="font-black border-l-4 border-indigo-500 pl-2 text-lg">發派當月薪資單</h3>
+            <h3 class="font-black border-l-4 border-indigo-500 pl-2 text-lg">派發當月薪資</h3>
             <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
-                <select id="p-emp" class="w-full p-3 border rounded-xl text-sm font-bold bg-slate-50"></select>
-                <input type="month" id="p-mon" class="w-full p-3 border rounded-xl text-sm font-bold bg-slate-50">
+                <div class="grid grid-cols-2 gap-3 mb-2"><select id="p-emp" class="p-3 border rounded-xl text-sm font-bold bg-slate-50"></select><input type="month" id="p-mon" class="p-3 border rounded-xl text-sm font-bold bg-slate-50"></div>
                 <div class="grid grid-cols-2 gap-3">
-                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">底薪</label><input type="number" id="p-base" class="w-full p-3 border rounded-xl text-sm"></div>
-                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">獎金</label><input type="number" id="p-bonus" class="w-full p-3 border rounded-xl text-sm"></div>
-                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">年終獎金</label><input type="number" id="p-yeb" class="w-full p-3 border rounded-xl text-sm"></div>
-                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">勞退公司提撥 (資訊)</label><input type="number" id="p-pen" class="w-full p-3 border rounded-xl text-sm"></div>
-                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">勞健保扣除額 (-)</label><input type="number" id="p-ins" class="w-full p-3 border rounded-xl text-sm border-red-200 bg-red-50 text-red-600 font-bold"></div>
-                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">總計實領</label><input type="number" id="p-net" class="w-full p-3 border rounded-xl text-lg bg-sky-50 font-black text-sky-600"></div>
+                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">底薪 (+)</label><input type="number" id="p-base" oninput="calcNet()" class="w-full p-3 border rounded-xl text-sm font-bold text-slate-800"></div>
+                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">獎金/津貼 (+)</label><input type="number" id="p-bonus" oninput="calcNet()" class="w-full p-3 border rounded-xl text-sm font-bold text-emerald-600"></div>
+                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">年終獎金 (+)</label><input type="number" id="p-yeb" oninput="calcNet()" class="w-full p-3 border rounded-xl text-sm font-bold text-emerald-600"></div>
+                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">勞健保扣繳 (-)</label><input type="number" id="p-ins" oninput="calcNet()" class="w-full p-3 border rounded-xl text-sm font-bold text-red-600 bg-red-50"></div>
                 </div>
-                <button onclick="issuePayroll()" class="w-full bg-indigo-600 text-white font-black py-4 rounded-xl shadow-md mt-2">發送薪資單至員工 App</button>
+                
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 mt-2">
+                    <div class="flex justify-between items-center mb-2"><span class="text-[10px] font-black text-slate-700">自動精算 (勞基法 6% 與二代 2.11%)</span><button onclick="autoFillLaw()" class="text-[10px] bg-slate-800 text-white px-2 py-1 rounded">一鍵帶入</button></div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><label class="text-[9px] font-bold text-slate-500 ml-1">勞退公司提撥 (資訊)</label><input type="number" id="p-pen" class="w-full p-2 border rounded-lg text-xs"></div>
+                        <div><label class="text-[9px] font-bold text-slate-500 ml-1">二代健保 (-)</label><input type="number" id="p-2nd" oninput="calcNet()" class="w-full p-2 border rounded-lg text-xs font-bold text-red-600"></div>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t mt-3">
+                    <label class="text-xs font-black text-slate-800 ml-1">總計實領金額</label>
+                    <input type="number" id="p-net" class="w-full p-4 border rounded-xl text-2xl bg-sky-50 font-black text-sky-600 text-right mt-1" readonly>
+                </div>
+                <button onclick="issuePayroll()" class="w-full bg-indigo-600 text-white font-black py-4 rounded-xl shadow-md mt-2">正式發送至員工 App</button>
             </div>
         </section>
 
@@ -70,19 +81,19 @@
             <div class="bg-white p-5 rounded-2xl shadow-sm border">
                 <input type="text" id="blt-title" placeholder="公告標題" class="w-full p-3 border rounded-xl mb-3 text-sm font-bold">
                 <textarea id="blt-content" placeholder="公告內容..." class="w-full p-3 border rounded-xl mb-3 text-sm h-32"></textarea>
-                <button onclick="postBlt()" class="w-full bg-amber-500 text-white font-black py-4 rounded-xl shadow-md">立即推播公告</button>
+                <button onclick="postBlt()" class="w-full bg-amber-500 text-white font-black py-4 rounded-xl shadow-md">推播公告</button>
             </div>
         </section>
     </main>
 
     <script>
         const _sb = supabase.createClient('https://obbcgmgkbazwpfvgbupg.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'); // ⚠️
-        function login() { if(document.getElementById('pin').value==='888888'){ document.getElementById('login-box').style.display='none'; document.getElementById('main-dash').style.display='block'; loadAll(); } }
+        function login() { if(document.getElementById('pin').value==='888888'){ document.getElementById('login-box').style.display='none'; document.getElementById('main-dash').style.display='block'; loadAll(); } else alert('密碼錯誤'); }
         function st(id) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active')); document.querySelectorAll('.t-btn').forEach(e=>{e.classList.remove('bg-slate-900','text-white'); e.classList.add('text-slate-500');}); document.getElementById(id).classList.add('active'); document.getElementById('t-'+id).classList.add('bg-slate-900','text-white'); }
         
         async function loadAll() {
             const { data: p } = await _sb.from('employees').select('*').eq('is_approved', false);
-            document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="bg-white p-4 rounded-xl border flex justify-between items-center shadow-sm"><h4 class="font-black text-base">${e.full_name}</h4><button onclick="appr('${e.id}')" class="bg-blue-600 text-white text-sm font-black px-4 py-2 rounded-lg">核准開通</button></div>`).join('') : '<p class="text-sm text-slate-400 text-center py-4 bg-slate-50 rounded-xl">無待審核名單</p>';
+            document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="bg-white p-4 rounded-xl border flex justify-between items-center shadow-sm"><h4 class="font-black text-sm">${e.full_name}</h4><button onclick="appr('${e.id}')" class="bg-blue-600 text-white text-xs font-black px-4 py-2 rounded-lg">核准開通</button></div>`).join('') : '<p class="text-sm text-slate-400 text-center py-4 bg-slate-50 rounded-xl">無待審核名單</p>';
             
             const { data: em } = await _sb.from('employees').select('id, full_name').eq('is_approved', true);
             document.getElementById('p-emp').innerHTML = em.map(e => `<option value="${e.id}">${e.full_name}</option>`).join('');
@@ -96,15 +107,47 @@
 
         async function autoGeoCode() {
             const addr = document.getElementById('b-a').value; if(!addr) return;
-            document.getElementById('b-la').value = '定位中...'; document.getElementById('b-ln').value = '定位中...';
-            try { const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}`); const data = await res.json(); if(data && data.length > 0) { document.getElementById('b-la').value = data[0].lat; document.getElementById('b-ln').value = data[0].lon; } else { alert('找不到地址'); document.getElementById('b-la').value = ''; document.getElementById('b-ln').value = ''; } } catch (e) { alert('定位失敗'); }
+            document.getElementById('b-la').placeholder = '定位中...'; document.getElementById('b-ln').placeholder = '定位中...';
+            try { 
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}`); 
+                const data = await res.json(); 
+                if(data && data.length > 0) { document.getElementById('b-la').value = data[0].lat; document.getElementById('b-ln').value = data[0].lon; } 
+                else { alert('⚠️ 自動定位失敗，請手動填入經緯度數字'); document.getElementById('b-la').placeholder = '緯度'; document.getElementById('b-ln').placeholder = '經度'; } 
+            } catch (e) { alert('定位異常，請手動輸入'); }
         }
 
-        async function appr(id) { await _sb.from('employees').update({is_approved:true}).eq('id',id); loadAll(); alert('✅ 員工已開通'); }
+        async function addBr() { 
+            const n = document.getElementById('b-n').value; const a = document.getElementById('b-a').value; const la = document.getElementById('b-la').value; const ln = document.getElementById('b-ln').value;
+            if(!n || !a || !la || !ln) { alert('請填妥所有欄位'); return; }
+            await _sb.from('branch_locations').insert([{ branch_name: n, address: a, lat: parseFloat(la), lng: parseFloat(ln) }]); loadAll(); alert('✅ 據點新增成功'); 
+        }
+
+        function autoFillLaw() {
+            const base = parseFloat(document.getElementById('p-base').value) || 0;
+            const bonus = parseFloat(document.getElementById('p-bonus').value) || 0;
+            const yeb = parseFloat(document.getElementById('p-yeb').value) || 0;
+            document.getElementById('p-pen').value = Math.round(base * 0.06);
+            document.getElementById('p-2nd').value = Math.round((bonus + yeb) * 0.0211);
+            calcNet();
+        }
+
+        function calcNet() {
+            const base = parseFloat(document.getElementById('p-base').value) || 0; const bonus = parseFloat(document.getElementById('p-bonus').value) || 0;
+            const yeb = parseFloat(document.getElementById('p-yeb').value) || 0; const ins = parseFloat(document.getElementById('p-ins').value) || 0;
+            const snd = parseFloat(document.getElementById('p-2nd').value) || 0;
+            const net = base + bonus + yeb - ins - snd;
+            document.getElementById('p-net').value = net > 0 ? net : 0;
+        }
+
+        async function issuePayroll() { 
+            const p = { employee_id: document.getElementById('p-emp').value, pay_month: document.getElementById('p-mon').value, base_pay: parseFloat(document.getElementById('p-base').value)||0, bonus: parseFloat(document.getElementById('p-bonus').value)||0, year_end_bonus: parseFloat(document.getElementById('p-yeb').value)||0, labor_pension: parseFloat(document.getElementById('p-pen').value)||0, insurance_deduction: parseFloat(document.getElementById('p-ins').value)||0, second_gen_health: parseFloat(document.getElementById('p-2nd').value)||0, total_net_pay: parseFloat(document.getElementById('p-net').value)||0 };
+            if(!p.pay_month) { alert('請選擇月份'); return; }
+            await _sb.from('payroll_records').insert([p]); alert('✅ 薪資單已發送'); document.querySelectorAll('input[type="number"]').forEach(e => e.value = '');
+        }
+
+        async function appr(id) { await _sb.from('employees').update({is_approved:true}).eq('id',id); loadAll(); alert('✅ 已開通'); }
         async function updLeave(id, st) { await _sb.from('leave_requests').update({status:st}).eq('id',id); loadAll(); alert('✅ 假單已' + st); }
-        async function addBr() { await _sb.from('branch_locations').insert([{ branch_name: document.getElementById('b-n').value, address: document.getElementById('b-a').value, lat: document.getElementById('b-la').value, lng: document.getElementById('b-ln').value }]); loadAll(); alert('✅ 據點新增成功'); }
-        async function postBlt() { await _sb.from('bulletin_board').insert([{ title: document.getElementById('blt-title').value, content: document.getElementById('blt-content').value }]); alert('✅ 公告已推播'); document.getElementById('blt-title').value=''; document.getElementById('blt-content').value=''; }
-        async function issuePayroll() { await _sb.from('payroll_records').insert([{ employee_id: document.getElementById('p-emp').value, pay_month: document.getElementById('p-mon').value, base_pay: document.getElementById('p-base').value || 0, bonus: document.getElementById('p-bonus').value || 0, year_end_bonus: document.getElementById('p-yeb').value || 0, labor_pension: document.getElementById('p-pen').value || 0, insurance_deduction: document.getElementById('p-ins').value || 0, total_net_pay: document.getElementById('p-net').value || 0 }]); alert('✅ 薪資單派發成功'); }
+        async function postBlt() { await _sb.from('bulletin_board').insert([{ title: document.getElementById('blt-title').value, content: document.getElementById('blt-content').value }]); alert('✅ 公告已發布'); document.getElementById('blt-title').value=''; document.getElementById('blt-content').value=''; }
     </script>
 </body>
 </html>
