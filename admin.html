@@ -2,133 +2,67 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HYPASS | 管理者指揮中心</title>
+    <title>HYPASS | 老闆指揮中心</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>.tab-content { display: none; } .tab-content.active { display: block; animation: fadeIn 0.3s ease; } @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }</style>
+    <style>.tab-content { display: none; } .tab-content.active { display: block; }</style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
-
+<body class="bg-slate-50 text-slate-800 min-h-screen">
     <header class="bg-slate-900 text-white p-4 flex justify-between items-center shadow-lg sticky top-0 z-50">
         <h1 class="text-xl font-black italic text-amber-400">HYPASS ADMIN</h1>
-        <button onclick="location.reload()" id="btn-out" class="hidden text-xs bg-red-600 px-4 py-2 rounded font-bold">安全登出</button>
+        <button onclick="location.reload()" id="logout" class="hidden text-xs bg-red-600 px-4 py-2 rounded font-bold">登出</button>
     </header>
 
-    <div id="login-box" class="flex flex-col items-center justify-center py-32 px-6">
+    <div id="login-box" class="flex flex-col items-center justify-center py-32">
         <div class="bg-white p-8 rounded-[2rem] shadow-xl w-full max-w-sm text-center">
-            <h2 class="text-2xl font-black mb-6 text-slate-900">最高權限驗證</h2>
-            <input type="password" id="pin" placeholder="輸入密碼" class="w-full bg-slate-50 border p-4 text-center text-2xl tracking-[0.5em] rounded-xl outline-none mb-6">
+            <h2 class="text-2xl font-black mb-6">最高權限解鎖</h2>
+            <input type="password" id="pin" placeholder="管理密碼" class="w-full border p-4 text-center text-2xl tracking-[0.5em] rounded-xl outline-none mb-6">
             <button onclick="login()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl active:scale-95">解鎖</button>
         </div>
     </div>
 
     <main id="main-dash" class="container mx-auto p-4 max-w-4xl hidden">
-        <div class="flex space-x-2 mb-6 bg-white p-2 rounded-2xl shadow-sm border overflow-x-auto">
-            <button onclick="st('pending')" id="t-pending" class="t-btn active px-5 py-3 text-xs font-black bg-slate-900 text-white rounded-xl">審核 🔴</button>
-            <button onclick="st('emps')" id="t-emps" class="t-btn px-5 py-3 text-xs font-black text-slate-500 rounded-xl">參數</button>
-            <button onclick="st('branches')" id="t-branches" class="t-btn px-5 py-3 text-xs font-black text-slate-500 rounded-xl">據點 📍</button>
-            <button onclick="st('logs')" id="t-logs" class="t-btn px-5 py-3 text-xs font-black text-slate-500 rounded-xl">考勤 📡</button>
+        <div class="flex space-x-2 mb-6 bg-white p-2 rounded-2xl shadow-sm border">
+            <button onclick="st('pend')" id="t-pend" class="t-btn active px-5 py-3 text-xs font-black bg-slate-900 text-white rounded-xl">待審核 🔴</button>
+            <button onclick="st('emps')" id="t-emps" class="t-btn px-5 py-3 text-xs font-black text-slate-500 rounded-xl">員工參數</button>
+            <button onclick="st('brs')" id="t-brs" class="t-btn px-5 py-3 text-xs font-black text-slate-500 rounded-xl">據點 📍</button>
         </div>
 
-        <section id="pending" class="tab-content active space-y-4">
-            <h3 class="font-black border-l-4 border-blue-500 pl-3">待核准帳號</h3>
-            <div id="list-pending" class="space-y-3"></div>
+        <section id="pend" class="tab-content active space-y-4">
+            <h3 class="font-black border-l-4 border-blue-500 pl-3 text-lg">新進員工核准</h3>
+            <div id="list-pend" class="space-y-3"></div>
         </section>
 
         <section id="emps" class="tab-content space-y-4">
-            <h3 class="font-black border-l-4 border-emerald-500 pl-3">薪資參數 (連動 240H)</h3>
+            <h3 class="font-black border-l-4 border-emerald-500 pl-3 text-lg">底薪與特休設定 (240H)</h3>
             <div id="list-emps" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
 
-        <section id="branches" class="tab-content space-y-4">
-            <h3 class="font-black border-l-4 border-amber-500 pl-3">動態據點管理</h3>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border">
-                <div class="grid grid-cols-2 gap-3 mb-3">
-                    <input type="text" id="b-name" placeholder="分店名稱" class="p-3 bg-slate-50 border rounded-xl text-sm">
-                    <input type="text" id="b-addr" placeholder="地址" class="p-3 bg-slate-50 border rounded-xl text-sm">
-                    <input type="number" id="b-lat" placeholder="緯度" class="p-3 bg-slate-50 border rounded-xl text-sm">
-                    <input type="number" id="b-lng" placeholder="經度" class="p-3 bg-slate-50 border rounded-xl text-sm">
-                </div>
-                <button onclick="addBranch()" class="w-full bg-amber-500 text-white font-black py-3 rounded-xl">＋ 新增</button>
+        <section id="brs" class="tab-content space-y-4">
+            <h3 class="font-black border-l-4 border-amber-500 pl-3 text-lg">新增分店據點</h3>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border mb-4">
+                <div class="grid grid-cols-2 gap-3 mb-3"><input type="text" id="b-n" placeholder="分店名" class="p-3 border rounded-xl"><input type="text" id="b-a" placeholder="地址" class="p-3 border rounded-xl"><input type="number" id="b-la" placeholder="緯度" class="p-3 border rounded-xl"><input type="number" id="b-ln" placeholder="經度" class="p-3 border rounded-xl"></div>
+                <button onclick="addBr()" class="w-full bg-amber-500 text-white font-black py-3 rounded-xl">＋ 新增</button>
             </div>
-            <div id="list-branches" class="space-y-3 mt-4"></div>
-        </section>
-
-        <section id="logs" class="tab-content space-y-4">
-            <h3 class="font-black border-l-4 border-purple-500 pl-3">即時考勤動態</h3>
-            <div id="list-logs" class="space-y-3"></div>
+            <div id="list-brs" class="space-y-3"></div>
         </section>
     </main>
 
     <script>
-        // ⚠️ 工程師請替換
         const _sb = supabase.createClient('https://obbcgmgkbazwpfvgbupg.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0');
-
-        function login() {
-            if (document.getElementById('pin').value === '888888') {
-                document.getElementById('login-box').classList.add('hidden');
-                document.getElementById('main-dash').classList.remove('hidden');
-                document.getElementById('btn-out').classList.remove('hidden');
-                loadAll();
-            } else alert('❌ 密碼錯誤');
-        }
-
-        function st(id) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.t-btn').forEach(el => { el.classList.remove('bg-slate-900', 'text-white'); el.classList.add('text-slate-500'); });
-            document.getElementById(id).classList.add('active');
-            document.getElementById('t-' + id).classList.add('bg-slate-900', 'text-white');
-        }
-
+        function login() { if(document.getElementById('pin').value==='888888'){ document.getElementById('login-box').style.display='none'; document.getElementById('main-dash').style.display='block'; loadAll(); } }
+        function st(id) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active')); document.querySelectorAll('.t-btn').forEach(e=>{e.classList.remove('bg-slate-900','text-white'); e.classList.add('text-slate-500');}); document.getElementById(id).classList.add('active'); document.getElementById('t-'+id).classList.add('bg-slate-900','text-white'); }
         async function loadAll() {
-            // 載入審核
-            const { data: pend } = await _sb.from('employees').select('id, full_name, id_number').eq('is_approved', false);
-            document.getElementById('list-pending').innerHTML = pend.map(e => `
-                <div class="bg-white p-5 rounded-2xl border flex justify-between items-center">
-                    <div><h4 class="font-black text-lg">${e.full_name}</h4><p class="text-[10px] text-slate-500">${e.id_number}</p></div>
-                    <button onclick="appr('${e.id}')" class="bg-blue-600 text-white font-black px-6 py-2 rounded-xl">✅ 開通</button>
-                </div>`).join('') || '<div class="p-6 text-center text-slate-400 bg-white rounded-2xl border">無待簽核事項</div>';
-
-            // 載入員工
-            const { data: emps } = await _sb.from('employees').select('*, leave_balances(annual_leave_hours)').eq('is_approved', true);
-            document.getElementById('list-emps').innerHTML = emps.map(e => `
-                <div class="bg-white p-5 rounded-2xl border space-y-3">
-                    <h4 class="font-black text-lg">${e.full_name}</h4>
-                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border"><span class="text-xs font-bold">底薪</span>
-                        <div><input type="number" id="s-${e.id}" value="${e.base_salary}" class="border p-1.5 w-24 text-right rounded-md text-sm font-black"><button onclick="uS('${e.id}')" class="bg-slate-200 text-[10px] font-bold px-3 py-1 ml-1 rounded">儲存</button></div>
-                    </div>
-                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border"><span class="text-xs font-bold">發放特休</span>
-                        <div><input type="number" id="l-${e.id}" value="${e.leave_balances?.annual_leave_hours||0}" class="border p-1.5 w-16 text-center rounded-md text-sm font-black"><button onclick="uL('${e.id}')" class="bg-slate-200 text-[10px] font-bold px-3 py-1 ml-1 rounded">發放</button></div>
-                    </div>
-                </div>`).join('');
-
-            // 載入據點
-            const { data: br } = await _sb.from('branch_locations').select('*').order('branch_name');
-            document.getElementById('list-branches').innerHTML = br.map(b => `
-                <div class="bg-white p-4 rounded-xl border flex justify-between items-center ${b.is_active?'':'opacity-50'}">
-                    <div><p class="font-black text-sm">${b.branch_name}</p><p class="text-[10px] text-slate-500">[${b.lat}, ${b.lng}]</p></div>
-                    <button onclick="tB('${b.id}', ${!b.is_active})" class="text-[10px] font-black px-4 py-2 rounded-lg ${b.is_active?'bg-red-50 text-red-600':'bg-emerald-50 text-emerald-700'}">${b.is_active?'停用':'啟用'}</button>
-                </div>`).join('');
-
-            // 載入考勤
-            const { data: logs } = await _sb.from('attendance_logs').select('*, employees(full_name), branch_locations(branch_name)').order('punch_time', {ascending: false}).limit(30);
-            document.getElementById('list-logs').innerHTML = logs.map(l => `
-                <div class="bg-white p-4 rounded-xl border-l-4 ${l.note.includes('正常') ? 'border-emerald-400' : 'border-amber-500'}">
-                    <div class="flex justify-between"><span class="font-black text-sm">${l.employees.full_name}</span><span class="text-[10px] bg-slate-100 px-2 py-1 rounded">${l.punch_type}</span></div>
-                    <p class="text-[11px] text-slate-500 font-bold mt-1">${new Date(l.punch_time).toLocaleString('zh-TW')} @ ${l.branch_locations?.branch_name||'未知'}</p>
-                    ${l.note.includes('正常') ? '' : `<div class="bg-amber-50 text-amber-700 p-1.5 rounded text-[10px] font-bold mt-1">⚠️ ${l.note}</div>`}
-                </div>`).join('');
+            const { data: p } = await _sb.from('employees').select('*').eq('is_approved', false);
+            document.getElementById('list-pend').innerHTML = p.map(e => `<div class="bg-white p-5 rounded-2xl border flex justify-between items-center"><h4 class="font-black">${e.full_name}</h4><button onclick="appr('${e.id}')" class="bg-blue-600 text-white font-black px-6 py-2 rounded-xl">開通</button></div>`).join('') || '無待辦事項';
+            const { data: em } = await _sb.from('employees').select('*, leave_balances(*)').eq('is_approved', true);
+            document.getElementById('list-emps').innerHTML = em.map(e => `<div class="bg-white p-5 rounded-2xl border space-y-2"><h4 class="font-black text-lg">${e.full_name}</h4><div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-500">底薪</span><div class="flex"><input type="number" id="s-${e.id}" value="${e.base_salary}" class="border p-1 w-24 text-right rounded"><button onclick="uS('${e.id}')" class="bg-slate-200 text-[10px] p-1 ml-1 rounded">存</button></div></div></div>`).join('');
+            const { data: br } = await _sb.from('branch_locations').select('*');
+            document.getElementById('list-brs').innerHTML = br.map(b => `<div class="bg-white p-4 rounded-xl border flex justify-between items-center"><div><p class="font-black text-sm">${b.branch_name}</p><p class="text-[10px] text-slate-500">${b.address}</p></div></div>`).join('');
         }
-
-        async function appr(id) { await _sb.from('employees').update({is_approved:true}).eq('id',id); await _sb.from('leave_balances').insert([{employee_id:id, annual_leave_hours:0}]); loadAll(); alert('✅ 已開通'); }
-        async function uS(id) { await _sb.from('employees').update({base_salary:document.getElementById('s-'+id).value}).eq('id',id); alert('✅ 底薪已更新'); }
-        async function uL(id) { await _sb.from('leave_balances').update({annual_leave_hours:document.getElementById('l-'+id).value}).eq('employee_id',id); alert('✅ 特休已更新'); }
-        async function tB(id, act) { await _sb.from('branch_locations').update({is_active:act}).eq('id',id); loadAll(); }
-        async function addBranch() {
-            await _sb.from('branch_locations').insert([{ branch_name: document.getElementById('b-name').value, address: document.getElementById('b-addr').value, lat: document.getElementById('b-lat').value, lng: document.getElementById('b-lng').value }]);
-            loadAll(); alert('✅ 據點已新增');
-        }
+        async function appr(id) { await _sb.from('employees').update({is_approved:true}).eq('id',id); await _sb.from('leave_balances').insert([{employee_id:id, annual_leave_hours:0}]); loadAll(); alert('已開通'); }
+        async function uS(id) { await _sb.from('employees').update({base_salary:document.getElementById('s-'+id).value}).eq('id',id); alert('已更新底薪'); }
+        async function addBr() { await _sb.from('branch_locations').insert([{ branch_name: document.getElementById('b-n').value, address: document.getElementById('b-a').value, lat: document.getElementById('b-la').value, lng: document.getElementById('b-ln').value }]); loadAll(); }
     </script>
 </body>
 </html>
