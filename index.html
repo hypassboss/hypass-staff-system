@@ -15,7 +15,7 @@
     </header>
     <main class="container mx-auto p-4 max-w-md">
         <div id="sys-loading" class="text-center py-32 active-view"><div class="animate-spin h-8 w-8 border-4 border-sky-600 border-t-transparent rounded-full mx-auto mb-3"></div><p class="text-xs text-slate-500 font-bold">資料同步中...</p></div>
-        <div id="sys-pending" class="text-center py-24 hidden"><div class="text-5xl mb-4 grayscale">⏳</div><h2 class="text-xl font-black">帳號審核中</h2><p class="text-xs text-slate-500 mt-2">請耐心等候管理部開通</p></div>
+        <div id="sys-pending" class="text-center py-24 hidden"><div class="text-5xl mb-4 grayscale">⏳</div><h2 class="text-xl font-black">帳號審核中</h2><p class="text-xs text-slate-500 mt-2">老闆正在LINE上進行核准，請稍候</p></div>
 
         <div id="view-onboarding" class="hidden glass-card p-5 rounded-2xl shadow-xl">
             <h2 class="text-lg font-black mb-4 text-center">新進員工建檔</h2>
@@ -25,18 +25,11 @@
                 <div class="grid grid-cols-2 gap-2"><input type="email" name="email" placeholder="電郵" required class="p-2.5 bg-slate-50 rounded-xl text-xs border"><input type="tel" name="phone" placeholder="手機" required class="p-2.5 bg-slate-50 rounded-xl text-xs border"></div>
                 <input type="text" name="address" placeholder="通訊地址 (法律送達地)" required class="w-full p-2.5 bg-slate-50 rounded-xl text-sm border outline-none">
                 <div class="grid grid-cols-2 gap-2"><div><label class="text-[9px] font-bold text-slate-500 ml-1">入職日期</label><input type="date" name="onboarding_date" required class="w-full p-2.5 bg-slate-50 rounded-xl text-xs border"></div><div><label class="text-[9px] font-bold text-slate-500 ml-1">預設據點</label><select id="reg-branch" class="w-full p-2.5 bg-slate-50 rounded-xl text-xs border"></select></div></div>
-                
                 <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
                     <h3 class="text-[10px] font-black text-emerald-800 mb-2">財務與眷屬資料</h3>
-                    <div class="grid grid-cols-2 gap-2 mb-3">
-                        <input type="text" name="bank_name" placeholder="銀行名稱 (例:玉山)" required class="p-2 text-xs border rounded-lg bg-white">
-                        <input type="text" name="bank_code" placeholder="銀行代碼 (例:808)" required class="p-2 text-xs border rounded-lg bg-white">
-                        <input type="text" name="bank_user_name" placeholder="帳號名稱 (戶名)" required class="p-2 text-xs border rounded-lg bg-white">
-                        <input type="text" name="bank_account" placeholder="銀行帳號" required class="p-2 text-xs border rounded-lg bg-white">
-                    </div>
+                    <div class="grid grid-cols-2 gap-2 mb-3"><input type="text" name="bank_name" placeholder="銀行名稱" required class="p-2 text-xs border rounded-lg bg-white"><input type="text" name="bank_code" placeholder="代碼(例:808)" required class="p-2 text-xs border rounded-lg bg-white"><input type="text" name="bank_user_name" placeholder="戶名" required class="p-2 text-xs border rounded-lg bg-white"><input type="text" name="bank_account" placeholder="銀行帳號" required class="p-2 text-xs border rounded-lg bg-white"></div>
                     <div class="flex justify-between items-center border-t border-emerald-100 pt-2"><span class="text-[9px] font-bold text-emerald-900">健保眷屬加保人數</span><input type="number" name="dependents_count" value="0" min="0" required class="w-16 p-1 text-center text-xs border rounded bg-white"></div>
                 </div>
-                
                 <div class="grid grid-cols-2 gap-2"><input type="text" name="emergency_name" placeholder="緊急聯絡人" required class="p-2.5 bg-slate-50 border rounded-xl text-xs"><input type="tel" name="emergency_phone" placeholder="電話" required class="p-2.5 bg-slate-50 border rounded-xl text-xs"></div>
                 <div class="bg-slate-900 text-white p-4 rounded-xl mt-3"><h3 class="text-[10px] font-black text-amber-400 mb-2 border-b border-white/20 pb-1">⚖️ 聘僱合約簽署</h3><label class="flex items-start space-x-2 text-[9px] mb-2"><input type="checkbox" id="chk1" onchange="checkForm()"><span>【GPS】同意定位為出勤唯一依據。</span></label><label class="flex items-start space-x-2 text-[9px] mb-2"><input type="checkbox" id="chk2" onchange="checkForm()"><span>【守則】同意特休優先抵扣遲到以維持全薪。</span></label><label class="flex items-start space-x-2 text-[9px]"><input type="checkbox" id="chk3" onchange="checkForm()"><span>【保密】同意嚴守機密，違願賠償。</span></label></div>
                 <button type="submit" id="btn-submit" disabled class="w-full bg-sky-600 disabled:bg-slate-300 text-white font-black py-3 rounded-xl mt-2 transition">數位簽署並送出</button>
@@ -45,22 +38,31 @@
 
         <div id="view-dashboard" class="hidden space-y-4">
             <div id="tab-home" class="app-view active space-y-3">
-                <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl flex flex-col shadow-sm">
-                    <div class="flex items-center space-x-1.5 mb-2 border-b border-amber-200/50 pb-1"><span class="text-sm">📢</span><h4 class="text-[10px] font-black text-amber-900 tracking-widest">公司公告 (1年內)</h4></div>
-                    <div id="ui-bulletin" class="pl-2 pr-1 max-h-32 overflow-y-auto no-scrollbar space-y-2">載入中...</div>
-                </div>
-                
+                <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl flex flex-col shadow-sm"><div class="flex items-center space-x-1.5 mb-2 border-b border-amber-200/50 pb-1"><span class="text-sm">📢</span><h4 class="text-[10px] font-black text-amber-900 tracking-widest">公司公告 (1年內)</h4></div><div id="ui-bulletin" class="pl-2 pr-1 max-h-32 overflow-y-auto no-scrollbar space-y-2">載入中...</div></div>
                 <div class="bg-slate-900 p-6 rounded-2xl text-white shadow-xl relative overflow-hidden"><h3 id="ui-name" class="text-2xl font-black mb-1">--</h3><p id="ui-tenure" class="text-[10px] text-sky-300 font-bold mb-3 tracking-wider">🕒 入職日載入中</p><div class="flex justify-between items-center bg-white/10 p-3 rounded-xl border border-white/10"><span class="text-[10px] font-black text-slate-300">法定特休餘額</span><span id="ui-leave" class="text-xl font-black">-- 天 -- 小時</span></div></div>
-                <div class="glass-card p-4 rounded-2xl shadow-sm"><button onclick="loadPunchHistory()" class="w-full mb-3 text-xs font-bold text-sky-700 bg-sky-50 py-2.5 rounded-xl border border-sky-100 flex justify-center items-center space-x-1 active:scale-95 transition"><span>🔍</span><span>查詢打卡紀錄</span></button><select id="punch-branch" class="w-full mb-3 text-sm font-bold bg-white text-slate-700 border border-slate-200 rounded-xl p-2.5 outline-none text-center"></select><div class="grid grid-cols-2 gap-3"><button onclick="punch('IN')" class="bg-sky-600 text-white py-8 rounded-xl font-black text-lg shadow-md active:scale-95 flex flex-col items-center transition"><span class="text-2xl mb-1">🏢</span>上班</button><button onclick="punch('OUT')" class="bg-white text-slate-700 border border-slate-200 py-8 rounded-xl font-black text-lg shadow-sm active:scale-95 flex flex-col items-center transition"><span class="text-2xl mb-1 grayscale">🏠</span>下班</button></div></div>
+                
+                <div class="glass-card p-4 rounded-2xl shadow-sm">
+                    <button onclick="loadPunchHistory()" class="w-full mb-3 text-xs font-bold text-sky-700 bg-sky-50 py-2.5 rounded-xl border border-sky-100 flex justify-center items-center space-x-1 active:scale-95 transition"><span>🔍</span><span>查詢打卡紀錄</span></button>
+                    <select id="punch-branch" class="w-full mb-3 text-sm font-bold bg-white text-slate-700 border border-slate-200 rounded-xl p-2.5 outline-none text-center"></select>
+                    <div class="grid grid-cols-2 gap-3"><button onclick="punch('IN')" class="bg-sky-600 text-white py-8 rounded-xl font-black text-lg shadow-md active:scale-95 flex flex-col items-center transition"><span class="text-2xl mb-1">🏢</span>上班</button><button onclick="punch('OUT')" class="bg-white text-slate-700 border border-slate-200 py-8 rounded-xl font-black text-lg shadow-sm active:scale-95 flex flex-col items-center transition"><span class="text-2xl mb-1 grayscale">🏠</span>下班</button></div>
+                </div>
             </div>
 
             <div id="tab-leave" class="app-view space-y-3">
                 <h3 class="font-black text-lg text-slate-900 border-l-4 border-amber-500 pl-2">線上請假單</h3>
                 <div class="glass-card p-5 rounded-2xl shadow-sm">
                     <form id="leave-form" onsubmit="submitLeave(event)" class="space-y-3 border-b border-slate-100 pb-5 mb-4">
-                        <select name="leave_type" class="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-sm font-bold"><option value="特休">🏖️ 特休</option><option value="事假">📄 事假</option><option value="病假">💊 病假</option><option value="公假">💼 公假</option></select>
+                        <select name="leave_type" id="leave-type-select" onchange="checkLeaveType()" class="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-sm font-bold">
+                            <option value="特休">🏖️ 特休</option><option value="事假">📄 事假</option><option value="病假">💊 病假</option><option value="公假">💼 公假</option>
+                            <option value="颱風假">🌪️ 颱風假</option>
+                        </select>
                         <div class="grid grid-cols-2 gap-2"><div><label class="text-[9px] font-bold text-slate-500 ml-1">起始</label><input type="datetime-local" name="start_time" required class="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs"></div><div><label class="text-[9px] font-bold text-slate-500 ml-1">結束</label><input type="datetime-local" name="end_time" required class="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs"></div></div>
-                        <div class="flex items-center justify-between p-2.5 bg-sky-50 rounded-xl border border-sky-100"><div><p class="text-[10px] font-black text-sky-900">薪資保全</p><p class="text-[9px] text-sky-600">同意優先扣特休以維持全薪</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" name="salary_protection" checked class="sr-only peer"><div class="w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-sky-600 peer-checked:after:translate-x-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div></label></div>
+                        
+                        <div id="salary-protection-ui" class="flex items-center justify-between p-2.5 bg-sky-50 rounded-xl border border-sky-100 transition-all">
+                            <div id="sp-text"><p class="text-[10px] font-black text-sky-900">薪資保全</p><p class="text-[9px] text-sky-600">同意優先扣特休以維持全薪</p></div>
+                            <label class="relative inline-flex items-center cursor-pointer" id="sp-toggle"><input type="checkbox" name="salary_protection" checked class="sr-only peer"><div class="w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-sky-600 peer-checked:after:translate-x-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div></label>
+                        </div>
+                        
                         <button type="submit" id="btn-leave" class="w-full bg-amber-500 text-white font-black py-3 rounded-xl shadow-md active:scale-95 transition">送出假單</button>
                     </form>
                     <h4 class="text-[11px] font-black text-slate-700 mb-2">📅 申請紀錄</h4><div id="ui-leave-list" class="space-y-2 max-h-40 overflow-y-auto no-scrollbar">載入中...</div>
@@ -105,7 +107,7 @@
     </main>
 
     <div id="record-modal" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-end justify-center"><div class="bg-white w-full max-w-md rounded-t-3xl p-5 h-[70vh] flex flex-col"><div class="flex justify-between items-center mb-3"><h3 class="font-black text-lg">近期打卡紀錄</h3><button onclick="closeModal('record-modal')" class="bg-slate-100 px-3 py-1.5 rounded-full text-xs font-bold text-slate-600">✕ 關閉</button></div><div id="ui-records-list" class="overflow-y-auto space-y-2 flex-1 no-scrollbar pb-6">載入中...</div></div></div>
-    <div id="doc-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-md items-center justify-center p-4"><div class="bg-white w-full max-w-md rounded-2xl p-6 relative flex flex-col shadow-2xl"><h3 id="doc-title" class="font-black text-base border-b pb-2 mb-3">文件</h3><div class="text-xs text-slate-600 leading-relaxed space-y-2 mb-4"><p>1. 員工絕對服從考勤規定，以系統定位為唯一依據。</p><p>2. 員工同意遲到時數由系統自動以特休抵扣。</p><p>3. 員工對於公司機密具絕對保密義務，違願負擔懲罰性違約金。</p></div><div class="bg-amber-50 border border-amber-100 p-3 rounded-xl text-center"><p class="text-[9px] text-amber-700 font-bold mb-1">✔️ 經數位簽章認證，具備法律效力</p><p id="doc-sig" class="font-black text-amber-900 text-[10px]">簽署人：--</p></div><button onclick="closeModal('doc-modal')" class="w-full mt-4 bg-slate-900 text-white font-bold py-3 rounded-xl text-sm transition">已詳閱並關閉</button></div></div>
+    <div id="doc-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-md items-center justify-center p-4"><div class="bg-white w-full max-w-md rounded-2xl p-6 relative flex flex-col shadow-2xl"><h3 id="doc-title" class="font-black text-base border-b pb-2 mb-3">文件</h3><div class="text-xs text-slate-600 leading-relaxed space-y-2 mb-4"><p>1. 員工絕對服從考勤規定，定位為唯一依據。</p><p>2. 員工同意遲到時數由系統自動以特休抵扣。</p><p>3. 員工對公司機密具絕對保密義務，違願負擔懲罰性違約金。</p></div><div class="bg-amber-50 border border-amber-100 p-3 rounded-xl text-center"><p class="text-[9px] text-amber-700 font-bold mb-1">✔️ 經數位簽章認證，具備法律效力</p><p id="doc-sig" class="font-black text-amber-900 text-[10px]">簽署人：--</p></div><button onclick="closeModal('doc-modal')" class="w-full mt-4 bg-slate-900 text-white font-bold py-3 rounded-xl text-sm transition">已詳閱並關閉</button></div></div>
 
     <script>
         const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
@@ -130,14 +132,21 @@
                 document.getElementById('sys-pending').style.display = 'block'; 
                 if(data.employment_status === '離職') document.querySelector('#sys-pending h2').innerText = '帳號已停權';
             }
-            else { currentUser = data; await loadBranches('punch-branch'); renderUI(); document.getElementById('view-dashboard').style.display = 'block'; }
+            else { 
+                currentUser = data; 
+                await loadBranches('punch-branch'); 
+                // 🌟 強制綁定該員工的預設打卡據點
+                if(currentUser.default_branch_id) {
+                    document.getElementById('punch-branch').value = currentUser.default_branch_id;
+                }
+                renderUI(); document.getElementById('view-dashboard').style.display = 'block'; 
+            }
         }
 
         async function loadBranches(targetId) {
             const { data } = await _sb.from('branch_locations').select('id, branch_name').eq('is_active', true);
             const sel = document.getElementById(targetId);
             sel.innerHTML = data.map(b => `<option value="${b.id}">${b.branch_name}</option>`).join('');
-            if (currentUser && currentUser.default_branch_id) sel.value = currentUser.default_branch_id;
         }
 
         function switchTab(id) {
@@ -147,6 +156,21 @@
             document.querySelector(`button[onclick="switchTab('${id}')"]`).classList.add('active');
             if(id === 'leave') loadLeaveHistory();
             if(id === 'payroll') loadPayrollMonths(); 
+        }
+
+        // 🌟 颱風假 UI 動態切換邏輯
+        function checkLeaveType() {
+            const type = document.getElementById('leave-type-select').value;
+            const ui = document.getElementById('salary-protection-ui');
+            if(type === '颱風假') {
+                document.getElementById('sp-text').innerHTML = '<p class="text-[10px] font-black text-emerald-900">🌪️ 法定颱風假</p><p class="text-[9px] text-emerald-600">依勞基法規定，不扣薪、不扣特休</p>';
+                ui.className = 'flex items-center justify-between p-2.5 bg-emerald-50 rounded-xl border border-emerald-200 transition-all';
+                document.getElementById('sp-toggle').style.display = 'none'; // 隱藏開關
+            } else {
+                document.getElementById('sp-text').innerHTML = '<p class="text-[10px] font-black text-sky-900">薪資保全</p><p class="text-[9px] text-sky-600">同意優先扣特休以維持全薪</p>';
+                ui.className = 'flex items-center justify-between p-2.5 bg-sky-50 rounded-xl border border-sky-100 transition-all';
+                document.getElementById('sp-toggle').style.display = 'block'; // 顯示開關
+            }
         }
 
         function checkForm() { document.getElementById('btn-submit').disabled = !(document.getElementById('chk1').checked && document.getElementById('chk2').checked && document.getElementById('chk3').checked); }
@@ -191,8 +215,10 @@
 
         async function submitLeave(e) {
             e.preventDefault(); const fd = new FormData(e.target);
-            const payload = { employee_id: currentUser.id, leave_type: fd.get('leave_type'), start_time: fd.get('start_time'), end_time: fd.get('end_time'), salary_protection: fd.get('salary_protection') === 'on' };
-            await _sb.from('leave_requests').insert([payload]); alert('✅ 假單已送出，老闆已收到 LINE 通知！'); e.target.reset(); loadLeaveHistory();
+            // 颱風假自動覆蓋保薪設定為 false (不扣薪不扣假)
+            const isTyphoon = fd.get('leave_type') === '颱風假';
+            const payload = { employee_id: currentUser.id, leave_type: fd.get('leave_type'), start_time: fd.get('start_time'), end_time: fd.get('end_time'), salary_protection: isTyphoon ? false : (fd.get('salary_protection') === 'on') };
+            await _sb.from('leave_requests').insert([payload]); alert('✅ 假單已送出，老闆已收到 LINE 通知！'); e.target.reset(); checkLeaveType(); loadLeaveHistory();
         }
 
         async function loadLeaveHistory() {
@@ -200,7 +226,8 @@
             document.getElementById('ui-leave-list').innerHTML = data.length ? data.map(l => {
                 let badge = l.status === '核准' ? 'bg-emerald-100 text-emerald-700' : (l.status === '核駁' ? 'bg-red-100 text-red-700' : 'bg-slate-200 text-slate-600');
                 let t1 = new Date(l.start_time).toLocaleString('zh-TW').slice(5,-3); let t2 = new Date(l.end_time).toLocaleString('zh-TW').slice(5,-3);
-                return `<div class="bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-sm"><div class="flex justify-between items-center mb-1"><span class="font-black text-xs">${l.leave_type} ${l.salary_protection?'<span class="text-[9px] text-sky-500 ml-1">(保薪)</span>':''}</span><span class="text-[9px] font-bold px-2 py-0.5 rounded ${badge}">${l.status}</span></div><p class="text-[10px] text-slate-500">${t1} ~ ${t2}</p></div>`;
+                let spTag = l.leave_type === '颱風假' ? '<span class="text-[9px] text-emerald-600 ml-1">(不扣薪)</span>' : (l.salary_protection ? '<span class="text-[9px] text-sky-500 ml-1">(保薪)</span>' : '');
+                return `<div class="bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-sm"><div class="flex justify-between items-center mb-1"><span class="font-black text-xs">${l.leave_type} ${spTag}</span><span class="text-[9px] font-bold px-2 py-0.5 rounded ${badge}">${l.status}</span></div><p class="text-[10px] text-slate-500">${t1} ~ ${t2}</p></div>`;
             }).join('') : '<div class="text-center text-xs text-slate-400">無請假紀錄</div>';
         }
 
