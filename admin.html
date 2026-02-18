@@ -44,7 +44,7 @@
                 <div class="flex space-x-2"><input type="month" id="export-mon" class="p-3 border rounded-xl font-bold flex-1 text-sm bg-white"><button onclick="exportBankCSV()" class="bg-emerald-600 text-white font-black px-4 py-3 rounded-xl shadow-md">下載</button></div>
             </div>
 
-            <h3 class="font-black border-l-4 border-indigo-500 pl-3 text-lg">發放當月薪資 (自動算勞健保)</h3>
+            <h3 class="font-black border-l-4 border-indigo-500 pl-3 text-lg">發放當月薪資 (含年終)</h3>
             <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
                 <div class="grid grid-cols-2 gap-3 mb-2"><select id="p-emp" class="p-3 border rounded-xl text-sm font-bold bg-slate-50" onchange="autoFillLaw()"></select><input type="month" id="p-mon" class="p-3 border rounded-xl text-sm font-bold bg-slate-50"></div>
                 <div class="grid grid-cols-2 gap-3">
@@ -151,13 +151,14 @@
             } catch (e) { alert('定位異常'); }
         }
 
-        // 🌟 匯出 CSV 檔加入銀行代碼
+        // 匯出 CSV 檔加入銀行代碼與戶名
         async function exportBankCSV() {
             const month = document.getElementById('export-mon').value; if(!month) { alert('請選擇月份'); return; }
-            const { data } = await _sb.from('payroll_records').select('total_net_pay, employees(full_name, bank_code, bank_name, bank_account)').eq('pay_month', month);
+            const { data } = await _sb.from('payroll_records').select('total_net_pay, employees(full_name, bank_code, bank_name, bank_user_name, bank_account)').eq('pay_month', month);
             if(!data || data.length === 0) { alert('無紀錄'); return; }
+            
             let csv = "\uFEFF銀行代碼,銀行名稱,收款帳號,戶名,匯款金額,備註\n";
-            data.forEach(r => { csv += `="${r.employees.bank_code}",${r.employees.bank_name},="${r.employees.bank_account}",${r.employees.full_name},${r.total_net_pay},${month}薪資\n`; });
+            data.forEach(r => { csv += `="${r.employees.bank_code}",${r.employees.bank_name},="${r.employees.bank_account}",${r.employees.bank_user_name},${r.total_net_pay},${month}薪資\n`; });
             const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `HYPASS_${month}_匯款檔.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
