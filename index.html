@@ -105,7 +105,7 @@
     </main>
 
     <div id="record-modal" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-end justify-center"><div class="bg-white w-full max-w-md rounded-t-3xl p-5 h-[70vh] flex flex-col"><div class="flex justify-between items-center mb-3"><h3 class="font-black text-lg">近期打卡紀錄</h3><button onclick="closeModal('record-modal')" class="bg-slate-100 px-3 py-1.5 rounded-full text-xs font-bold text-slate-600">✕ 關閉</button></div><div id="ui-records-list" class="overflow-y-auto space-y-2 flex-1 no-scrollbar pb-6">載入中...</div></div></div>
-    <div id="doc-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-md items-center justify-center p-4"><div class="bg-white w-full max-w-md rounded-2xl p-6 relative flex flex-col shadow-2xl"><h3 id="doc-title" class="font-black text-base border-b pb-2 mb-3">文件</h3><div class="text-xs text-slate-600 leading-relaxed space-y-2 mb-4"><p>1. 員工絕對服從公司考勤規定，以系統定位為唯一依據。</p><p>2. 員工同意遲到時數由系統自動以特休抵扣以維持全薪。</p><p>3. 員工對於公司客戶名單、技術、財務具絕對保密義務，違願負擔新台幣壹百萬元整之懲罰性違約金。</p></div><div class="bg-amber-50 border border-amber-100 p-3 rounded-xl text-center"><p class="text-[9px] text-amber-700 font-bold mb-1">✔️ 經數位簽章認證，具備法律效力</p><p id="doc-sig" class="font-black text-amber-900 text-[10px]">簽署人：--</p></div><button onclick="closeModal('doc-modal')" class="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-sm transition">已詳閱並關閉</button></div></div>
+    <div id="doc-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-md items-center justify-center p-4"><div class="bg-white w-full max-w-md rounded-2xl p-6 relative flex flex-col shadow-2xl"><h3 id="doc-title" class="font-black text-base border-b pb-2 mb-3">文件</h3><div class="text-xs text-slate-600 leading-relaxed space-y-2 mb-4"><p>1. 員工絕對服從考勤規定，以系統定位為唯一依據。</p><p>2. 員工同意遲到時數由系統自動以特休抵扣。</p><p>3. 員工對於公司機密具絕對保密義務，違願負擔懲罰性違約金。</p></div><div class="bg-amber-50 border border-amber-100 p-3 rounded-xl text-center"><p class="text-[9px] text-amber-700 font-bold mb-1">✔️ 經數位簽章認證，具備法律效力</p><p id="doc-sig" class="font-black text-amber-900 text-[10px]">簽署人：--</p></div><button onclick="closeModal('doc-modal')" class="w-full mt-4 bg-slate-900 text-white font-bold py-3 rounded-xl text-sm transition">已詳閱並關閉</button></div></div>
 
     <script>
         const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
@@ -157,28 +157,21 @@
             const { data: lv } = await _sb.rpc('fn_get_annual_leave', { p_onboard_date: currentUser.onboarding_date });
             if(lv) document.getElementById('ui-leave').innerText = `${lv.days} 天 ${lv.hours%8} 小時`;
 
-            // 🌟 自動抓取 1 年內的公告
             const oneYearAgo = new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-            const { data: blt } = await _sb.from('bulletin_board')
-                .select('*')
-                .gte('created_at', oneYearAgo.toISOString())
-                .order('created_at', {ascending: false});
-            
+            const { data: blt } = await _sb.from('bulletin_board').select('*').gte('created_at', oneYearAgo.toISOString()).order('created_at', {ascending: false});
             if (blt && blt.length > 0) {
                 document.getElementById('ui-bulletin').innerHTML = blt.map(b => {
                     const d = new Date(b.created_at).toISOString().split('T')[0];
-                    return `<div class="mb-2 border-b border-amber-100/50 pb-1.5 last:border-0 last:mb-0 last:pb-0"><span class="text-[9px] text-amber-600 font-bold mr-1">[${d}]</span><span class="font-black text-slate-800 text-xs">${b.title}</span><br><span class="text-[10px] text-slate-600 font-medium leading-relaxed block mt-0.5">${b.content}</span></div>`;
+                    return `<div class="mb-2 border-b border-amber-100/50 pb-1.5 last:border-0 last:mb-0 last:pb-0 flex items-start"><span class="text-[10px] text-amber-600 font-black mr-1.5 mt-0.5">[${d}]</span><div><span class="font-black text-slate-800 text-xs">${b.title}</span><span class="text-[10px] text-slate-600 font-medium leading-relaxed block mt-0.5">${b.content}</span></div></div>`;
                 }).join('');
-            } else {
-                document.getElementById('ui-bulletin').innerHTML = '目前無歷史公告';
-            }
+            } else { document.getElementById('ui-bulletin').innerHTML = '<p class="text-xs text-slate-400">目前無歷史公告</p>'; }
 
             document.getElementById('ui-profile-info').innerHTML = `
                 <div class="flex items-center space-x-2"><span class="w-5 text-center text-sm">🆔</span><span class="text-slate-600 font-bold">${currentUser.id_number}</span></div>
                 <div class="flex items-center space-x-2"><span class="w-5 text-center text-sm">📞</span><span class="text-slate-600">${currentUser.phone}</span></div>
                 <div class="flex items-center space-x-2"><span class="w-5 text-center text-sm">👥</span><span class="text-slate-600">眷屬：${currentUser.dependents_count || 0} 人</span></div>
                 <div class="flex items-start space-x-2"><span class="w-5 text-center text-sm mt-0.5">🏠</span><span class="text-slate-600 leading-relaxed">${currentUser.address}</span></div>
-                <div class="flex items-center space-x-2 mt-2 pt-2 border-t border-slate-50"><span class="w-5 text-center text-sm">🏦</span><span class="text-slate-700 font-black">${currentUser.bank_name} (${currentUser.bank_code}) - <br>${currentUser.bank_user_name} / ${currentUser.bank_account}</span></div>
+                <div class="flex items-start space-x-2 mt-2 pt-2 border-t border-slate-50"><span class="w-5 text-center text-sm mt-0.5">🏦</span><div class="text-slate-700 font-black leading-tight">${currentUser.bank_name} (${currentUser.bank_code})<br><span class="text-xs font-bold text-slate-500">${currentUser.bank_user_name} / ${currentUser.bank_account}</span></div></div>
             `;
         }
 
@@ -233,7 +226,7 @@
         function openDoc(type) { document.getElementById('doc-title').innerText = type === 'nda' ? '公司保密協定 (NDA)' : '聘僱合約與員工守則'; document.getElementById('doc-sig').innerText = `簽署人：${currentUser.full_name}\n時間：${new Date(currentUser.nda_signed_at).toLocaleString('zh-TW')}`; openModal('doc-modal'); }
 
         document.getElementById('onboarding-form').onsubmit = async (e) => {
-            e.preventDefault(); document.getElementById('btn-submit').innerText = '加密上傳中...'; const fd = new FormData(e.target); 
+            e.preventDefault(); document.getElementById('btn-submit').innerText = '資料上傳中...'; const fd = new FormData(e.target); 
             const payload = Object.fromEntries(fd.entries());
             payload.line_id = (await liff.getProfile()).userId; payload.default_branch_id = document.getElementById('reg-branch').value;
             payload.dependents_count = parseInt(payload.dependents_count) || 0;
