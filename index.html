@@ -23,8 +23,20 @@
                 <input type="text" name="full_name" placeholder="真實姓名" required class="w-full p-2.5 bg-slate-50 rounded-xl text-sm border outline-none">
                 <input type="text" name="id_number" placeholder="身分證字號" required class="w-full p-2.5 bg-slate-50 rounded-xl text-sm border outline-none">
                 <div class="grid grid-cols-2 gap-2"><input type="email" name="email" placeholder="電郵" required class="p-2.5 bg-slate-50 rounded-xl text-xs border"><input type="tel" name="phone" placeholder="手機" required class="p-2.5 bg-slate-50 rounded-xl text-xs border"></div>
-                <input type="text" name="address" placeholder="通訊地址 (法律送達地)" required class="w-full p-2.5 bg-slate-50 rounded-xl text-sm border outline-none">
-                <div class="grid grid-cols-2 gap-2"><div><label class="text-[9px] font-bold text-slate-500 ml-1">入職日期</label><input type="date" name="onboarding_date" required class="w-full p-2.5 bg-slate-50 rounded-xl text-xs border"></div><div><label class="text-[9px] font-bold text-slate-500 ml-1">預設據點</label><select id="reg-branch" class="w-full p-2.5 bg-slate-50 rounded-xl text-xs border"></select></div></div>
+                
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="col-span-1">
+                        <select name="work_region" required class="w-full p-2.5 bg-slate-50 rounded-xl text-xs border font-bold text-slate-700">
+                            <option value="" disabled selected>工作縣市</option>
+                            <option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option><option value="苗栗縣">苗栗縣</option><option value="台中市">台中市</option><option value="彰化縣">彰化縣</option><option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option><option value="嘉義市">嘉義市</option><option value="嘉義縣">嘉義縣</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option><option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option><option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option><option value="連江縣">連江縣</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2">
+                        <input type="text" name="address" placeholder="通訊地址 (法律送達地)" required class="w-full p-2.5 bg-slate-50 rounded-xl text-xs border outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2"><div><label class="text-[9px] font-bold text-slate-500 ml-1">入職日期</label><input type="date" name="onboarding_date" required class="w-full p-2.5 bg-slate-50 rounded-xl text-xs border"></div><div><label class="text-[9px] font-bold text-slate-500 ml-1">預設打卡據點</label><select id="reg-branch" class="w-full p-2.5 bg-slate-50 rounded-xl text-xs border"></select></div></div>
                 <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
                     <h3 class="text-[10px] font-black text-emerald-800 mb-2">財務與眷屬資料</h3>
                     <div class="grid grid-cols-2 gap-2 mb-3"><input type="text" name="bank_name" placeholder="銀行名稱" required class="p-2 text-xs border rounded-lg bg-white"><input type="text" name="bank_code" placeholder="代碼(例:808)" required class="p-2 text-xs border rounded-lg bg-white"><input type="text" name="bank_user_name" placeholder="戶名" required class="p-2 text-xs border rounded-lg bg-white"><input type="text" name="bank_account" placeholder="銀行帳號" required class="p-2 text-xs border rounded-lg bg-white"></div>
@@ -40,7 +52,9 @@
             <div id="tab-home" class="app-view active space-y-3">
                 <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl flex flex-col shadow-sm"><div class="flex items-center space-x-1.5 mb-2 border-b border-amber-200/50 pb-1"><span class="text-sm">📢</span><h4 class="text-[10px] font-black text-amber-900 tracking-widest">公司公告 (1年內)</h4></div><div id="ui-bulletin" class="pl-2 pr-1 max-h-32 overflow-y-auto no-scrollbar space-y-2">載入中...</div></div>
                 <div class="bg-slate-900 p-6 rounded-2xl text-white shadow-xl relative overflow-hidden"><h3 id="ui-name" class="text-2xl font-black mb-1">--</h3><p id="ui-tenure" class="text-[10px] text-sky-300 font-bold mb-3 tracking-wider">🕒 入職日載入中</p><div class="flex justify-between items-center bg-white/10 p-3 rounded-xl border border-white/10"><span class="text-[10px] font-black text-slate-300">法定特休餘額</span><span id="ui-leave" class="text-xl font-black">-- 天 -- 小時</span></div></div>
-                <div class="glass-card p-4 rounded-2xl shadow-sm"><button onclick="loadPunchHistory()" class="w-full mb-3 text-xs font-bold text-sky-700 bg-sky-50 py-2.5 rounded-xl border border-sky-100 flex justify-center items-center space-x-1 active:scale-95 transition"><span>🔍</span><span>查詢打卡紀錄</span></button><select id="punch-branch" class="w-full mb-3 text-sm font-bold bg-white text-slate-700 border border-slate-200 rounded-xl p-2.5 outline-none text-center"></select><div class="grid grid-cols-2 gap-3"><button onclick="punch('IN')" class="bg-sky-600 text-white py-8 rounded-xl font-black text-lg shadow-md active:scale-95 flex flex-col items-center transition"><span class="text-2xl mb-1">🏢</span>上班</button><button onclick="punch('OUT')" class="bg-white text-slate-700 border border-slate-200 py-8 rounded-xl font-black text-lg shadow-sm active:scale-95 flex flex-col items-center transition"><span class="text-2xl mb-1 grayscale">🏠</span>下班</button></div></div>
+                <div class="glass-card p-4 rounded-2xl shadow-sm"><button onclick="loadPunchHistory()" class="w-full mb-3 text-xs font-bold text-sky-700 bg-sky-50 py-2.5 rounded-xl border border-sky-100 flex justify-center items-center space-x-1 active:scale-95 transition"><span>🔍</span><span>查詢打卡紀錄</span></button>
+                <select id="punch-branch" class="w-full mb-3 text-sm font-bold bg-white text-slate-700 border border-slate-200 rounded-xl p-2.5 outline-none text-center"></select>
+                <div class="grid grid-cols-2 gap-3"><button onclick="punch('IN')" class="bg-sky-600 text-white py-8 rounded-xl font-black text-lg shadow-md active:scale-95 flex flex-col items-center transition"><span class="text-2xl mb-1">🏢</span>上班</button><button onclick="punch('OUT')" class="bg-white text-slate-700 border border-slate-200 py-8 rounded-xl font-black text-lg shadow-sm active:scale-95 flex flex-col items-center transition"><span class="text-2xl mb-1 grayscale">🏠</span>下班</button></div></div>
             </div>
 
             <div id="tab-leave" class="app-view space-y-3">
@@ -95,7 +109,7 @@
     </main>
 
     <div id="record-modal" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-end justify-center"><div class="bg-white w-full max-w-md rounded-t-3xl p-5 h-[70vh] flex flex-col"><div class="flex justify-between items-center mb-3"><h3 class="font-black text-lg">近期打卡紀錄</h3><button onclick="closeModal('record-modal')" class="bg-slate-100 px-3 py-1.5 rounded-full text-xs font-bold text-slate-600">✕ 關閉</button></div><div id="ui-records-list" class="overflow-y-auto space-y-2 flex-1 no-scrollbar pb-6">載入中...</div></div></div>
-    <div id="doc-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-md items-center justify-center p-4"><div class="bg-white w-full max-w-md rounded-2xl p-6 relative flex flex-col shadow-2xl"><h3 id="doc-title" class="font-black text-base border-b pb-2 mb-3">文件</h3><div class="text-xs text-slate-600 leading-relaxed space-y-2 mb-4"><p>1. 員工絕對服從考勤規定，定位為唯一依據。</p><p>2. 員工同意遲到時數由系統自動以特休抵扣。</p><p>3. 員工對公司機密具絕對保密義務，違願負擔懲罰性違約金。</p></div><div class="bg-amber-50 border border-amber-100 p-3 rounded-xl text-center"><p class="text-[9px] text-amber-700 font-bold mb-1">✔️ 經數位簽章認證，具備法律效力</p><p id="doc-sig" class="font-black text-amber-900 text-[10px]">簽署人：--</p></div><button onclick="closeModal('doc-modal')" class="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-sm transition">已詳閱並關閉</button></div></div>
+    <div id="doc-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-md items-center justify-center p-4"><div class="bg-white w-full max-w-md rounded-2xl p-6 relative flex flex-col shadow-2xl"><h3 id="doc-title" class="font-black text-base border-b pb-2 mb-3">文件</h3><div class="text-xs text-slate-600 leading-relaxed space-y-2 mb-4"><p>1. 員工絕對服從考勤規定，定位為唯一依據。</p><p>2. 員工同意遲到時數由系統自動以特休抵扣。</p><p>3. 員工對公司機密具絕對保密義務，違願負擔懲罰性違約金。</p></div><div class="bg-amber-50 border border-amber-100 p-3 rounded-xl text-center"><p class="text-[9px] text-amber-700 font-bold mb-1">✔️ 經數位簽章認證，具備法律效力</p><p id="doc-sig" class="font-black text-amber-900 text-[10px]">簽署人：--</p></div><button onclick="closeModal('doc-modal')" class="w-full mt-4 bg-slate-900 text-white font-bold py-3 rounded-xl text-sm transition">已詳閱並關閉</button></div></div>
 
     <script>
         const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
@@ -177,6 +191,7 @@
             document.getElementById('ui-profile-info').innerHTML = `
                 <div class="flex items-center space-x-2"><span class="w-5 text-center text-sm">🆔</span><span class="text-slate-600 font-bold">${currentUser.id_number}</span></div>
                 <div class="flex items-center space-x-2"><span class="w-5 text-center text-sm">📞</span><span class="text-slate-600">${currentUser.phone}</span></div>
+                <div class="flex items-center space-x-2"><span class="w-5 text-center text-sm">📍</span><span class="text-slate-600 font-bold text-sky-700">${currentUser.work_region}</span></div>
                 <div class="flex items-center space-x-2"><span class="w-5 text-center text-sm">👥</span><span class="text-slate-600">眷屬加保：${currentUser.dependents_count || 0} 人</span></div>
                 <div class="flex items-start space-x-2"><span class="w-5 text-center text-sm mt-0.5">🏠</span><span class="text-slate-600 leading-relaxed">${currentUser.address}</span></div>
                 <div class="flex items-start space-x-2 mt-2 pt-2 border-t border-slate-50"><span class="w-5 text-center text-sm mt-0.5">🏦</span><div class="text-slate-700 font-black leading-tight">${currentUser.bank_name} (${currentUser.bank_code})<br><span class="text-xs font-bold text-slate-500">${currentUser.bank_user_name} / ${currentUser.bank_account}</span></div></div>
@@ -184,11 +199,17 @@
         }
 
         function punch(type) {
-            const bid = document.getElementById('punch-branch').value;
+            const sel = document.getElementById('punch-branch');
+            const bid = sel.value;
+            const bName = sel.options[sel.selectedIndex].text;
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 const { data, error } = await _sb.rpc('fn_process_punch', { p_emp_id: currentUser.id, p_type: type, p_lat: pos.coords.latitude, p_lng: pos.coords.longitude, p_branch_id: bid });
-                if (error || data.status === 'error') alert('⚠️ ' + (error?.message || data.message)); else alert('✅ 打卡成功！');
-            }, () => alert('請開啟 GPS 定位權限！'));
+                if (error || data.status === 'error') {
+                    alert(`⚠️ 打卡失敗：\n${error?.message || data.message}`);
+                } else {
+                    alert(`✅ 成功於【${data.branch_name || bName}】打卡！`);
+                }
+            }, () => alert('請開啟手機的 GPS 定位權限！'), { enableHighAccuracy: true });
         }
 
         async function loadPunchHistory() {
@@ -201,7 +222,7 @@
             e.preventDefault(); const fd = new FormData(e.target);
             const isTyphoon = fd.get('leave_type') === '颱風假';
             const payload = { employee_id: currentUser.id, leave_type: fd.get('leave_type'), start_time: fd.get('start_time'), end_time: fd.get('end_time'), salary_protection: isTyphoon ? false : (fd.get('salary_protection') === 'on') };
-            await _sb.from('leave_requests').insert([payload]); alert('✅ 假單已送出，老闆已收到 LINE 通知！'); e.target.reset(); checkLeaveType(); loadLeaveHistory();
+            await _sb.from('leave_requests').insert([payload]); alert('✅ 假單已送出，老闆已收到 LINE 通知！\n(若老闆4小時內未處理，系統將自動核准)'); e.target.reset(); checkLeaveType(); loadLeaveHistory();
         }
 
         async function loadLeaveHistory() {
