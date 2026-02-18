@@ -36,7 +36,6 @@
     </div>
 
     <main id="main-dash" class="container mx-auto p-4 max-w-2xl hidden mt-2">
-        
         <div class="grid grid-cols-3 gap-2 mb-6">
             <button onclick="st('pend')" id="t-pend" class="t-btn active flex flex-col items-center justify-center py-3.5 bg-slate-900 text-white rounded-2xl shadow-md border border-transparent transition-all"><span class="text-2xl mb-1">🔴</span><span class="t-text text-[11px] font-black tracking-widest">待辦審核</span></button>
             <button onclick="st('pay')" id="t-pay" class="t-btn flex flex-col items-center justify-center py-3.5 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all"><span class="text-2xl mb-1">💰</span><span class="t-text text-[11px] font-bold tracking-widest">薪資匯款</span></button>
@@ -121,8 +120,8 @@
             <div class="glass-panel p-6 shadow-sm mb-4">
                 <h3 class="font-black text-slate-800 border-l-4 border-emerald-500 pl-3 text-lg mb-4">新增打卡據點</h3>
                 <input type="text" id="b-n" placeholder="分店名稱 (例:總部大樓)" class="admin-input mb-3 font-bold">
-                <input type="text" id="b-a" onblur="autoGeoCode()" placeholder="貼上 Google Maps 網址自動解析" class="admin-input mb-1 bg-sky-50 focus:bg-white transition-colors">
-                <p class="text-[9px] text-slate-400 font-bold px-1 mb-3">貼上網址或地址後點擊空白處</p>
+                <input type="text" id="b-a" onblur="autoGeoCode()" placeholder="貼上 Google Maps 網址，自動解析" class="admin-input mb-1 bg-sky-50 focus:bg-white transition-colors">
+                <p class="text-[9px] text-slate-400 font-bold px-1 mb-3">輸入完點擊空白處，系統將自動擷取經緯度</p>
                 <div class="grid grid-cols-2 gap-3 mb-5">
                     <input type="number" step="any" id="b-la" placeholder="緯度 (Lat)" class="admin-input bg-slate-50 font-mono text-sm">
                     <input type="number" step="any" id="b-ln" placeholder="經度 (Lng)" class="admin-input bg-slate-50 font-mono text-sm">
@@ -148,32 +147,16 @@
         let globalOffboardData = null; window.empData = {}; 
 
         function login() { if(document.getElementById('pin').value==='888888'){ document.getElementById('login-box').style.display='none'; document.getElementById('main-dash').style.display='block'; document.getElementById('logout').style.display='block'; loadAll(); } else alert('密碼錯誤'); }
-        
-        // 🌟 九宮格導航切換邏輯
-        function st(id) { 
-            document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active')); 
-            document.querySelectorAll('.t-btn').forEach(e=>{
-                e.classList.remove('bg-slate-900','text-white','shadow-md','border-transparent'); 
-                e.classList.add('bg-white','text-slate-500','border-slate-200');
-                e.querySelector('.t-text').classList.remove('font-black');
-                e.querySelector('.t-text').classList.add('font-bold');
-            }); 
-            document.getElementById(id).classList.add('active'); 
-            const activeBtn = document.getElementById('t-'+id);
-            activeBtn.classList.remove('bg-white','text-slate-500','border-slate-200');
-            activeBtn.classList.add('bg-slate-900','text-white','shadow-md','border-transparent');
-            activeBtn.querySelector('.t-text').classList.remove('font-bold');
-            activeBtn.querySelector('.t-text').classList.add('font-black');
-        }
+        function st(id) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active')); document.querySelectorAll('.t-btn').forEach(e=>{e.classList.remove('bg-slate-900','text-white','shadow-md','border-transparent'); e.classList.add('bg-white','text-slate-500','border-slate-200'); e.querySelector('.t-text').classList.remove('font-black'); e.querySelector('.t-text').classList.add('font-bold');}); document.getElementById(id).classList.add('active'); const activeBtn = document.getElementById('t-'+id); activeBtn.classList.remove('bg-white','text-slate-500','border-slate-200'); activeBtn.classList.add('bg-slate-900','text-white','shadow-md','border-transparent'); activeBtn.querySelector('.t-text').classList.remove('font-bold'); activeBtn.querySelector('.t-text').classList.add('font-black'); }
         
         async function loadAll() {
             const { data: emps } = await _sb.from('employees').select('*');
             const p = emps.filter(e => !e.is_approved && e.employment_status === '在職');
-            document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><span class="text-2xl mr-3">👤</span><div><h4 class="font-black text-sm text-slate-800">${e.full_name}</h4><p class="text-[10px] text-slate-500">${e.onboarding_date} 入職</p></div></div><button onclick="appr('${e.id}')" class="bg-blue-600 text-white text-xs font-black px-4 py-2 rounded-lg shadow-sm">手動核准</button></div>`).join('') : '<div class="text-center py-6 bg-slate-100/50 rounded-xl border border-dashed border-slate-300"><p class="text-xs text-slate-400 font-bold">目前無待審核名單</p></div>';
+            document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><span class="text-2xl mr-3">👤</span><div><h4 class="font-black text-sm text-slate-800"><span class="text-[10px] text-sky-600 mr-1">[${e.work_region}]</span>${e.full_name}</h4><p class="text-[10px] text-slate-500">${e.onboarding_date} 入職申請</p></div></div><button onclick="appr('${e.id}')" class="bg-blue-600 text-white text-xs font-black px-4 py-2 rounded-lg shadow-sm">手動核准</button></div>`).join('') : '<div class="text-center py-6 bg-slate-100/50 rounded-xl border border-dashed border-slate-300"><p class="text-xs text-slate-400 font-bold">目前無待審核名單</p></div>';
             
             const activeEmps = emps.filter(e => e.is_approved && e.employment_status === '在職');
             activeEmps.forEach(e => { window.empData[e.id] = { base: e.base_salary, deps: e.dependents_count || 0 }; }); 
-            const empOptions = activeEmps.map(e => `<option value="${e.id}">${e.full_name}</option>`).join('');
+            const empOptions = activeEmps.map(e => `<option value="${e.id}">[${e.work_region}] ${e.full_name}</option>`).join('');
             document.getElementById('p-emp').innerHTML = empOptions; document.getElementById('off-emp').innerHTML = empOptions;
 
             const { data: lv } = await _sb.from('leave_requests').select('*, employees(full_name)').eq('status', '審核中');
@@ -192,10 +175,8 @@
         async function autoGeoCode() {
             const input = document.getElementById('b-a').value; if(!input) return;
             document.getElementById('b-la').placeholder = '解析中...'; document.getElementById('b-ln').placeholder = '解析中...';
-            
             const mapRegex = /@(-?\d+\.\d+),(-?\d+\.\d+)/; const match = input.match(mapRegex);
             if(match) { document.getElementById('b-la').value = match[1]; document.getElementById('b-ln').value = match[2]; alert('✅ 從 Google Maps 網址擷取成功！'); return; }
-
             try { 
                 const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent("台灣" + input)}`, { headers: {'Accept-Language': 'zh-TW'} }); 
                 const data = await res.json(); 
@@ -208,7 +189,6 @@
             const month = document.getElementById('export-mon').value; if(!month) { alert('請選擇要匯出的月份'); return; }
             const { data } = await _sb.from('payroll_records').select('total_net_pay, employees(full_name, bank_code, bank_name, bank_user_name, bank_account)').eq('pay_month', month);
             if(!data || data.length === 0) { alert('該月份無薪資紀錄'); return; }
-            
             let csv = "\uFEFF銀行代碼,銀行名稱,收款帳號,戶名,匯款金額,備註\n";
             data.forEach(r => { csv += `="${r.employees.bank_code}",${r.employees.bank_name},="${r.employees.bank_account}",${r.employees.bank_user_name},${r.total_net_pay},${month}薪資\n`; });
             const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `HYPASS_${month}_轉帳檔.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
@@ -217,24 +197,13 @@
         function autoFillLaw() {
             const empId = document.getElementById('p-emp').value; const emp = window.empData[empId]; if(!emp) return;
             if(!document.getElementById('p-base').value) { document.getElementById('p-base').value = emp.base; }
-
-            const base = parseFloat(document.getElementById('p-base').value) || 0;
-            const bonus = parseFloat(document.getElementById('p-bonus').value) || 0;
-            const yeb = parseFloat(document.getElementById('p-yeb').value) || 0;
-            
-            document.getElementById('p-pen').value = Math.round(base * 0.06);
-            document.getElementById('p-2nd').value = Math.round((bonus + yeb) * 0.0211);
-            
-            const labor_est = Math.round(base * 0.022);
-            const health_est = Math.round(base * 0.0155 * (1 + emp.deps));
-            document.getElementById('p-ins').value = labor_est + health_est;
-            calcNet();
+            const base = parseFloat(document.getElementById('p-base').value) || 0; const bonus = parseFloat(document.getElementById('p-bonus').value) || 0; const yeb = parseFloat(document.getElementById('p-yeb').value) || 0;
+            document.getElementById('p-pen').value = Math.round(base * 0.06); document.getElementById('p-2nd').value = Math.round((bonus + yeb) * 0.0211);
+            const labor_est = Math.round(base * 0.022); const health_est = Math.round(base * 0.0155 * (1 + emp.deps));
+            document.getElementById('p-ins').value = labor_est + health_est; calcNet();
         }
 
-        function calcNet() { 
-            const net = (parseFloat(document.getElementById('p-base').value)||0) + (parseFloat(document.getElementById('p-bonus').value)||0) + (parseFloat(document.getElementById('p-yeb').value)||0) - (parseFloat(document.getElementById('p-ins').value)||0) - (parseFloat(document.getElementById('p-2nd').value)||0); 
-            document.getElementById('p-net').value = net > 0 ? net : 0; 
-        }
+        function calcNet() { const net = (parseFloat(document.getElementById('p-base').value)||0) + (parseFloat(document.getElementById('p-bonus').value)||0) + (parseFloat(document.getElementById('p-yeb').value)||0) - (parseFloat(document.getElementById('p-ins').value)||0) - (parseFloat(document.getElementById('p-2nd').value)||0); document.getElementById('p-net').value = net > 0 ? net : 0; }
 
         async function issuePayroll() { 
             const p = { employee_id: document.getElementById('p-emp').value, pay_month: document.getElementById('p-mon').value, base_pay: parseFloat(document.getElementById('p-base').value)||0, bonus: parseFloat(document.getElementById('p-bonus').value)||0, year_end_bonus: parseFloat(document.getElementById('p-yeb').value)||0, labor_pension: parseFloat(document.getElementById('p-pen').value)||0, insurance_deduction: parseFloat(document.getElementById('p-ins').value)||0, second_gen_health: parseFloat(document.getElementById('p-2nd').value)||0, total_net_pay: parseFloat(document.getElementById('p-net').value)||0 }; 
