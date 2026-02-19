@@ -53,10 +53,7 @@
 
         <section id="att" class="tab-content space-y-5">
             <h3 class="font-black text-slate-800 border-l-4 border-slate-500 pl-3 text-lg mb-4">全體出勤狀態總覽</h3>
-            <div class="glass-panel p-5 shadow-sm mb-4">
-                <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-2">請選擇查詢日期</label>
-                <input type="date" id="att-date" onchange="loadAttendance()" class="admin-input bg-slate-50 font-black text-lg">
-            </div>
+            <div class="glass-panel p-5 shadow-sm mb-4"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-2">請選擇查詢日期</label><input type="date" id="att-date" onchange="loadAttendance()" class="admin-input bg-slate-50 font-black text-lg"></div>
             <div id="list-attendance" class="space-y-3 pb-8">請選擇日期...</div>
         </section>
 
@@ -125,8 +122,7 @@
         
         async function loadAll() {
             const { data: emps } = await _sb.from('employees').select('*, branch_locations(branch_name)');
-            // 🚨 修正點：移除 order('created_at')，避免因為 table 沒有該欄位而造成全系統崩潰
-            const { data: brs } = await _sb.from('branch_locations').select('*');
+            const { data: brs } = await _sb.from('branch_locations').select('*'); // 🚨 移除了造成當機的 order 語法
             window.allEmps = emps || []; window.branches = brs || [];
 
             const p = window.allEmps.filter(e => !e.is_approved && e.employment_status === '在職');
@@ -253,7 +249,7 @@
             document.getElementById('ui-emp-full-info').innerHTML = html; document.getElementById('emp-detail-modal').classList.add('active');
         }
 
-        // 🚨 修復重點：加入時間格式防呆，確保 PG SQL 順利接收
+        // 🚨 修正：確保時間格式被安全處理
         function renderEditEmpForm(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             document.getElementById('btn-edit-emp').style.display = 'none'; document.getElementById('ui-emp-offboard-section').style.display = 'none';
@@ -280,11 +276,11 @@
             document.getElementById('ui-emp-full-info').innerHTML = html;
         }
 
+        // 🚨 修正：確保時間格式會自動補齊秒數 :00，避免資料庫無法寫入
         async function saveEmpDetail(e, empId) {
             e.preventDefault();
-            // 🚨 時間防呆處理：確保格式為 HH:MM:SS
-            let st = document.getElementById('edit-start-time').value; if(st.length === 5) st += ':00';
-            let et = document.getElementById('edit-end-time').value; if(et.length === 5) et += ':00';
+            let st = document.getElementById('edit-start-time').value; if(st && st.length === 5) st += ':00';
+            let et = document.getElementById('edit-end-time').value; if(et && et.length === 5) et += ':00';
             
             const p = { 
                 full_name: document.getElementById('edit-name').value, employment_status: document.getElementById('edit-status').value, 
