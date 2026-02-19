@@ -194,4 +194,60 @@
             const sel = document.getElementById('punch-branch'); const bid = sel.value; const bName = sel.options[sel.selectedIndex].text;
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 const { data, error } = await _sb.rpc('fn_process_punch', { p_emp_id: currentUser.id, p_type: type, p_lat: pos.coords.latitude, p_lng: pos.coords.longitude, p_branch_id: bid });
-                if (error || data.status === 'error') { alert(`⚠️ 打
+                if (error || data.status === 'error') { alert(`⚠️ 打卡失敗：\n${error?.message || data.message}`); } else { alert(`✅ 成功於【${data.branch_name || bName}】打卡！`); }
+            }, () => alert('請開啟手機的 GPS 定位權限！'), { enableHighAccuracy: true });
+        }
+
+        async function loadPunchHistory() {
+            document.getElementById('ui-records-list').innerHTML = '載入中...'; openModal('record-modal');
+            const { data } = await _sb.from('attendance_logs').select('punch_type, punch_time, note, branch_locations(branch_name)').eq('employee_id', currentUser.id).order('punch_time', {ascending: false}).limit(30);
+            document.getElementById('ui-records-list').innerHTML = data.length ? data.map(log => `<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div><span class="text-xs font-black bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${log.punch_type==='IN'?'上班':'下班'}</span> <span class="text-sm font-bold text-slate-700 ml-2">${new Date(log.punch_time).toLocaleString('zh-TW').slice(5,-3)}</span><p class="text-xs text-slate-400 font-bold mt-1.5 flex items-center"><span class="mr-1">📍</span>${log.branch_locations?.branch_name||'未知'}</p></div><span class="text-xs font-black px-2 py-1 rounded-full ${log.note.includes('正常')?'text-emerald-600 bg-emerald-50':'text-amber-600 bg-amber-50'}">${log.note}</span></div>`).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-10">目前無打卡紀錄</div>';
+        }
+
+        async function submitLeave(e) {
+            e.preventDefault(); const fd = new FormData(e.target); const isTyphoon = fd.get('leave_type') === '颱風假';
+            const payload = { employee_id: currentUser.id, leave_type: fd.get('leave_type'), start_time: fd.get('start_time'), end_time: fd.get('end_time'), salary_protection: isTyphoon ? false : (fd.get('salary_protection') === 'on') };
+            await _sb.from('leave_requests').insert([payload]); alert('✅ 假單已送出，老闆已收到 LINE 通知！\n老闆核准後系統會自動通知您。'); e.target.reset(); checkLeaveType(); loadLeaveHistory();
+        }
+
+        async function loadLeaveHistory() {
+            const { data } = await _sb.from('leave_requests').select('*').eq('employee_id', currentUser.id).order('created_at', {ascending: false}).limit(10);
+            document.getElementById('ui-leave-list').innerHTML = data.length ? data.map(l => {
+                let badge = l.status === '核准' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : (l.status === '核駁' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-slate-100 text-slate-600 border-slate-200');
+                let t1 = new Date(l.start_time).toLocaleString('zh-TW').slice(5,-3); let t2 = new Date(l.end_time).toLocaleString('zh-TW').slice(5,-3);
+                let spTag = l.leave_type === '颱風假' ? '<span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded ml-2 font-bold">不支薪</span>' : (l.salary_protection ? '<span class="text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded ml-2 font-bold">保薪</span>' : '');
+                return `<div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><div class="flex justify-between items-center mb-2"><span class="font-black text-sm text-slate-800 flex items-center">${l.leave_type} ${spTag}</span><span class="text-[10px] font-black px-2.5 py-1 rounded-full border ${badge}">${l.status}</span></div><p class="text-xs font-bold text-slate-500 flex items-center"><span class="mr-1.5">🕒</span>${t1} ~ ${t2}</p></div>`;
+            }).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-8">尚無請假紀錄</div>';
+        }
+
+        async function loadPayrollMonths() {
+            const sel = document.getElementById('payroll-month'); const { data } = await _sb.from('payroll_records').select('pay_month').eq('employee_id', currentUser.id).order('pay_month', {ascending: false});
+            if(!data || !data.length) { sel.innerHTML = '<option>尚無薪資紀錄</option>'; sel.disabled = true; resetPayrollUI(); return; }
+            sel.disabled = false; sel.innerHTML = data.map(m => `<option value="${m.pay_month}">${m.pay_month} 薪資單</option>`).join(''); sel.selectedIndex = 0; loadPayrollDetail(); 
+        }
+
+        function resetPayrollUI() { document.getElementById('p-base').innerText = 'NT$ 0'; document.getElementById('p-bonus').innerText = 'NT$ 0'; document.getElementById('p-yeb').innerText = 'NT$ 0'; document.getElementById('p-ins').innerText = '- NT$ 0'; document.getElementById('p-2nd').innerText = '- NT$ 0'; document.getElementById('p-pen').innerText = 'NT$ 0'; document.getElementById('p-net').innerText = 'NT$ 0'; }
+
+        async function loadPayrollDetail() {
+            const month = document.getElementById('payroll-month').value; const { data } = await _sb.from('payroll_records').select('*').eq('employee_id', currentUser.id).eq('pay_month', month).single();
+            if(!data) { resetPayrollUI(); return; }
+            document.getElementById('p-base').innerText = `NT$ ${data.base_pay.toLocaleString()}`; document.getElementById('p-bonus').innerText = `NT$ ${data.bonus.toLocaleString()}`; document.getElementById('p-yeb').innerText = `NT$ ${data.year_end_bonus.toLocaleString()}`; document.getElementById('p-ins').innerText = `- NT$ ${data.insurance_deduction.toLocaleString()}`; document.getElementById('p-2nd').innerText = `- NT$ ${data.second_gen_health.toLocaleString()}`; document.getElementById('p-pen').innerText = `NT$ ${data.labor_pension.toLocaleString()}`; document.getElementById('p-net').innerText = `NT$ ${data.total_net_pay.toLocaleString()}`;
+        }
+
+        function openDoc() { 
+            const htmlContent = `<div class="text-[11px] text-slate-700 leading-relaxed text-left"><h4 class="font-black text-center text-sm mb-3 text-slate-900">HYPASS 企業聘僱合約與員工服務守則</h4><p class="mb-2 text-sm"><strong>甲方（雇主）：</strong>海帕斯科技股份有限公司<br><strong>乙方（受僱人）：</strong><span class="text-sky-700 font-bold border-b border-sky-700 pb-0.5">${currentUser.full_name}</span></p><hr class="my-3 border-slate-200"><p class="font-black text-slate-900 text-xs mb-1">第一章：職位與工作內容</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方旗下品牌相關工作。</li><li>工作區域：甲方得視業務需求，指派乙方於實體據點或指定分區執行職務。</li></ul><p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>數位考勤唯一依據：乙方同意以 App 之 GPS 定位打卡作為出勤紀錄唯一合法依據。</li><li>打卡容錯範圍：系統提供 1000 公尺容錯範圍。</li><li>遲到處理機制：為維持乙方「全薪」完整性，若發生遲到，缺失時數將由系統自動以「剩餘特休時數」進行抵扣。若特休用罄則依比例核算薪資。</li></ul><p class="font-black text-slate-900 text-xs mb-1">第三章：請假規範與法遵保障</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>短期請假(1-2天)應於3天至1週前提出；長期請假應於2週前提出；突發狀況應於當天上班前第一時間告知。</li><li><strong>颱風假保障：如遇法定颱風假，甲方採取「不扣特休、不扣薪、不支薪」原則辦理。</strong></li></ul><p class="font-black text-slate-900 text-xs mb-1">第四章：薪資與保密協定 (NDA)</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>乙方對於甲方客戶名單、技術、財務、商業策略及對話紀錄負有絕對保密義務。</li><li>如違反保密義務，乙方同意無條件負擔新台幣壹佰萬元整之懲罰性違約金。</li></ul><p class="font-black text-slate-900 text-xs mb-1">第五章：離職與資遣結算</p><ul class="list-decimal pl-4 space-y-1"><li>離職時，系統將自動精算「破月薪資」、「特休換現」及「資遣費」，確認交接無誤後撥付。</li></ul></div>`;
+            document.getElementById('doc-content').innerHTML = htmlContent; document.getElementById('doc-sig').innerText = `簽署人：${currentUser.full_name}\n時間：${new Date(currentUser.nda_signed_at).toLocaleString('zh-TW')}`; openModal('doc-modal'); 
+        }
+        
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        document.getElementById('onboarding-form').onsubmit = async (e) => {
+            e.preventDefault(); document.getElementById('btn-submit').innerText = '資料加密上傳中...'; const fd = new FormData(e.target); const payload = Object.fromEntries(fd.entries());
+            payload.line_id = (await liff.getProfile()).userId; payload.default_branch_id = document.getElementById('reg-branch').value; payload.dependents_count = parseInt(payload.dependents_count) || 0;
+            const { error } = await _sb.from('employees').insert([payload]); if(error) alert(error.message); else location.reload();
+        };
+        window.onload = init;
+    </script>
+</body>
+</html>
