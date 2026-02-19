@@ -125,13 +125,14 @@
         
         async function loadAll() {
             const { data: emps } = await _sb.from('employees').select('*, branch_locations(branch_name)');
-            const { data: brs } = await _sb.from('branch_locations').select('*').order('created_at',{ascending:true});
-            window.allEmps = emps; window.branches = brs;
+            // 🚨 修正點：移除 order('created_at')，避免因為 table 沒有該欄位而造成全系統崩潰
+            const { data: brs } = await _sb.from('branch_locations').select('*');
+            window.allEmps = emps || []; window.branches = brs || [];
 
-            const p = emps.filter(e => !e.is_approved && e.employment_status === '在職');
+            const p = window.allEmps.filter(e => !e.is_approved && e.employment_status === '在職');
             document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><span class="text-2xl mr-3">👤</span><div><h4 class="font-black text-sm text-slate-800"><span class="text-[10px] text-sky-600 mr-1">[${e.work_region}]</span>${e.full_name}</h4><p class="text-[10px] text-slate-500">${e.onboarding_date} 入職申請</p></div></div><button onclick="appr('${e.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-4 py-2 rounded-lg shadow-sm transition">手動核准</button></div>`).join('') : '<div class="text-center py-6 bg-slate-100/50 rounded-xl border border-dashed border-slate-300"><p class="text-xs text-slate-400 font-bold">目前無待審核名單</p></div>';
             
-            const activeEmps = emps.filter(e => e.is_approved && e.employment_status === '在職');
+            const activeEmps = window.allEmps.filter(e => e.is_approved && e.employment_status === '在職');
             activeEmps.forEach(e => { window.empData[e.id] = { base: e.base_salary, deps: e.dependents_count || 0 }; }); 
             document.getElementById('p-emp').innerHTML = activeEmps.map(e => `<option value="${e.id}">[${e.work_region}] ${e.full_name}</option>`).join('');
 
@@ -143,36 +144,34 @@
             `).join('') : '<p class="text-center text-xs text-slate-400 py-4">無在職員工</p>';
 
             const { data: lv } = await _sb.from('leave_requests').select('*, employees(full_name)').eq('status', '審核中');
-            document.getElementById('list-leaves').innerHTML = lv.length ? lv.map(l => {
+            document.getElementById('list-leaves').innerHTML = (lv && lv.length) ? lv.map(l => {
                 let t1 = new Date(l.start_time).toLocaleString('zh-TW').slice(5,-3); let t2 = new Date(l.end_time).toLocaleString('zh-TW').slice(5,-3);
                 let spBadge = l.leave_type === '颱風假' ? '<span class="text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded ml-2">不支薪</span>' : (l.salary_protection?'<span class="text-[9px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded ml-2">特休保薪</span>':'<span class="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded ml-2">不保薪</span>');
                 return `<div class="glass-panel p-4"><div class="flex justify-between items-start mb-2"><div><span class="font-black text-sm text-slate-800">${l.employees?.full_name}</span><span class="text-xs font-bold text-slate-600 ml-2 border-l-2 border-slate-300 pl-2">${l.leave_type}</span>${spBadge}</div></div><div class="bg-slate-50 p-2 rounded-lg mb-3 inline-block"><p class="text-[10px] font-mono text-slate-600 tracking-tight">${t1} ~ ${t2}</p></div><div class="flex space-x-2"><button onclick="updLeave('${l.id}', '核准')" class="flex-1 bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-500 hover:text-white py-2.5 rounded-lg text-sm font-black transition-colors">核准</button><button onclick="updLeave('${l.id}', '核駁')" class="flex-1 bg-white border border-red-200 text-red-600 hover:bg-red-50 py-2.5 rounded-lg text-sm font-black transition-colors">駁回</button></div></div>`
             }).join('') : '<div class="text-center py-6 bg-slate-100/50 rounded-xl border border-dashed border-slate-300"><p class="text-xs text-slate-400 font-bold">太棒了，無待審核假單！</p></div>';
 
-            document.getElementById('list-brs').innerHTML = brs.map(b => `<div class="glass-panel p-4 flex justify-between items-center shadow-sm"><div class="flex items-center"><span class="text-2xl mr-3 opacity-80">📍</span><div><p class="font-black text-sm text-slate-800">${b.branch_name} <span class="text-[9px] text-emerald-600 ml-1 font-bold bg-emerald-50 px-1 rounded border border-emerald-100">${b.radius_m}m</span></p><p class="text-[10px] text-slate-500 mt-0.5">${b.address}</p></div></div><button onclick="editBr('${b.id}')" class="text-xs bg-sky-100 text-sky-700 font-bold px-3 py-2 rounded-lg active:scale-95 shadow-sm">✏️ 修改</button></div>`).join('');
+            document.getElementById('list-brs').innerHTML = window.branches.map(b => `<div class="glass-panel p-4 flex justify-between items-center shadow-sm"><div class="flex items-center"><span class="text-2xl mr-3 opacity-80">📍</span><div><p class="font-black text-sm text-slate-800">${b.branch_name} <span class="text-[9px] text-emerald-600 ml-1 font-bold bg-emerald-50 px-1 rounded border border-emerald-100">${b.radius_m}m</span></p><p class="text-[10px] text-slate-500 mt-0.5">${b.address}</p></div></div><button onclick="editBr('${b.id}')" class="text-xs bg-sky-100 text-sky-700 font-bold px-3 py-2 rounded-lg active:scale-95 shadow-sm">✏️ 修改</button></div>`).join('');
             
             onEmpChange(); loadAdminBlt();
             if(document.getElementById('att').classList.contains('active')) loadAttendance();
         }
 
-        // 🌟 全新出勤紀錄儀表板
         async function loadAttendance() {
             const dateStr = document.getElementById('att-date').value; if(!dateStr) return;
             document.getElementById('list-attendance').innerHTML = '<p class="text-center text-xs text-slate-400 font-bold py-6">資料結算中...</p>';
-            
-            const startDate = new Date(dateStr); startDate.setHours(0,0,0,0);
-            const endDate = new Date(dateStr); endDate.setHours(23,59,59,999);
-            
+            const startDate = new Date(dateStr); startDate.setHours(0,0,0,0); const endDate = new Date(dateStr); endDate.setHours(23,59,59,999);
             const { data: logs } = await _sb.from('attendance_logs').select('*, employees(id, full_name, work_start_time, work_end_time), branch_locations(branch_name)').gte('punch_time', startDate.toISOString()).lte('punch_time', endDate.toISOString()).order('punch_time', {ascending: true});
             const empLogs = {};
-            window.allEmps.forEach(e => { if(e.employment_status === '在職') { empLogs[e.id] = { name: e.full_name, start: e.work_start_time, end: e.work_end_time, in: null, out: null }; } });
+            window.allEmps.forEach(e => { if(e.employment_status === '在職') { empLogs[e.id] = { name: e.full_name, start: e.work_start_time || '09:00:00', end: e.work_end_time || '18:00:00', in: null, out: null }; } });
             
-            logs.forEach(l => {
-                const eid = l.employees?.id; if(!eid || !empLogs[eid]) return;
-                const timeStr = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
-                if(l.punch_type === 'IN' && !empLogs[eid].in) empLogs[eid].in = { time: timeStr, branch: l.branch_locations?.branch_name };
-                if(l.punch_type === 'OUT') empLogs[eid].out = { time: timeStr, branch: l.branch_locations?.branch_name }; // 會覆蓋成最後一次下班
-            });
+            if(logs) {
+                logs.forEach(l => {
+                    const eid = l.employees?.id; if(!eid || !empLogs[eid]) return;
+                    const timeStr = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
+                    if(l.punch_type === 'IN' && !empLogs[eid].in) empLogs[eid].in = { time: timeStr, branch: l.branch_locations?.branch_name };
+                    if(l.punch_type === 'OUT') empLogs[eid].out = { time: timeStr, branch: l.branch_locations?.branch_name };
+                });
+            }
             
             let html = '';
             Object.values(empLogs).forEach(e => {
@@ -180,13 +179,11 @@
                 if(e.in) { if(e.in.time > e.start.slice(0,5)) inStatus = '<span class="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold ml-2">遲到</span>'; else inStatus = '<span class="text-[9px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold ml-2">正常</span>'; }
                 let outStatus = '<span class="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded font-bold ml-2">未打卡</span>';
                 if(e.out) { if(e.out.time < e.end.slice(0,5)) outStatus = '<span class="text-[9px] bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded font-bold ml-2">早退</span>'; else outStatus = '<span class="text-[9px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold ml-2">正常</span>'; }
-                
-                html += `<div class="glass-panel p-4 flex flex-col space-y-3 shadow-sm border-l-4 ${e.in && e.out ? 'border-emerald-400' : 'border-slate-200'} hover:bg-slate-50 transition"><div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="font-black text-slate-800 text-sm flex items-center">${e.name} <span class="text-[9px] font-bold text-slate-400 ml-2 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded shadow-inner">設定班別 ${e.start.slice(0,5)} ~ ${e.end.slice(0,5)}</span></span></div><div class="grid grid-cols-2 gap-3 text-xs"><div class="bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm"><div class="font-bold text-slate-500 mb-1 flex items-center justify-between">上班 ${inStatus}</div><div class="font-black ${e.in?'text-slate-800':'text-slate-300'} text-lg tracking-tight">${e.in ? e.in.time : '--:--'}</div><div class="text-[9px] text-slate-400 mt-1 truncate">${e.in ? '📍'+e.in.branch : ''}</div></div><div class="bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm"><div class="font-bold text-slate-500 mb-1 flex items-center justify-between">下班 ${outStatus}</div><div class="font-black ${e.out?'text-slate-800':'text-slate-300'} text-lg tracking-tight">${e.out ? e.out.time : '--:--'}</div><div class="text-[9px] text-slate-400 mt-1 truncate">${e.out ? '📍'+e.out.branch : ''}</div></div></div></div>`;
+                html += `<div class="glass-panel p-4 flex flex-col space-y-3 shadow-sm border-l-4 ${e.in && e.out ? 'border-emerald-400' : 'border-slate-200'} hover:bg-slate-50 transition"><div class="flex justify-between items-center border-b border-slate-100 pb-2"><span class="font-black text-slate-800 text-sm flex items-center">${e.name} <span class="text-[9px] font-bold text-slate-400 ml-2 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded shadow-inner">班別 ${e.start.slice(0,5)} ~ ${e.end.slice(0,5)}</span></span></div><div class="grid grid-cols-2 gap-3 text-xs"><div class="bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm"><div class="font-bold text-slate-500 mb-1 flex items-center justify-between">上班 ${inStatus}</div><div class="font-black ${e.in?'text-slate-800':'text-slate-300'} text-lg tracking-tight">${e.in ? e.in.time : '--:--'}</div><div class="text-[9px] text-slate-400 mt-1 truncate">${e.in ? '📍'+e.in.branch : ''}</div></div><div class="bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm"><div class="font-bold text-slate-500 mb-1 flex items-center justify-between">下班 ${outStatus}</div><div class="font-black ${e.out?'text-slate-800':'text-slate-300'} text-lg tracking-tight">${e.out ? e.out.time : '--:--'}</div><div class="text-[9px] text-slate-400 mt-1 truncate">${e.out ? '📍'+e.out.branch : ''}</div></div></div></div>`;
             });
             document.getElementById('list-attendance').innerHTML = html;
         }
 
-        // 🌟 據點編輯功能
         let currentEditBrId = null;
         function editBr(id) {
             const b = window.branches.find(x => x.id === id); if(!b) return;
@@ -227,7 +224,6 @@
         }
         async function delBlt(id) { if(!confirm('確定要刪除這則公告嗎？')) return; await _sb.from('bulletin_board').delete().eq('id', id); alert('✅ 公告已刪除'); loadAll(); }
 
-        // 🌟 員工卡片與全欄位編輯 (加入班別顯示與設定)
         function openEmpDetail(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             window.currentOffboardEmpId = empId; document.getElementById('modal-off-result').classList.add('hidden'); document.getElementById('modal-off-date').value = '';
@@ -240,7 +236,7 @@
                     <div class="grid grid-cols-2 gap-y-4 gap-x-3 text-sm">
                         <div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">入職日期</p><p class="font-black text-slate-700">${e.onboarding_date}</p></div><div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">工作分區/據點</p><p class="font-black text-slate-700">${e.work_region} <span class="text-xs text-slate-400 font-normal">(${e.branch_locations?.branch_name || '未綁定'})</span></p></div>
                         <div class="col-span-2 border-t border-slate-100 pt-3 mt-1"><h5 class="text-xs font-black text-blue-700 flex items-center"><span class="mr-1">⏰</span> 考勤班別設定</h5></div>
-                        <div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">表定上班時間</p><p class="font-black text-slate-700 text-base">${e.work_start_time.slice(0,5)}</p></div><div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">表定下班時間</p><p class="font-black text-slate-700 text-base">${e.work_end_time.slice(0,5)}</p></div>
+                        <div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">表定上班時間</p><p class="font-black text-slate-700 text-base">${(e.work_start_time||'09:00').slice(0,5)}</p></div><div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">表定下班時間</p><p class="font-black text-slate-700 text-base">${(e.work_end_time||'18:00').slice(0,5)}</p></div>
                         <div class="col-span-2 border-t border-slate-100 pt-3 mt-1"><h5 class="text-xs font-black text-slate-500 flex items-center"><span class="mr-1">📞</span> 聯絡資訊</h5></div>
                         <div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">聯絡電話</p><p class="font-black text-slate-700">${e.phone}</p></div><div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">電子信箱</p><p class="font-black text-slate-700 truncate" title="${e.email}">${e.email}</p></div>
                         <div class="col-span-2"><p class="text-[10px] font-bold text-slate-400 mb-0.5">通訊送達地址</p><p class="font-black text-slate-700 leading-relaxed">${e.address}</p></div>
@@ -257,6 +253,7 @@
             document.getElementById('ui-emp-full-info').innerHTML = html; document.getElementById('emp-detail-modal').classList.add('active');
         }
 
+        // 🚨 修復重點：加入時間格式防呆，確保 PG SQL 順利接收
         function renderEditEmpForm(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             document.getElementById('btn-edit-emp').style.display = 'none'; document.getElementById('ui-emp-offboard-section').style.display = 'none';
@@ -268,7 +265,7 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div class="col-span-2 flex space-x-3"><div class="flex-1"><label class="text-[10px] font-bold text-slate-500 ml-1">真實姓名</label><input type="text" id="edit-name" value="${e.full_name}" class="admin-input bg-white font-bold" required></div><div class="w-1/3"><label class="text-[10px] font-bold text-slate-500 ml-1">在職狀態</label><select id="edit-status" class="admin-input bg-white font-bold"><option value="在職" ${e.employment_status==='在職'?'selected':''}>在職</option><option value="留職停薪" ${e.employment_status==='留職停薪'?'selected':''}>留職停薪</option></select></div></div>
                             <div><label class="text-[10px] font-bold text-slate-500 ml-1">身分證字號</label><input type="text" id="edit-idnum" value="${e.id_number}" class="admin-input bg-white uppercase" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">入職日期</label><input type="date" id="edit-onboard" value="${e.onboarding_date}" class="admin-input bg-white" required></div>
-                            <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-blue-700 mb-2">⏰ 考勤班別設定</h5><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">上班時間</label><input type="time" id="edit-start-time" value="${e.work_start_time.slice(0,5)}" class="admin-input bg-white font-black text-blue-700" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">下班時間</label><input type="time" id="edit-end-time" value="${e.work_end_time.slice(0,5)}" class="admin-input bg-white font-black text-blue-700" required></div></div></div>
+                            <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-blue-700 mb-2">⏰ 考勤班別設定</h5><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">上班時間</label><input type="time" id="edit-start-time" value="${(e.work_start_time||'09:00').slice(0,5)}" class="admin-input bg-white font-black text-blue-700" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">下班時間</label><input type="time" id="edit-end-time" value="${(e.work_end_time||'18:00').slice(0,5)}" class="admin-input bg-white font-black text-blue-700" required></div></div></div>
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><label class="text-[10px] font-bold text-slate-500 ml-1">電子信箱</label><input type="email" id="edit-email" value="${e.email}" class="admin-input bg-white" required></div>
                             <div><label class="text-[10px] font-bold text-emerald-600 ml-1">核定底薪</label><input type="number" id="edit-base" value="${e.base_salary}" class="admin-input bg-white font-black text-emerald-600" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">眷屬人數</label><input type="number" id="edit-deps" value="${e.dependents_count}" class="admin-input bg-white" required></div>
                             <div><label class="text-[10px] font-bold text-slate-500 ml-1">聯絡電話</label><input type="text" id="edit-phone" value="${e.phone}" class="admin-input bg-white" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">工作分區</label><input type="text" id="edit-region" value="${e.work_region}" class="admin-input bg-white" required></div>
@@ -285,10 +282,14 @@
 
         async function saveEmpDetail(e, empId) {
             e.preventDefault();
+            // 🚨 時間防呆處理：確保格式為 HH:MM:SS
+            let st = document.getElementById('edit-start-time').value; if(st.length === 5) st += ':00';
+            let et = document.getElementById('edit-end-time').value; if(et.length === 5) et += ':00';
+            
             const p = { 
                 full_name: document.getElementById('edit-name').value, employment_status: document.getElementById('edit-status').value, 
                 id_number: document.getElementById('edit-idnum').value, onboarding_date: document.getElementById('edit-onboard').value, 
-                work_start_time: document.getElementById('edit-start-time').value, work_end_time: document.getElementById('edit-end-time').value,
+                work_start_time: st, work_end_time: et,
                 email: document.getElementById('edit-email').value, base_salary: parseFloat(document.getElementById('edit-base').value) || 0, 
                 phone: document.getElementById('edit-phone').value, dependents_count: parseInt(document.getElementById('edit-deps').value) || 0, 
                 work_region: document.getElementById('edit-region').value, default_branch_id: document.getElementById('edit-branch').value, 
