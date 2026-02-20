@@ -19,12 +19,13 @@
         .modal { display: none; } .modal.active { display: flex; z-index: 100; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input:focus, select:focus, textarea:focus { outline: 2px solid #38bdf8; outline-offset: -1px; }
-        /* 迷你行事曆樣式 */
-        .cal-day { width: 14.28%; text-align: center; padding: 0.5rem 0; font-size: 0.75rem; font-weight: 900; border-radius: 0.5rem; }
+        
+        /* 🌟 升級版：28天行事曆網格樣式 */
+        .cal-day { width: 14.28%; text-align: center; padding: 0.5rem 0; font-size: 0.75rem; font-weight: 900; border-radius: 0.5rem; margin-bottom: 0.25rem; }
         .cal-day.today { background-color: #0284c7; color: white; box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.3); }
         .cal-day.holiday { color: #ef4444; }
         .cal-day.special { position: relative; }
-        .cal-day.special::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: #10b981; border-radius: 50%; }
+        .cal-day.special::after { content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: #10b981; border-radius: 50%; }
     </style>
 </head>
 <body class="text-slate-800 font-sans">
@@ -94,11 +95,11 @@
                 
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
                     <div class="flex justify-between items-center mb-3 px-1">
-                        <span class="text-xs font-black text-slate-700 tracking-wider uppercase">本週出勤曆</span>
-                        <div class="flex space-x-2 text-[9px] font-bold"><span class="text-slate-400">⚫️ 工作日</span><span class="text-red-400">🔴 休假日</span><span class="text-emerald-500">🟢 特殊/請假</span></div>
+                        <span class="text-xs font-black text-slate-700 tracking-wider uppercase">行事曆</span>
+                        <div class="flex space-x-2 text-[9px] font-bold"><span class="text-slate-400">⚫️ 工作</span><span class="text-red-400">🔴 假日</span><span class="text-emerald-500">🟢 特殊/加班</span></div>
                     </div>
-                    <div class="flex justify-between text-slate-400 text-[10px] font-bold mb-1 px-1"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
-                    <div class="flex justify-between" id="ui-mini-calendar"></div>
+                    <div class="flex justify-between text-slate-400 text-[10px] font-bold mb-2 px-1"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+                    <div class="flex flex-wrap justify-start" id="ui-mini-calendar"></div>
                 </div>
 
                 <div class="bg-gradient-to-br from-slate-900 to-indigo-900 p-6 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
@@ -109,6 +110,7 @@
                         <div class="flex flex-col bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-sm"><span class="text-xs font-bold text-slate-300 mb-1">法定特休餘額</span><span id="ui-leave" class="text-3xl font-black text-amber-300 tracking-tight">--</span></div>
                     </div>
                 </div>
+                
                 <div class="glass-card p-5 rounded-[2rem] shadow-sm">
                     <div class="mb-4"><label class="text-xs font-bold text-slate-500 ml-2 mb-1.5 block">目前所在據點</label><select id="punch-branch" class="w-full text-sm font-bold bg-slate-50 text-slate-800 border-0 shadow-inner rounded-2xl p-3 outline-none text-center appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_1rem_center] bg-no-repeat"></select></div>
                     <div class="grid grid-cols-2 gap-4"><button onclick="punch('IN')" class="bg-gradient-to-br from-sky-500 to-blue-600 text-white py-8 rounded-3xl font-black text-xl shadow-lg active:scale-95 flex flex-col items-center transition-all relative overflow-hidden group"><span class="text-4xl mb-2">🏢</span>上班打卡</button><button onclick="punch('OUT')" class="bg-white text-slate-700 border-2 border-slate-100 py-8 rounded-3xl font-black text-xl shadow-sm active:scale-95 flex flex-col items-center transition-all group hover:bg-slate-50"><span class="text-4xl mb-2 grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all">🏠</span>下班打卡</button></div>
@@ -192,7 +194,6 @@
             }
         }
 
-        // 🌟 修正：確保選擇據點時能正確渲染選項與提示文字
         async function loadBranches(targetId) { 
             const { data } = await _sb.from('branch_locations').select('id, branch_name').eq('is_active', true); 
             const sel = document.getElementById(targetId); 
@@ -239,20 +240,32 @@
             `;
         }
 
+        // 🌟 升級版：28天網格動態行事曆 (前1週 + 本週 + 後2週)
         async function renderMiniCalendar() {
-            const today = new Date(); const currentDay = today.getDay();
-            const startOfWeek = new Date(today); startOfWeek.setDate(today.getDate() - currentDay);
+            const today = new Date(); 
+            const currentDay = today.getDay();
             
-            const endOfWeek = new Date(startOfWeek); endOfWeek.setDate(startOfWeek.getDate() + 6);
-            const { data: leaves } = await _sb.from('leave_requests').select('start_time').eq('employee_id', currentUser.id).eq('status', '核准').gte('start_time', startOfWeek.toISOString()).lte('start_time', endOfWeek.toISOString());
-            const leaveDates = (leaves || []).map(l => new Date(l.start_time).getDate());
+            // 將起始日推回前一週的星期日
+            const startOfCalendar = new Date(today); 
+            startOfCalendar.setDate(today.getDate() - currentDay - 7); 
+            
+            // 結束日為起始日往後 27 天 (共 28 天)
+            const endOfCalendar = new Date(startOfCalendar); 
+            endOfCalendar.setDate(startOfCalendar.getDate() + 27); 
+            
+            const { data: leaves } = await _sb.from('leave_requests').select('start_time').eq('employee_id', currentUser.id).eq('status', '核准').gte('start_time', startOfCalendar.toISOString()).lte('start_time', endOfCalendar.toISOString());
+            const leaveDates = (leaves || []).map(l => new Date(l.start_time).toDateString());
 
             let html = '';
-            for(let i = 0; i < 7; i++) {
-                let d = new Date(startOfWeek); d.setDate(startOfWeek.getDate() + i);
-                let dateNum = d.getDate(); let isToday = dateNum === today.getDate();
-                let isHoliday = (i === 0 || i === 6) ? 'holiday' : 'text-slate-700';
-                let isSpecial = leaveDates.includes(dateNum) ? 'special text-emerald-600' : '';
+            for(let i = 0; i < 28; i++) {
+                let d = new Date(startOfCalendar); 
+                d.setDate(startOfCalendar.getDate() + i);
+                
+                let dateNum = d.getDate(); 
+                let isToday = d.toDateString() === today.toDateString();
+                let isHoliday = (d.getDay() === 0 || d.getDay() === 6) ? 'holiday' : 'text-slate-700'; // 0=日, 6=六
+                let isSpecial = leaveDates.includes(d.toDateString()) ? 'special text-emerald-600' : '';
+                
                 html += `<div class="cal-day ${isToday ? 'today' : isHoliday} ${isSpecial}">${dateNum}</div>`;
             }
             document.getElementById('ui-mini-calendar').innerHTML = html;
@@ -302,7 +315,7 @@
                 if(log.note.includes('正常')) noteBadge = 'text-emerald-600 bg-emerald-50 border-emerald-200';
                 else if(log.note.includes('寬限')) noteBadge = 'text-sky-600 bg-sky-50 border-sky-200';
                 else if(log.note.includes('遲到') || log.note.includes('早退')) noteBadge = 'text-red-600 bg-red-50 border-red-200';
-                else noteBadge = 'text-amber-600 bg-amber-50 border-amber-200';
+                else noteBadge = 'text-amber-600 bg-amber-50 border-amber-200'; // 假日加班
                 
                 return `<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div><span class="text-xs font-black bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${log.punch_type==='IN'?'上班':'下班'}</span> <span class="text-sm font-bold text-slate-700 ml-2">${new Date(log.punch_time).toLocaleString('zh-TW').slice(5,-3)}</span><p class="text-xs text-slate-400 font-bold mt-1.5 flex items-center"><span class="mr-1">📍</span>${log.branch_locations?.branch_name||'未知'}</p></div><span class="text-[10px] font-black px-2 py-1 rounded border ${noteBadge}">${log.note}</span></div>`;
             }).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-10">目前無打卡紀錄</div>';
@@ -315,7 +328,7 @@
             const { data, error } = await _sb.from('leave_requests').insert([payload]).select();
             if(!error && data) {
                 await _sb.functions.invoke('line-webhook', { body: { action: 'notify_leave', id: data[0].id, name: currentUser.full_name, type: payload.leave_type, start: payload.start_time, end: payload.end_time }});
-                alert('✅ 假單已送出！\n老闆核准後系統會自動通知您。'); e.target.reset(); checkLeaveType(); loadLeaveHistory();
+                alert('✅ 假單已送出！\n※ 若主管 4 小時內未處理，系統將自動核准。'); e.target.reset(); checkLeaveType(); loadLeaveHistory();
             }
             document.getElementById('btn-leave').innerText = '送出假單申請';
         }
@@ -323,10 +336,11 @@
         async function loadLeaveHistory() {
             const { data } = await _sb.from('leave_requests').select('*').eq('employee_id', currentUser.id).order('created_at', {ascending: false}).limit(10);
             document.getElementById('ui-leave-list').innerHTML = data.length ? data.map(l => {
-                let badge = l.status === '核准' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : (l.status === '核駁' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-slate-100 text-slate-600 border-slate-200');
+                let badge = l.status === '核准' || l.status === '系統默認核准' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : (l.status === '核駁' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-slate-100 text-slate-600 border-slate-200');
+                let statusText = l.status === '系統默認核准' ? '自動核准' : l.status;
                 let t1 = new Date(l.start_time).toLocaleString('zh-TW').slice(5,-3); let t2 = new Date(l.end_time).toLocaleString('zh-TW').slice(5,-3);
                 let spTag = l.leave_type === '颱風假' ? '<span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded ml-2 font-bold">不支薪</span>' : (l.salary_protection ? '<span class="text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded ml-2 font-bold">保薪</span>' : '');
-                return `<div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><div class="flex justify-between items-center mb-2"><span class="font-black text-sm text-slate-800 flex items-center">${l.leave_type} ${spTag}</span><span class="text-[10px] font-black px-2.5 py-1 rounded-full border ${badge}">${l.status}</span></div><p class="text-xs font-bold text-slate-500 flex items-center"><span class="mr-1.5">🕒</span>${t1} ~ ${t2}</p></div>`;
+                return `<div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><div class="flex justify-between items-center mb-2"><span class="font-black text-sm text-slate-800 flex items-center">${l.leave_type} ${spTag}</span><span class="text-[10px] font-black px-2.5 py-1 rounded-full border ${badge}">${statusText}</span></div><p class="text-xs font-bold text-slate-500 flex items-center"><span class="mr-1.5">🕒</span>${t1} ~ ${t2}</p></div>`;
             }).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-8">尚無請假紀錄</div>';
         }
 
@@ -359,6 +373,7 @@
             if(error) { alert(error.message); document.getElementById('btn-submit').innerText = '數位簽署並提交審核'; } 
             else { 
                 await _sb.functions.invoke('line-webhook', { body: { action: 'notify_signup', id: data[0].id, name: payload.full_name, role: payload.job_title }});
+                alert('✅ 註冊成功！\n※ 若主管 4 小時內未處理，系統將自動開通您的權限。');
                 location.reload(); 
             }
         };
