@@ -18,7 +18,7 @@
         .dt-btn.active { background-color: #0284c7; color: white; }
     </style>
 </head>
-<body class="text-slate-800 font-sans min-h-screen bg-slate-50">
+<body class="text-slate-800 font-sans min-h-screen md:h-screen md:overflow-hidden md:flex bg-slate-50">
 
     <div id="login-box" class="flex flex-col items-center justify-center min-h-screen px-5 md:w-full">
         <div class="glass-panel p-8 w-full max-w-sm text-center"><div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">👑</div><h2 class="text-2xl font-black mb-2 text-slate-800">最高權限驗證</h2><p class="text-xs text-slate-500 mb-6">請輸入管理金鑰解鎖指揮中心</p><input type="password" id="pin" placeholder="PIN CODE" class="admin-input text-center text-2xl tracking-[0.5em] mb-6 bg-slate-50 font-black text-slate-700" onkeypress="if(event.key==='Enter') login()"><button onclick="login()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform">驗證並登入</button></div>
@@ -55,7 +55,7 @@
 
             <section id="pend" class="tab-content active space-y-6 max-w-4xl">
                 <div><h3 class="font-black text-slate-800 border-l-4 border-blue-500 pl-3 text-lg mb-3">新進員工審核</h3><div id="list-pend" class="space-y-3"></div></div>
-                <div><h3 class="font-black text-slate-800 border-l-4 border-amber-500 pl-3 text-lg mb-3">假單簽核中心</h3><div id="list-leaves" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
+                <div><h3 class="font-black text-slate-800 border-l-4 border-amber-500 pl-3 text-lg mb-3">簽核中心</h3><div id="list-leaves" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
             </section>
 
             <section id="pay" class="tab-content space-y-6 max-w-3xl">
@@ -64,7 +64,7 @@
                     <h3 class="font-black text-slate-800 border-l-4 border-indigo-500 pl-3 text-lg mb-4">發派月薪與年終</h3>
                     <div class="grid grid-cols-2 gap-3 mb-2"><select id="p-emp" class="admin-input bg-slate-50 font-bold" onchange="onEmpChange()"></select><input type="month" id="p-mon" class="admin-input bg-slate-50 font-bold" onchange="updateAttendanceRate()"></div>
                     <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-2 gap-3">
-                        <div><label class="text-[10px] font-bold text-slate-500 ml-1">本薪</label><input type="number" id="p-base" oninput="calcPayroll()" class="admin-input font-black text-slate-800"></div>
+                        <div><label class="text-[10px] font-bold text-slate-500 ml-1">本薪 (已綁定核定底薪)</label><input type="number" id="p-base" oninput="calcPayroll()" class="admin-input font-black text-slate-800 bg-white"></div>
                         <div><label class="text-[10px] font-bold text-slate-500 ml-1">獎金津貼 <span id="att-rate-bonus" class="text-sky-600 font-black tracking-tight"></span></label><input type="number" id="p-bonus" oninput="calcPayroll()" class="admin-input font-black text-emerald-600"></div>
                         <div class="col-span-2"><label class="text-[10px] font-bold text-amber-600 ml-1">年終獎金 <span id="att-rate-yeb" class="text-red-600 font-black tracking-tight"></span></label><input type="number" id="p-yeb" oninput="calcPayroll()" class="admin-input font-black text-amber-600 border-amber-200 bg-amber-50"></div>
                     </div>
@@ -161,7 +161,7 @@
             window.allEmps = emps || []; window.branches = brs || [];
 
             const p = window.allEmps.filter(e => !e.is_approved && e.employment_status === '在職');
-            document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><span class="text-2xl mr-3">👤</span><div><h4 class="font-black text-sm text-slate-800"><span class="text-[10px] text-sky-600 mr-1">[${e.job_title||'未指定'}]</span>${e.full_name}</h4><p class="text-[10px] text-slate-500">${e.onboarding_date} 申請</p></div></div><button onclick="appr('${e.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-4 py-2 rounded-lg shadow-sm transition">開通</button></div>`).join('') : '<div class="text-center py-6 bg-slate-100/50 rounded-xl border border-dashed border-slate-300"><p class="text-xs text-slate-400 font-bold">目前無待審核名單</p></div>';
+            document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><span class="text-2xl mr-3">👤</span><div><h4 class="font-black text-sm text-slate-800"><span class="text-[10px] text-sky-600 mr-1">[${e.job_title||'未指定'}]</span>${e.full_name}</h4><p class="text-[10px] text-slate-500">${e.onboarding_date} 申請</p></div></div><button onclick="appr('${e.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-4 py-2 rounded-lg shadow-sm transition">開通</button></div>`).join('') : '<div class="text-center py-6 bg-slate-100/50 rounded-xl border border-dashed border-slate-300"><p class="text-xs text-slate-400 font-bold">目前無待辦審核人員</p></div>';
             
             const activeEmps = window.allEmps.filter(e => e.is_approved && e.employment_status === '在職');
             activeEmps.forEach(e => { window.empData[e.id] = { base: e.base_salary, deps: e.dependents_count || 0, start: e.work_start_time || '09:00:00' }; }); 
@@ -184,7 +184,9 @@
 
             document.getElementById('list-brs').innerHTML = window.branches.map(b => `<div class="glass-panel p-4 flex justify-between items-center shadow-sm"><div class="flex items-center"><span class="text-2xl mr-3 opacity-80">📍</span><div><p class="font-black text-sm text-slate-800">${b.branch_name} <span class="text-[9px] text-emerald-600 ml-1 font-bold bg-emerald-50 px-1 rounded border border-emerald-100">${b.radius_m}m</span></p><p class="text-[10px] text-slate-500 mt-0.5">${b.address}</p></div></div><button onclick="editBr('${b.id}')" class="text-xs bg-sky-100 text-sky-700 font-bold px-3 py-2 rounded-lg active:scale-95 shadow-sm">✏️ 修改</button></div>`).join('');
             
-            onEmpChange(); loadAdminBlt();
+            // 🌟 確保載入時綁定本薪
+            onEmpChange(); 
+            loadAdminBlt();
             if(document.getElementById('att').classList.contains('active')) loadAttendance();
         }
 
@@ -275,12 +277,28 @@
         }
         function cancelEditBlt() {
             document.getElementById('blt-edit-id').value = ''; document.getElementById('blt-title').value = ''; document.getElementById('blt-content').value = '';
-            document.getElementById('blt-form-title').innerText = '發布企業電子公告'; document.getElementById('btn-post-blt').innerText = '立即推播至全員首頁'; document.getElementById('btn-post-blt').classList.replace('from-sky-500', 'from-amber-500'); document.getElementById('btn-post-blt').classList.replace('to-blue-600', 'to-orange-500'); document.getElementById('btn-cancel-blt').classList.add('hidden');
+            document.getElementById('blt-form-title').innerText = '發布企業公告'; document.getElementById('btn-post-blt').innerText = '立即推播至全員首頁'; document.getElementById('btn-post-blt').classList.replace('from-sky-500', 'from-amber-500'); document.getElementById('btn-post-blt').classList.replace('to-blue-600', 'to-orange-500'); document.getElementById('btn-cancel-blt').classList.add('hidden');
         }
+        
+        // 🌟 修正公告推播錯誤
         async function postBlt() {
-            const id = document.getElementById('blt-edit-id').value; const title = document.getElementById('blt-title').value; const content = document.getElementById('blt-content').value; if(!title || !content) { alert('請填寫完整內容'); return; }
-            if(id) { await _sb.from('bulletin_board').update({ title, content }).eq('id', id); alert('✅ 公告已更新'); } else { await _sb.from('bulletin_board').insert([{ title, content }]); alert('✅ 公告已推播'); }
-            cancelEditBlt(); loadAll();
+            const id = document.getElementById('blt-edit-id').value; 
+            const title = document.getElementById('blt-title').value; 
+            const content = document.getElementById('blt-content').value; 
+            if(!title || !content) { alert('請填寫完整內容'); return; }
+            
+            try {
+                if(id) { 
+                    const { error } = await _sb.from('bulletin_board').update({ title, content }).eq('id', id); 
+                    if(error) throw error; alert('✅ 公告已更新'); 
+                } else { 
+                    const { error } = await _sb.from('bulletin_board').insert([{ title, content }]); 
+                    if(error) throw error; alert('✅ 公告已成功推播'); 
+                }
+                cancelEditBlt(); loadAll();
+            } catch(e) {
+                alert('發佈失敗，請檢查網路連線或稍後再試。錯誤代碼: ' + e.message);
+            }
         }
         async function delBlt(id) { if(!confirm('確定要刪除這則公告嗎？')) return; await _sb.from('bulletin_board').delete().eq('id', id); alert('✅ 公告已刪除'); loadAll(); }
 
@@ -335,15 +353,20 @@
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-amber-700 mb-2">🚨 緊急聯絡人</h5><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">姓名</label><input type="text" id="edit-emg-name" value="${e.emergency_name}" class="admin-input bg-white" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">電話</label><input type="tel" id="edit-emg-phone" value="${e.emergency_phone}" class="admin-input bg-white" required></div></div></div>
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-slate-700 mb-2">🏦 撥薪銀行帳戶</h5><div class="grid grid-cols-2 gap-3 mb-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">銀行名稱</label><input type="text" id="edit-bank-name" value="${e.bank_name}" class="admin-input bg-white" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">代碼</label><input type="text" id="edit-bank-code" value="${e.bank_code}" class="admin-input bg-white" required></div></div><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">戶名</label><input type="text" id="edit-bank-user" value="${e.bank_user_name}" class="admin-input bg-white" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">帳號</label><input type="text" id="edit-bank-account" value="${e.bank_account}" class="admin-input bg-white" required></div></div></div>
                         </div>
-                        <div class="flex space-x-3 pt-4"><button type="button" onclick="openEmpDetail('${e.id}')" class="flex-1 bg-white border-2 border-slate-200 text-slate-600 py-3.5 rounded-xl font-bold transition hover:bg-slate-50">取消</button><button type="submit" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white py-3.5 rounded-xl font-black transition shadow-md">💾 儲存變更</button></div>
+                        <div class="flex space-x-3 pt-4"><button type="button" onclick="openEmpDetail('${e.id}')" class="flex-1 bg-white border-2 border-slate-200 text-slate-600 py-3.5 rounded-xl font-bold transition hover:bg-slate-50">取消</button><button type="submit" id="btn-save-emp" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white py-3.5 rounded-xl font-black transition shadow-md">💾 儲存變更</button></div>
                     </form>
                 </div>
             `;
             document.getElementById('ui-emp-full-info').innerHTML = html;
         }
 
+        // 🌟 修正儲存狀態回饋
         async function saveEmpDetail(e, empId) {
             e.preventDefault();
+            const btn = document.getElementById('btn-save-emp');
+            const originText = btn.innerHTML;
+            btn.innerHTML = '⏳ 儲存中...'; btn.disabled = true;
+
             let st = document.getElementById('edit-start-time').value; if(st && st.length === 5) st += ':00';
             let et = document.getElementById('edit-end-time').value; if(et && et.length === 5) et += ':00';
             const p = { 
@@ -357,12 +380,45 @@
                 bank_name: document.getElementById('edit-bank-name').value, bank_code: document.getElementById('edit-bank-code').value, 
                 bank_user_name: document.getElementById('edit-bank-user').value, bank_account: document.getElementById('edit-bank-account').value 
             };
-            document.querySelector('button[type="submit"]').innerText = '儲存中...';
+            
             const { error } = await _sb.from('employees').update(p).eq('id', empId);
-            if (error) alert('更新失敗: ' + error.message); else { alert('✅ 資料已更新！'); await loadAll(); openEmpDetail(empId); }
+            if (error) { 
+                alert('更新失敗: ' + error.message); 
+                btn.innerHTML = originText; btn.disabled = false; 
+            } else { 
+                btn.innerHTML = '✅ 儲存完畢'; 
+                await loadAll(); 
+                setTimeout(() => openEmpDetail(empId), 1000); // 1秒後自動重新渲染該員工畫面
+            }
         }
 
         function closeEmpDetail() { document.getElementById('emp-detail-modal').classList.remove('active'); }
+
+        function onEmpChange() { const empId = document.getElementById('p-emp').value; if(!empId) return; const emp = window.empData[empId]; if(!emp) return; document.getElementById('p-base').value = emp.base; calcPayroll(); updateAttendanceRate(); }
+        function calcPayroll() { const empId = document.getElementById('p-emp').value; const emp = window.empData[empId]; if(!emp) return; const base = parseFloat(document.getElementById('p-base').value) || 0; const bonus = parseFloat(document.getElementById('p-bonus').value) || 0; const yeb = parseFloat(document.getElementById('p-yeb').value) || 0; document.getElementById('p-pen').value = Math.round(base * 0.06); document.getElementById('p-2nd').value = Math.round((bonus + yeb) * 0.0211); const labor_est = Math.round(base * 0.022); const health_est = Math.round(base * 0.0155 * (1 + emp.deps)); document.getElementById('p-ins').value = labor_est + health_est; calcNet(); }
+        function calcNet() { const net = (parseFloat(document.getElementById('p-base').value)||0) + (parseFloat(document.getElementById('p-bonus').value)||0) + (parseFloat(document.getElementById('p-yeb').value)||0) - (parseFloat(document.getElementById('p-ins').value)||0) - (parseFloat(document.getElementById('p-2nd').value)||0); const finalNet = net > 0 ? net : 0; document.getElementById('p-net').value = finalNet; document.getElementById('p-net-display').innerText = `NT$ ${finalNet.toLocaleString()}`; }
+        async function issuePayroll() { const p = { employee_id: document.getElementById('p-emp').value, pay_month: document.getElementById('p-mon').value, base_pay: parseFloat(document.getElementById('p-base').value)||0, bonus: parseFloat(document.getElementById('p-bonus').value)||0, year_end_bonus: parseFloat(document.getElementById('p-yeb').value)||0, labor_pension: parseFloat(document.getElementById('p-pen').value)||0, insurance_deduction: parseFloat(document.getElementById('p-ins').value)||0, second_gen_health: parseFloat(document.getElementById('p-2nd').value)||0, total_net_pay: parseFloat(document.getElementById('p-net').value)||0 }; if(!p.pay_month) { alert('請選擇發放月份'); return; } await _sb.from('payroll_records').insert([p]); alert('✅ 薪資單發送成功！'); document.querySelectorAll('#pay input[type="number"]').forEach(e => e.value = ''); document.getElementById('p-net-display').innerText = 'NT$ 0'; }
+
+        async function calculateSettlement() {
+            const empId = window.currentOffboardEmpId; const lastDay = document.getElementById('modal-off-date').value; const type = document.getElementById('modal-off-type').value; if(!empId || !lastDay) { alert('請填寫最後工作日'); return; }
+            const e = window.allEmps.find(x => x.id === empId); const { data: lv } = await _sb.rpc('fn_get_annual_leave', { p_onboard_date: e.onboarding_date });
+            const proRat = new Date(lastDay).getDate() / 30.0; const proSal = Math.round((proRat > 1 ? 1 : proRat) * e.base_salary); const uHrs = lv?.hours || 0; const lPay = Math.round(uHrs * (e.base_salary / 240));
+            let sev = 0; if(type === '非自願離職(資遣)') { const ty = (new Date(lastDay).getTime() - new Date(e.onboarding_date).getTime()) / 31557600000; sev = Math.round(Math.max(0, ty) * 0.5 * e.base_salary); }
+            const tot = proSal + lPay + sev;
+            document.getElementById('res-base').innerText = `NT$ ${e.base_salary.toLocaleString()}`; document.getElementById('res-pro').innerText = `+ NT$ ${proSal.toLocaleString()}`; document.getElementById('res-lvh').innerText = uHrs; document.getElementById('res-lvp').innerText = `+ NT$ ${lPay.toLocaleString()}`; document.getElementById('res-sev').innerText = `+ NT$ ${sev.toLocaleString()}`; document.getElementById('res-total').innerText = `NT$ ${tot.toLocaleString()}`; document.getElementById('modal-off-result').classList.remove('hidden');
+            globalOffboardData = { employee_id: empId, settlement_type: type, last_working_day: lastDay, base_salary_ref: e.base_salary, prorated_salary: proSal, unused_leave_hours: uHrs, unused_leave_pay: lPay, severance_pay: sev, total_settlement: tot };
+        }
+        async function confirmOffboarding() { if(!globalOffboardData || !confirm('⚠️ 確定結算並停權？')) return; await _sb.from('settlement_records').insert([globalOffboardData]); await _sb.from('employees').update({ employment_status: '離職', is_approved: false, resignation_date: globalOffboardData.last_working_day }).eq('id', globalOffboardData.employee_id); alert('✅ 帳號已永久停權。'); closeEmpDetail(); loadAll(); }
+
+        async function exportBankCSV() { const month = document.getElementById('export-mon').value; if(!month) return; const { data } = await _sb.from('payroll_records').select('total_net_pay, employees(full_name, bank_code, bank_name, bank_user_name, bank_account)').eq('pay_month', month); if(!data || data.length === 0) return; let csv = "\uFEFF銀行代碼,銀行名稱,收款帳號,戶名,匯款金額,備註\n"; data.forEach(r => { csv += `="${r.employees.bank_code}",${r.employees.bank_name},="${r.employees.bank_account}",${r.employees.bank_user_name},${r.total_net_pay},${month}薪資\n`; }); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `HYPASS_${month}_轉帳檔.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
+        
+        // 🌟 修正簽核按鈕無法作用的問題
+        async function appr(id) { 
+            try { const {error} = await _sb.from('employees').update({is_approved:true}).eq('id',id); if(error) throw error; alert('✅ 員工權限已開通'); loadAll(); } catch(e) { alert('簽核發生錯誤: ' + e.message); }
+        }
+        async function updLeave(id, st) { 
+            try { const {error} = await _sb.from('leave_requests').update({status:st}).eq('id',id); if(error) throw error; alert(`✅ 假單已${st}`); loadAll(); } catch(e) { alert('簽核發生錯誤: ' + e.message); }
+        }
     </script>
 </body>
 </html>
