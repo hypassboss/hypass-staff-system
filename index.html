@@ -31,21 +31,22 @@
         <div id="view-onboarding" class="hidden glass-card p-6 rounded-3xl shadow-xl">
             <h2 class="text-xl font-black mb-6 text-center text-slate-800">👋 歡迎加入！建立您的員工檔案</h2>
             <form id="onboarding-form" class="space-y-4">
-                <div><input type="text" name="full_name" placeholder="真實姓名" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="col-span-2"><input type="text" name="full_name" placeholder="真實姓名" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div>
+                    <div class="col-span-1"><select name="job_title" required class="w-full p-3 bg-sky-50 text-sky-800 rounded-xl text-sm font-black border-0 shadow-inner appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%230284c7\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-no-repeat pr-8"><option value="" disabled selected>選項</option><option value="主管">主管</option><option value="業務">業務</option><option value="助理">助理</option></select></div>
+                </div>
                 <div><input type="text" name="id_number" placeholder="身分證字號" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner uppercase"></div>
                 <div class="grid grid-cols-2 gap-3"><input type="email" name="email" placeholder="電子信箱" required class="p-3 bg-slate-50 rounded-xl text-sm border-0 shadow-inner"><input type="tel" name="phone" placeholder="手機號碼" required class="p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div>
                 
                 <div class="bg-slate-50 p-1 rounded-xl shadow-inner border border-slate-100">
-                    <label class="text-[10px] font-bold text-slate-400 ml-2 mt-1 block">請選擇工作縣市</label>
-                    <select name="work_region" required class="w-full p-3 bg-transparent text-base font-black text-slate-700 border-0 outline-none appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-no-repeat">
-                        <option value="" disabled selected>點擊選擇...</option><option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option><option value="苗栗縣">苗栗縣</option><option value="台中市">台中市</option><option value="彰化縣">彰化縣</option><option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option><option value="嘉義市">嘉義市</option><option value="嘉義縣">嘉義縣</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option><option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option><option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option><option value="連江縣">連江縣</option>
+                    <label class="text-[10px] font-bold text-slate-400 ml-2 mt-1 block">請選擇所屬工作地點 (據點)</label>
+                    <select name="default_branch_id" id="reg-branch" required class="w-full p-3 bg-transparent text-base font-black text-slate-700 border-0 outline-none appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-no-repeat">
                     </select>
                 </div>
-                <div><input type="text" name="address" placeholder="通訊地址 (法律送達地)" required class="w-full p-3 bg-slate-50 rounded-xl text-sm border-0 shadow-inner"></div>
                 
                 <div class="grid grid-cols-2 gap-3">
-                    <div><label class="text-xs font-bold text-slate-500 ml-1 mb-1 block">入職日期</label><input type="date" name="onboarding_date" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div>
-                    <div><label class="text-xs font-bold text-slate-500 ml-1 mb-1 block">預設打卡據點</label><select id="reg-branch" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-no-repeat pr-8"></select></div>
+                    <div class="col-span-1"><label class="text-[10px] font-bold text-slate-500 ml-1 mb-0.5 block">入職日期</label><input type="date" name="onboarding_date" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div>
+                    <div class="col-span-1"><label class="text-[10px] font-bold text-slate-500 ml-1 mb-0.5 block">通訊地址</label><input type="text" name="address" placeholder="法律送達地" required class="w-full p-3 bg-slate-50 rounded-xl text-sm border-0 shadow-inner"></div>
                 </div>
                 <div class="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-100">
                     <h3 class="text-xs font-black text-emerald-800 mb-3 flex items-center"><span class="text-base mr-1">💰</span>財務與眷屬資料</h3>
@@ -187,7 +188,7 @@
             const { data: blt } = await _sb.from('bulletin_board').select('*').gte('created_at', oneYearAgo.toISOString()).order('created_at', {ascending: false});
             if (blt && blt.length > 0) { document.getElementById('ui-bulletin').innerHTML = blt.map(b => `<div class="mb-2.5 border-b border-amber-100/50 pb-2 last:border-0 last:mb-0 last:pb-0 flex items-start"><span class="text-[10px] text-amber-600 font-black mr-2 mt-0.5 bg-amber-100 px-1.5 rounded">[${new Date(b.created_at).toISOString().split('T')[0]}]</span><div><span class="font-black text-slate-800 text-sm">${b.title}</span><span class="text-xs text-slate-600 font-medium leading-relaxed block mt-1">${b.content}</span></div></div>`).join(''); } else { document.getElementById('ui-bulletin').innerHTML = '<p class="text-xs text-slate-400 font-medium italic">目前無歷史公告</p>'; }
             
-            document.getElementById('ui-profile-info').innerHTML = `<div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">🆔</span><span class="text-slate-700 font-bold text-sm">${currentUser.id_number}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📞</span><span class="text-slate-700 font-bold text-sm">${currentUser.phone}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📍</span><span class="text-sky-700 font-black text-sm bg-sky-50 px-2 py-0.5 rounded-md">${currentUser.work_region}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">👥</span><span class="text-slate-700 font-bold text-sm">眷屬加保：${currentUser.dependents_count || 0} 人</span></div><div class="flex items-center space-x-3 border-t border-slate-50 pt-3 mt-1"><span class="w-6 text-center text-lg mt-0.5">⏰</span><div class="text-blue-700 font-black text-sm bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 w-full text-center tracking-wider">${(currentUser.work_start_time||'09:00').slice(0,5)} 上班 <span class="mx-2 text-blue-200">|</span> ${(currentUser.work_end_time||'18:00').slice(0,5)} 下班</div></div><div class="flex items-start space-x-3 mt-3"><span class="w-6 text-center text-lg mt-0.5">🏠</span><span class="text-slate-700 font-medium text-sm leading-relaxed">${currentUser.address}</span></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🏦</span><div class="text-slate-800 font-black text-sm leading-tight">${currentUser.bank_name} (${currentUser.bank_code})<br><span class="text-xs font-bold text-slate-500 mt-1 block">${currentUser.bank_user_name} / ${currentUser.bank_account}</span></div></div>`;
+            document.getElementById('ui-profile-info').innerHTML = `<div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">🆔</span><span class="text-slate-700 font-bold text-sm">${currentUser.id_number}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📞</span><span class="text-slate-700 font-bold text-sm">${currentUser.phone}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-sky-600">👔</span><span class="text-sky-700 font-black text-sm bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">${currentUser.job_title||'員工'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">👥</span><span class="text-slate-700 font-bold text-sm">眷屬加保：${currentUser.dependents_count || 0} 人</span></div><div class="flex items-center space-x-3 border-t border-slate-50 pt-3 mt-1"><span class="w-6 text-center text-lg mt-0.5">⏰</span><div class="text-blue-700 font-black text-sm bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 w-full text-center tracking-wider">${(currentUser.work_start_time||'09:00').slice(0,5)} 上班 <span class="mx-2 text-blue-200">|</span> ${(currentUser.work_end_time||'18:00').slice(0,5)} 下班</div></div><div class="flex items-start space-x-3 mt-3"><span class="w-6 text-center text-lg mt-0.5">🏠</span><span class="text-slate-700 font-medium text-sm leading-relaxed">${currentUser.address}</span></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🏦</span><div class="text-slate-800 font-black text-sm leading-tight">${currentUser.bank_name} (${currentUser.bank_code})<br><span class="text-xs font-bold text-slate-500 mt-1 block">${currentUser.bank_user_name} / ${currentUser.bank_account}</span></div></div>`;
         }
 
         function punch(type) {
@@ -204,10 +205,18 @@
             document.getElementById('ui-records-list').innerHTML = data.length ? data.map(log => `<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div><span class="text-xs font-black bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${log.punch_type==='IN'?'上班':'下班'}</span> <span class="text-sm font-bold text-slate-700 ml-2">${new Date(log.punch_time).toLocaleString('zh-TW').slice(5,-3)}</span><p class="text-xs text-slate-400 font-bold mt-1.5 flex items-center"><span class="mr-1">📍</span>${log.branch_locations?.branch_name||'未知'}</p></div><span class="text-xs font-black px-2 py-1 rounded-full ${log.note.includes('正常')?'text-emerald-600 bg-emerald-50':'text-amber-600 bg-amber-50'}">${log.note}</span></div>`).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-10">目前無打卡紀錄</div>';
         }
 
+        // 🚨 變更點：App 直呼虛擬秘書，繞過 SQL，100%保證通知發送
         async function submitLeave(e) {
             e.preventDefault(); const fd = new FormData(e.target); const isTyphoon = fd.get('leave_type') === '颱風假';
             const payload = { employee_id: currentUser.id, leave_type: fd.get('leave_type'), start_time: fd.get('start_time'), end_time: fd.get('end_time'), salary_protection: isTyphoon ? false : (fd.get('salary_protection') === 'on') };
-            await _sb.from('leave_requests').insert([payload]); alert('✅ 假單已送出，老闆已收到 LINE 通知！\n老闆核准後系統會自動通知您。'); e.target.reset(); checkLeaveType(); loadLeaveHistory();
+            document.getElementById('btn-leave').innerText = '申請送出中...';
+            const { data, error } = await _sb.from('leave_requests').insert([payload]).select();
+            if(!error && data) {
+                // 呼叫虛擬秘書發送 LINE
+                await _sb.functions.invoke('line-webhook', { body: { action: 'notify_leave', id: data[0].id, name: currentUser.full_name, type: payload.leave_type, start: payload.start_time, end: payload.end_time }});
+                alert('✅ 假單已送出！\n老闆核准後系統會自動通知您。'); e.target.reset(); checkLeaveType(); loadLeaveHistory();
+            }
+            document.getElementById('btn-leave').innerText = '送出假單申請';
         }
 
         async function loadLeaveHistory() {
@@ -242,10 +251,16 @@
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
+        // 🚨 變更點：App 註冊直呼虛擬秘書，繞過 SQL 觸發器
         document.getElementById('onboarding-form').onsubmit = async (e) => {
             e.preventDefault(); document.getElementById('btn-submit').innerText = '資料加密上傳中...'; const fd = new FormData(e.target); const payload = Object.fromEntries(fd.entries());
-            payload.line_id = (await liff.getProfile()).userId; payload.default_branch_id = document.getElementById('reg-branch').value; payload.dependents_count = parseInt(payload.dependents_count) || 0;
-            const { error } = await _sb.from('employees').insert([payload]); if(error) alert(error.message); else location.reload();
+            payload.line_id = (await liff.getProfile()).userId; payload.dependents_count = parseInt(payload.dependents_count) || 0;
+            const { data, error } = await _sb.from('employees').insert([payload]).select(); 
+            if(error) { alert(error.message); document.getElementById('btn-submit').innerText = '數位簽署並提交審核'; } 
+            else { 
+                await _sb.functions.invoke('line-webhook', { body: { action: 'notify_signup', id: data[0].id, name: payload.full_name, role: payload.job_title }});
+                location.reload(); 
+            }
         };
         window.onload = init;
     </script>
