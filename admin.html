@@ -21,13 +21,7 @@
 <body class="text-slate-800 font-sans min-h-screen bg-slate-50">
 
     <div id="login-box" class="flex flex-col items-center justify-center min-h-screen px-5">
-        <div class="glass-panel p-8 w-full max-w-sm text-center">
-            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">👑</div>
-            <h2 class="text-2xl font-black mb-2 text-slate-800">最高權限驗證</h2>
-            <p class="text-xs text-slate-500 mb-6">請輸入管理金鑰解鎖指揮中心</p>
-            <input type="password" id="pin" placeholder="PIN CODE" class="admin-input text-center text-2xl tracking-[0.5em] mb-6 bg-slate-50 font-black text-slate-700" onkeypress="if(event.key==='Enter') login()">
-            <button onclick="login()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform">驗證並登入</button>
-        </div>
+        <div class="glass-panel p-8 w-full max-w-sm text-center"><div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">👑</div><h2 class="text-2xl font-black mb-2 text-slate-800">最高權限驗證</h2><p class="text-xs text-slate-500 mb-6">請輸入管理金鑰解鎖指揮中心</p><input type="password" id="pin" placeholder="PIN CODE" class="admin-input text-center text-2xl tracking-[0.5em] mb-6 bg-slate-50 font-black text-slate-700" onkeypress="if(event.key==='Enter') login()"><button onclick="login()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform">驗證並登入</button></div>
     </div>
 
     <div id="dashboard-ui" class="hidden flex-col md:flex-row h-screen w-full md:overflow-hidden">
@@ -38,10 +32,7 @@
         </header>
 
         <aside class="hidden md:flex w-64 bg-slate-900 text-white flex-col h-full shadow-2xl shrink-0 z-20">
-            <div class="p-6 pb-2 border-b border-slate-800 mb-4">
-                <h1 class="text-2xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-300">HYPASS</h1>
-                <span class="text-[10px] text-slate-400 tracking-[0.2em] uppercase font-bold">Admin Dashboard</span>
-            </div>
+            <div class="p-6 pb-2 border-b border-slate-800 mb-4"><h1 class="text-2xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-300">HYPASS</h1><span class="text-[10px] text-slate-400 tracking-[0.2em] uppercase font-bold">Admin Dashboard</span></div>
             <nav class="flex-1 px-4 space-y-2">
                 <button onclick="st('pend')" id="dt-pend" class="dt-btn active w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">🔴</span> 待辦審核</button>
                 <button onclick="st('pay')" id="dt-pay" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">💰</span> 薪資發放</button>
@@ -54,7 +45,6 @@
         </aside>
 
         <main class="flex-1 overflow-y-auto w-full p-4 md:p-8 bg-slate-50">
-            
             <div class="grid grid-cols-3 gap-3 mb-8 md:hidden">
                 <button onclick="st('pend')" id="m-pend" class="m-btn active flex flex-col items-center justify-center py-4 bg-slate-900 text-white rounded-2xl shadow-md border border-transparent transition-all"><span class="text-3xl mb-1.5 drop-shadow-md">🔴</span><span class="m-text text-xs font-black tracking-widest">待辦審核</span></button>
                 <button onclick="st('pay')" id="m-pay" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm">💰</span><span class="m-text text-xs font-bold tracking-widest">薪資匯款</span></button>
@@ -146,7 +136,6 @@
         const _sb = supabase.createClient('https://obbcgmgkbazwpfvgbupg.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'); // ⚠️ 務必填寫
         let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = [];
 
-        // 🚨 修正登入邏輯：單純隱藏 Login Box 並顯示 Dashboard UI
         function login() { 
             if(document.getElementById('pin').value === '888888'){ 
                 document.getElementById('login-box').style.display = 'none'; 
@@ -154,22 +143,15 @@
                 document.getElementById('dashboard-ui').classList.add('flex'); 
                 document.getElementById('att-date').value = new Date().toLocaleDateString('en-CA'); 
                 loadAll(); 
-            } else {
-                alert('密碼錯誤！請確認您輸入的是 888888');
-            } 
+            } else { alert('密碼錯誤！'); } 
         }
         
         function st(id) { 
             document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active')); 
-            
-            // 手機版按鈕狀態切換
             document.querySelectorAll('.m-btn').forEach(e=>{ e.classList.remove('bg-slate-900','text-white','shadow-md','border-transparent'); e.classList.add('bg-white','text-slate-500','border-slate-200','shadow-sm'); e.querySelector('.m-text').classList.remove('font-black'); e.querySelector('.m-text').classList.add('font-bold'); }); 
             const activeMBtn = document.getElementById('m-'+id); if(activeMBtn) { activeMBtn.classList.remove('bg-white','text-slate-500','border-slate-200','shadow-sm'); activeMBtn.classList.add('bg-slate-900','text-white','shadow-md','border-transparent'); activeMBtn.querySelector('.m-text').classList.remove('font-bold'); activeMBtn.querySelector('.m-text').classList.add('font-black'); }
-
-            // 電腦版側邊欄按鈕狀態切換
             document.querySelectorAll('.dt-btn').forEach(e=>{ e.classList.remove('active','bg-sky-600','text-white'); e.classList.add('text-slate-400'); }); 
             const activeDtBtn = document.getElementById('dt-'+id); if(activeDtBtn) { activeDtBtn.classList.add('active','bg-sky-600','text-white'); activeDtBtn.classList.remove('text-slate-400'); }
-
             document.getElementById(id).classList.add('active'); 
             if(id === 'att') loadAttendance();
         }
@@ -186,7 +168,6 @@
             activeEmps.forEach(e => { window.empData[e.id] = { base: e.base_salary, deps: e.dependents_count || 0, start: e.work_start_time || '09:00:00' }; }); 
             document.getElementById('p-emp').innerHTML = activeEmps.map(e => `<option value="${e.id}">[${e.job_title||'員工'}] ${e.full_name}</option>`).join('');
 
-            // 渲染 RWD 員工總表
             if (activeEmps.length) {
                 document.getElementById('list-emps-mobile').innerHTML = activeEmps.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><div class="w-10 h-10 bg-slate-100 border border-slate-200 rounded-full flex items-center justify-center text-slate-500 font-black mr-3">${e.full_name.charAt(0)}</div><div><h4 class="font-black text-sm text-slate-800">${e.full_name} <span class="text-[9px] bg-emerald-50 border border-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded ml-1">${(e.base_salary/1000).toFixed(0)}k</span></h4><p class="text-[10px] text-slate-500 mt-1"><span class="text-sky-600 font-bold mr-1">${e.job_title||'員工'}</span> | ${e.branch_locations?.branch_name||'未綁定'}</p></div></div><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl">管理</button></div>`).join('');
                 document.getElementById('list-emps-desktop').innerHTML = activeEmps.map(e => `<tr class="hover:bg-slate-50 transition"><td class="px-6 py-4 font-black text-slate-800">${e.full_name}</td><td class="px-6 py-4"><span class="bg-sky-50 text-sky-700 border border-sky-100 px-2 py-1 rounded text-xs font-bold mr-2">${e.job_title||'員工'}</span><span class="text-slate-500 text-xs">${e.branch_locations?.branch_name||'未綁定'}</span></td><td class="px-6 py-4 text-slate-600 font-mono text-xs">${e.phone}</td><td class="px-6 py-4 text-emerald-600 font-black">NT$ ${e.base_salary.toLocaleString()}</td><td class="px-6 py-4 text-center"><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition">管理</button></td></tr>`).join('');
@@ -233,12 +214,10 @@
                 if(e.in) { if(e.in.time > e.start.slice(0,5)) inStatus = '<span class="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold ml-2">遲到</span>'; else inStatus = '<span class="text-[9px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold ml-2">正常</span>'; }
                 let outStatus = '<span class="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded font-bold ml-2">未打卡</span>';
                 if(e.out) { if(e.out.time < e.end.slice(0,5)) outStatus = '<span class="text-[9px] bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded font-bold ml-2">早退</span>'; else outStatus = '<span class="text-[9px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold ml-2">正常</span>'; }
-                
                 htmlM += `<div class="glass-panel p-4 shadow-sm border-l-4 ${e.in && e.out ? 'border-emerald-400' : 'border-slate-200'}"><div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-3"><span class="font-black text-slate-800 text-sm flex items-center">${e.name} <span class="text-[9px] font-bold text-slate-400 ml-2 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded">班別 ${e.start.slice(0,5)}~${e.end.slice(0,5)}</span></span></div><div class="grid grid-cols-2 gap-3 text-xs"><div class="bg-white p-2.5 rounded-xl border border-slate-100"><div class="font-bold text-slate-500 mb-1 flex justify-between">上班 ${inStatus}</div><div class="font-black ${e.in?'text-slate-800':'text-slate-300'} text-lg">${e.in?e.in.time:'--:--'}</div><div class="text-[9px] text-slate-400 truncate">${e.in?'📍'+e.in.branch:''}</div></div><div class="bg-white p-2.5 rounded-xl border border-slate-100"><div class="font-bold text-slate-500 mb-1 flex justify-between">下班 ${outStatus}</div><div class="font-black ${e.out?'text-slate-800':'text-slate-300'} text-lg">${e.out?e.out.time:'--:--'}</div><div class="text-[9px] text-slate-400 truncate">${e.out?'📍'+e.out.branch:''}</div></div></div></div>`;
                 htmlD += `<tr class="hover:bg-slate-50"><td class="px-6 py-4 font-black text-slate-800">${e.name}</td><td class="px-6 py-4 text-xs font-mono text-slate-500">${e.start.slice(0,5)} ~ ${e.end.slice(0,5)}</td><td class="px-6 py-4"><span class="font-black ${e.in?'text-slate-800':'text-slate-300'} text-base mr-2">${e.in?e.in.time:'--:--'}</span>${inStatus}<br><span class="text-[10px] text-slate-400">${e.in?e.in.branch:''}</span></td><td class="px-6 py-4"><span class="font-black ${e.out?'text-slate-800':'text-slate-300'} text-base mr-2">${e.out?e.out.time:'--:--'}</span>${outStatus}<br><span class="text-[10px] text-slate-400">${e.out?e.out.branch:''}</span></td></tr>`;
             });
-            document.getElementById('list-attendance-mobile').innerHTML = htmlM;
-            document.getElementById('list-attendance-desktop').innerHTML = htmlD;
+            document.getElementById('list-attendance-mobile').innerHTML = htmlM; document.getElementById('list-attendance-desktop').innerHTML = htmlD;
         }
 
         async function updateAttendanceRate() {
@@ -247,24 +226,20 @@
             document.getElementById('att-rate-bonus').innerText = '(計算中...)'; document.getElementById('att-rate-yeb').innerText = '(計算中...)';
             const emp = window.empData[empId];
             
-            const startDate = new Date(month + '-01T00:00:00');
-            const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0, 23, 59, 59);
+            const startDate = new Date(month + '-01T00:00:00'); const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0, 23, 59, 59);
             const { data: logs1 } = await _sb.from('attendance_logs').select('punch_time').eq('employee_id', empId).gte('punch_time', startDate.toISOString()).lte('punch_time', endDate.toISOString()).eq('punch_type', 'IN');
             if(!logs1 || logs1.length === 0) { document.getElementById('att-rate-bonus').innerText = '(本月無出勤紀錄)'; } 
             else {
-                let onTime = 0;
-                logs1.forEach(l => { if(new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'}) <= emp.start.slice(0,5)) onTime++; });
+                let onTime = 0; logs1.forEach(l => { if(new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'}) <= emp.start.slice(0,5)) onTime++; });
                 document.getElementById('att-rate-bonus').innerText = `(本月準時率: ${Math.round((onTime / logs1.length) * 100)}%)`;
             }
 
             const lastYear = startDate.getFullYear() - 1;
-            const lastStart = new Date(`${lastYear}-01-01T00:00:00`).toISOString();
-            const lastEnd = new Date(`${lastYear}-12-31T23:59:59`).toISOString();
+            const lastStart = new Date(`${lastYear}-01-01T00:00:00`).toISOString(); const lastEnd = new Date(`${lastYear}-12-31T23:59:59`).toISOString();
             const { data: logs2 } = await _sb.from('attendance_logs').select('punch_time').eq('employee_id', empId).gte('punch_time', lastStart).lte('punch_time', lastEnd).eq('punch_type', 'IN');
             if(!logs2 || logs2.length === 0) { document.getElementById('att-rate-yeb').innerText = `(${lastYear}年無紀錄)`; } 
             else {
-                let onTimeY = 0;
-                logs2.forEach(l => { if(new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'}) <= emp.start.slice(0,5)) onTimeY++; });
+                let onTimeY = 0; logs2.forEach(l => { if(new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'}) <= emp.start.slice(0,5)) onTimeY++; });
                 document.getElementById('att-rate-yeb').innerText = `(${lastYear}年準時率: ${Math.round((onTimeY / logs2.length) * 100)}%)`;
             }
         }
