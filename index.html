@@ -43,7 +43,7 @@
             <form id="onboarding-form" class="space-y-4">
                 <div class="grid grid-cols-3 gap-3">
                     <div class="col-span-2"><input type="text" name="full_name" placeholder="真實姓名" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div>
-                    <div class="col-span-1"><select name="job_title" required class="w-full p-3 bg-sky-50 text-sky-800 rounded-xl text-sm font-black border-0 shadow-inner appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%230284c7\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-no-repeat pr-8"><option value="" disabled selected>選項</option><option value="主管">主管</option><option value="業務">業務</option><option value="助理">助理</option></select></div>
+                    <div class="col-span-1"><select name="job_title" required class="w-full p-3 bg-sky-50 text-sky-800 rounded-xl text-sm font-black border-0 shadow-inner appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%230284c7\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-no-repeat pr-8"><option value="" disabled selected>職務</option><option value="主管">主管</option><option value="業務">業務</option><option value="助理">助理</option></select></div>
                 </div>
                 <div><input type="text" name="id_number" placeholder="身分證字號" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner uppercase"></div>
                 <div class="grid grid-cols-2 gap-3"><input type="email" name="email" placeholder="電子信箱" required class="p-3 bg-slate-50 rounded-xl text-sm border-0 shadow-inner"><input type="tel" name="phone" placeholder="手機號碼" required class="p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div>
@@ -109,7 +109,6 @@
                         <div class="flex flex-col bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-sm"><span class="text-xs font-bold text-slate-300 mb-1">法定特休餘額</span><span id="ui-leave" class="text-3xl font-black text-amber-300 tracking-tight">--</span></div>
                     </div>
                 </div>
-                
                 <div class="glass-card p-5 rounded-[2rem] shadow-sm">
                     <div class="mb-4"><label class="text-xs font-bold text-slate-500 ml-2 mb-1.5 block">目前所在據點</label><select id="punch-branch" class="w-full text-sm font-bold bg-slate-50 text-slate-800 border-0 shadow-inner rounded-2xl p-3 outline-none text-center appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_1rem_center] bg-no-repeat"></select></div>
                     <div class="grid grid-cols-2 gap-4"><button onclick="punch('IN')" class="bg-gradient-to-br from-sky-500 to-blue-600 text-white py-8 rounded-3xl font-black text-xl shadow-lg active:scale-95 flex flex-col items-center transition-all relative overflow-hidden group"><span class="text-4xl mb-2">🏢</span>上班打卡</button><button onclick="punch('OUT')" class="bg-white text-slate-700 border-2 border-slate-100 py-8 rounded-3xl font-black text-xl shadow-sm active:scale-95 flex flex-col items-center transition-all group hover:bg-slate-50"><span class="text-4xl mb-2 grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all">🏠</span>下班打卡</button></div>
@@ -193,7 +192,18 @@
             }
         }
 
-        async function loadBranches(targetId) { const { data } = await _sb.from('branch_locations').select('id, branch_name').eq('is_active', true); const sel = document.getElementById(targetId); sel.innerHTML = data.map(b => `<option value="${b.id}">${b.branch_name}</option>`).join(''); }
+        // 🌟 修正：確保選擇據點時能正確渲染選項與提示文字
+        async function loadBranches(targetId) { 
+            const { data } = await _sb.from('branch_locations').select('id, branch_name').eq('is_active', true); 
+            const sel = document.getElementById(targetId); 
+            if (!data) return;
+            let options = data.map(b => `<option value="${b.id}">${b.branch_name}</option>`).join('');
+            if (targetId === 'reg-branch') {
+                sel.innerHTML = '<option value="" disabled selected>點擊選擇工作據點...</option>' + options;
+            } else {
+                sel.innerHTML = options;
+            }
+        }
 
         function switchTab(id) { document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active')); document.getElementById('tab-' + id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active')); document.querySelector(`button[onclick="switchTab('${id}')"]`).classList.add('active'); if(id === 'leave') loadLeaveHistory(); if(id === 'payroll') loadPayrollMonths(); }
 
@@ -212,7 +222,6 @@
             const { data: blt } = await _sb.from('bulletin_board').select('*').gte('created_at', oneYearAgo.toISOString()).order('created_at', {ascending: false});
             if (blt && blt.length > 0) { document.getElementById('ui-bulletin').innerHTML = blt.map(b => `<div class="mb-2.5 border-b border-amber-100/50 pb-2 last:border-0 last:mb-0 last:pb-0 flex items-start"><span class="text-[10px] text-amber-600 font-black mr-2 mt-0.5 bg-amber-100 px-1.5 rounded">[${new Date(b.created_at).toISOString().split('T')[0]}]</span><div><span class="font-black text-slate-800 text-sm">${b.title}</span><span class="text-xs text-slate-600 font-medium leading-relaxed block mt-1">${b.content}</span></div></div>`).join(''); } else { document.getElementById('ui-bulletin').innerHTML = '<p class="text-xs text-slate-400 font-medium italic">目前無歷史公告</p>'; }
             
-            // 🌟 渲染迷你動態行事曆
             renderMiniCalendar();
 
             document.getElementById('ui-profile-info').innerHTML = `
@@ -234,7 +243,6 @@
             const today = new Date(); const currentDay = today.getDay();
             const startOfWeek = new Date(today); startOfWeek.setDate(today.getDate() - currentDay);
             
-            // 讀取當週是否有請假或加班
             const endOfWeek = new Date(startOfWeek); endOfWeek.setDate(startOfWeek.getDate() + 6);
             const { data: leaves } = await _sb.from('leave_requests').select('start_time').eq('employee_id', currentUser.id).eq('status', '核准').gte('start_time', startOfWeek.toISOString()).lte('start_time', endOfWeek.toISOString());
             const leaveDates = (leaves || []).map(l => new Date(l.start_time).getDate());
@@ -243,14 +251,13 @@
             for(let i = 0; i < 7; i++) {
                 let d = new Date(startOfWeek); d.setDate(startOfWeek.getDate() + i);
                 let dateNum = d.getDate(); let isToday = dateNum === today.getDate();
-                let isHoliday = (i === 0 || i === 6) ? 'holiday' : 'text-slate-700'; // 0=Sun, 6=Sat
+                let isHoliday = (i === 0 || i === 6) ? 'holiday' : 'text-slate-700';
                 let isSpecial = leaveDates.includes(dateNum) ? 'special text-emerald-600' : '';
                 html += `<div class="cal-day ${isToday ? 'today' : isHoliday} ${isSpecial}">${dateNum}</div>`;
             }
             document.getElementById('ui-mini-calendar').innerHTML = html;
         }
 
-        // 🚨 修正：防呆打卡邏輯，捕捉 holiday_block 並啟動加班申請流程
         function punch(type) {
             const sel = document.getElementById('punch-branch'); const bid = sel.value; const bName = sel.options[sel.selectedIndex].text;
             navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -258,7 +265,6 @@
                 
                 if (error) { alert(`⚠️ 系統錯誤：\n${error.message}`); } 
                 else if (data.status === 'holiday_block') {
-                    // 觸發假日防呆：開啟緊急加班彈窗
                     openModal('overtime-modal');
                 }
                 else if (data.status === 'error') { 
@@ -270,21 +276,17 @@
             }, () => alert('請開啟手機的 GPS 定位權限！'), { enableHighAccuracy: true });
         }
 
-        // 🚨 緊急加班送出邏輯
         async function submitOvertime() {
             const reason = document.getElementById('ot-reason').value; if(!reason) { alert('請填寫加班事由'); return; }
             const sel = document.getElementById('punch-branch'); const bid = sel.value;
             
             navigator.geolocation.getCurrentPosition(async (pos) => {
-                // 1. 寫入加班申請單
                 const { data: otData, error: otErr } = await _sb.from('overtime_requests').insert([{ employee_id: currentUser.id, reason: reason }]).select();
                 if(otErr) { alert('申請失敗'); return; }
 
-                // 2. 呼叫虛擬秘書通知老闆
                 const punchTime = new Date().toLocaleTimeString('zh-TW', {hour12:false, hour:'2-digit', minute:'2-digit'});
                 await _sb.functions.invoke('line-webhook', { body: { action: 'notify_overtime', id: otData[0].id, name: currentUser.full_name, reason: reason, time: punchTime }});
 
-                // 3. 強制執行上班打卡 (繞過假日防護)
                 const { data: pData } = await _sb.rpc('fn_process_punch', { p_emp_id: currentUser.id, p_type: 'IN', p_lat: pos.coords.latitude, p_lng: pos.coords.longitude, p_branch_id: bid, p_is_emergency: true });
                 
                 closeModal('overtime-modal'); document.getElementById('ot-reason').value = '';
@@ -300,7 +302,7 @@
                 if(log.note.includes('正常')) noteBadge = 'text-emerald-600 bg-emerald-50 border-emerald-200';
                 else if(log.note.includes('寬限')) noteBadge = 'text-sky-600 bg-sky-50 border-sky-200';
                 else if(log.note.includes('遲到') || log.note.includes('早退')) noteBadge = 'text-red-600 bg-red-50 border-red-200';
-                else noteBadge = 'text-amber-600 bg-amber-50 border-amber-200'; // 假日加班
+                else noteBadge = 'text-amber-600 bg-amber-50 border-amber-200';
                 
                 return `<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div><span class="text-xs font-black bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${log.punch_type==='IN'?'上班':'下班'}</span> <span class="text-sm font-bold text-slate-700 ml-2">${new Date(log.punch_time).toLocaleString('zh-TW').slice(5,-3)}</span><p class="text-xs text-slate-400 font-bold mt-1.5 flex items-center"><span class="mr-1">📍</span>${log.branch_locations?.branch_name||'未知'}</p></div><span class="text-[10px] font-black px-2 py-1 rounded border ${noteBadge}">${log.note}</span></div>`;
             }).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-10">目前無打卡紀錄</div>';
