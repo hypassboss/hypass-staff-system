@@ -21,7 +21,13 @@
 <body class="text-slate-800 font-sans min-h-screen md:h-screen md:overflow-hidden md:flex bg-slate-50">
 
     <div id="login-box" class="flex flex-col items-center justify-center min-h-screen px-5 md:w-full">
-        <div class="glass-panel p-8 w-full max-w-sm text-center"><div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">👑</div><h2 class="text-2xl font-black mb-2 text-slate-800">最高權限驗證</h2><p class="text-xs text-slate-500 mb-6">請輸入管理金鑰解鎖指揮中心</p><input type="password" id="pin" placeholder="PIN CODE" class="admin-input text-center text-2xl tracking-[0.5em] mb-6 bg-slate-50 font-black text-slate-700" onkeypress="if(event.key==='Enter') login()"><button onclick="login()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform">驗證並登入</button></div>
+        <div class="glass-panel p-8 w-full max-w-sm text-center">
+            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">👑</div>
+            <h2 class="text-2xl font-black mb-2 text-slate-800">最高權限驗證</h2>
+            <p class="text-xs text-slate-500 mb-6">請輸入管理金鑰解鎖指揮中心</p>
+            <input type="password" id="pin" placeholder="PIN CODE" class="admin-input text-center text-2xl tracking-[0.5em] mb-6 bg-slate-50 font-black text-slate-700" onkeypress="if(event.key==='Enter') login()">
+            <button onclick="login()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform">驗證並登入</button>
+        </div>
     </div>
 
     <div id="dashboard-ui" class="hidden flex-col md:flex-row h-screen w-full md:overflow-hidden">
@@ -275,15 +281,25 @@
         }
         function cancelEditBlt() {
             document.getElementById('blt-edit-id').value = ''; document.getElementById('blt-title').value = ''; document.getElementById('blt-content').value = '';
-            document.getElementById('blt-form-title').innerText = '發布企業電子公告'; document.getElementById('btn-post-blt').innerText = '立即推播至全員首頁'; document.getElementById('btn-post-blt').classList.replace('from-sky-500', 'from-amber-500'); document.getElementById('btn-post-blt').classList.replace('to-blue-600', 'to-orange-500'); document.getElementById('btn-cancel-blt').classList.add('hidden');
+            document.getElementById('blt-form-title').innerText = '發布企業公告'; document.getElementById('btn-post-blt').innerText = '立即推播至全員首頁'; document.getElementById('btn-post-blt').classList.replace('from-sky-500', 'from-amber-500'); document.getElementById('btn-post-blt').classList.replace('to-blue-600', 'to-orange-500'); document.getElementById('btn-cancel-blt').classList.add('hidden');
         }
+        
         async function postBlt() {
-            const id = document.getElementById('blt-edit-id').value; const title = document.getElementById('blt-title').value; const content = document.getElementById('blt-content').value; if(!title || !content) { alert('請填寫完整內容'); return; }
+            const id = document.getElementById('blt-edit-id').value; 
+            const title = document.getElementById('blt-title').value; 
+            const content = document.getElementById('blt-content').value; 
+            if(!title || !content) { alert('請填寫完整內容'); return; }
+            
             try {
-                if(id) { const { error } = await _sb.from('bulletin_board').update({ title, content }).eq('id', id); if(error) throw error; alert('✅ 公告已更新'); } 
-                else { const { error } = await _sb.from('bulletin_board').insert([{ title, content }]); if(error) throw error; alert('✅ 公告已成功推播'); }
+                if(id) { 
+                    const { error } = await _sb.from('bulletin_board').update({ title, content }).eq('id', id); 
+                    if(error) throw error; alert('✅ 公告已更新'); 
+                } else { 
+                    const { error } = await _sb.from('bulletin_board').insert([{ title, content }]); 
+                    if(error) throw error; alert('✅ 公告已成功推播'); 
+                }
                 cancelEditBlt(); loadAll();
-            } catch(e) { alert('發佈失敗: ' + e.message); }
+            } catch(e) { alert('發佈失敗，請檢查網路連線或稍後再試。錯誤代碼: ' + e.message); }
         }
         async function delBlt(id) { if(!confirm('確定要刪除這則公告嗎？')) return; await _sb.from('bulletin_board').delete().eq('id', id); alert('✅ 公告已刪除'); loadAll(); }
 
@@ -347,8 +363,12 @@
 
         async function saveEmpDetail(e, empId) {
             e.preventDefault();
-            const btn = document.getElementById('btn-save-emp'); const originText = btn.innerHTML; btn.innerHTML = '⏳ 儲存中...'; btn.disabled = true;
-            let st = document.getElementById('edit-start-time').value; if(st && st.length === 5) st += ':00'; let et = document.getElementById('edit-end-time').value; if(et && et.length === 5) et += ':00';
+            const btn = document.getElementById('btn-save-emp');
+            const originText = btn.innerHTML;
+            btn.innerHTML = '⏳ 儲存中...'; btn.disabled = true;
+
+            let st = document.getElementById('edit-start-time').value; if(st && st.length === 5) st += ':00';
+            let et = document.getElementById('edit-end-time').value; if(et && et.length === 5) et += ':00';
             const p = { 
                 full_name: document.getElementById('edit-name').value, employment_status: document.getElementById('edit-status').value, 
                 id_number: document.getElementById('edit-idnum').value, onboarding_date: document.getElementById('edit-onboard').value, 
@@ -360,9 +380,16 @@
                 bank_name: document.getElementById('edit-bank-name').value, bank_code: document.getElementById('edit-bank-code').value, 
                 bank_user_name: document.getElementById('edit-bank-user').value, bank_account: document.getElementById('edit-bank-account').value 
             };
+            
             const { error } = await _sb.from('employees').update(p).eq('id', empId);
-            if (error) { alert('更新失敗: ' + error.message); btn.innerHTML = originText; btn.disabled = false; } 
-            else { btn.innerHTML = '✅ 儲存完畢'; await loadAll(); setTimeout(() => openEmpDetail(empId), 1000); }
+            if (error) { 
+                alert('更新失敗: ' + error.message); 
+                btn.innerHTML = originText; btn.disabled = false; 
+            } else { 
+                btn.innerHTML = '✅ 儲存完畢'; 
+                await loadAll(); 
+                setTimeout(() => openEmpDetail(empId), 1000); 
+            }
         }
 
         function closeEmpDetail() { document.getElementById('emp-detail-modal').classList.remove('active'); }
@@ -383,6 +410,7 @@
         async function confirmOffboarding() { if(!globalOffboardData || !confirm('⚠️ 確定結算並停權？')) return; await _sb.from('settlement_records').insert([globalOffboardData]); await _sb.from('employees').update({ employment_status: '離職', is_approved: false, resignation_date: globalOffboardData.last_working_day }).eq('id', globalOffboardData.employee_id); alert('✅ 帳號已永久停權。'); closeEmpDetail(); loadAll(); }
 
         async function exportBankCSV() { const month = document.getElementById('export-mon').value; if(!month) return; const { data } = await _sb.from('payroll_records').select('total_net_pay, employees(full_name, bank_code, bank_name, bank_user_name, bank_account)').eq('pay_month', month); if(!data || data.length === 0) return; let csv = "\uFEFF銀行代碼,銀行名稱,收款帳號,戶名,匯款金額,備註\n"; data.forEach(r => { csv += `="${r.employees.bank_code}",${r.employees.bank_name},="${r.employees.bank_account}",${r.employees.bank_user_name},${r.total_net_pay},${month}薪資\n`; }); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `HYPASS_${month}_轉帳檔.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
+        
         async function appr(id) { try { const {error} = await _sb.from('employees').update({is_approved:true}).eq('id',id); if(error) throw error; alert('✅ 員工權限已開通'); loadAll(); } catch(e) { alert('發生錯誤: ' + e.message); } }
         async function updLeave(id, st) { try { const {error} = await _sb.from('leave_requests').update({status:st}).eq('id',id); if(error) throw error; alert(`✅ 表單已${st}`); loadAll(); } catch(e) { alert('發生錯誤: ' + e.message); } }
     </script>
