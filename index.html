@@ -20,7 +20,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input:focus, select:focus, textarea:focus { outline: 2px solid #38bdf8; outline-offset: -1px; }
         
-        /* 🌟 升級版：28天行事曆網格樣式 */
+        /* 🌟 升級版：5週 35天 行事曆網格樣式 */
         .cal-day { width: 14.28%; text-align: center; padding: 0.5rem 0; font-size: 0.75rem; font-weight: 900; border-radius: 0.5rem; margin-bottom: 0.25rem; }
         .cal-day.today { background-color: #0284c7; color: white; box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.3); }
         .cal-day.holiday { color: #ef4444; }
@@ -159,7 +159,7 @@
 
     <div id="record-modal" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-end justify-center z-[100]"><div class="bg-[#f8fafc] w-full max-w-md rounded-t-[2rem] p-6 h-[75vh] flex flex-col shadow-2xl"><div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-200"><h3 class="font-black text-xl text-slate-800">近期打卡紀錄</h3><button onclick="closeModal('record-modal')" class="bg-slate-200 px-4 py-2 rounded-full text-sm font-bold text-slate-600 hover:bg-slate-300 transition">✕ 關閉</button></div><div id="ui-records-list" class="overflow-y-auto space-y-3 flex-1 no-scrollbar pb-8 p-1">載入中...</div></div></div>
     
-    <div id="overtime-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-sm items-end justify-center z-[110]"><div class="bg-white w-full max-w-md rounded-t-[2rem] p-6 flex flex-col shadow-2xl pb-10"><div class="text-center mb-5"><div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-3">🚨</div><h3 class="font-black text-xl text-slate-800">申請緊急假日加班</h3><p class="text-xs text-slate-500 mt-1">系統偵測今日為您的排定休假日</p></div><textarea id="ot-reason" placeholder="請簡述緊急加班事由..." class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-sm font-bold mb-4 h-24 resize-none" required></textarea><div class="flex space-x-3"><button onclick="closeModal('overtime-modal')" class="flex-1 bg-slate-100 text-slate-600 font-bold py-3.5 rounded-xl transition">取消</button><button onclick="submitOvertime()" class="flex-[2] bg-red-500 hover:bg-red-600 text-white font-black py-3.5 rounded-xl shadow-lg transition active:scale-95">送出申請並打卡</button></div></div></div>
+    <div id="overtime-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-sm items-end justify-center z-[110]"><div class="bg-white w-full max-w-md rounded-t-[2rem] p-6 flex flex-col shadow-2xl pb-10"><div class="text-center mb-5"><div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-3">🚨</div><h3 class="font-black text-xl text-slate-800">申請緊急假日加班</h3><p class="text-xs text-slate-500 mt-1">系統偵測今日為國定假日或休息日</p></div><textarea id="ot-reason" placeholder="請簡述緊急加班事由..." class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-sm font-bold mb-4 h-24 resize-none" required></textarea><div class="flex space-x-3"><button onclick="closeModal('overtime-modal')" class="flex-1 bg-slate-100 text-slate-600 font-bold py-3.5 rounded-xl transition">取消</button><button onclick="submitOvertime()" class="flex-[2] bg-red-500 hover:bg-red-600 text-white font-black py-3.5 rounded-xl shadow-lg transition active:scale-95">送出申請並打卡</button></div></div></div>
 
     <div id="doc-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-md items-center justify-center p-5 z-[100]"><div class="bg-white w-full max-w-md rounded-3xl p-6 relative flex flex-col shadow-2xl max-h-[85vh]"><h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 text-center">📜 聘僱合約與服務守則</h3><div id="doc-content" class="overflow-y-auto pr-2 flex-1 mb-4 no-scrollbar"></div><div class="bg-emerald-50 border border-emerald-100 p-3 rounded-2xl text-center shadow-inner"><p class="text-[10px] text-emerald-700 font-bold mb-1">✔️ 經數位簽章認證，具備法律效力</p><p id="doc-sig" class="font-black text-emerald-900 text-xs">簽署人：--</p></div><button onclick="closeModal('doc-modal')" class="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl text-sm transition shadow-md active:scale-95">已詳閱並關閉</button></div></div>
 </div>
@@ -169,14 +169,39 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'; // ⚠️ 請務必填寫
         const LIFF_ID = '2009148826-RoogHmxk'; 
         const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        let currentUser = null; let currentLeaves = [];
+        let currentUser = null; 
+        
+        // 🌟 台灣國定假日快取 (來自政府人事行政總處 API 資料)
+        let twCalendar = {};
 
         async function init() {
+            await loadTaiwanCalendar(); // 優先載入台灣行事曆
+            await _sb.rpc('fn_trigger_auto_approve'); // 背景觸發 4 小時自動核准巡邏
+            
             await liff.init({ liffId: LIFF_ID });
             if (!liff.isLoggedIn()) { liff.login(); return; }
             const profile = await liff.getProfile();
             document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-emerald-400 rounded-full"></span>' + profile.displayName;
             loadBranches('reg-branch'); checkUser(profile.userId);
+        }
+
+        async function loadTaiwanCalendar() {
+            try {
+                const year = new Date().getFullYear();
+                let res = await fetch(`https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${year}.json`);
+                if (res.ok) { let data = await res.json(); data.forEach(d => { twCalendar[d.date] = d.isHoliday; }); }
+                if (new Date().getMonth() === 11) {
+                    let res2 = await fetch(`https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${year+1}.json`);
+                    if (res2.ok) { let data2 = await res2.json(); data2.forEach(d => { twCalendar[d.date] = d.isHoliday; }); }
+                }
+            } catch (e) { console.error('Taiwan Calendar load failed', e); }
+        }
+
+        function checkIsHoliday(dateObj) {
+            const y = dateObj.getFullYear(); const m = String(dateObj.getMonth() + 1).padStart(2, '0'); const d = String(dateObj.getDate()).padStart(2, '0');
+            const dateStr = `${y}${m}${d}`;
+            if (twCalendar[dateStr] !== undefined) return twCalendar[dateStr];
+            return (dateObj.getDay() === 0 || dateObj.getDay() === 6); // API若失敗，退回預設六日判斷
         }
 
         async function checkUser(lineId) {
@@ -240,7 +265,7 @@
             `;
         }
 
-        // 🌟 升級版：28天網格動態行事曆 (前1週 + 本週 + 後2週)
+        // 🌟 升級版：5週 35天 動態考勤行事曆 (前1週 + 本週 + 後3週)
         async function renderMiniCalendar() {
             const today = new Date(); 
             const currentDay = today.getDay();
@@ -249,21 +274,22 @@
             const startOfCalendar = new Date(today); 
             startOfCalendar.setDate(today.getDate() - currentDay - 7); 
             
-            // 結束日為起始日往後 27 天 (共 28 天)
+            // 結束日為起始日往後 34 天 (共 35 天)
             const endOfCalendar = new Date(startOfCalendar); 
-            endOfCalendar.setDate(startOfCalendar.getDate() + 27); 
+            endOfCalendar.setDate(startOfCalendar.getDate() + 34); 
             
-            const { data: leaves } = await _sb.from('leave_requests').select('start_time').eq('employee_id', currentUser.id).eq('status', '核准').gte('start_time', startOfCalendar.toISOString()).lte('start_time', endOfCalendar.toISOString());
+            // 取得這段期間內核准的請假與加班單
+            const { data: leaves } = await _sb.from('leave_requests').select('start_time').eq('employee_id', currentUser.id).in('status', ['核准', '系統默認核准']).gte('start_time', startOfCalendar.toISOString()).lte('start_time', endOfCalendar.toISOString());
             const leaveDates = (leaves || []).map(l => new Date(l.start_time).toDateString());
 
             let html = '';
-            for(let i = 0; i < 28; i++) {
+            for(let i = 0; i < 35; i++) {
                 let d = new Date(startOfCalendar); 
                 d.setDate(startOfCalendar.getDate() + i);
                 
                 let dateNum = d.getDate(); 
                 let isToday = d.toDateString() === today.toDateString();
-                let isHoliday = (d.getDay() === 0 || d.getDay() === 6) ? 'holiday' : 'text-slate-700'; // 0=日, 6=六
+                let isHoliday = checkIsHoliday(d) ? 'holiday' : 'text-slate-700';
                 let isSpecial = leaveDates.includes(d.toDateString()) ? 'special text-emerald-600' : '';
                 
                 html += `<div class="cal-day ${isToday ? 'today' : isHoliday} ${isSpecial}">${dateNum}</div>`;
@@ -273,8 +299,13 @@
 
         function punch(type) {
             const sel = document.getElementById('punch-branch'); const bid = sel.value; const bName = sel.options[sel.selectedIndex].text;
+            const isHoli = checkIsHoliday(new Date()); // 判斷台灣國定假日
+
             navigator.geolocation.getCurrentPosition(async (pos) => {
-                const { data, error } = await _sb.rpc('fn_process_punch', { p_emp_id: currentUser.id, p_type: type, p_lat: pos.coords.latitude, p_lng: pos.coords.longitude, p_branch_id: bid, p_is_emergency: false });
+                const { data, error } = await _sb.rpc('fn_process_punch', { 
+                    p_emp_id: currentUser.id, p_type: type, p_lat: pos.coords.latitude, p_lng: pos.coords.longitude, p_branch_id: bid, 
+                    p_is_emergency: false, p_is_holiday: isHoli 
+                });
                 
                 if (error) { alert(`⚠️ 系統錯誤：\n${error.message}`); } 
                 else if (data.status === 'holiday_block') {
@@ -292,6 +323,7 @@
         async function submitOvertime() {
             const reason = document.getElementById('ot-reason').value; if(!reason) { alert('請填寫加班事由'); return; }
             const sel = document.getElementById('punch-branch'); const bid = sel.value;
+            const isHoli = checkIsHoliday(new Date());
             
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 const { data: otData, error: otErr } = await _sb.from('overtime_requests').insert([{ employee_id: currentUser.id, reason: reason }]).select();
@@ -300,10 +332,13 @@
                 const punchTime = new Date().toLocaleTimeString('zh-TW', {hour12:false, hour:'2-digit', minute:'2-digit'});
                 await _sb.functions.invoke('line-webhook', { body: { action: 'notify_overtime', id: otData[0].id, name: currentUser.full_name, reason: reason, time: punchTime }});
 
-                const { data: pData } = await _sb.rpc('fn_process_punch', { p_emp_id: currentUser.id, p_type: 'IN', p_lat: pos.coords.latitude, p_lng: pos.coords.longitude, p_branch_id: bid, p_is_emergency: true });
+                const { data: pData } = await _sb.rpc('fn_process_punch', { 
+                    p_emp_id: currentUser.id, p_type: 'IN', p_lat: pos.coords.latitude, p_lng: pos.coords.longitude, p_branch_id: bid, 
+                    p_is_emergency: true, p_is_holiday: isHoli 
+                });
                 
                 closeModal('overtime-modal'); document.getElementById('ot-reason').value = '';
-                alert(pData.message); loadPunchHistory();
+                alert(pData.message + '\n※ 若主管 4 小時內未處理，系統將自動核准。'); loadPunchHistory();
             });
         }
 
@@ -315,7 +350,7 @@
                 if(log.note.includes('正常')) noteBadge = 'text-emerald-600 bg-emerald-50 border-emerald-200';
                 else if(log.note.includes('寬限')) noteBadge = 'text-sky-600 bg-sky-50 border-sky-200';
                 else if(log.note.includes('遲到') || log.note.includes('早退')) noteBadge = 'text-red-600 bg-red-50 border-red-200';
-                else noteBadge = 'text-amber-600 bg-amber-50 border-amber-200'; // 假日加班
+                else noteBadge = 'text-amber-600 bg-amber-50 border-amber-200';
                 
                 return `<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div><span class="text-xs font-black bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${log.punch_type==='IN'?'上班':'下班'}</span> <span class="text-sm font-bold text-slate-700 ml-2">${new Date(log.punch_time).toLocaleString('zh-TW').slice(5,-3)}</span><p class="text-xs text-slate-400 font-bold mt-1.5 flex items-center"><span class="mr-1">📍</span>${log.branch_locations?.branch_name||'未知'}</p></div><span class="text-[10px] font-black px-2 py-1 rounded border ${noteBadge}">${log.note}</span></div>`;
             }).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-10">目前無打卡紀錄</div>';
@@ -328,7 +363,7 @@
             const { data, error } = await _sb.from('leave_requests').insert([payload]).select();
             if(!error && data) {
                 await _sb.functions.invoke('line-webhook', { body: { action: 'notify_leave', id: data[0].id, name: currentUser.full_name, type: payload.leave_type, start: payload.start_time, end: payload.end_time }});
-                alert('✅ 假單已送出！\n※ 若主管 4 小時內未處理，系統將自動核准。'); e.target.reset(); checkLeaveType(); loadLeaveHistory();
+                alert('✅ 假單已送出！\n※ 若主管 4 小時內未處理，系統將自動核准。'); e.target.reset(); checkLeaveType(); loadLeaveHistory(); renderMiniCalendar();
             }
             document.getElementById('btn-leave').innerText = '送出假單申請';
         }
