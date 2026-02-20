@@ -160,8 +160,7 @@
         }
         
         async function loadAll() {
-            // 🚨 自動觸發 4 小時加班核准機制
-            await _sb.rpc('fn_trigger_auto_approve');
+            await _sb.rpc('fn_trigger_auto_approve'); // 自動觸發 4 小時核准
 
             const { data: emps } = await _sb.from('employees').select('*, branch_locations(branch_name)');
             const { data: brs } = await _sb.from('branch_locations').select('*');
@@ -170,7 +169,6 @@
             const p = window.allEmps.filter(e => !e.is_approved && e.employment_status === '在職');
             document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><span class="text-2xl mr-3">👤</span><div><h4 class="font-black text-sm text-slate-800"><span class="text-[10px] text-sky-600 mr-1">[${e.job_title||'未指定'}]</span>${e.full_name}</h4><p class="text-[10px] text-slate-500">${e.onboarding_date} 申請</p></div></div><button onclick="appr('${e.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-4 py-2 rounded-lg shadow-sm transition">開通</button></div>`).join('') : '<div class="text-center py-6 bg-slate-100/50 rounded-xl border border-dashed border-slate-300"><p class="text-xs text-slate-400 font-bold">目前無待審核名單</p></div>';
             
-            // 🌟 載入緊急加班單
             const { data: ots } = await _sb.from('overtime_requests').select('*, employees(full_name)').eq('status', '審核中');
             document.getElementById('list-overtime').innerHTML = (ots && ots.length) ? ots.map(o => `<div class="glass-panel p-4 border-l-4 border-red-500 shadow-sm"><div class="flex justify-between items-center mb-2"><h4 class="font-black text-sm text-red-700">🚨 ${o.employees?.full_name}</h4><span class="text-[9px] text-slate-400">${new Date(o.created_at).toLocaleString('zh-TW').slice(5,-3)}</span></div><p class="text-xs text-slate-600 font-bold mb-3">${o.reason}</p><div class="flex space-x-2"><button onclick="updOT('${o.id}', '主管核准')" class="flex-1 bg-red-50 border border-red-200 text-red-700 hover:bg-red-500 hover:text-white py-2 rounded-lg text-xs font-black transition-colors">核准加班</button><button onclick="updOT('${o.id}', '核駁註銷')" class="flex-1 bg-white border border-slate-200 text-slate-500 hover:bg-slate-100 py-2 rounded-lg text-xs font-black transition-colors">駁回</button></div></div>`).join('') : '<div class="text-center py-6 bg-slate-100/50 rounded-xl border border-dashed border-slate-300"><p class="text-xs text-slate-400 font-bold">無待審核加班單</p></div>';
 
