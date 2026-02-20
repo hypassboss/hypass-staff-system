@@ -8,7 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        /* 🌟 RWD 企業級版面置中設定 */
         body { background: #f1f5f9; -webkit-tap-highlight-color: transparent; font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
         #app-container { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); min-height: 100vh; position: relative; overflow-x: hidden; }
         @media (min-width: 768px) { #app-container { max-width: 480px; margin: 0 auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; } }
@@ -20,8 +19,11 @@
         .modal { display: none; } .modal.active { display: flex; z-index: 100; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input:focus, select:focus, textarea:focus { outline: 2px solid #38bdf8; outline-offset: -1px; }
-        /* 行事曆滾動隱藏捲軸 */
-        .week-scroll { overflow-x: auto; scroll-snap-type: x mandatory; } .week-scroll::-webkit-scrollbar { display: none; } .day-card { scroll-snap-align: center; }
+        
+        /* 🌟 行事曆滾動優化 */
+        .week-scroll { overflow-x: auto; scroll-behavior: smooth; scroll-snap-type: x mandatory; } 
+        .week-scroll::-webkit-scrollbar { display: none; } 
+        .day-card { scroll-snap-align: center; }
     </style>
 </head>
 <body class="text-slate-800">
@@ -51,10 +53,7 @@
                     <select name="default_branch_id" id="reg-branch" required class="w-full p-3 bg-transparent text-base font-black text-slate-700 border-0 outline-none appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-no-repeat"></select>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="col-span-1"><label class="text-[10px] font-bold text-slate-500 ml-1 mb-0.5 block">入職日期</label><input type="date" name="onboarding_date" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div>
-                    <div class="col-span-1"><label class="text-[10px] font-bold text-slate-500 ml-1 mb-0.5 block">通訊地址</label><input type="text" name="address" placeholder="法律送達地" required class="w-full p-3 bg-slate-50 rounded-xl text-sm border-0 shadow-inner"></div>
-                </div>
+                <div class="grid grid-cols-2 gap-3"><div class="col-span-1"><label class="text-[10px] font-bold text-slate-500 ml-1 mb-0.5 block">入職日期</label><input type="date" name="onboarding_date" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div><div class="col-span-1"><label class="text-[10px] font-bold text-slate-500 ml-1 mb-0.5 block">通訊地址</label><input type="text" name="address" placeholder="法律送達地" required class="w-full p-3 bg-slate-50 rounded-xl text-sm border-0 shadow-inner"></div></div>
                 <div class="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-100">
                     <h3 class="text-xs font-black text-emerald-800 mb-3 flex items-center"><span class="text-base mr-1">💰</span>財務與保險資料</h3>
                     <div class="grid grid-cols-2 gap-3 mb-3"><input type="text" name="bank_name" placeholder="銀行名稱" required class="p-2.5 text-sm border shadow-sm rounded-xl bg-white"><input type="text" name="bank_code" placeholder="代碼(例:808)" required class="p-2.5 text-sm border shadow-sm rounded-xl bg-white font-bold text-center"><input type="text" name="bank_user_name" placeholder="戶名" required class="p-2.5 text-sm border shadow-sm rounded-xl bg-white"><input type="text" name="bank_account" placeholder="銀行帳號" required class="p-2.5 text-sm border shadow-sm rounded-xl bg-white font-bold"></div>
@@ -65,9 +64,7 @@
                 <div class="bg-slate-100 p-4 rounded-2xl mt-5 border border-slate-200 shadow-inner">
                     <h3 class="text-sm font-black text-slate-800 mb-3 flex items-center"><span class="text-lg mr-1.5">⚖️</span>聘僱合約與服務守則 (必讀)</h3>
                     <div class="text-[11px] text-slate-700 leading-relaxed h-56 overflow-y-auto bg-white p-4 rounded-xl border border-slate-200 mb-4 shadow-sm select-none">
-                        <h4 class="font-black text-center text-sm mb-3 text-slate-900">HYPASS 企業聘僱合約與員工服務守則</h4>
-                        <p class="mb-2"><strong>甲方（雇主）：</strong>海帕斯科技股份有限公司<br><strong>乙方（受僱人）：</strong>新進員工 (您)</p>
-                        <hr class="my-3 border-slate-200">
+                        <h4 class="font-black text-center text-sm mb-3 text-slate-900">HYPASS 企業聘僱合約與員工服務守則</h4><p class="mb-2"><strong>甲方（雇主）：</strong>海帕斯科技股份有限公司<br><strong>乙方（受僱人）：</strong>新進員工 (您)</p><hr class="my-3 border-slate-200">
                         <p class="font-black text-slate-900 text-xs mb-1">第一章：職位與工作內容</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方相關工作。</li><li>工作區域：甲方得視業務需求，指派乙方於實體據點或指定分區執行職務。</li></ul>
                         <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>數位考勤唯一依據：乙方同意以 App 之 GPS 定位打卡作為出勤紀錄唯一合法依據。</li><li>打卡容錯範圍：系統提供 1000 公尺容錯範圍。業務外勤另有專屬打卡模式。</li><li>遲到處理機制：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，系統將依比例不計薪。若乙方欲維持全薪，可自行申請以剩餘特休抵扣。</li></ul>
                         <p class="font-black text-slate-900 text-xs mb-1">第三章：請假規範與法遵保障</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>請假應於規定之天數前提早提出；突發狀況應於當天上班前第一時間告知主管。</li><li>颱風假保障：如遇法定颱風假，公司依法遵循「放假但該日不支薪」原則辦理，不扣除特休，亦不影響全勤考核。</li></ul>
@@ -77,7 +74,7 @@
                         <label class="flex items-start space-x-3 cursor-pointer"><input type="checkbox" id="chk1" onchange="checkForm()" class="mt-0.5 h-4 w-4 rounded text-sky-600 focus:ring-sky-500"><span class="text-xs font-bold text-slate-800 leading-tight">我已詳閱並同意上述【聘僱合約與服務守則】全條文。</span></label>
                         <label class="flex items-start space-x-3 cursor-pointer"><input type="checkbox" id="chk2" onchange="checkForm()" class="mt-0.5 h-4 w-4 rounded text-sky-600 focus:ring-sky-500"><span class="text-xs font-bold text-slate-800 leading-tight">同意系統以 GPS 定位為考勤唯一依據，遲到時數將依比例不計薪。</span></label>
                         <label class="flex items-start space-x-3 cursor-pointer"><input type="checkbox" id="chk3" onchange="checkForm()" class="mt-0.5 h-4 w-4 rounded text-sky-600 focus:ring-sky-500"><span class="text-xs font-bold text-slate-800 leading-tight">同意嚴守企業保密協定(NDA)，如有違願負擔新台幣壹佰萬元之懲罰性違約金。</span></label>
-                        <label class="flex items-start space-x-3 cursor-pointer"><input type="checkbox" id="chk4" onchange="checkForm()" class="mt-0.5 h-4 w-4 rounded text-sky-600 focus:ring-sky-500"><span class="text-[11px] font-black text-slate-800 leading-tight">同意若遇法定颱風假，公司將採取<strong class="text-red-600 mx-0.5">「不扣特休、不支薪、不扣全勤」</strong>辦理。</span></label>
+                        <label class="flex items-start space-x-3 cursor-pointer"><input type="checkbox" id="chk4" onchange="checkForm()" class="mt-0.5 h-4 w-4 rounded text-sky-600 focus:ring-sky-500"><span class="text-[11px] font-black text-slate-800 leading-tight">同意若遇法定颱風假，公司採取<strong class="text-red-600 mx-0.5">「不扣特休、不支薪、不扣全勤」</strong>辦理。</span></label>
                     </div>
                 </div>
                 <button type="submit" id="btn-submit" disabled class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 disabled:from-slate-300 disabled:to-slate-400 text-white font-black py-4 rounded-2xl mt-4 transition-all shadow-lg text-sm tracking-wider active:scale-95">數位簽署並提交審核</button>
@@ -97,32 +94,36 @@
                     </div>
                 </div>
 
-                <div class="glass-card p-4 rounded-2xl shadow-sm">
-                    <h4 class="text-xs font-black text-slate-500 mb-3 ml-1 flex justify-between items-center"><span>📅 本週出勤行事曆</span><span class="text-[9px] bg-slate-100 px-2 py-1 rounded text-slate-400">🔴休假 ⚫️工作日</span></h4>
-                    <div class="flex space-x-2 week-scroll pb-2" id="ui-mini-calendar">
-                        </div>
+                <div class="glass-card p-4 rounded-[1.5rem] shadow-sm">
+                    <h4 class="text-xs font-black text-slate-600 mb-3 ml-1 flex justify-between items-center">
+                        <span class="flex items-center"><span class="text-lg mr-1.5">📅</span>出勤行事曆</span>
+                        <span class="text-[9px] bg-slate-100 px-2 py-1 rounded text-slate-400 border border-slate-200">🔴休假 ⚫️工作日</span>
+                    </h4>
+                    <div class="relative">
+                        <div class="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none rounded-l-xl"></div>
+                        <div class="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none rounded-r-xl"></div>
+                        <div class="flex space-x-2 week-scroll pb-2 px-1" id="ui-mini-calendar">
+                            </div>
+                    </div>
                 </div>
 
                 <div class="glass-card p-5 rounded-[2rem] shadow-sm relative overflow-hidden">
                     <div class="mb-4"><label class="text-[10px] font-bold text-slate-500 ml-2 mb-1.5 block">📍 目前據點定位</label><select id="punch-branch" class="w-full text-sm font-bold bg-slate-50 text-slate-800 border-0 shadow-inner rounded-2xl p-3 outline-none text-center appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_1rem_center] bg-no-repeat"></select></div>
-                    
                     <div class="grid grid-cols-2 gap-4">
                         <button onclick="punch('IN', false)" class="bg-gradient-to-br from-sky-500 to-blue-600 text-white py-8 rounded-3xl font-black text-xl shadow-lg active:scale-95 flex flex-col items-center transition-all group"><span class="text-4xl mb-2">🏢</span>上班打卡</button>
                         <button onclick="punch('OUT', false)" class="bg-white text-slate-700 border-2 border-slate-100 py-8 rounded-3xl font-black text-xl shadow-sm active:scale-95 flex flex-col items-center transition-all hover:bg-slate-50"><span class="text-4xl mb-2 grayscale opacity-80">🏠</span>下班打卡</button>
                     </div>
-                    
                     <button id="btn-field-punch" onclick="punch('IN', true)" class="hidden w-full mt-4 bg-amber-50 border border-amber-200 text-amber-700 font-black py-4 rounded-2xl shadow-sm active:scale-95 transition-all flex justify-center items-center"><span class="text-xl mr-2">🛵</span> 業務專屬：外勤定位打卡</button>
-
                     <button onclick="loadPunchHistory()" class="w-full mt-4 text-xs font-bold text-slate-400 bg-slate-50 py-3 rounded-2xl border border-slate-100 flex justify-center items-center space-x-2 active:scale-95 transition hover:bg-slate-100"><span>🔍 查詢我的近期紀錄</span></button>
                 </div>
             </div>
 
             <div id="tab-leave" class="app-view space-y-5">
-                <h3 class="font-black text-2xl text-slate-900 pl-2 flex justify-between items-end"><span>線上請假單</span><button class="text-xs bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg font-bold" onclick="alert('🔴 例假日無法打卡時，請在此送出【緊急加班單】。')">加班申請說明</button></h3>
+                <h3 class="font-black text-2xl text-slate-900 pl-2 flex justify-between items-end"><span>線上請假單</span><button class="text-xs bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg font-bold" onclick="alert('🔴 若為法定假日需出勤，請在此送出【🚨 假日緊急加班單】，送出時間將直接視為上班打卡時間！')">假日加班說明</button></h3>
                 <div class="glass-card p-6 rounded-[2rem] shadow-sm">
                     <form id="leave-form" onsubmit="submitLeave(event)" class="space-y-4 border-b border-slate-100 pb-6 mb-5">
                         <select name="leave_type" id="leave-type-select" onchange="checkLeaveType()" class="w-full bg-slate-50 border-0 shadow-inner p-3 rounded-2xl text-sm font-bold appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_1rem_center] bg-no-repeat">
-                            <option value="特休">🏖️ 特休 (可抵扣遲到)</option><option value="事假">📄 事假</option><option value="病假">💊 病假</option><option value="公假">💼 公假</option><option value="颱風假">🌪️ 颱風假</option><option value="緊急加班">🚨 假日緊急加班</option>
+                            <option value="特休">🏖️ 特休 (可抵扣遲到時數)</option><option value="事假">📄 事假</option><option value="病假">💊 病假</option><option value="公假">💼 公假</option><option value="颱風假">🌪️ 颱風假</option><option value="緊急加班">🚨 假日緊急加班</option>
                         </select>
                         <div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-bold text-slate-500 ml-1 mb-1 block">起始時間</label><input type="datetime-local" name="start_time" required class="w-full bg-slate-50 border-0 shadow-inner p-3 rounded-2xl text-sm font-bold"></div><div><label class="text-xs font-bold text-slate-500 ml-1 mb-1 block">結束時間</label><input type="datetime-local" name="end_time" required class="w-full bg-slate-50 border-0 shadow-inner p-3 rounded-2xl text-sm font-bold"></div></div>
                         <div id="salary-protection-ui" class="flex items-center justify-between p-4 bg-sky-50/80 rounded-2xl border border-sky-100 transition-all shadow-sm"><div id="sp-text"><p class="text-sm font-black text-sky-900 mb-0.5">薪資保全</p><p class="text-xs font-bold text-sky-600">同意扣特休以維持全薪</p></div><label class="relative inline-flex items-center cursor-pointer scale-110" id="sp-toggle"><input type="checkbox" name="salary_protection" checked class="sr-only peer"><div class="w-11 h-6 bg-slate-300 rounded-full peer peer-checked:bg-sky-500 peer-checked:after:translate-x-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all shadow-inner"></div></label></div>
@@ -178,6 +179,19 @@
         const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
 
+        // 🇹🇼 台灣 2026 年國定假日資料庫 (支援動態擴充)
+        const twHolidays = {
+            "01-01": "元旦", "02-16": "除夕", "02-17": "春節", "02-18": "春節", "02-19": "春節", "02-20": "春節",
+            "02-28": "二二八", "04-03": "連假", "04-04": "兒童節", "04-05": "清明節", "04-06": "補假",
+            "05-01": "勞動節", "06-19": "端午節", "09-25": "中秋節", "10-09": "補假", "10-10": "國慶日"
+        };
+
+        function getHolidayName(dateObj) {
+            const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const dd = String(dateObj.getDate()).padStart(2, '0');
+            return twHolidays[`${mm}-${dd}`] || null;
+        }
+
         async function init() {
             await liff.init({ liffId: LIFF_ID });
             if (!liff.isLoggedIn()) { liff.login(); return; }
@@ -230,27 +244,55 @@
             document.getElementById('ui-profile-info').innerHTML = `<div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">🆔</span><span class="text-slate-700 font-bold text-sm">身分證：${currentUser.id_number}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📧</span><span class="text-slate-700 font-bold text-sm">${currentUser.email}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📞</span><span class="text-slate-700 font-bold text-sm">${currentUser.phone}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-sky-600">👔</span><span class="text-sky-700 font-black text-sm bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">${currentUser.job_title||'未指派'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📍</span><span class="text-slate-700 font-bold text-sm">工作分區：${currentUser.work_region}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">👥</span><span class="text-slate-700 font-bold text-sm">眷屬加保：${currentUser.dependents_count || 0} 人</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-amber-600">📅</span><span class="text-slate-700 font-bold text-sm">入職日：${currentUser.onboarding_date}</span></div><div class="flex items-center space-x-3 border-t border-slate-50 pt-3 mt-1"><span class="w-6 text-center text-lg mt-0.5">⏰</span><div class="text-blue-700 font-black text-sm bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 w-full text-center tracking-wider">${(currentUser.work_start_time||'09:00').slice(0,5)} 上班 <span class="mx-2 text-blue-200">|</span> ${(currentUser.work_end_time||'18:00').slice(0,5)} 下班</div></div><div class="flex items-start space-x-3 mt-3"><span class="w-6 text-center text-lg mt-0.5">🏠</span><span class="text-slate-700 font-medium text-sm leading-relaxed">${currentUser.address}</span></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🏦</span><div class="text-slate-800 font-black text-sm leading-tight">${currentUser.bank_name} (${currentUser.bank_code})<br><span class="text-xs font-bold text-slate-500 mt-1 block">${currentUser.bank_user_name} / ${currentUser.bank_account}</span></div></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🚨</span><div class="text-slate-800 font-black text-sm leading-tight">緊急聯絡人：${currentUser.emergency_name}<br><span class="text-xs font-bold text-slate-500 mt-1 block">${currentUser.emergency_phone}</span></div></div>`;
         }
 
-        // 🌟 動態行事曆產生器
+        // 🌟 核心升級：涵蓋前 1 週至後 3 週的動態行事曆 (29天)
         function renderMiniCalendar() {
-            const today = new Date(); const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay() + 1); // 抓禮拜一
-            const days = ['日','一','二','三','四','五','六']; let html = '';
-            for(let i=0; i<7; i++) {
-                let d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
-                let isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth();
+            const today = new Date(); 
+            const startDay = new Date(today); 
+            startDay.setDate(today.getDate() - 7); // 往前推 7 天
+            
+            const days = ['日','一','二','三','四','五','六']; 
+            let html = '';
+            
+            for(let i=0; i<=28; i++) {
+                let d = new Date(startDay); 
+                d.setDate(startDay.getDate() + i);
+                
+                let isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
                 let isWeekend = d.getDay() === 0 || d.getDay() === 6;
-                let colorClass = isWeekend ? 'text-red-500' : 'text-slate-800';
+                let holidayName = getHolidayName(d);
+                let isOffDay = isWeekend || holidayName;
+                
+                let colorClass = isOffDay ? 'text-red-500' : 'text-slate-800';
                 let bgClass = isToday ? 'bg-sky-100 border-sky-300 ring-2 ring-sky-200' : 'bg-white border-slate-100';
-                html += `<div class="day-card flex-none w-14 py-2 flex flex-col items-center justify-center rounded-xl border ${bgClass} shadow-sm"><span class="text-[10px] font-bold text-slate-400 mb-1">${days[d.getDay()]}</span><span class="text-sm font-black ${colorClass}">${d.getDate()}</span><div class="w-1.5 h-1.5 rounded-full mt-1.5 ${isWeekend?'bg-red-400':'bg-slate-800'}"></div></div>`;
+                
+                let noteHTML = '';
+                if(holidayName) noteHTML = `<span class="text-[8px] text-red-500 font-bold leading-none mt-1 truncate w-10 text-center">${holidayName}</span>`;
+                else if(isWeekend) noteHTML = `<span class="text-[8px] text-red-400 font-bold leading-none mt-1 truncate w-10 text-center">假日</span>`;
+                else noteHTML = `<div class="w-1.5 h-1.5 rounded-full mt-1.5 bg-slate-800"></div>`;
+                
+                html += `<div id="cal-day-${i}" class="day-card flex-none w-14 py-2 flex flex-col items-center justify-center rounded-xl border ${bgClass} shadow-sm"><span class="text-[10px] font-bold text-slate-400 mb-1">${days[d.getDay()]}</span><span class="text-sm font-black ${colorClass}">${d.getDate()}</span>${noteHTML}</div>`;
             }
             document.getElementById('ui-mini-calendar').innerHTML = html;
+            
+            // 自動捲動定位到「今天」
+            setTimeout(() => {
+                const cal = document.getElementById('ui-mini-calendar');
+                const todayCard = document.getElementById('cal-day-7'); 
+                if(cal && todayCard) cal.scrollLeft = todayCard.offsetLeft - (cal.clientWidth / 2) + (todayCard.clientWidth / 2);
+            }, 100);
         }
 
-        // 🌟 智能打卡機制，呼叫資料庫防呆並彈出設計對話框
+        // 🌟 假日打卡智能防呆攔截
         function punch(type, isField = false) {
-            // 前端假日防呆：簡單判斷週末，提醒填寫加班單 (可依據後台國定假日擴充)
-            const today = new Date(); const isWeekend = today.getDay() === 0 || today.getDay() === 6;
-            if (type === 'IN' && isWeekend) {
-                showAlert('🛑 假日打卡阻擋', '今日為您的排定休假日，無法直接打卡。<br><br>若您因公需出勤，請至請假區送出【🚨 假日緊急加班單】，送出當下將自動為您記錄上班時間。', 'error');
+            const today = new Date(); 
+            const isWeekend = today.getDay() === 0 || today.getDay() === 6;
+            const holidayName = getHolidayName(today);
+            const isOffDay = isWeekend || holidayName;
+
+            // 判斷：如果是假日，且按下了「上班」，系統立即阻擋並引導填寫加班單
+            if (type === 'IN' && isOffDay) {
+                let hName = holidayName ? ` (${holidayName})` : '';
+                showAlert('🛑 假日打卡阻擋', `今日為排定之休假日${hName}，無法直接打卡。<br><br>若您因公需出勤，請至請假區送出【🚨 假日緊急加班單】，送出當下將自動為您記錄上班時間。`, 'error');
                 return;
             }
 
