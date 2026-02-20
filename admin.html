@@ -18,14 +18,13 @@
         .dt-btn.active { background-color: #0284c7; color: white; }
     </style>
 </head>
-<body class="text-slate-800 font-sans min-h-screen bg-slate-50 md:h-screen md:overflow-hidden md:flex">
+<body class="text-slate-800 font-sans min-h-screen md:h-screen md:overflow-hidden md:flex bg-slate-50">
 
-    <div id="login-box" class="flex flex-col items-center justify-center min-h-screen px-5 md:w-full md:pt-0">
+    <div id="login-box" class="flex flex-col items-center justify-center min-h-screen px-5 md:w-full">
         <div class="glass-panel p-8 w-full max-w-sm text-center"><div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">👑</div><h2 class="text-2xl font-black mb-2 text-slate-800">最高權限驗證</h2><p class="text-xs text-slate-500 mb-6">請輸入管理金鑰解鎖指揮中心</p><input type="password" id="pin" placeholder="PIN CODE" class="admin-input text-center text-2xl tracking-[0.5em] mb-6 bg-slate-50 font-black text-slate-700" onkeypress="if(event.key==='Enter') login()"><button onclick="login()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform">驗證並登入</button></div>
     </div>
 
     <div id="dashboard-ui" class="hidden flex-col md:flex-row h-screen w-full md:overflow-hidden">
-
         <header class="md:hidden bg-gradient-to-r from-slate-900 to-slate-800 text-white p-5 flex justify-between items-center shadow-lg sticky top-0 z-50 shrink-0">
             <div><h1 class="text-xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-300">HYPASS</h1><span class="text-[9px] text-slate-400 tracking-[0.2em] uppercase font-bold">Admin Portal</span></div>
             <button onclick="location.reload()" class="text-[10px] bg-white/10 border border-white/20 hover:bg-red-500 hover:border-red-500 px-3 py-1.5 rounded-full font-bold transition-all">安全登出</button>
@@ -54,11 +53,8 @@
                 <button onclick="st('bull')" id="m-bull" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">📢</span><span class="m-text text-xs font-bold tracking-widest">企業公告</span></button>
             </div>
 
-            <section id="pend" class="tab-content active space-y-6 max-w-5xl">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div><h3 class="font-black text-slate-800 border-l-4 border-blue-500 pl-3 text-lg mb-3">新進員工審核</h3><div id="list-pend" class="space-y-3"></div></div>
-                    <div><h3 class="font-black text-slate-800 border-l-4 border-red-500 pl-3 text-lg mb-3">假日緊急加班單</h3><div id="list-overtime" class="space-y-3"></div></div>
-                </div>
+            <section id="pend" class="tab-content active space-y-6 max-w-4xl">
+                <div><h3 class="font-black text-slate-800 border-l-4 border-blue-500 pl-3 text-lg mb-3">新進員工審核</h3><div id="list-pend" class="space-y-3"></div></div>
                 <div><h3 class="font-black text-slate-800 border-l-4 border-amber-500 pl-3 text-lg mb-3">假單簽核中心</h3><div id="list-leaves" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
             </section>
 
@@ -98,7 +94,7 @@
                     <input type="hidden" id="b-id">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3"><input type="text" id="b-n" placeholder="分店名稱 (例:總部大樓)" class="admin-input font-bold"><input type="text" id="b-a" placeholder="實體地址" class="admin-input bg-white"></div>
                     <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 mb-3 text-center"><p class="text-[10px] md:text-xs text-amber-800 font-bold">📍 經緯度設定（請開啟 Google Maps 對著地點按右鍵取得）</p></div>
-                    <div class="grid grid-cols-2 gap-3 mb-5"><input type="number" step="any" id="b-la" placeholder="緯度 (Lat) 例:23.1090" class="admin-input bg-slate-50 font-mono text-sm" required><input type="number" step="any" id="b-ln" placeholder="經度 (Lng) 例:120.2280" class="admin-input bg-slate-50 font-mono text-sm" required></div>
+                    <div class="grid grid-cols-2 gap-3 mb-5"><input type="number" step="any" id="b-la" placeholder="緯度 (Lat)" class="admin-input bg-slate-50 font-mono text-sm" required><input type="number" step="any" id="b-ln" placeholder="經度 (Lng)" class="admin-input bg-slate-50 font-mono text-sm" required></div>
                     <div class="flex space-x-2"><button type="button" onclick="cancelEditBr()" id="btn-cancel-br" class="hidden w-1/3 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl shadow-sm active:scale-95 transition-transform">取消</button><button onclick="saveBr()" id="btn-save-br" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl shadow-md active:scale-95 transition-transform">儲存新據點</button></div>
                 </div>
                 <h4 class="font-black text-sm text-slate-600 px-2">現有據點清單</h4>
@@ -146,7 +142,7 @@
                 document.getElementById('dashboard-ui').classList.add('flex'); 
                 document.getElementById('att-date').value = new Date().toLocaleDateString('en-CA'); 
                 loadAll(); 
-            } else { alert('密碼錯誤！'); } 
+            } else { alert('密碼錯誤！請確認您輸入的是 888888'); } 
         }
         
         function st(id) { 
@@ -160,8 +156,6 @@
         }
         
         async function loadAll() {
-            await _sb.rpc('fn_trigger_auto_approve'); 
-
             const { data: emps } = await _sb.from('employees').select('*, branch_locations(branch_name)');
             const { data: brs } = await _sb.from('branch_locations').select('*');
             window.allEmps = emps || []; window.branches = brs || [];
@@ -169,9 +163,6 @@
             const p = window.allEmps.filter(e => !e.is_approved && e.employment_status === '在職');
             document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><span class="text-2xl mr-3">👤</span><div><h4 class="font-black text-sm text-slate-800"><span class="text-[10px] text-sky-600 mr-1">[${e.job_title||'未指定'}]</span>${e.full_name}</h4><p class="text-[10px] text-slate-500">${e.onboarding_date} 申請</p></div></div><button onclick="appr('${e.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-4 py-2 rounded-lg shadow-sm transition">開通</button></div>`).join('') : '<div class="text-center py-6 bg-slate-100/50 rounded-xl border border-dashed border-slate-300"><p class="text-xs text-slate-400 font-bold">目前無待審核名單</p></div>';
             
-            const { data: ots } = await _sb.from('overtime_requests').select('*, employees(full_name)').eq('status', '審核中');
-            document.getElementById('list-overtime').innerHTML = (ots && ots.length) ? ots.map(o => `<div class="glass-panel p-4 border-l-4 border-red-500 shadow-sm"><div class="flex justify-between items-center mb-2"><h4 class="font-black text-sm text-red-700">🚨 ${o.employees?.full_name}</h4><span class="text-[9px] text-slate-400">${new Date(o.created_at).toLocaleString('zh-TW').slice(5,-3)}</span></div><p class="text-xs text-slate-600 font-bold mb-3">${o.reason}</p><div class="flex space-x-2"><button onclick="updOT('${o.id}', '主管核准')" class="flex-1 bg-red-50 border border-red-200 text-red-700 hover:bg-red-500 hover:text-white py-2 rounded-lg text-xs font-black transition-colors">核准加班</button><button onclick="updOT('${o.id}', '核駁註銷')" class="flex-1 bg-white border border-slate-200 text-slate-500 hover:bg-slate-100 py-2 rounded-lg text-xs font-black transition-colors">駁回</button></div></div>`).join('') : '<div class="text-center py-6 bg-slate-100/50 rounded-xl border border-dashed border-slate-300"><p class="text-xs text-slate-400 font-bold">無待審核加班單</p></div>';
-
             const activeEmps = window.allEmps.filter(e => e.is_approved && e.employment_status === '在職');
             activeEmps.forEach(e => { window.empData[e.id] = { base: e.base_salary, deps: e.dependents_count || 0, start: e.work_start_time || '09:00:00' }; }); 
             document.getElementById('p-emp').innerHTML = activeEmps.map(e => `<option value="${e.id}">[${e.job_title||'員工'}] ${e.full_name}</option>`).join('');
@@ -211,26 +202,17 @@
                 logs.forEach(l => {
                     const eid = l.employees?.id; if(!eid || !empLogs[eid]) return;
                     const timeStr = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
-                    if(l.punch_type === 'IN' && !empLogs[eid].in) empLogs[eid].in = { time: timeStr, branch: l.branch_locations?.branch_name, note: l.note };
-                    if(l.punch_type === 'OUT') empLogs[eid].out = { time: timeStr, branch: l.branch_locations?.branch_name, note: l.note };
+                    if(l.punch_type === 'IN' && !empLogs[eid].in) empLogs[eid].in = { time: timeStr, branch: l.branch_locations?.branch_name || '外勤定位' };
+                    if(l.punch_type === 'OUT') empLogs[eid].out = { time: timeStr, branch: l.branch_locations?.branch_name || '外勤定位' };
                 });
             }
             
             let htmlM = '', htmlD = '';
             Object.values(empLogs).forEach(e => {
                 let inStatus = '<span class="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded font-bold ml-2">未打卡</span>';
-                if(e.in) { 
-                    if(e.in.note === '上班遲到') inStatus = '<span class="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold ml-2">遲到扣假</span>'; 
-                    else if(e.in.note === '寬限期內遲到') inStatus = '<span class="text-[9px] bg-sky-100 text-sky-600 px-1.5 py-0.5 rounded font-bold ml-2">寬限使用</span>'; 
-                    else if(e.in.note === '假日加班') inStatus = '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold ml-2">假日加班</span>'; 
-                    else inStatus = '<span class="text-[9px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold ml-2">準時</span>'; 
-                }
-                
+                if(e.in) { if(e.in.time > e.start.slice(0,5)) inStatus = '<span class="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold ml-2">遲到</span>'; else inStatus = '<span class="text-[9px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold ml-2">正常</span>'; }
                 let outStatus = '<span class="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded font-bold ml-2">未打卡</span>';
-                if(e.out) { 
-                    if(e.out.note === '提早早退') outStatus = '<span class="text-[9px] bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded font-bold ml-2">早退扣假</span>'; 
-                    else outStatus = '<span class="text-[9px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold ml-2">正常下班</span>'; 
-                }
+                if(e.out) { if(e.out.time < e.end.slice(0,5)) outStatus = '<span class="text-[9px] bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded font-bold ml-2">早退</span>'; else outStatus = '<span class="text-[9px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold ml-2">正常</span>'; }
                 
                 htmlM += `<div class="glass-panel p-4 shadow-sm border-l-4 ${e.in && e.out ? 'border-emerald-400' : 'border-slate-200'}"><div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-3"><span class="font-black text-slate-800 text-sm flex items-center">${e.name} <span class="text-[9px] font-bold text-slate-400 ml-2 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded">班別 ${e.start.slice(0,5)}~${e.end.slice(0,5)}</span></span></div><div class="grid grid-cols-2 gap-3 text-xs"><div class="bg-white p-2.5 rounded-xl border border-slate-100"><div class="font-bold text-slate-500 mb-1 flex justify-between">上班 ${inStatus}</div><div class="font-black ${e.in?'text-slate-800':'text-slate-300'} text-lg">${e.in?e.in.time:'--:--'}</div><div class="text-[9px] text-slate-400 truncate">${e.in?'📍'+e.in.branch:''}</div></div><div class="bg-white p-2.5 rounded-xl border border-slate-100"><div class="font-bold text-slate-500 mb-1 flex justify-between">下班 ${outStatus}</div><div class="font-black ${e.out?'text-slate-800':'text-slate-300'} text-lg">${e.out?e.out.time:'--:--'}</div><div class="text-[9px] text-slate-400 truncate">${e.out?'📍'+e.out.branch:''}</div></div></div></div>`;
                 htmlD += `<tr class="hover:bg-slate-50"><td class="px-6 py-4 font-black text-slate-800">${e.name}</td><td class="px-6 py-4 text-xs font-mono text-slate-500">${e.start.slice(0,5)} ~ ${e.end.slice(0,5)}</td><td class="px-6 py-4"><span class="font-black ${e.in?'text-slate-800':'text-slate-300'} text-base mr-2">${e.in?e.in.time:'--:--'}</span>${inStatus}<br><span class="text-[10px] text-slate-400">${e.in?e.in.branch:''}</span></td><td class="px-6 py-4"><span class="font-black ${e.out?'text-slate-800':'text-slate-300'} text-base mr-2">${e.out?e.out.time:'--:--'}</span>${outStatus}<br><span class="text-[10px] text-slate-400">${e.out?e.out.branch:''}</span></td></tr>`;
@@ -381,49 +363,6 @@
         }
 
         function closeEmpDetail() { document.getElementById('emp-detail-modal').classList.remove('active'); }
-
-        function onEmpChange() { const empId = document.getElementById('p-emp').value; const emp = window.empData[empId]; if(!emp) return; document.getElementById('p-base').value = emp.base; calcPayroll(); updateAttendanceRate(); }
-        function calcPayroll() { const empId = document.getElementById('p-emp').value; const emp = window.empData[empId]; if(!emp) return; const base = parseFloat(document.getElementById('p-base').value) || 0; const bonus = parseFloat(document.getElementById('p-bonus').value) || 0; const yeb = parseFloat(document.getElementById('p-yeb').value) || 0; document.getElementById('p-pen').value = Math.round(base * 0.06); document.getElementById('p-2nd').value = Math.round((bonus + yeb) * 0.0211); const labor_est = Math.round(base * 0.022); const health_est = Math.round(base * 0.0155 * (1 + emp.deps)); document.getElementById('p-ins').value = labor_est + health_est; calcNet(); }
-        function calcNet() { const net = (parseFloat(document.getElementById('p-base').value)||0) + (parseFloat(document.getElementById('p-bonus').value)||0) + (parseFloat(document.getElementById('p-yeb').value)||0) - (parseFloat(document.getElementById('p-ins').value)||0) - (parseFloat(document.getElementById('p-2nd').value)||0); const finalNet = net > 0 ? net : 0; document.getElementById('p-net').value = finalNet; document.getElementById('p-net-display').innerText = `NT$ ${finalNet.toLocaleString()}`; }
-        async function issuePayroll() { const p = { employee_id: document.getElementById('p-emp').value, pay_month: document.getElementById('p-mon').value, base_pay: parseFloat(document.getElementById('p-base').value)||0, bonus: parseFloat(document.getElementById('p-bonus').value)||0, year_end_bonus: parseFloat(document.getElementById('p-yeb').value)||0, labor_pension: parseFloat(document.getElementById('p-pen').value)||0, insurance_deduction: parseFloat(document.getElementById('p-ins').value)||0, second_gen_health: parseFloat(document.getElementById('p-2nd').value)||0, total_net_pay: parseFloat(document.getElementById('p-net').value)||0 }; if(!p.pay_month) { alert('請選擇發放月份'); return; } await _sb.from('payroll_records').insert([p]); alert('✅ 薪資單發送成功！'); document.querySelectorAll('#pay input[type="number"]').forEach(e => e.value = ''); document.getElementById('p-net-display').innerText = 'NT$ 0'; }
-
-        async function calculateSettlement() {
-            const empId = window.currentOffboardEmpId; const lastDay = document.getElementById('modal-off-date').value; const type = document.getElementById('modal-off-type').value; if(!empId || !lastDay) { alert('請填寫最後工作日'); return; }
-            const e = window.allEmps.find(x => x.id === empId); const { data: lv } = await _sb.rpc('fn_get_annual_leave', { p_onboard_date: e.onboarding_date });
-            const proRat = new Date(lastDay).getDate() / 30.0; const proSal = Math.round((proRat > 1 ? 1 : proRat) * e.base_salary); const uHrs = lv?.hours || 0; const lPay = Math.round(uHrs * (e.base_salary / 240));
-            let sev = 0; if(type === '非自願離職(資遣)') { const ty = (new Date(lastDay).getTime() - new Date(e.onboarding_date).getTime()) / 31557600000; sev = Math.round(Math.max(0, ty) * 0.5 * e.base_salary); }
-            const tot = proSal + lPay + sev;
-            document.getElementById('res-base').innerText = `NT$ ${e.base_salary.toLocaleString()}`; document.getElementById('res-pro').innerText = `+ NT$ ${proSal.toLocaleString()}`; document.getElementById('res-lvh').innerText = uHrs; document.getElementById('res-lvp').innerText = `+ NT$ ${lPay.toLocaleString()}`; document.getElementById('res-sev').innerText = `+ NT$ ${sev.toLocaleString()}`; document.getElementById('res-total').innerText = `NT$ ${tot.toLocaleString()}`; document.getElementById('modal-off-result').classList.remove('hidden');
-            globalOffboardData = { employee_id: empId, settlement_type: type, last_working_day: lastDay, base_salary_ref: e.base_salary, prorated_salary: proSal, unused_leave_hours: uHrs, unused_leave_pay: lPay, severance_pay: sev, total_settlement: tot };
-        }
-        async function confirmOffboarding() { if(!globalOffboardData || !confirm('⚠️ 確定結算並停權？')) return; await _sb.from('settlement_records').insert([globalOffboardData]); await _sb.from('employees').update({ employment_status: '離職', is_approved: false, resignation_date: globalOffboardData.last_working_day }).eq('id', globalOffboardData.employee_id); alert('✅ 帳號已永久停權。'); closeEmpDetail(); loadAll(); }
-
-        async function exportBankCSV() { const month = document.getElementById('export-mon').value; if(!month) return; const { data } = await _sb.from('payroll_records').select('total_net_pay, employees(full_name, bank_code, bank_name, bank_user_name, bank_account)').eq('pay_month', month); if(!data || data.length === 0) return; let csv = "\uFEFF銀行代碼,銀行名稱,收款帳號,戶名,匯款金額,備註\n"; data.forEach(r => { csv += `="${r.employees.bank_code}",${r.employees.bank_name},="${r.employees.bank_account}",${r.employees.bank_user_name},${r.total_net_pay},${month}薪資\n`; }); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `HYPASS_${month}_轉帳檔.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
-        async function appr(id) { await _sb.from('employees').update({is_approved:true}).eq('id',id); loadAll(); alert('✅ 員工權限已開通'); }
-        async function updLeave(id, st) { await _sb.from('leave_requests').update({status:st}).eq('id',id); loadAll(); alert(`✅ 假單已${st}`); }
-        async function updOT(id, st) { await _sb.from('overtime_requests').update({status:st}).eq('id',id); loadAll(); alert(`✅ 假日加班單已${st}`); }
-        
-        // 🌟 初始化台灣國定假日字典 (透過 jsdelivr 抓取開源日曆)
-        let twCalendar = {};
-        async function loadTaiwanCalendar() {
-            try {
-                const year = new Date().getFullYear();
-                let res = await fetch(`https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${year}.json`);
-                if (res.ok) { let data = await res.json(); data.forEach(d => { twCalendar[d.date] = d.isHoliday; }); }
-                if (new Date().getMonth() === 11) {
-                    let res2 = await fetch(`https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${year+1}.json`);
-                    if (res2.ok) { let data2 = await res2.json(); data2.forEach(d => { twCalendar[d.date] = d.isHoliday; }); }
-                }
-            } catch (e) { console.error('Taiwan Calendar load failed', e); }
-        }
-
-        // 🌟 判斷是否為台灣休假日 (整合 API 與傳統週末邏輯)
-        function checkIsHoliday(dateObj) {
-            const y = dateObj.getFullYear(); const m = String(dateObj.getMonth() + 1).padStart(2, '0'); const d = String(dateObj.getDate()).padStart(2, '0');
-            const dateStr = `${y}${m}${d}`;
-            if (twCalendar[dateStr] !== undefined) return twCalendar[dateStr];
-            return (dateObj.getDay() === 0 || dateObj.getDay() === 6);
-        }
     </script>
 </body>
 </html>
