@@ -20,13 +20,18 @@
 </head>
 <body class="text-slate-800 font-sans min-h-screen md:h-screen md:overflow-hidden md:flex bg-slate-50">
 
-    <div id="login-box" class="flex flex-col items-center justify-center min-h-screen px-5 md:w-full">
-        <div class="glass-panel p-8 w-full max-w-sm text-center">
+    <div id="login-wrapper" class="flex flex-col items-center justify-center min-h-screen px-5 md:w-full z-50 absolute inset-0 bg-slate-50">
+        <div id="login-box" class="glass-panel p-8 w-full max-w-sm text-center">
             <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">👑</div>
             <h2 class="text-2xl font-black mb-2 text-slate-800">最高權限驗證</h2>
             <p class="text-xs text-slate-500 mb-6">請輸入管理金鑰解鎖指揮中心</p>
             <input type="password" id="pin" placeholder="PIN CODE" class="admin-input text-center text-2xl tracking-[0.5em] mb-6 bg-slate-50 font-black text-slate-700" onkeypress="if(event.key==='Enter') login()">
             <button onclick="login()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform">驗證並登入</button>
+        </div>
+        <div id="loading-box" class="hidden glass-panel p-8 w-full max-w-sm text-center">
+            <div class="animate-spin w-16 h-16 border-4 border-sky-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <h2 class="text-xl font-black mb-2 text-sky-800">資料庫連線中...</h2>
+            <p class="text-xs text-slate-500 font-bold">正在抓取員工資料，請稍候</p>
         </div>
     </div>
 
@@ -138,17 +143,39 @@
     </div>
 
     <script>
-        const _sb = supabase.createClient('https://obbcgmgkbazwpfvgbupg.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'); // ⚠️ 務必填寫
+        // 🚨 部署前請更換為您的真實 ANON_KEY (保留單引號)
+        const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
+        const SUPABASE_ANON_KEY = '請填入您的ANON_KEY';
+        
+        const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = [];
 
-        function login() { 
-            if(document.getElementById('pin').value === '888888'){ 
-                document.getElementById('login-box').style.display = 'none'; 
-                document.getElementById('dashboard-ui').classList.remove('hidden'); 
-                document.getElementById('dashboard-ui').classList.add('flex'); 
-                document.getElementById('att-date').value = new Date().toLocaleDateString('en-CA'); 
-                loadAll(); 
-            } else { alert('密碼錯誤！請確認您輸入的是 888888'); } 
+        // 🌟 防卡死登入機制
+        async function login() { 
+            const pin = document.getElementById('pin').value;
+            if (SUPABASE_ANON_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0' || SUPABASE_ANON_KEY === '') {
+                alert('🛑 系統錯誤：請先在程式碼中填寫您的 Supabase 金鑰！');
+                return;
+            }
+
+            if(pin === '888888'){ 
+                document.getElementById('login-box').style.display = 'none';
+                document.getElementById('loading-box').style.display = 'block';
+                
+                try {
+                    await loadAll(); 
+                    document.getElementById('login-wrapper').style.display = 'none'; 
+                    document.getElementById('dashboard-ui').classList.remove('hidden'); 
+                    document.getElementById('dashboard-ui').classList.add('flex'); 
+                    document.getElementById('att-date').value = new Date().toLocaleDateString('en-CA'); 
+                } catch (err) {
+                    document.getElementById('login-box').style.display = 'block';
+                    document.getElementById('loading-box').style.display = 'none';
+                    alert('連線失敗！請檢查金鑰是否正確，或網路是否穩定。\n錯誤訊息：' + err.message);
+                }
+            } else { 
+                alert('密碼錯誤！請確認您輸入的是 888888'); 
+            } 
         }
         
         function st(id) { 
@@ -162,8 +189,12 @@
         }
         
         async function loadAll() {
-            const { data: emps } = await _sb.from('employees').select('*, branch_locations(branch_name)');
-            const { data: brs } = await _sb.from('branch_locations').select('*');
+            const { data: emps, error: err1 } = await _sb.from('employees').select('*, branch_locations(branch_name)');
+            if (err1) throw err1; // 如果發生錯誤，直接丟給外層 try catch 處理
+            
+            const { data: brs, error: err2 } = await _sb.from('branch_locations').select('*');
+            if (err2) throw err2;
+
             window.allEmps = emps || []; window.branches = brs || [];
 
             const p = window.allEmps.filter(e => !e.is_approved && e.employment_status === '在職');
@@ -173,7 +204,6 @@
             activeEmps.forEach(e => { window.empData[e.id] = { base: e.base_salary, deps: e.dependents_count || 0, start: e.work_start_time || '09:00:00' }; }); 
             document.getElementById('p-emp').innerHTML = activeEmps.map(e => `<option value="${e.id}">[${e.job_title||'員工'}] ${e.full_name}</option>`).join('');
 
-            // 🌟 列表新增員工編號顯示
             if (activeEmps.length) {
                 document.getElementById('list-emps-mobile').innerHTML = activeEmps.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><div class="w-10 h-10 bg-slate-100 border border-slate-200 rounded-full flex items-center justify-center text-slate-500 font-black mr-3">${e.full_name.charAt(0)}</div><div><h4 class="font-black text-sm text-slate-800">${e.full_name} <span class="text-[9px] bg-emerald-50 border border-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded ml-1">${(e.base_salary/1000).toFixed(0)}k</span></h4><p class="text-[10px] text-slate-500 mt-1"><span class="text-sky-600 font-bold mr-1">${e.employee_no||'未編號'}</span> | ${e.branch_locations?.branch_name||'未綁定'}</p></div></div><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl">管理</button></div>`).join('');
                 document.getElementById('list-emps-desktop').innerHTML = activeEmps.map(e => `<tr class="hover:bg-slate-50 transition"><td class="px-6 py-4 font-black text-slate-500 text-xs">${e.employee_no||'--'}</td><td class="px-6 py-4 font-black text-slate-800">${e.full_name}<br><span class="text-slate-400 text-[10px] font-normal">${e.branch_locations?.branch_name||'未綁定'}</span></td><td class="px-6 py-4 text-slate-600 font-mono text-xs">${e.phone}</td><td class="px-6 py-4 text-emerald-600 font-black">NT$ ${e.base_salary.toLocaleString()}</td><td class="px-6 py-4 text-center"><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition">管理</button></td></tr>`).join('');
@@ -294,7 +324,6 @@
         }
         async function delBlt(id) { if(!confirm('確定要刪除這則公告嗎？')) return; await _sb.from('bulletin_board').delete().eq('id', id); alert('✅ 公告已刪除'); loadAll(); }
 
-        // 🌟 員工檔案管理介面升級 (新增編號與匯出按鈕)
         function openEmpDetail(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             window.currentOffboardEmpId = empId; document.getElementById('modal-off-result').classList.add('hidden'); document.getElementById('modal-off-date').value = '';
@@ -382,7 +411,6 @@
             else { btn.innerHTML = '✅ 儲存完畢'; await loadAll(); setTimeout(() => openEmpDetail(empId), 1000); }
         }
 
-        // 🌟 匯出正式數位合約列印版
         function exportContract(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             const printWindow = window.open('', '_blank', 'width=900,height=900');
