@@ -83,7 +83,7 @@
             <section id="emps" class="tab-content space-y-5 max-w-6xl">
                 <div><h3 class="font-black text-slate-800 border-l-4 border-sky-500 pl-3 text-lg mb-4">員工資料總表與管理</h3>
                     <div id="list-emps-mobile" class="space-y-3 md:hidden">載入中...</div>
-                    <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-left text-sm whitespace-nowrap"><thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold"><tr><th class="px-6 py-4">姓名</th><th class="px-6 py-4">職位/據點</th><th class="px-6 py-4">聯絡電話</th><th class="px-6 py-4">核定底薪</th><th class="px-6 py-4 text-center">操作</th></tr></thead><tbody id="list-emps-desktop" class="divide-y divide-slate-100"></tbody></table></div>
+                    <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-left text-sm whitespace-nowrap"><thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold"><tr><th class="px-6 py-4">編號</th><th class="px-6 py-4">姓名/據點</th><th class="px-6 py-4">聯絡電話</th><th class="px-6 py-4">核定底薪</th><th class="px-6 py-4 text-center">操作</th></tr></thead><tbody id="list-emps-desktop" class="divide-y divide-slate-100"></tbody></table></div>
                 </div>
             </section>
 
@@ -173,9 +173,10 @@
             activeEmps.forEach(e => { window.empData[e.id] = { base: e.base_salary, deps: e.dependents_count || 0, start: e.work_start_time || '09:00:00' }; }); 
             document.getElementById('p-emp').innerHTML = activeEmps.map(e => `<option value="${e.id}">[${e.job_title||'員工'}] ${e.full_name}</option>`).join('');
 
+            // 🌟 列表新增員工編號顯示
             if (activeEmps.length) {
-                document.getElementById('list-emps-mobile').innerHTML = activeEmps.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><div class="w-10 h-10 bg-slate-100 border border-slate-200 rounded-full flex items-center justify-center text-slate-500 font-black mr-3">${e.full_name.charAt(0)}</div><div><h4 class="font-black text-sm text-slate-800">${e.full_name} <span class="text-[9px] bg-emerald-50 border border-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded ml-1">${(e.base_salary/1000).toFixed(0)}k</span></h4><p class="text-[10px] text-slate-500 mt-1"><span class="text-sky-600 font-bold mr-1">${e.job_title||'員工'}</span> | ${e.branch_locations?.branch_name||'未綁定'}</p></div></div><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl">管理</button></div>`).join('');
-                document.getElementById('list-emps-desktop').innerHTML = activeEmps.map(e => `<tr class="hover:bg-slate-50 transition"><td class="px-6 py-4 font-black text-slate-800">${e.full_name}</td><td class="px-6 py-4"><span class="bg-sky-50 text-sky-700 border border-sky-100 px-2 py-1 rounded text-xs font-bold mr-2">${e.job_title||'員工'}</span><span class="text-slate-500 text-xs">${e.branch_locations?.branch_name||'未綁定'}</span></td><td class="px-6 py-4 text-slate-600 font-mono text-xs">${e.phone}</td><td class="px-6 py-4 text-emerald-600 font-black">NT$ ${e.base_salary.toLocaleString()}</td><td class="px-6 py-4 text-center"><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition">管理</button></td></tr>`).join('');
+                document.getElementById('list-emps-mobile').innerHTML = activeEmps.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><div class="w-10 h-10 bg-slate-100 border border-slate-200 rounded-full flex items-center justify-center text-slate-500 font-black mr-3">${e.full_name.charAt(0)}</div><div><h4 class="font-black text-sm text-slate-800">${e.full_name} <span class="text-[9px] bg-emerald-50 border border-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded ml-1">${(e.base_salary/1000).toFixed(0)}k</span></h4><p class="text-[10px] text-slate-500 mt-1"><span class="text-sky-600 font-bold mr-1">${e.employee_no||'未編號'}</span> | ${e.branch_locations?.branch_name||'未綁定'}</p></div></div><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl">管理</button></div>`).join('');
+                document.getElementById('list-emps-desktop').innerHTML = activeEmps.map(e => `<tr class="hover:bg-slate-50 transition"><td class="px-6 py-4 font-black text-slate-500 text-xs">${e.employee_no||'--'}</td><td class="px-6 py-4 font-black text-slate-800">${e.full_name}<br><span class="text-slate-400 text-[10px] font-normal">${e.branch_locations?.branch_name||'未綁定'}</span></td><td class="px-6 py-4 text-slate-600 font-mono text-xs">${e.phone}</td><td class="px-6 py-4 text-emerald-600 font-black">NT$ ${e.base_salary.toLocaleString()}</td><td class="px-6 py-4 text-center"><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition">管理</button></td></tr>`).join('');
             } else {
                 document.getElementById('list-emps-mobile').innerHTML = '<p class="text-center text-xs text-slate-400 py-4">無在職員工</p>';
                 document.getElementById('list-emps-desktop').innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">無在職員工</td></tr>';
@@ -283,7 +284,6 @@
             document.getElementById('blt-edit-id').value = ''; document.getElementById('blt-title').value = ''; document.getElementById('blt-content').value = '';
             document.getElementById('blt-form-title').innerText = '發布企業公告'; document.getElementById('btn-post-blt').innerText = '立即推播至全員首頁'; document.getElementById('btn-post-blt').classList.replace('from-sky-500', 'from-amber-500'); document.getElementById('btn-post-blt').classList.replace('to-blue-600', 'to-orange-500'); document.getElementById('btn-cancel-blt').classList.add('hidden');
         }
-        
         async function postBlt() {
             const id = document.getElementById('blt-edit-id').value; const title = document.getElementById('blt-title').value; const content = document.getElementById('blt-content').value; if(!title || !content) { alert('請填寫完整內容'); return; }
             try {
@@ -294,7 +294,7 @@
         }
         async function delBlt(id) { if(!confirm('確定要刪除這則公告嗎？')) return; await _sb.from('bulletin_board').delete().eq('id', id); alert('✅ 公告已刪除'); loadAll(); }
 
-        // 🌟 更新為「工作打卡據點」
+        // 🌟 員工檔案管理介面升級 (新增編號與匯出按鈕)
         function openEmpDetail(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             window.currentOffboardEmpId = empId; document.getElementById('modal-off-result').classList.add('hidden'); document.getElementById('modal-off-date').value = '';
@@ -305,9 +305,10 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <div class="flex items-center space-x-3 mb-4 pb-4 border-b border-slate-100"><div class="w-14 h-14 bg-slate-900 rounded-full flex items-center justify-center text-white text-xl font-black shadow-inner">${e.full_name.charAt(0)}</div><div><h4 class="text-xl font-black text-slate-800 tracking-tight">${e.full_name} <span class="text-[10px] font-bold text-sky-600 bg-sky-50 px-2 py-0.5 rounded ml-1 align-middle border border-sky-100">${e.employment_status}</span></h4><p class="text-[10px] text-slate-500 font-bold mt-0.5">${e.job_title||'未指派職位'}</p></div></div>
                     <div class="grid grid-cols-2 gap-y-4 gap-x-3 text-sm">
-                        <div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">入職日期</p><p class="font-black text-slate-700">${e.onboarding_date}</p></div><div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">工作打卡據點</p><p class="font-black text-slate-700">${e.branch_locations?.branch_name || '未綁定'}</p></div>
-                        <div class="col-span-2 border-t border-slate-100 pt-3 mt-1"><h5 class="text-xs font-black text-blue-700 flex items-center"><span class="mr-1">⏰</span> 考勤班別設定</h5></div>
-                        <div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">表定上班時間</p><p class="font-black text-slate-700 text-base">${(e.work_start_time||'09:00').slice(0,5)}</p></div><div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">表定下班時間</p><p class="font-black text-slate-700 text-base">${(e.work_end_time||'18:00').slice(0,5)}</p></div>
+                        <div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">員工編號</p><p class="font-black text-sky-700 text-base">${e.employee_no||'未設定'}</p></div><div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">入職日期</p><p class="font-black text-slate-700 mt-1">${e.onboarding_date}</p></div>
+                        <div class="col-span-2 border-t border-slate-100 pt-3 mt-1"><h5 class="text-xs font-black text-blue-700 flex items-center"><span class="mr-1">⏰</span> 考勤班別與據點</h5></div>
+                        <div class="col-span-2"><p class="text-[10px] font-bold text-slate-400 mb-0.5">工作打卡據點</p><p class="font-black text-slate-700">${e.branch_locations?.branch_name || '未綁定'}</p></div>
+                        <div class="col-span-1 mt-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">表定上班時間</p><p class="font-black text-slate-700 text-base">${(e.work_start_time||'09:00').slice(0,5)}</p></div><div class="col-span-1 mt-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">表定下班時間</p><p class="font-black text-slate-700 text-base">${(e.work_end_time||'18:00').slice(0,5)}</p></div>
                         <div class="col-span-2 border-t border-slate-100 pt-3 mt-1"><h5 class="text-xs font-black text-slate-500 flex items-center"><span class="mr-1">📞</span> 聯絡資訊</h5></div>
                         <div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">聯絡電話</p><p class="font-black text-slate-700">${e.phone}</p></div><div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">身分證字號</p><p class="font-black text-slate-700">${e.id_number}</p></div>
                         <div class="col-span-2"><p class="text-[10px] font-bold text-slate-400 mb-0.5">電子信箱</p><p class="font-black text-slate-700">${e.email}</p></div>
@@ -317,8 +318,12 @@
                         <div class="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">撥薪銀行帳戶</p><p class="font-black text-slate-800 tracking-wider">${e.bank_name} (${e.bank_code})</p><p class="font-black text-slate-800 tracking-wider text-base mt-0.5">${e.bank_account}</p><p class="text-xs font-bold text-slate-500 mt-1">戶名：${e.bank_user_name}</p></div>
                         <div class="col-span-2 border-t border-slate-100 pt-3 mt-1"><h5 class="text-xs font-black text-amber-700 flex items-center"><span class="mr-1">🚨</span> 緊急聯絡人</h5></div>
                         <div class="col-span-2"><p class="font-black text-slate-700">${e.emergency_name} <span class="text-slate-400 mx-1">|</span> ${e.emergency_phone}</p></div>
-                        <div class="col-span-2 border-t border-slate-100 pt-3 mt-1"><h5 class="text-xs font-black text-sky-700 flex items-center"><span class="mr-1">⚖️</span> 數位合約狀態</h5></div>
-                        <div class="col-span-2"><p class="text-xs font-bold text-slate-600 bg-sky-50 px-3 py-2 rounded-lg border border-sky-100 flex items-center"><span class="mr-2">✔️</span>已於 ${new Date(e.nda_signed_at).toLocaleString('zh-TW')} 完成簽署</p></div>
+                        
+                        <div class="col-span-2 border-t border-slate-100 pt-3 mt-1 flex justify-between items-center">
+                            <h5 class="text-xs font-black text-sky-700 flex items-center"><span class="mr-1">⚖️</span> 數位合約</h5>
+                            <button onclick="exportContract('${e.id}')" class="bg-sky-50 text-sky-700 hover:bg-sky-600 hover:text-white border border-sky-200 text-xs font-black px-4 py-2 rounded-xl transition shadow-sm">📥 下載/列印合約 (PDF)</button>
+                        </div>
+                        <div class="col-span-2"><p class="text-xs font-bold text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200 flex items-center"><span class="mr-2">✔️</span>已於 ${new Date(e.nda_signed_at).toLocaleString('zh-TW')} 完成簽署</p></div>
                     </div>
                 </div>
             `;
@@ -335,13 +340,14 @@
                     <form onsubmit="saveEmpDetail(event, '${e.id}')" class="space-y-4">
                         <div class="grid grid-cols-2 gap-3">
                             <div class="col-span-2 flex space-x-3"><div class="flex-1"><label class="text-[10px] font-bold text-slate-500 ml-1">真實姓名</label><input type="text" id="edit-name" value="${e.full_name}" class="admin-input bg-white font-bold" required></div><div class="w-1/3"><label class="text-[10px] font-bold text-slate-500 ml-1">在職狀態</label><select id="edit-status" class="admin-input bg-white font-bold"><option value="在職" ${e.employment_status==='在職'?'selected':''}>在職</option><option value="留職停薪" ${e.employment_status==='留職停薪'?'selected':''}>留職停薪</option></select></div></div>
-                            <div><label class="text-[10px] font-bold text-slate-500 ml-1">身分證字號</label><input type="text" id="edit-idnum" value="${e.id_number}" class="admin-input bg-white uppercase" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">入職日期</label><input type="date" id="edit-onboard" value="${e.onboarding_date}" class="admin-input bg-white" required></div>
+                            <div><label class="text-[10px] font-bold text-slate-500 ml-1">員工編號 (自訂)</label><input type="text" id="edit-emp-no" value="${e.employee_no==='未設定'?'':e.employee_no}" class="admin-input bg-white font-black text-sky-700" placeholder="例: A001"></div>
+                            <div><label class="text-[10px] font-bold text-slate-500 ml-1">身分證字號</label><input type="text" id="edit-idnum" value="${e.id_number}" class="admin-input bg-white uppercase" required></div>
                             <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">員工職位</label><select id="edit-job-title" class="admin-input bg-white font-bold"><option value="主管" ${e.job_title==='主管'?'selected':''}>主管</option><option value="業務" ${e.job_title==='業務'?'selected':''}>業務</option><option value="助理" ${e.job_title==='助理'?'selected':''}>助理</option></select></div>
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-blue-700 mb-2">⏰ 考勤班別設定</h5><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">上班時間</label><input type="time" id="edit-start-time" value="${(e.work_start_time||'09:00').slice(0,5)}" class="admin-input bg-white font-black text-blue-700" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">下班時間</label><input type="time" id="edit-end-time" value="${(e.work_end_time||'18:00').slice(0,5)}" class="admin-input bg-white font-black text-blue-700" required></div></div></div>
+                            <div><label class="text-[10px] font-bold text-slate-500 ml-1">入職日期</label><input type="date" id="edit-onboard" value="${e.onboarding_date}" class="admin-input bg-white" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">工作打卡據點</label><select id="edit-branch" class="admin-input bg-white font-bold">${brOptions}</select></div>
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><label class="text-[10px] font-bold text-slate-500 ml-1">電子信箱</label><input type="email" id="edit-email" value="${e.email}" class="admin-input bg-white" required></div>
                             <div><label class="text-[10px] font-bold text-emerald-600 ml-1">核定底薪</label><input type="number" id="edit-base" value="${e.base_salary}" class="admin-input bg-white font-black text-emerald-600" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">眷屬人數</label><input type="number" id="edit-deps" value="${e.dependents_count}" class="admin-input bg-white" required></div>
                             <div><label class="text-[10px] font-bold text-slate-500 ml-1">聯絡電話</label><input type="text" id="edit-phone" value="${e.phone}" class="admin-input bg-white" required></div>
-                            <div><label class="text-[10px] font-bold text-slate-500 ml-1">工作打卡據點</label><select id="edit-branch" class="admin-input bg-white font-bold">${brOptions}</select></div>
                             <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">通訊地址</label><input type="text" id="edit-address" value="${e.address}" class="admin-input bg-white" required></div>
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-amber-700 mb-2">🚨 緊急聯絡人</h5><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">姓名</label><input type="text" id="edit-emg-name" value="${e.emergency_name}" class="admin-input bg-white" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">電話</label><input type="tel" id="edit-emg-phone" value="${e.emergency_phone}" class="admin-input bg-white" required></div></div></div>
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-slate-700 mb-2">🏦 撥薪銀行帳戶</h5><div class="grid grid-cols-2 gap-3 mb-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">銀行名稱</label><input type="text" id="edit-bank-name" value="${e.bank_name}" class="admin-input bg-white" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">代碼</label><input type="text" id="edit-bank-code" value="${e.bank_code}" class="admin-input bg-white" required></div></div><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">戶名</label><input type="text" id="edit-bank-user" value="${e.bank_user_name}" class="admin-input bg-white" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">帳號</label><input type="text" id="edit-bank-account" value="${e.bank_account}" class="admin-input bg-white" required></div></div></div>
@@ -357,9 +363,12 @@
             e.preventDefault();
             const btn = document.getElementById('btn-save-emp'); const originText = btn.innerHTML; btn.innerHTML = '⏳ 儲存中...'; btn.disabled = true;
             let st = document.getElementById('edit-start-time').value; if(st && st.length === 5) st += ':00'; let et = document.getElementById('edit-end-time').value; if(et && et.length === 5) et += ':00';
+            
+            let eno = document.getElementById('edit-emp-no').value.trim(); if(eno === '') eno = '未設定';
+
             const p = { 
                 full_name: document.getElementById('edit-name').value, employment_status: document.getElementById('edit-status').value, 
-                id_number: document.getElementById('edit-idnum').value, onboarding_date: document.getElementById('edit-onboard').value, 
+                employee_no: eno, id_number: document.getElementById('edit-idnum').value, onboarding_date: document.getElementById('edit-onboard').value, 
                 job_title: document.getElementById('edit-job-title').value, work_start_time: st, work_end_time: et,
                 email: document.getElementById('edit-email').value, base_salary: parseFloat(document.getElementById('edit-base').value) || 0, 
                 phone: document.getElementById('edit-phone').value, dependents_count: parseInt(document.getElementById('edit-deps').value) || 0, 
@@ -371,6 +380,71 @@
             const { error } = await _sb.from('employees').update(p).eq('id', empId);
             if (error) { alert('更新失敗: ' + error.message); btn.innerHTML = originText; btn.disabled = false; } 
             else { btn.innerHTML = '✅ 儲存完畢'; await loadAll(); setTimeout(() => openEmpDetail(empId), 1000); }
+        }
+
+        // 🌟 匯出正式數位合約列印版
+        function exportContract(empId) {
+            const e = window.allEmps.find(x => x.id === empId); if(!e) return;
+            const printWindow = window.open('', '_blank', 'width=900,height=900');
+            const html = `
+                <html>
+                <head>
+                    <title>${e.full_name} - 數位聘僱合約</title>
+                    <style>
+                        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; padding: 40px 60px; line-height: 1.8; color: #111; max-width: 800px; margin: 0 auto; }
+                        h2 { text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 30px; letter-spacing: 2px;}
+                        .info-box { border: 1px solid #ddd; padding: 20px; background: #f9fafb; margin-bottom: 30px; border-radius: 8px; }
+                        .info-box p { margin: 8px 0; font-size: 15px; }
+                        .section-title { font-weight: bold; margin-top: 30px; margin-bottom: 10px; font-size: 1.1em; background: #eee; padding: 5px 10px; border-left: 4px solid #333;}
+                        ul { padding-left: 25px; margin-top: 0; }
+                        li { margin-bottom: 8px; text-align: justify; }
+                        .signature-box { margin-top: 50px; border-top: 2px dashed #999; padding-top: 30px; text-align: right; }
+                        .signature-box p { margin: 5px 0; font-size: 14px; }
+                        .stamp { display: inline-block; border: 3px solid #b91c1c; color: #b91c1c; padding: 10px 20px; font-weight: bold; font-size: 18px; transform: rotate(-5deg); margin-bottom: 15px; border-radius: 5px;}
+                    </style>
+                </head>
+                <body>
+                    <h2>HYPASS 企業聘僱合約與員工服務守則</h2>
+                    <div class="info-box">
+                        <p><strong>甲方（雇主）：</strong>海帕斯科技股份有限公司</p>
+                        <p><strong>乙方（受僱人）：</strong>${e.full_name} <span style="color:#666; font-size:12px;">(員工編號: ${e.employee_no||'未設定'})</span></p>
+                        <p><strong>身分證字號：</strong>${e.id_number}</p>
+                        <p><strong>通訊地址：</strong>${e.address}</p>
+                    </div>
+
+                    <div class="section-title">第一章：職位與工作內容</div>
+                    <ul><li>職務說明：乙方同意擔任甲方所指派之職務，並秉持誠信原則與專業技能，協助甲方各項業務之推動。</li><li>工作區域：甲方得視營運需求，指派乙方於甲方之實體據點、廠區或指定之工作分區執行職務。乙方同意配合公司調度。</li></ul>
+                    
+                    <div class="section-title">第二章：考勤管理與打卡規範</div>
+                    <ul><li>考勤依據：乙方同意以 HYPASS 員工 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據，絕不從事代打卡或偽造定位之情事。</li><li>打卡範圍：系統將自動偵測員工所在之工作打卡據點。若為「業務」職位，則開放外勤定位打卡權限，但須確實記錄當下經緯度供備查。</li><li>遲到與早退處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若遲到超過寬限次數或時間，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動向主管申請以剩餘特休時數進行扣抵。</li></ul>
+                    
+                    <div class="section-title">第三章：請假與休假規範</div>
+                    <ul><li>請假程序：一般請假（如特休、事假）應至少提前三日於線上系統提出申請，經主管核准後始生效力；病假或突發狀況應於當日上班前第一時間告知主管並補單。</li><li>颱風假原則：如遇政府機關發布法定颱風假，甲方依法遵循「放假但該日不支薪」原則辦理。該日之休假不扣除乙方之特休天數，亦不影響全勤考核。</li><li>加班申請：若逢例假日因公務需緊急出勤，乙方須於系統確實填寫「起始時間」與「結束時間」送出加班申請，經核准後方可計入加班時數。</li></ul>
+                    
+                    <div class="section-title">第四章：保密協定 (NDA) 與智慧財產權</div>
+                    <ul><li>保密義務：乙方於任職期間及離職後，對於甲方之客戶名單、研發技術、產品配方、財務資訊、商業策略、對話紀錄及所有未公開之營業秘密，負有絕對保密義務。未經甲方書面同意，絕不洩漏或交付予任何第三方。</li><li>違約罰則：乙方若違反上述保密義務，致甲方受有損害或有外洩之虞，乙方同意無條件負擔新台幣壹佰萬元整之懲罰性違約金，甲方並保留法律追訴權。</li></ul>
+                    
+                    <div class="section-title">第五章：離職與資遣結算</div>
+                    <ul><li>離職預告與交接：乙方欲終止勞動契約時，應依勞動基準法規定提前預告。離職時，應將所有隸屬公司之財產、機密資訊、設備、實體與數位檔案全數歸還，絕對不得私自拷貝或保留。</li><li>最終結算：離職時，系統將自動精算當月破月薪資、未休特休換發現金，及法定資遣費（限非自願離職），於確認交接無誤後隨次月薪資撥付。</li></ul>
+
+                    <div class="signature-box">
+                        <div class="stamp">合法數位簽章認證</div>
+                        <p><strong>✔️ 乙方已詳閱並同意上述全條文</strong></p>
+                        <p><strong>✔️ 乙方同意系統以 GPS 定位為考勤唯一依據</strong></p>
+                        <p><strong>✔️ 乙方同意嚴守保密協定(NDA)，如有違願負擔懲罰性違約金</strong></p>
+                        <br>
+                        <p><strong>數位簽署人（乙方）：</strong>${e.full_name}</p>
+                        <p><strong>簽署裝置授權：</strong>LINE LIFF 綁定驗證 (${e.line_id})</p>
+                        <p><strong>生效時間：</strong>${new Date(e.nda_signed_at).toLocaleString('zh-TW')}</p>
+                    </div>
+                    <script>
+                        window.onload = function() { setTimeout(() => { window.print(); }, 500); }
+                    </script>
+                </body>
+                </html>
+            `;
+            printWindow.document.write(html);
+            printWindow.document.close();
         }
 
         function closeEmpDetail() { document.getElementById('emp-detail-modal').classList.remove('active'); }
