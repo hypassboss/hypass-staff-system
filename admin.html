@@ -21,7 +21,13 @@
 <body class="text-slate-800 font-sans min-h-screen md:h-screen md:overflow-hidden md:flex bg-slate-50">
 
     <div id="login-box" class="flex flex-col items-center justify-center min-h-screen px-5 md:w-full">
-        <div class="glass-panel p-8 w-full max-w-sm text-center"><div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">👑</div><h2 class="text-2xl font-black mb-2 text-slate-800">最高權限驗證</h2><p class="text-xs text-slate-500 mb-6">請輸入管理金鑰解鎖指揮中心</p><input type="password" id="pin" placeholder="PIN CODE" class="admin-input text-center text-2xl tracking-[0.5em] mb-6 bg-slate-50 font-black text-slate-700" onkeypress="if(event.key==='Enter') login()"><button onclick="login()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform">驗證並登入</button></div>
+        <div class="glass-panel p-8 w-full max-w-sm text-center">
+            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">👑</div>
+            <h2 class="text-2xl font-black mb-2 text-slate-800">最高權限驗證</h2>
+            <p class="text-xs text-slate-500 mb-6">請輸入管理金鑰解鎖指揮中心</p>
+            <input type="password" id="pin" placeholder="PIN CODE" class="admin-input text-center text-2xl tracking-[0.5em] mb-6 bg-slate-50 font-black text-slate-700" onkeypress="if(event.key==='Enter') login()">
+            <button onclick="login()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform">驗證並登入</button>
+        </div>
     </div>
 
     <div id="dashboard-ui" class="hidden flex-col md:flex-row h-screen w-full md:overflow-hidden">
@@ -277,6 +283,7 @@
             document.getElementById('blt-edit-id').value = ''; document.getElementById('blt-title').value = ''; document.getElementById('blt-content').value = '';
             document.getElementById('blt-form-title').innerText = '發布企業公告'; document.getElementById('btn-post-blt').innerText = '立即推播至全員首頁'; document.getElementById('btn-post-blt').classList.replace('from-sky-500', 'from-amber-500'); document.getElementById('btn-post-blt').classList.replace('to-blue-600', 'to-orange-500'); document.getElementById('btn-cancel-blt').classList.add('hidden');
         }
+        
         async function postBlt() {
             const id = document.getElementById('blt-edit-id').value; const title = document.getElementById('blt-title').value; const content = document.getElementById('blt-content').value; if(!title || !content) { alert('請填寫完整內容'); return; }
             try {
@@ -287,6 +294,7 @@
         }
         async function delBlt(id) { if(!confirm('確定要刪除這則公告嗎？')) return; await _sb.from('bulletin_board').delete().eq('id', id); alert('✅ 公告已刪除'); loadAll(); }
 
+        // 🌟 更新為「工作打卡據點」
         function openEmpDetail(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             window.currentOffboardEmpId = empId; document.getElementById('modal-off-result').classList.add('hidden'); document.getElementById('modal-off-date').value = '';
@@ -297,7 +305,7 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <div class="flex items-center space-x-3 mb-4 pb-4 border-b border-slate-100"><div class="w-14 h-14 bg-slate-900 rounded-full flex items-center justify-center text-white text-xl font-black shadow-inner">${e.full_name.charAt(0)}</div><div><h4 class="text-xl font-black text-slate-800 tracking-tight">${e.full_name} <span class="text-[10px] font-bold text-sky-600 bg-sky-50 px-2 py-0.5 rounded ml-1 align-middle border border-sky-100">${e.employment_status}</span></h4><p class="text-[10px] text-slate-500 font-bold mt-0.5">${e.job_title||'未指派職位'}</p></div></div>
                     <div class="grid grid-cols-2 gap-y-4 gap-x-3 text-sm">
-                        <div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">入職日期</p><p class="font-black text-slate-700">${e.onboarding_date}</p></div><div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">專屬打卡據點</p><p class="font-black text-slate-700">${e.branch_locations?.branch_name || '未綁定'}</p></div>
+                        <div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">入職日期</p><p class="font-black text-slate-700">${e.onboarding_date}</p></div><div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">工作打卡據點</p><p class="font-black text-slate-700">${e.branch_locations?.branch_name || '未綁定'}</p></div>
                         <div class="col-span-2 border-t border-slate-100 pt-3 mt-1"><h5 class="text-xs font-black text-blue-700 flex items-center"><span class="mr-1">⏰</span> 考勤班別設定</h5></div>
                         <div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">表定上班時間</p><p class="font-black text-slate-700 text-base">${(e.work_start_time||'09:00').slice(0,5)}</p></div><div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">表定下班時間</p><p class="font-black text-slate-700 text-base">${(e.work_end_time||'18:00').slice(0,5)}</p></div>
                         <div class="col-span-2 border-t border-slate-100 pt-3 mt-1"><h5 class="text-xs font-black text-slate-500 flex items-center"><span class="mr-1">📞</span> 聯絡資訊</h5></div>
@@ -333,7 +341,7 @@
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><label class="text-[10px] font-bold text-slate-500 ml-1">電子信箱</label><input type="email" id="edit-email" value="${e.email}" class="admin-input bg-white" required></div>
                             <div><label class="text-[10px] font-bold text-emerald-600 ml-1">核定底薪</label><input type="number" id="edit-base" value="${e.base_salary}" class="admin-input bg-white font-black text-emerald-600" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">眷屬人數</label><input type="number" id="edit-deps" value="${e.dependents_count}" class="admin-input bg-white" required></div>
                             <div><label class="text-[10px] font-bold text-slate-500 ml-1">聯絡電話</label><input type="text" id="edit-phone" value="${e.phone}" class="admin-input bg-white" required></div>
-                            <div><label class="text-[10px] font-bold text-slate-500 ml-1">專屬打卡據點</label><select id="edit-branch" class="admin-input bg-white font-bold">${brOptions}</select></div>
+                            <div><label class="text-[10px] font-bold text-slate-500 ml-1">工作打卡據點</label><select id="edit-branch" class="admin-input bg-white font-bold">${brOptions}</select></div>
                             <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">通訊地址</label><input type="text" id="edit-address" value="${e.address}" class="admin-input bg-white" required></div>
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-amber-700 mb-2">🚨 緊急聯絡人</h5><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">姓名</label><input type="text" id="edit-emg-name" value="${e.emergency_name}" class="admin-input bg-white" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">電話</label><input type="tel" id="edit-emg-phone" value="${e.emergency_phone}" class="admin-input bg-white" required></div></div></div>
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-slate-700 mb-2">🏦 撥薪銀行帳戶</h5><div class="grid grid-cols-2 gap-3 mb-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">銀行名稱</label><input type="text" id="edit-bank-name" value="${e.bank_name}" class="admin-input bg-white" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">代碼</label><input type="text" id="edit-bank-code" value="${e.bank_code}" class="admin-input bg-white" required></div></div><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">戶名</label><input type="text" id="edit-bank-user" value="${e.bank_user_name}" class="admin-input bg-white" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">帳號</label><input type="text" id="edit-bank-account" value="${e.bank_account}" class="admin-input bg-white" required></div></div></div>
