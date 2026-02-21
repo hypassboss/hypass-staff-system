@@ -20,18 +20,13 @@
 </head>
 <body class="text-slate-800 font-sans min-h-screen md:h-screen md:overflow-hidden md:flex bg-slate-50">
 
-    <div id="login-wrapper" class="flex flex-col items-center justify-center min-h-screen px-5 md:w-full z-50 absolute inset-0 bg-slate-50">
-        <div id="login-box" class="glass-panel p-8 w-full max-w-sm text-center">
+    <div id="login-box" class="flex flex-col items-center justify-center min-h-screen px-5 md:w-full">
+        <div class="glass-panel p-8 w-full max-w-sm text-center">
             <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">👑</div>
             <h2 class="text-2xl font-black mb-2 text-slate-800">最高權限驗證</h2>
             <p class="text-xs text-slate-500 mb-6">請輸入管理金鑰解鎖指揮中心</p>
             <input type="password" id="pin" placeholder="PIN CODE" class="admin-input text-center text-2xl tracking-[0.5em] mb-6 bg-slate-50 font-black text-slate-700" onkeypress="if(event.key==='Enter') login()">
             <button onclick="login()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform">驗證並登入</button>
-        </div>
-        <div id="loading-box" class="hidden glass-panel p-8 w-full max-w-sm text-center">
-            <div class="animate-spin w-16 h-16 border-4 border-sky-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <h2 class="text-xl font-black mb-2 text-sky-800">資料庫連線中...</h2>
-            <p class="text-xs text-slate-500 font-bold">正在抓取員工資料，請稍候</p>
         </div>
     </div>
 
@@ -145,37 +140,20 @@
     <script>
         // 🚨 部署前請更換為您的真實 ANON_KEY (保留單引號)
         const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
-        const SUPABASE_ANON_KEY = '請填入您的ANON_KEY';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0';
         
         const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = [];
 
-        // 🌟 防卡死登入機制
-        async function login() { 
-            const pin = document.getElementById('pin').value;
-            if (SUPABASE_ANON_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0' || SUPABASE_ANON_KEY === '') {
-                alert('🛑 系統錯誤：請先在程式碼中填寫您的 Supabase 金鑰！');
-                return;
-            }
-
-            if(pin === '888888'){ 
-                document.getElementById('login-box').style.display = 'none';
-                document.getElementById('loading-box').style.display = 'block';
-                
-                try {
-                    await loadAll(); 
-                    document.getElementById('login-wrapper').style.display = 'none'; 
-                    document.getElementById('dashboard-ui').classList.remove('hidden'); 
-                    document.getElementById('dashboard-ui').classList.add('flex'); 
-                    document.getElementById('att-date').value = new Date().toLocaleDateString('en-CA'); 
-                } catch (err) {
-                    document.getElementById('login-box').style.display = 'block';
-                    document.getElementById('loading-box').style.display = 'none';
-                    alert('連線失敗！請檢查金鑰是否正確，或網路是否穩定。\n錯誤訊息：' + err.message);
-                }
-            } else { 
-                alert('密碼錯誤！請確認您輸入的是 888888'); 
-            } 
+        // 🌟 還原穩定的登入機制
+        function login() { 
+            if(document.getElementById('pin').value === '888888'){ 
+                document.getElementById('login-box').style.display = 'none'; 
+                document.getElementById('dashboard-ui').classList.remove('hidden'); 
+                document.getElementById('dashboard-ui').classList.add('flex'); 
+                document.getElementById('att-date').value = new Date().toLocaleDateString('en-CA'); 
+                loadAll(); 
+            } else { alert('密碼錯誤！請確認您輸入的是 888888'); } 
         }
         
         function st(id) { 
@@ -189,11 +167,8 @@
         }
         
         async function loadAll() {
-            const { data: emps, error: err1 } = await _sb.from('employees').select('*, branch_locations(branch_name)');
-            if (err1) throw err1; // 如果發生錯誤，直接丟給外層 try catch 處理
-            
-            const { data: brs, error: err2 } = await _sb.from('branch_locations').select('*');
-            if (err2) throw err2;
+            const { data: emps } = await _sb.from('employees').select('*, branch_locations(branch_name)');
+            const { data: brs } = await _sb.from('branch_locations').select('*');
 
             window.allEmps = emps || []; window.branches = brs || [];
 
