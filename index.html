@@ -29,7 +29,7 @@
     </header>
     
     <main class="p-5">
-        <div id="sys-loading" class="text-center py-40 active-view"><div class="animate-spin h-10 w-10 border-4 border-sky-600 border-t-transparent rounded-full mx-auto mb-4"></div><p class="text-sm text-slate-500 font-bold tracking-wider">安全連線中...</p></div>
+        <div id="sys-loading" class="text-center py-40 active-view"><div class="animate-spin h-10 w-10 border-4 border-sky-600 border-t-transparent rounded-full mx-auto mb-4"></div><p class="text-sm text-slate-500 font-bold tracking-wider">系統與行事曆同步中...</p></div>
         <div id="sys-pending" class="text-center py-32 hidden"><div class="text-6xl mb-6 grayscale opacity-50">⏳</div><h2 class="text-2xl font-black text-slate-800 mb-2">帳號審核中</h2><p class="text-sm text-slate-500 font-medium">已通知主管，請耐心等候權限開通。</p></div>
 
         <div id="view-onboarding" class="hidden glass-card p-6 rounded-3xl shadow-xl">
@@ -41,7 +41,12 @@
                 </div>
                 <div><input type="text" name="id_number" placeholder="身分證字號" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner uppercase"></div>
                 <div class="grid grid-cols-2 gap-3"><input type="email" name="email" placeholder="電子信箱" required class="p-3 bg-slate-50 rounded-xl text-sm border-0 shadow-inner"><input type="tel" name="phone" placeholder="手機號碼" required class="p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div>
-                <div class="bg-slate-50 p-1 rounded-xl shadow-inner border border-slate-100"><label class="text-[10px] font-bold text-slate-400 ml-2 mt-1 block">註冊綁定工作地點</label><select name="default_branch_id" id="reg-branch" required class="w-full p-3 bg-transparent text-base font-black text-slate-700 border-0 outline-none appearance-none"></select></div>
+                
+                <div class="bg-slate-50 p-1 rounded-xl shadow-inner border border-slate-100">
+                    <label class="text-[10px] font-bold text-slate-400 ml-2 mt-1 block">請選擇所屬工作地點 (據點)</label>
+                    <select name="default_branch_id" id="reg-branch" required class="w-full p-3 bg-transparent text-base font-black text-slate-700 border-0 outline-none appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-no-repeat"></select>
+                </div>
+                
                 <div class="grid grid-cols-2 gap-3"><div class="col-span-1"><label class="text-[10px] font-bold text-slate-500 ml-1 mb-0.5 block">入職日期</label><input type="date" name="onboarding_date" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div><div class="col-span-1"><label class="text-[10px] font-bold text-slate-500 ml-1 mb-0.5 block">通訊地址</label><input type="text" name="address" placeholder="法律送達地" required class="w-full p-3 bg-slate-50 rounded-xl text-sm border-0 shadow-inner"></div></div>
                 <div class="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-100">
                     <h3 class="text-xs font-black text-emerald-800 mb-3 flex items-center"><span class="text-base mr-1">💰</span>財務與保險資料</h3>
@@ -53,7 +58,9 @@
                 <div class="bg-slate-100 p-4 rounded-2xl mt-5 border border-slate-200 shadow-inner">
                     <h3 class="text-sm font-black text-slate-800 mb-3 flex items-center"><span class="text-lg mr-1.5">⚖️</span>聘僱合約與服務守則 (必讀)</h3>
                     <div class="text-[11px] text-slate-700 leading-relaxed h-56 overflow-y-auto bg-white p-4 rounded-xl border border-slate-200 mb-4 shadow-sm select-none">
-                        <h4 class="font-black text-center text-sm mb-3 text-slate-900">HYPASS 企業聘僱合約與員工服務守則</h4><p class="mb-2"><strong>甲方（雇主）：</strong>海帕斯科技股份有限公司<br><strong>乙方（受僱人）：</strong>新進員工 (您)</p><hr class="my-3 border-slate-200">
+                        <h4 class="font-black text-center text-sm mb-3 text-slate-900">HYPASS 企業聘僱合約與員工服務守則</h4>
+                        <p class="mb-2"><strong>甲方（雇主）：</strong>海帕斯科技股份有限公司<br><strong>乙方（受僱人）：</strong>新進員工 (您)</p>
+                        <hr class="my-3 border-slate-200">
                         <p class="font-black text-slate-900 text-xs mb-1 mt-2">第一章：職位與工作內容</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方各項業務推動。</li><li>工作區域：甲方得視營運需求，指派乙方於實體據點或指定分區執行職務。</li></ul>
                         <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統智慧定位分店範圍。業務職位開放外勤定位。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
                         <p class="font-black text-slate-900 text-xs mb-1">第三章：請假與休假規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>請假程序：線上提前申請，經主管核准後生效；突發狀況應第一時間告知並補單。</li><li>颱風假原則：依政府發布，遵循「放假但該日不支薪」原則，不扣特休亦不影響全勤。</li><li>加班申請：例假日出勤須於系統填寫「起訖時間」送出加班單。</li></ul>
@@ -84,15 +91,19 @@
                 </div>
 
                 <div class="glass-card p-4 rounded-[1.5rem] shadow-sm">
-                    <h4 class="text-xs font-black text-slate-600 mb-3 ml-1 flex justify-between items-center"><span class="flex items-center"><span class="text-lg mr-1.5">📅</span>出勤行事曆</span><span class="text-[9px] bg-slate-100 px-2 py-1 rounded text-slate-400 border border-slate-200">🔴休假 ⚫️工作日</span></h4>
-                    <div id="ui-mini-calendar" class="px-1 pb-1"></div>
+                    <h4 class="text-xs font-black text-slate-600 mb-3 ml-1 flex justify-between items-center">
+                        <span class="flex items-center"><span class="text-lg mr-1.5">📅</span>出勤行事曆 (同步政府版)</span>
+                        <span class="text-[9px] bg-slate-100 px-2 py-1 rounded text-slate-400 border border-slate-200">🔴休假 🟡補班 ⚫️工作日</span>
+                    </h4>
+                    <div id="ui-mini-calendar" class="px-1 pb-1">
+                        <div class="animate-pulse text-center py-4 text-xs text-slate-400 font-bold">載入行事曆中...</div>
+                    </div>
                 </div>
 
                 <div class="glass-card p-5 rounded-[2rem] shadow-sm relative overflow-hidden">
                     <div class="mb-5 bg-sky-50/50 p-3 rounded-2xl border border-sky-100 flex items-center justify-center space-x-2">
                         <span class="text-lg">🌍</span><span class="text-xs font-bold text-slate-600 tracking-wide">智慧定位：系統將自動偵測您的所在據點</span>
                     </div>
-                    
                     <div class="grid grid-cols-2 gap-4">
                         <button onclick="punch('IN')" class="bg-gradient-to-br from-sky-500 to-blue-600 text-white py-8 rounded-3xl font-black text-xl shadow-lg active:scale-95 flex flex-col items-center transition-all group"><span class="text-4xl mb-2">🏢</span>上班打卡</button>
                         <button onclick="punch('OUT')" class="bg-white text-slate-700 border-2 border-slate-100 py-8 rounded-3xl font-black text-xl shadow-sm active:scale-95 flex flex-col items-center transition-all hover:bg-slate-50"><span class="text-4xl mb-2 grayscale opacity-80">🏠</span>下班打卡</button>
@@ -141,14 +152,8 @@
         </div>
     </main>
 
-    <div id="alert-modal" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-center justify-center z-[200] p-5">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center transform transition-all scale-95 opacity-0" id="alert-box">
-            <div id="alert-icon" class="text-6xl mb-4">✅</div><h3 id="alert-title" class="text-xl font-black text-slate-800 mb-2">打卡成功</h3><p id="alert-msg" class="text-sm text-slate-600 font-bold leading-relaxed mb-6">您已順利完成打卡作業。</p><button onclick="closeAlert()" class="w-full bg-slate-900 text-white font-black py-3.5 rounded-xl shadow-md active:scale-95 transition">確認</button>
-        </div>
-    </div>
-
+    <div id="alert-modal" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-center justify-center z-[200] p-5"><div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center transform transition-all scale-95 opacity-0" id="alert-box"><div id="alert-icon" class="text-6xl mb-4">✅</div><h3 id="alert-title" class="text-xl font-black text-slate-800 mb-2">提示</h3><p id="alert-msg" class="text-sm text-slate-600 font-bold leading-relaxed mb-6">訊息內容</p><button onclick="closeAlert()" class="w-full bg-slate-900 text-white font-black py-3.5 rounded-xl shadow-md active:scale-95 transition">確認</button></div></div>
     <div id="record-modal" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-end justify-center z-[100]"><div class="bg-[#f8fafc] w-full max-w-md rounded-t-[2rem] p-6 h-[75vh] flex flex-col shadow-2xl md:max-w-480px md:mx-auto md:relative"><div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-200"><h3 class="font-black text-xl text-slate-800">近期打卡紀錄</h3><button onclick="closeModal('record-modal')" class="bg-slate-200 px-4 py-2 rounded-full text-sm font-bold text-slate-600 hover:bg-slate-300 transition">✕ 關閉</button></div><div id="ui-records-list" class="overflow-y-auto space-y-3 flex-1 no-scrollbar pb-8 p-1">載入中...</div></div></div>
-    
     <div id="doc-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-md items-center justify-center p-5 z-[100]"><div class="bg-white w-full max-w-md rounded-3xl p-6 relative flex flex-col shadow-2xl max-h-[85vh]"><h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 text-center">📜 聘僱合約與服務守則</h3><div id="doc-content" class="overflow-y-auto pr-2 flex-1 mb-4 no-scrollbar"></div><div class="bg-emerald-50 border border-emerald-100 p-3 rounded-2xl text-center shadow-inner"><p class="text-[10px] text-emerald-700 font-bold mb-1">✔️ 經數位簽章認證，具備法律效力</p><p id="doc-sig" class="font-black text-emerald-900 text-xs">簽署人：--</p></div><button onclick="closeModal('doc-modal')" class="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl text-sm transition shadow-md active:scale-95">已詳閱並關閉</button></div></div>
 </div>
 
@@ -157,19 +162,25 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'; // ⚠️ 請務必填寫
         const LIFF_ID = '2009148826-RoogHmxk'; 
         const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
         let currentUser = null;
+        window.branches = [];
+        window.calData = {}; // 儲存政府行事曆 API 回傳的資料
 
-        const twHolidays = {
-            "01-01": "元旦", "02-16": "除夕", "02-17": "春節", "02-18": "春節", "02-19": "春節", "02-20": "春節",
-            "02-28": "二二八", "04-03": "連假", "04-04": "兒童節", "04-05": "清明節", "04-06": "補假",
-            "05-01": "勞動節", "06-19": "端午節", "09-25": "中秋節", "10-09": "補假", "10-10": "國慶日"
-        };
-        function getHolidayName(dateObj) {
-            const mm = String(dateObj.getMonth() + 1).padStart(2, '0'); const dd = String(dateObj.getDate()).padStart(2, '0');
-            return twHolidays[`${mm}-${dd}`] || null;
+        // 🌟 自動抓取政府行事曆 (跨年無縫處理)
+        async function syncCalendar() {
+            const y1 = new Date().getFullYear(); const y2 = y1 + 1;
+            try {
+                const [r1, r2] = await Promise.all([
+                    fetch(`https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${y1}.json`).then(r => r.json()),
+                    fetch(`https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${y2}.json`).then(r => r.json()).catch(() => [])
+                ]);
+                [...(r1||[]), ...(r2||[])].forEach(d => { window.calData[d.date] = d; });
+            } catch(e) { console.warn('行事曆同步失敗，將套用本地規則'); }
         }
 
         async function init() {
+            await syncCalendar(); // App 啟動即下載行事曆
             await liff.init({ liffId: LIFF_ID });
             if (!liff.isLoggedIn()) { liff.login(); return; }
             const profile = await liff.getProfile();
@@ -185,13 +196,15 @@
                 document.getElementById('sys-pending').style.display = 'block'; 
                 if(data.employment_status === '離職') document.querySelector('#sys-pending h2').innerText = '帳號已停權';
             }
-            else { 
-                currentUser = data; 
-                renderUI(); document.getElementById('view-dashboard').style.display = 'block'; 
-            }
+            else { currentUser = data; renderUI(); document.getElementById('view-dashboard').style.display = 'block'; }
         }
 
-        async function loadBranches(targetId) { const { data } = await _sb.from('branch_locations').select('id, branch_name').eq('is_active', true); const sel = document.getElementById(targetId); sel.innerHTML = data.map(b => `<option value="${b.id}">${b.branch_name}</option>`).join(''); }
+        async function loadBranches(targetId) { 
+            const { data } = await _sb.from('branch_locations').select('id, branch_name, lat, lng, radius_m').eq('is_active', true); 
+            window.branches = data || [];
+            const sel = document.getElementById(targetId); 
+            if(sel) sel.innerHTML = window.branches.map(b => `<option value="${b.id}">${b.branch_name}</option>`).join(''); 
+        }
 
         function switchTab(id) { document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active')); document.getElementById('tab-' + id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active')); document.querySelector(`button[onclick="switchTab('${id}')"]`).classList.add('active'); if(id === 'leave') loadLeaveHistory(); if(id === 'payroll') loadPayrollMonths(); }
 
@@ -220,6 +233,7 @@
             document.getElementById('ui-profile-info').innerHTML = `<div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">🆔</span><span class="text-slate-700 font-bold text-sm">身分證：${currentUser.id_number}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📧</span><span class="text-slate-700 font-bold text-sm">${currentUser.email}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📞</span><span class="text-slate-700 font-bold text-sm">${currentUser.phone}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-sky-600">👔</span><span class="text-sky-700 font-black text-sm bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">${currentUser.job_title||'未指派'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📍</span><span class="text-slate-700 font-bold text-sm">工作分區：${currentUser.work_region}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">👥</span><span class="text-slate-700 font-bold text-sm">眷屬加保：${currentUser.dependents_count || 0} 人</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-amber-600">📅</span><span class="text-slate-700 font-bold text-sm">入職日：${currentUser.onboarding_date}</span></div><div class="flex items-center space-x-3 border-t border-slate-50 pt-3 mt-1"><span class="w-6 text-center text-lg mt-0.5">⏰</span><div class="text-blue-700 font-black text-sm bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 w-full text-center tracking-wider">${(currentUser.work_start_time||'09:00').slice(0,5)} 上班 <span class="mx-2 text-blue-200">|</span> ${(currentUser.work_end_time||'18:00').slice(0,5)} 下班</div></div><div class="flex items-start space-x-3 mt-3"><span class="w-6 text-center text-lg mt-0.5">🏠</span><span class="text-slate-700 font-medium text-sm leading-relaxed">${currentUser.address}</span></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🏦</span><div class="text-slate-800 font-black text-sm leading-tight">${currentUser.bank_name} (${currentUser.bank_code})<br><span class="text-xs font-bold text-slate-500 mt-1 block">${currentUser.bank_user_name} / ${currentUser.bank_account}</span></div></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🚨</span><div class="text-slate-800 font-black text-sm leading-tight">緊急聯絡人：${currentUser.emergency_name}<br><span class="text-xs font-bold text-slate-500 mt-1 block">${currentUser.emergency_phone}</span></div></div>`;
         }
 
+        // 🌟 核心：4行網格 + 政府行事曆自動載入 + 黃色補班標示
         function renderMiniCalendar() {
             const today = new Date(); 
             const currentWeekStart = new Date(today); currentWeekStart.setDate(today.getDate() - today.getDay());
@@ -232,17 +246,28 @@
             
             for(let i=0; i<28; i++) {
                 let d = new Date(startDay); d.setDate(startDay.getDate() + i);
+                let dStr = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+                
                 let isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
                 let isWeekend = d.getDay() === 0 || d.getDay() === 6;
-                let holidayName = getHolidayName(d);
-                let isOffDay = isWeekend || holidayName;
+                let dayInfo = window.calData[dStr];
                 
-                let colorClass = isOffDay ? 'text-red-500' : 'text-slate-800';
+                let isHoliday = false; let isMakeup = false; let label = '';
+                
+                if (dayInfo) {
+                    isHoliday = dayInfo.isHoliday;
+                    if(isHoliday) label = (dayInfo.description === '星期六' || dayInfo.description === '星期日') ? '假日' : dayInfo.description;
+                    if(!isHoliday && isWeekend) { isMakeup = true; label = '補班'; }
+                } else {
+                    isHoliday = isWeekend; if(isHoliday) label = '假日';
+                }
+                
+                let colorClass = isHoliday ? 'text-red-500' : (isMakeup ? 'text-amber-600' : 'text-slate-800');
                 let bgClass = isToday ? 'bg-sky-100 border-sky-300 ring-1 ring-sky-200 shadow-sm' : 'bg-white border-slate-100';
                 
                 let noteHTML = '';
-                if(holidayName) noteHTML = `<span class="text-[8px] text-red-500 font-bold leading-none mt-1 truncate w-full text-center">${holidayName}</span>`;
-                else if(isWeekend) noteHTML = `<span class="text-[8px] text-red-400 font-bold leading-none mt-1 truncate w-full text-center">假日</span>`;
+                if(isHoliday) noteHTML = `<span class="text-[8px] text-red-500 font-bold leading-none mt-1 truncate w-full text-center">${label}</span>`;
+                else if(isMakeup) noteHTML = `<span class="text-[8px] text-amber-500 font-bold leading-none mt-1 truncate w-full text-center">${label}</span>`;
                 else noteHTML = `<div class="w-1 h-1 rounded-full mt-1.5 bg-slate-300"></div>`;
                 
                 html += `<div class="py-1.5 flex flex-col items-center justify-center rounded-lg border ${bgClass} cursor-default hover:bg-slate-50 transition"><span class="text-xs font-black ${colorClass}">${d.getDate()}</span>${noteHTML}</div>`;
@@ -251,29 +276,28 @@
             document.getElementById('ui-mini-calendar').innerHTML = html;
         }
 
+        // 🌟 智慧打卡與假日雙重防呆
         async function punch(type) {
             document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-amber-400 rounded-full"></span>驗證中...';
 
             const today = new Date(); 
-            const isWeekend = today.getDay() === 0 || today.getDay() === 6;
-            const holidayName = getHolidayName(today);
-            const isOffDay = isWeekend || holidayName !== null;
+            const dStr = today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
+            const dayInfo = window.calData[dStr];
+            let isOffDay = dayInfo ? dayInfo.isHoliday : (today.getDay() === 0 || today.getDay() === 6);
+            let holidayName = dayInfo && dayInfo.description && dayInfo.description.indexOf('星期') === -1 ? ` (${dayInfo.description})` : '';
 
+            // 假日防呆：查驗是否有加班單
             if (isOffDay) {
-                const { data: otData } = await _sb.from('leave_requests').select('start_time, end_time').eq('employee_id', currentUser.id).eq('leave_type', '緊急加班');
-                let hasOvertime = false;
-                if (otData) {
-                    const todayStr = new Date().toLocaleDateString('en-CA'); 
-                    hasOvertime = otData.some(ot => ot.start_time.includes(todayStr) || ot.end_time.includes(todayStr));
-                }
-
+                const todayStr = today.toLocaleDateString('en-CA');
+                const { data: otAll } = await _sb.from('leave_requests').select('start_time, end_time').eq('employee_id', currentUser.id).eq('leave_type', '緊急加班');
+                let hasOvertime = otAll && otAll.some(ot => ot.start_time.includes(todayStr) || ot.end_time.includes(todayStr));
+                
                 if (!hasOvertime) {
                     document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-emerald-400 rounded-full"></span>已連線';
-                    let hName = holidayName ? ` (${holidayName})` : '';
                     if (type === 'IN') {
-                        showAlert('🛑 假日打卡阻擋', `今日為排定之休假日${hName}，無法直接打卡。<br><br>若需出勤，請先至請假區送出【🚨 假日緊急加班單】，送出後即可正常打卡。`, 'error');
+                        showAlert('🛑 假日打卡阻擋', `今日為排定之休假日${holidayName}，無法直接打卡。<br><br>若需出勤，請先至請假區送出【🚨 假日緊急加班單】，送出後即可正常打卡。`, 'error');
                     } else {
-                        showAlert('🛑 錯誤', `今日為休假日${hName}，系統查無您的加班紀錄，無法進行下班打卡。`, 'error');
+                        showAlert('🛑 錯誤', `今日為休假日${holidayName}，系統查無您的加班紀錄，無法進行下班打卡。`, 'error');
                     }
                     return;
                 }
@@ -282,7 +306,25 @@
             document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-amber-400 rounded-full"></span>定位中...';
             
             navigator.geolocation.getCurrentPosition(async (pos) => {
-                const { data, error } = await _sb.rpc('fn_process_punch', { p_emp_id: currentUser.id, p_type: type, p_lat: pos.coords.latitude, p_lng: pos.coords.longitude, p_is_offday: isOffDay });
+                const lat = pos.coords.latitude; const lng = pos.coords.longitude;
+                
+                // 📍 前端輔助距離計算 (與後台雙重驗證)
+                let closestBranch = null; let minDistance = Infinity;
+                window.branches.forEach(b => {
+                    const R = 6371e3; const p1 = lat * Math.PI/180; const p2 = b.lat * Math.PI/180;
+                    const dp = (b.lat-lat) * Math.PI/180; const dl = (b.lng-lng) * Math.PI/180;
+                    const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
+                    const d = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+                    if(d < minDistance) { minDistance = d; closestBranch = b; }
+                });
+
+                let isField = false; let targetBranchId = closestBranch ? closestBranch.id : null;
+                // 若為業務且不在據點範圍內，啟用外勤模式
+                if (currentUser.job_title === '業務' && (!closestBranch || minDistance > closestBranch.radius_m)) {
+                    isField = true; targetBranchId = window.branches[0].id; // 給定假 ID 以通過 SQL 結構
+                }
+
+                const { data, error } = await _sb.rpc('fn_process_punch', { p_emp_id: currentUser.id, p_type: type, p_lat: lat, p_lng: lng, p_branch_id: targetBranchId, p_is_field: isField, p_is_offday: isOffDay });
                 document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-emerald-400 rounded-full"></span>已連線';
                 
                 if (error) { showAlert('⚠️ 系統錯誤', error.message, 'error'); } 
@@ -306,9 +348,7 @@
             else { icon.innerText = '🎉'; document.getElementById('alert-title').className = 'text-xl font-black text-emerald-600 mb-2'; }
             document.getElementById('alert-modal').classList.add('active'); setTimeout(() => { box.classList.remove('scale-95', 'opacity-0'); box.classList.add('scale-100', 'opacity-100'); }, 10);
         }
-        function closeAlert() {
-            const box = document.getElementById('alert-box'); box.classList.remove('scale-100', 'opacity-100'); box.classList.add('scale-95', 'opacity-0'); setTimeout(() => { document.getElementById('alert-modal').classList.remove('active'); }, 200);
-        }
+        function closeAlert() { const box = document.getElementById('alert-box'); box.classList.remove('scale-100', 'opacity-100'); box.classList.add('scale-95', 'opacity-0'); setTimeout(() => { document.getElementById('alert-modal').classList.remove('active'); }, 200); }
 
         async function loadPunchHistory() {
             document.getElementById('ui-records-list').innerHTML = '載入中...'; openModal('record-modal');
@@ -319,21 +359,19 @@
         async function submitLeave(e) {
             e.preventDefault(); const fd = new FormData(e.target); const isTyphoon = fd.get('leave_type') === '颱風假';
             
+            // 🌟 強制綁定台灣時區防飄移
             const st = fd.get('start_time') + ':00+08:00';
             const et = fd.get('end_time') + ':00+08:00';
-            
             const payload = { employee_id: currentUser.id, leave_type: fd.get('leave_type'), start_time: st, end_time: et, salary_protection: isTyphoon ? false : (fd.get('salary_protection') === 'on') };
             
             document.getElementById('btn-leave').innerText = '申請送出中...';
             const { data, error } = await _sb.from('leave_requests').insert([payload]).select();
             if(!error && data) {
                 await _sb.functions.invoke('line-webhook', { body: { action: 'notify_leave', id: data[0].id, name: currentUser.full_name, type: payload.leave_type, start: fd.get('start_time').replace('T', ' '), end: fd.get('end_time').replace('T', ' ') }});
-                if(payload.leave_type === '緊急加班') showAlert('✅ 加班申請已送出', '主管審核通過後，該時段將計入有效加班時數。您可以立刻切換至首頁進行打卡！', 'success');
+                if(payload.leave_type === '緊急加班') showAlert('✅ 加班申請已送出', '主管核准後該時段將計入有效加班時數。您可以立刻切換至首頁進行打卡！', 'success');
                 else showAlert('✅ 申請已送出', '主管核准後系統會自動推播通知您。', 'success');
                 e.target.reset(); checkLeaveType(); loadLeaveHistory();
-            } else {
-                showAlert('❌ 送出失敗', error.message, 'error');
-            }
+            } else { showAlert('❌ 送出失敗', error.message, 'error'); }
             document.getElementById('btn-leave').innerText = '送出申請單';
         }
 
@@ -368,33 +406,13 @@
                     <p class="mb-2 text-sm"><strong>甲方（雇主）：</strong>海帕斯科技股份有限公司<br><strong>乙方（受僱人）：</strong><span class="text-sky-700 font-bold border-b border-sky-700 pb-0.5">${currentUser.full_name}</span></p>
                     <hr class="my-3 border-slate-200">
                     <p class="font-black text-slate-900 text-xs mb-1">第一章：職位與工作內容</p>
-                    <ul class="list-decimal pl-4 space-y-1 mb-3">
-                        <li>職務說明：乙方同意擔任甲方所指派之職務，並秉持誠信原則與專業技能，協助甲方各項業務之推動。</li>
-                        <li>工作區域：甲方得視營運需求，指派乙方於甲方之實體據點、廠區或指定之工作分區執行職務。乙方同意配合公司調度。</li>
-                    </ul>
+                    <ul class="list-decimal pl-4 space-y-1 mb-3"><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方各項業務推動。</li><li>工作區域：甲方得視營運需求，指派乙方於實體據點或指定分區執行職務。</li></ul>
                     <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p>
-                    <ul class="list-decimal pl-4 space-y-1 mb-3">
-                        <li>考勤依據：乙方同意以 HYPASS 員工 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據，絕不從事代打卡或偽造定位之情事。</li>
-                        <li>打卡範圍：系統預設提供 1000 公尺之容錯範圍。若為「業務」職位，則開放外勤定位打卡權限，但須確實記錄當下經緯度供備查。</li>
-                        <li>遲到與早退處理：員工應按表定班別出勤。每月給予 3 次遲到寬限，每次最高 10 分鐘。若遲到超過寬限次數或時間，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動向主管申請以剩餘特休時數進行抵扣。</li>
-                    </ul>
+                    <ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統智慧定位分店範圍。業務職位開放外勤定位。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
                     <p class="font-black text-slate-900 text-xs mb-1">第三章：請假與休假規範</p>
-                    <ul class="list-decimal pl-4 space-y-1 mb-3">
-                        <li>請假程序：乙方請假應依公司規定提前於線上系統提出申請，經主管核准後始生效力；病假或突發狀況應於當日上班前第一時間告知主管並補單。</li>
-                        <li>颱風假原則：如遇政府機關發布法定颱風假，甲方依法遵循「放假但該日不支薪」原則辦理。該日之休假不扣除乙方之特休天數，亦不影響乙方之全勤考核。</li>
-                        <li>加班申請：若逢例假日因公務需緊急出勤，乙方須於系統確實填寫「起始時間」與「結束時間」送出加班申請，經核准後方可計入加班時數。</li>
-                    </ul>
+                    <ul class="list-decimal pl-4 space-y-1 mb-3"><li>請假程序：線上提前申請，經主管核准後生效；突發狀況應第一時間告知並補單。</li><li>颱風假原則：依政府發布，遵循「放假但該日不支薪」原則，不扣特休亦不影響全勤。</li><li>加班申請：例假日出勤須於系統填寫「起訖時間」送出加班單。</li></ul>
                     <p class="font-black text-slate-900 text-xs mb-1">第四章：保密協定 (NDA) 與智慧財產權</p>
-                    <ul class="list-decimal pl-4 space-y-1 mb-3">
-                        <li>保密義務：乙方於任職期間及離職後，對於甲方之客戶名單、研發技術、產品配方、財務資訊、商業策略、對話紀錄及所有未公開之營業秘密，負有絕對保密義務。未經甲方書面同意，絕不洩漏、交付或交付予任何第三方。</li>
-                        <li>歸還義務：乙方離職時，應將所有隸屬甲方之文件、檔案、設備及數位資料全數歸還或銷毀，不得私自備份。</li>
-                        <li>違約罰則：乙方若違反上述保密義務，致甲方受有損害或有外洩之虞，乙方同意無條件負擔新台幣壹佰萬元整之懲罰性違約金，甲方並保留民事求償與刑事追訴之權利。</li>
-                    </ul>
-                    <p class="font-black text-slate-900 text-xs mb-1">第五章：離職與資遣結算</p>
-                    <ul class="list-decimal pl-4 space-y-1">
-                        <li>離職預告：乙方欲終止勞動契約時，應依勞動基準法規定之天數提前預告甲方，並確實辦理業務交接。</li>
-                        <li>最終結算：離職時，系統將自動精算當月破月薪資、未休特休換發現金，及法定資遣費（限非自願離職），於確認交接無誤後隨次月薪資撥付。</li>
-                    </ul>
+                    <ul class="list-decimal pl-4 space-y-1 mb-3"><li>保密義務：乙方對甲方之客戶未公開營業秘密，負絕對保密義務。未經同意絕不洩漏。</li><li>歸還義務：離職時應將隸屬甲方之檔案、資料全數歸還或銷毀。</li><li>違約罰則：乙方若違反保密義務，同意無條件負擔新台幣壹佰萬元整之懲罰性違約金。</li></ul>
                 </div>
             `;
             document.getElementById('doc-content').innerHTML = htmlContent; document.getElementById('doc-sig').innerText = `簽署人：${currentUser.full_name}\n時間：${new Date(currentUser.nda_signed_at).toLocaleString('zh-TW')}`; openModal('doc-modal'); 
