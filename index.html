@@ -37,16 +37,11 @@
             <form id="onboarding-form" class="space-y-4">
                 <div class="grid grid-cols-3 gap-3">
                     <div class="col-span-2"><input type="text" name="full_name" placeholder="真實姓名" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div>
-                    <div class="col-span-1"><select name="job_title" required class="w-full p-3 bg-sky-50 text-sky-800 rounded-xl text-sm font-black border-0 shadow-inner appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%230284c7\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-no-repeat pr-8"><option value="" disabled selected>職位</option><option value="主管">主管</option><option value="業務">業務</option><option value="助理">助理</option></select></div>
+                    <div class="col-span-1"><select name="job_title" required class="w-full p-3 bg-sky-50 text-sky-800 rounded-xl text-sm font-black border-0 shadow-inner appearance-none pr-8"><option value="" disabled selected>職位</option><option value="主管">主管</option><option value="業務">業務</option><option value="助理">助理</option></select></div>
                 </div>
                 <div><input type="text" name="id_number" placeholder="身分證字號" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner uppercase"></div>
                 <div class="grid grid-cols-2 gap-3"><input type="email" name="email" placeholder="電子信箱" required class="p-3 bg-slate-50 rounded-xl text-sm border-0 shadow-inner"><input type="tel" name="phone" placeholder="手機號碼" required class="p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div>
-                
-                <div class="bg-slate-50 p-1 rounded-xl shadow-inner border border-slate-100">
-                    <label class="text-[10px] font-bold text-slate-400 ml-2 mt-1 block">請選擇所屬工作打卡據點</label>
-                    <select name="default_branch_id" id="reg-branch" required class="w-full p-3 bg-transparent text-base font-black text-slate-700 border-0 outline-none appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-no-repeat"></select>
-                </div>
-                
+                <div class="bg-slate-50 p-1 rounded-xl shadow-inner border border-slate-100"><label class="text-[10px] font-bold text-slate-400 ml-2 mt-1 block">請選擇所屬工作打卡據點</label><select name="default_branch_id" id="reg-branch" required class="w-full p-3 bg-transparent text-base font-black text-slate-700 border-0 outline-none appearance-none"></select></div>
                 <div class="grid grid-cols-2 gap-3"><div class="col-span-1"><label class="text-[10px] font-bold text-slate-500 ml-1 mb-0.5 block">入職日期</label><input type="date" name="onboarding_date" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div><div class="col-span-1"><label class="text-[10px] font-bold text-slate-500 ml-1 mb-0.5 block">通訊地址</label><input type="text" name="address" placeholder="法律送達地" required class="w-full p-3 bg-slate-50 rounded-xl text-sm border-0 shadow-inner"></div></div>
                 <div class="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-100">
                     <h3 class="text-xs font-black text-emerald-800 mb-3 flex items-center"><span class="text-base mr-1">💰</span>財務與保險資料</h3>
@@ -62,7 +57,7 @@
                         <p class="mb-2"><strong>甲方（雇主）：</strong>海帕斯科技股份有限公司<br><strong>乙方（受僱人）：</strong>新進員工 (您)</p>
                         <hr class="my-3 border-slate-200">
                         <p class="font-black text-slate-900 text-xs mb-1 mt-2">第一章：職位與工作內容</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方各項業務推動。</li><li>工作區域：甲方得視營運需求，指派乙方於實體據點或指定分區執行職務。</li></ul>
-                        <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統智慧定位分店範圍。業務職位開放外勤定位。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
+                        <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據，絕不從事代打卡或偽造定位之情事。</li><li>打卡範圍：系統自動偵測並記錄員工所在座標與據點，無距離限制。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
                         <p class="font-black text-slate-900 text-xs mb-1">第三章：請假與休假規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>請假程序：一般請假（如特休、事假）應至少提前三日於線上申請；突發狀況應第一時間告知並補單。</li><li>颱風假原則：依政府發布，遵循「放假但該日不支薪」原則，不扣特休亦不影響全勤。</li><li>加班申請：例假日出勤須於系統填寫「起訖時間」送出加班單。</li></ul>
                         <p class="font-black text-slate-900 text-xs mb-1">第四章：保密協定 (NDA) 與智慧財產權</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>保密義務：乙方對甲方之客戶未公開營業秘密，負絕對保密義務。未經同意絕不洩漏。</li><li>歸還義務：離職時，應將所有隸屬公司之財產、機密資訊、設備、實體與數位檔案全數歸還，絕對不得私自拷貝或保留。</li><li>違約罰則：乙方若違反保密義務，同意無條件負擔新台幣壹佰萬元整之懲罰性違約金。</li></ul>
                     </div>
@@ -78,7 +73,6 @@
         </div>
 
         <div id="view-dashboard" class="hidden space-y-5">
-            
             <div id="tab-home" class="app-view active space-y-5">
                 <div class="bg-amber-50/80 border border-amber-200 p-4 rounded-2xl flex flex-col shadow-sm relative overflow-hidden"><div class="absolute top-0 right-0 -mt-2 -mr-2 text-6xl opacity-10 grayscale">📢</div><div class="flex items-center space-x-2 mb-3 pb-2 border-b border-amber-200/50 relative z-10"><span class="text-lg">📢</span><h4 class="text-xs font-black text-amber-900 tracking-widest">公司公告</h4></div><div id="ui-bulletin" class="pl-1 pr-1 max-h-24 overflow-y-auto no-scrollbar space-y-3 relative z-10">載入中...</div></div>
                 
@@ -101,7 +95,7 @@
 
                 <div class="glass-card p-5 rounded-[2rem] shadow-sm relative overflow-hidden">
                     <div class="mb-5 bg-sky-50/50 p-3 rounded-2xl border border-sky-100 flex items-center justify-center space-x-2">
-                        <span class="text-lg">🌍</span><span class="text-xs font-bold text-slate-600 tracking-wide">智慧定位：系統將自動偵測您的所在據點</span>
+                        <span class="text-lg">🌍</span><span class="text-[11px] font-bold text-slate-600 tracking-wide">無邊界定位：打卡後系統將為您記錄座標</span>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <button onclick="punch('IN')" class="bg-gradient-to-br from-sky-500 to-blue-600 text-white py-8 rounded-3xl font-black text-xl shadow-lg active:scale-95 flex flex-col items-center transition-all group"><span class="text-4xl mb-2">🏢</span>上班打卡</button>
@@ -144,6 +138,8 @@
                     <div class="pt-2"><h4 class="text-xs font-black tracking-widest text-slate-400 uppercase mb-3 ml-1">數位合約存證中心</h4><button onclick="openDoc()" class="w-full text-left bg-white p-4 rounded-2xl border border-slate-200 font-bold text-sm flex justify-between items-center shadow-sm active:scale-95 transition hover:bg-slate-50"><span class="flex items-center"><span class="mr-3 text-xl">📄</span>查看聘僱合約與保密協定</span><span class="text-slate-400">➔</span></button></div>
                 </div>
             </div>
+            
+            <div class="text-center mt-6 text-[10px] font-mono text-slate-300 tracking-widest pb-6 pointer-events-none">HYPASS v27.0</div>
 
             <nav class="absolute bottom-0 left-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-200/60 flex justify-around items-center py-3 pb-8 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] rounded-t-3xl">
                 <button onclick="switchTab('home')" class="nav-item active flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🏠</span><span class="text-[10px] font-bold">打卡</span></button><button onclick="switchTab('leave')" class="nav-item flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">📅</span><span class="text-[10px] font-bold">請假</span></button><button onclick="switchTab('payroll')" class="nav-item flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">💰</span><span class="text-[10px] font-bold">薪資</span></button><button onclick="switchTab('profile')" class="nav-item flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">👤</span><span class="text-[10px] font-bold">資料</span></button>
@@ -157,17 +153,15 @@
 </div>
 
     <script>
-        // 🚨 部署前請更換為您的金鑰
+        // 🚨 部署前請更換為您的真實 ANON_KEY
         const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'; 
-        const LIFF_ID = '2009148826-RoogHmxk'; 
-        const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
+        const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
         window.branches = [];
         window.calData = {}; 
 
-        // 自動同步台灣政府行事曆
         async function syncCalendar() {
             const y1 = new Date().getFullYear(); const y2 = y1 + 1;
             try {
@@ -176,7 +170,7 @@
                     fetch(`https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${y2}.json`).then(r => r.json()).catch(() => [])
                 ]);
                 [...(r1||[]), ...(r2||[])].forEach(d => { window.calData[d.date] = d; });
-            } catch(e) { console.warn('行事曆同步失敗，將套用本地規則'); }
+            } catch(e) { console.warn('行事曆同步失敗'); }
         }
 
         async function init() {
@@ -192,7 +186,7 @@
             const { data } = await _sb.from('employees').select('*, branch_locations(branch_name)').eq('line_id', lineId).single();
             document.getElementById('sys-loading').style.display = 'none';
             if (!data) {
-                await loadBranches('reg-branch'); // 註冊前載入據點
+                await loadBranches('reg-branch'); 
                 document.getElementById('view-onboarding').style.display = 'block';
             }
             else if (!data.is_approved || data.employment_status === '離職') { 
@@ -201,7 +195,7 @@
             }
             else { 
                 currentUser = data; 
-                await loadBranches(null); // 登入後載入據點供打卡計算用
+                await loadBranches(null); 
                 renderUI(); 
                 document.getElementById('view-dashboard').style.display = 'block'; 
             }
@@ -240,11 +234,9 @@
             
             renderMiniCalendar();
 
-            // 確保「工作據點」精確顯示
-            document.getElementById('ui-profile-info').innerHTML = `<div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">🆔</span><span class="text-slate-700 font-bold text-sm">身分證：${currentUser.id_number}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📧</span><span class="text-slate-700 font-bold text-sm">${currentUser.email}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📞</span><span class="text-slate-700 font-bold text-sm">${currentUser.phone}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-sky-600">👔</span><span class="text-sky-700 font-black text-sm bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">${currentUser.job_title||'未指派'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📍</span><span class="text-slate-700 font-bold text-sm">工作據點：${currentUser.branch_locations?.branch_name||'未綁定'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">👥</span><span class="text-slate-700 font-bold text-sm">眷屬加保：${currentUser.dependents_count || 0} 人</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-amber-600">📅</span><span class="text-slate-700 font-bold text-sm">入職日：${currentUser.onboarding_date}</span></div><div class="flex items-center space-x-3 border-t border-slate-50 pt-3 mt-1"><span class="w-6 text-center text-lg mt-0.5">⏰</span><div class="text-blue-700 font-black text-sm bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 w-full text-center tracking-wider">${(currentUser.work_start_time||'09:00').slice(0,5)} 上班 <span class="mx-2 text-blue-200">|</span> ${(currentUser.work_end_time||'18:00').slice(0,5)} 下班</div></div><div class="flex items-start space-x-3 mt-3"><span class="w-6 text-center text-lg mt-0.5">🏠</span><span class="text-slate-700 font-medium text-sm leading-relaxed">${currentUser.address}</span></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🏦</span><div class="text-slate-800 font-black text-sm leading-tight">${currentUser.bank_name} (${currentUser.bank_code})<br><span class="text-xs font-bold text-slate-500 mt-1 block">${currentUser.bank_user_name} / ${currentUser.bank_account}</span></div></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🚨</span><div class="text-slate-800 font-black text-sm leading-tight">緊急聯絡人：${currentUser.emergency_name}<br><span class="text-xs font-bold text-slate-500 mt-1 block">${currentUser.emergency_phone}</span></div></div>`;
+            document.getElementById('ui-profile-info').innerHTML = `<div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">🆔</span><span class="text-slate-700 font-bold text-sm">身分證：${currentUser.id_number}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">🏷️</span><span class="text-slate-700 font-bold text-sm">員工編號：${currentUser.employee_no||'未設定'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📧</span><span class="text-slate-700 font-bold text-sm">${currentUser.email}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📞</span><span class="text-slate-700 font-bold text-sm">${currentUser.phone}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-sky-600">👔</span><span class="text-sky-700 font-black text-sm bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">${currentUser.job_title||'未指派'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📍</span><span class="text-slate-700 font-bold text-sm">工作據點：${currentUser.branch_locations?.branch_name||'未綁定'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">👥</span><span class="text-slate-700 font-bold text-sm">眷屬加保：${currentUser.dependents_count || 0} 人</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-amber-600">📅</span><span class="text-slate-700 font-bold text-sm">入職日：${currentUser.onboarding_date}</span></div><div class="flex items-center space-x-3 border-t border-slate-50 pt-3 mt-1"><span class="w-6 text-center text-lg mt-0.5">⏰</span><div class="text-blue-700 font-black text-sm bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 w-full text-center tracking-wider">${(currentUser.work_start_time||'09:00').slice(0,5)} 上班 <span class="mx-2 text-blue-200">|</span> ${(currentUser.work_end_time||'18:00').slice(0,5)} 下班</div></div><div class="flex items-start space-x-3 mt-3"><span class="w-6 text-center text-lg mt-0.5">🏠</span><span class="text-slate-700 font-medium text-sm leading-relaxed">${currentUser.address}</span></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🏦</span><div class="text-slate-800 font-black text-sm leading-tight">${currentUser.bank_name} (${currentUser.bank_code})<br><span class="text-xs font-bold text-slate-500 mt-1 block">${currentUser.bank_user_name} / ${currentUser.bank_account}</span></div></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🚨</span><div class="text-slate-800 font-black text-sm leading-tight">緊急聯絡人：${currentUser.emergency_name}<br><span class="text-xs font-bold text-slate-500 mt-1 block">${currentUser.emergency_phone}</span></div></div>`;
         }
 
-        // 🌟 4 行網格動態行事曆
         function renderMiniCalendar() {
             const today = new Date(); 
             const currentWeekStart = new Date(today); currentWeekStart.setDate(today.getDate() - today.getDay());
@@ -287,7 +279,6 @@
             document.getElementById('ui-mini-calendar').innerHTML = html;
         }
 
-        // 🌟 無感打卡與假日防呆
         async function punch(type) {
             document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-amber-400 rounded-full"></span>驗證中...';
 
@@ -297,7 +288,6 @@
             let isOffDay = dayInfo ? dayInfo.isHoliday : (today.getDay() === 0 || today.getDay() === 6);
             let holidayName = dayInfo && dayInfo.description && dayInfo.description.indexOf('星期') === -1 ? ` (${dayInfo.description})` : '';
 
-            // 假日防呆驗證
             if (isOffDay) {
                 const todayStr = today.toLocaleDateString('en-CA');
                 const { data: otAll } = await _sb.from('leave_requests').select('start_time, end_time').eq('employee_id', currentUser.id).eq('leave_type', '緊急加班');
@@ -319,25 +309,7 @@
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 const lat = pos.coords.latitude; const lng = pos.coords.longitude;
                 
-                // 📍 前端輔助運算：找出最近的據點
-                let closestBranch = null; let minDistance = Infinity;
-                window.branches.forEach(b => {
-                    const R = 6371e3; const p1 = lat * Math.PI/180; const p2 = b.lat * Math.PI/180;
-                    const dp = (b.lat-lat) * Math.PI/180; const dl = (b.lng-lng) * Math.PI/180;
-                    const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
-                    const d = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-                    if(d < minDistance) { minDistance = d; closestBranch = b; }
-                });
-
-                let isField = false; let targetBranchId = closestBranch ? closestBranch.id : null;
-                
-                // 若為業務且不在據點範圍內，啟用外勤模式
-                if (currentUser.job_title === '業務' && (!closestBranch || minDistance > closestBranch.radius_m)) {
-                    isField = true; targetBranchId = window.branches[0].id; // 給定假 ID 以滿足 SQL 結構
-                }
-
-                // 呼叫資料庫大腦
-                const { data, error } = await _sb.rpc('fn_process_punch', { p_emp_id: currentUser.id, p_type: type, p_lat: lat, p_lng: lng, p_branch_id: targetBranchId, p_is_field: isField, p_is_offday: isOffDay });
+                const { data, error } = await _sb.rpc('fn_process_punch', { p_emp_id: currentUser.id, p_type: type, p_lat: lat, p_lng: lng, p_is_offday: isOffDay });
                 document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-emerald-400 rounded-full"></span>已連線';
                 
                 if (error) { showAlert('⚠️ 系統錯誤', error.message, 'error'); } 
@@ -365,8 +337,11 @@
 
         async function loadPunchHistory() {
             document.getElementById('ui-records-list').innerHTML = '載入中...'; openModal('record-modal');
-            const { data } = await _sb.from('attendance_logs').select('punch_type, punch_time, note, branch_locations(branch_name)').eq('employee_id', currentUser.id).order('punch_time', {ascending: false}).limit(30);
-            document.getElementById('ui-records-list').innerHTML = data.length ? data.map(log => `<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div><span class="text-xs font-black bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${log.punch_type==='IN'?'上班':'下班'}</span> <span class="text-sm font-bold text-slate-700 ml-2">${new Date(log.punch_time).toLocaleString('zh-TW').slice(5,-3)}</span><p class="text-xs text-slate-400 font-bold mt-1.5 flex items-center"><span class="mr-1">📍</span>${log.branch_locations?.branch_name||'外勤定位'}</p></div><span class="text-[10px] font-black px-2 py-1 rounded-full ${log.note.includes('正常')?'text-emerald-600 bg-emerald-50':'text-amber-600 bg-amber-50'}">${log.note}</span></div>`).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-10">目前無打卡紀錄</div>';
+            const { data } = await _sb.from('attendance_logs').select('punch_type, punch_time, note, lat, lng, branch_locations(branch_name)').eq('employee_id', currentUser.id).order('punch_time', {ascending: false}).limit(30);
+            document.getElementById('ui-records-list').innerHTML = data.length ? data.map(log => {
+                let mapLink = (log.lat && log.lng) ? `<a href="https://maps.google.com/?q=${log.lat},${log.lng}" target="_blank" class="text-sky-500 hover:text-sky-700 underline font-black ml-2 text-[10px]">📍查看地圖</a>` : '';
+                return `<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div><span class="text-xs font-black bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${log.punch_type==='IN'?'上班':'下班'}</span> <span class="text-sm font-bold text-slate-700 ml-2">${new Date(log.punch_time).toLocaleString('zh-TW').slice(5,-3)}</span><p class="text-xs text-slate-400 font-bold mt-1.5 flex items-center"><span class="mr-1">🏠</span>${log.branch_locations?.branch_name||'外勤定位'} ${mapLink}</p></div><span class="text-[10px] font-black px-2 py-1 rounded-full ${log.note.includes('正常')?'text-emerald-600 bg-emerald-50':'text-amber-600 bg-amber-50'}">${log.note}</span></div>`;
+            }).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-10">目前無打卡紀錄</div>';
         }
 
         async function submitLeave(e) {
@@ -417,7 +392,7 @@
                     <p class="font-black text-slate-900 text-xs mb-1">第一章：職位與工作內容</p>
                     <ul class="list-decimal pl-4 space-y-1 mb-3"><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方各項業務推動。</li><li>工作區域：甲方得視營運需求，指派乙方於實體據點或指定分區執行職務。</li></ul>
                     <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p>
-                    <ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統智慧定位分店範圍。業務職位開放外勤定位。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
+                    <ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統自動記錄座標與鄰近據點。業務職位開放外勤定位。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
                     <p class="font-black text-slate-900 text-xs mb-1">第三章：請假與休假規範</p>
                     <ul class="list-decimal pl-4 space-y-1 mb-3"><li>請假程序：一般請假（如特休、事假）應至少提前三日於線上申請；突發狀況應第一時間告知並補單。</li><li>颱風假原則：依政府發布，遵循「放假但該日不支薪」原則，不扣特休亦不影響全勤。</li><li>加班申請：例假日出勤須於系統填寫「起訖時間」送出加班單。</li></ul>
                     <p class="font-black text-slate-900 text-xs mb-1">第四章：保密協定 (NDA) 與智慧財產權</p>
