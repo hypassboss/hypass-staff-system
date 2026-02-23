@@ -94,9 +94,17 @@
                 </div>
 
                 <div class="glass-card p-5 rounded-[2rem] shadow-sm relative overflow-hidden">
-                    <div class="mb-5 bg-sky-50/50 p-3 rounded-2xl border border-sky-100 flex items-center justify-center space-x-2">
-                        <span class="text-lg">🌍</span><span class="text-[11px] font-bold text-slate-600 tracking-wide">無邊界定位：打卡後系統將為您記錄座標</span>
+                    
+                    <div class="text-center mb-5 border-b border-slate-100 pb-5">
+                        <p class="text-[10px] text-slate-400 font-bold mb-1 tracking-widest uppercase">CURRENT TIME</p>
+                        <h2 id="live-clock" class="text-4xl font-black text-slate-800 tracking-tight font-mono">00:00:00</h2>
+                        <p id="live-date" class="text-xs text-sky-600 font-bold mt-1 tracking-wide">----/--/-- 星期-</p>
                     </div>
+
+                    <div class="mb-5 bg-sky-50/50 p-3 rounded-2xl border border-sky-100 flex items-center justify-center space-x-2">
+                        <span class="text-lg">🌍</span><span class="text-[11px] font-bold text-slate-600 tracking-wide">無邊界定位：打卡後系統將記錄座標</span>
+                    </div>
+                    
                     <div class="grid grid-cols-2 gap-4">
                         <button onclick="punch('IN')" class="bg-gradient-to-br from-sky-500 to-blue-600 text-white py-8 rounded-3xl font-black text-xl shadow-lg active:scale-95 flex flex-col items-center transition-all group"><span class="text-4xl mb-2">🏢</span>上班打卡</button>
                         <button onclick="punch('OUT')" class="bg-white text-slate-700 border-2 border-slate-100 py-8 rounded-3xl font-black text-xl shadow-sm active:scale-95 flex flex-col items-center transition-all hover:bg-slate-50"><span class="text-4xl mb-2 grayscale opacity-80">🏠</span>下班打卡</button>
@@ -139,7 +147,7 @@
                 </div>
             </div>
             
-            <div class="text-center mt-6 text-[10px] font-mono text-slate-300 tracking-widest pb-6 pointer-events-none">HYPASS v27.1</div>
+            <div class="text-center mt-6 text-[10px] font-mono text-slate-300 tracking-widest pb-6 pointer-events-none">HYPASS v27.2</div>
 
             <nav class="absolute bottom-0 left-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-200/60 flex justify-around items-center py-3 pb-8 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] rounded-t-3xl">
                 <button onclick="switchTab('home')" class="nav-item active flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🏠</span><span class="text-[10px] font-bold">打卡</span></button><button onclick="switchTab('leave')" class="nav-item flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">📅</span><span class="text-[10px] font-bold">請假</span></button><button onclick="switchTab('payroll')" class="nav-item flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">💰</span><span class="text-[10px] font-bold">薪資</span></button><button onclick="switchTab('profile')" class="nav-item flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">👤</span><span class="text-[10px] font-bold">資料</span></button>
@@ -165,14 +173,34 @@
 </div>
 
     <script>
+        // 🚨 部署前請更換為您的真實 ANON_KEY
         const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'; 
+        const SUPABASE_ANON_KEY = '請填寫您的ANON_KEY'; 
         const LIFF_ID = '2009148826-RoogHmxk'; 
         
         const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
         window.branches = [];
         window.calData = {}; 
+
+        // 🌟 即時動態時鐘引擎
+        function updateClock() {
+            const now = new Date();
+            const clockEl = document.getElementById('live-clock');
+            const dateEl = document.getElementById('live-date');
+            if (clockEl) {
+                clockEl.innerText = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            }
+            if (dateEl) {
+                const days = ['日', '一', '二', '三', '四', '五', '六'];
+                const y = now.getFullYear();
+                const m = String(now.getMonth() + 1).padStart(2, '0');
+                const d = String(now.getDate()).padStart(2, '0');
+                dateEl.innerText = `${y}/${m}/${d} 星期${days[now.getDay()]}`;
+            }
+        }
+        setInterval(updateClock, 1000);
+        updateClock(); // 初始化呼叫一次
 
         function syncCalendar() {
             const y1 = new Date().getFullYear(); const y2 = y1 + 1;
@@ -188,20 +216,31 @@
         async function init() {
             try {
                 syncCalendar(); 
+                
                 await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) { liff.login(); return; }
+                if (!liff.isLoggedIn()) { 
+                    liff.login(); 
+                    return; 
+                }
                 const profile = await liff.getProfile();
                 document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-emerald-400 rounded-full"></span>' + profile.displayName;
+                
                 await checkUser(profile.userId);
             } catch (e) {
-                document.getElementById('sys-loading').innerHTML = `<div class="text-6xl mb-4">⚠️</div><h2 class="text-xl font-black text-red-600 mb-2">系統連線異常</h2><p class="text-xs text-slate-500 font-bold">請確認網路環境或 LIFF 設定</p>`;
+                document.getElementById('sys-loading').innerHTML = `
+                    <div class="text-6xl mb-4">⚠️</div>
+                    <h2 class="text-xl font-black text-red-600 mb-2">系統連線異常</h2>
+                    <p class="text-xs text-slate-500 font-bold">請確認網路環境或 LIFF 設定<br><br>${e.message}</p>
+                `;
             }
         }
 
         async function checkUser(lineId) {
             try {
                 const { data, error } = await _sb.from('employees').select('*, branch_locations(branch_name)').eq('line_id', lineId).single();
+                
                 if (error && error.code !== 'PGRST116') throw error; 
+
                 document.getElementById('sys-loading').style.display = 'none';
                 
                 if (!data) {
@@ -218,13 +257,22 @@
                     renderUI(); 
                     document.getElementById('view-dashboard').style.display = 'block'; 
                 }
-            } catch (e) { document.getElementById('sys-loading').innerHTML = `<div class="text-6xl mb-4">⚠️</div><h2 class="text-xl font-black text-red-600 mb-2">資料庫異常</h2><p class="text-xs text-slate-500 font-bold">讀取資料失敗</p>`; }
+            } catch (e) {
+                document.getElementById('sys-loading').innerHTML = `
+                    <div class="text-6xl mb-4">⚠️</div>
+                    <h2 class="text-xl font-black text-red-600 mb-2">資料庫異常</h2>
+                    <p class="text-xs text-slate-500 font-bold">讀取員工資料失敗<br><br>${e.message}</p>
+                `;
+            }
         }
 
         async function loadBranches(targetId) { 
             const { data } = await _sb.from('branch_locations').select('id, branch_name, lat, lng, radius_m').eq('is_active', true); 
             window.branches = data || [];
-            if(targetId) { const sel = document.getElementById(targetId); if(sel) sel.innerHTML = window.branches.map(b => `<option value="${b.id}">${b.branch_name}</option>`).join(''); }
+            if(targetId) {
+                const sel = document.getElementById(targetId); 
+                if(sel) sel.innerHTML = window.branches.map(b => `<option value="${b.id}">${b.branch_name}</option>`).join(''); 
+            }
         }
 
         function switchTab(id) { document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active')); document.getElementById('tab-' + id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active')); document.querySelector(`button[onclick="switchTab('${id}')"]`).classList.add('active'); if(id === 'leave') loadLeaveHistory(); if(id === 'payroll') loadPayrollMonths(); }
@@ -256,6 +304,7 @@
 
         function renderMiniCalendar() {
             if(Object.keys(window.calData).length === 0) return; 
+            
             const today = new Date(); 
             const currentWeekStart = new Date(today); currentWeekStart.setDate(today.getDate() - today.getDay());
             const startDay = new Date(currentWeekStart); startDay.setDate(currentWeekStart.getDate() - 7);
@@ -297,7 +346,6 @@
             document.getElementById('ui-mini-calendar').innerHTML = html;
         }
 
-        // 🌟 智慧請假抵扣核心邏輯
         function autoFillLeaveForm(punchType) {
             switchTab('leave');
             
@@ -326,7 +374,6 @@
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        // 🌟 智慧打卡與防呆提示升級
         async function punch(type) {
             document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-amber-400 rounded-full"></span>驗證中...';
 
@@ -367,7 +414,6 @@
                         showAlert('❌ 失敗', data.message, 'error');
                     } 
                     else if(data.status === 'late' || (data.status === 'warning' && data.message.includes('早退'))) {
-                        // 🌟 觸發智慧請假提示
                         showAlert(`⚠️ ${title}異常`, data.message + '<br><br><span class="text-xs text-amber-700 bg-amber-50 p-2 rounded-lg block mt-2 border border-amber-200 text-left">💡 系統可自動計算缺失時數，是否立即填寫特休單抵扣，以維持全薪？</span>', 'warning', () => {
                             autoFillLeaveForm(type);
                         });
@@ -385,7 +431,6 @@
             }, { enableHighAccuracy: true });
         }
 
-        // 🌟 對話框機制升級 (支援按鈕自訂與 Callback)
         let alertCallback = null;
         function showAlert(title, msg, type, callback = null) {
             alertCallback = callback;
