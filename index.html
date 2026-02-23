@@ -18,6 +18,7 @@
         .modal { display: none; } .modal.active { display: flex; z-index: 100; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input:focus, select:focus, textarea:focus { outline: 2px solid #38bdf8; outline-offset: -1px; }
+        .select-arrow { appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-size: 1.5em 1.5em; background-position: right 0.5rem center; background-repeat: no-repeat; padding-right: 2rem; }
     </style>
 </head>
 <body class="text-slate-800">
@@ -37,17 +38,56 @@
             <form id="onboarding-form" class="space-y-4">
                 <div class="grid grid-cols-3 gap-3">
                     <div class="col-span-2"><input type="text" name="full_name" placeholder="真實姓名" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div>
-                    <div class="col-span-1"><select name="job_title" required class="w-full p-3 bg-sky-50 text-sky-800 rounded-xl text-sm font-black border-0 shadow-inner appearance-none pr-8"><option value="" disabled selected>職位</option><option value="主管">主管</option><option value="業務">業務</option><option value="助理">助理</option></select></div>
+                    <div class="col-span-1"><select name="job_title" required class="w-full p-3 bg-sky-50 text-sky-800 rounded-xl text-sm font-black border-0 shadow-inner select-arrow"><option value="" disabled selected>職位</option><option value="主管">主管</option><option value="業務">業務</option><option value="助理">助理</option></select></div>
                 </div>
                 <div><input type="text" name="id_number" placeholder="身分證字號" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner uppercase"></div>
                 <div class="grid grid-cols-2 gap-3"><input type="email" name="email" placeholder="電子信箱" required class="p-3 bg-slate-50 rounded-xl text-sm border-0 shadow-inner"><input type="tel" name="phone" placeholder="手機號碼" required class="p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div>
-                <div class="bg-slate-50 p-1 rounded-xl shadow-inner border border-slate-100"><label class="text-[10px] font-bold text-slate-400 ml-2 mt-1 block">請選擇所屬工作打卡據點</label><select name="default_branch_id" id="reg-branch" required class="w-full p-3 bg-transparent text-base font-black text-slate-700 border-0 outline-none appearance-none"></select></div>
-                <div class="grid grid-cols-2 gap-3"><div class="col-span-1"><label class="text-[10px] font-bold text-slate-500 ml-1 mb-0.5 block">入職日期</label><input type="date" name="onboarding_date" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div><div class="col-span-1"><label class="text-[10px] font-bold text-slate-500 ml-1 mb-0.5 block">通訊地址</label><input type="text" name="address" placeholder="法律送達地" required class="w-full p-3 bg-slate-50 rounded-xl text-sm border-0 shadow-inner"></div></div>
+                
+                <div class="bg-slate-50 p-1 rounded-xl shadow-inner border border-slate-100">
+                    <label class="text-[10px] font-bold text-slate-400 ml-2 mt-1 block">請選擇所屬工作打卡據點</label>
+                    <select name="default_branch_id" id="reg-branch" required class="w-full p-3 bg-transparent text-base font-black text-slate-700 border-0 outline-none select-arrow"></select>
+                </div>
+                
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 ml-1 mb-0.5 block">入職日期</label>
+                    <input type="date" name="onboarding_date" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner">
+                </div>
+
+                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 shadow-inner">
+                    <label class="text-[10px] font-bold text-slate-500 ml-1 mb-1 block">通訊地址</label>
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <select id="addr-county" class="w-full p-2.5 bg-white rounded-xl text-sm font-bold border shadow-sm outline-none select-arrow" required onchange="updateDistricts()">
+                            <option value="" disabled selected>選擇縣市</option>
+                        </select>
+                        <select id="addr-district" class="w-full p-2.5 bg-white rounded-xl text-sm font-bold border shadow-sm outline-none select-arrow" required>
+                            <option value="" disabled selected>鄉鎮市區</option>
+                        </select>
+                    </div>
+                    <input type="text" id="addr-street" placeholder="詳細街道與門牌 (例: 光復路一段1號)" required class="w-full p-2.5 bg-white rounded-xl text-sm border shadow-sm outline-none">
+                </div>
+                
                 <div class="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-100">
                     <h3 class="text-xs font-black text-emerald-800 mb-3 flex items-center"><span class="text-base mr-1">💰</span>財務與保險資料</h3>
-                    <div class="grid grid-cols-2 gap-3 mb-3"><input type="text" name="bank_name" placeholder="銀行名稱" required class="p-2.5 text-sm border shadow-sm rounded-xl bg-white"><input type="text" name="bank_code" placeholder="代碼(例:808)" required class="p-2.5 text-sm border shadow-sm rounded-xl bg-white font-bold text-center"><input type="text" name="bank_user_name" placeholder="戶名" required class="p-2.5 text-sm border shadow-sm rounded-xl bg-white"><input type="text" name="bank_account" placeholder="銀行帳號" required class="p-2.5 text-sm border shadow-sm rounded-xl bg-white font-bold"></div>
-                    <div class="flex justify-between items-center border-t border-emerald-200/50 pt-3"><span class="text-sm font-bold text-emerald-900">健保眷屬加保人數</span><input type="number" name="dependents_count" value="0" min="0" required class="w-20 p-2 text-center text-sm font-black border shadow-sm rounded-xl bg-white"></div>
+                    
+                    <div class="mb-3">
+                        <select id="bank-select" required class="w-full p-2.5 text-sm font-bold border shadow-sm rounded-xl bg-white outline-none select-arrow">
+                            <option value="" disabled selected>請選擇撥薪銀行</option>
+                            <option value="004 台灣銀行">004 台灣銀行</option><option value="005 土地銀行">005 土地銀行</option><option value="006 合作金庫">006 合作金庫</option><option value="007 第一銀行">007 第一銀行</option><option value="008 華南銀行">008 華南銀行</option><option value="009 彰化銀行">009 彰化銀行</option><option value="011 上海商銀">011 上海商銀</option><option value="012 台北富邦">012 台北富邦</option><option value="013 國泰世華">013 國泰世華</option><option value="017 兆豐銀行">017 兆豐銀行</option><option value="050 台灣企銀">050 台灣企銀</option><option value="052 渣打銀行">052 渣打銀行</option><option value="053 台中銀行">053 台中銀行</option><option value="102 華泰銀行">102 華泰銀行</option><option value="103 新光銀行">103 新光銀行</option><option value="108 陽信銀行">108 陽信銀行</option><option value="118 板信銀行">118 板信銀行</option><option value="700 中華郵政">700 中華郵政</option><option value="803 聯邦銀行">803 聯邦銀行</option><option value="804 遠東商銀">804 遠東商銀</option><option value="806 元大銀行">806 元大銀行</option><option value="807 永豐銀行">807 永豐銀行</option><option value="808 玉山銀行">808 玉山銀行</option><option value="809 凱基銀行">809 凱基銀行</option><option value="810 星展銀行">810 星展銀行</option><option value="812 台新銀行">812 台新銀行</option><option value="822 中國信託">822 中國信託</option><option value="823 將來銀行">823 將來銀行</option><option value="824 LINEBank">824 LINEBank</option><option value="826 樂天銀行">826 樂天銀行</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <input type="text" name="bank_user_name" placeholder="存摺戶名" required class="p-2.5 text-sm border shadow-sm rounded-xl bg-white">
+                        <input type="text" name="bank_account" placeholder="銀行帳號" required class="p-2.5 text-sm border shadow-sm rounded-xl bg-white font-bold tracking-wider">
+                    </div>
+
+                    <div class="flex justify-between items-center border-t border-emerald-200/50 pt-3">
+                        <span class="text-sm font-bold text-emerald-900">健保眷屬加保人數</span>
+                        <select name="dependents_count" required class="w-24 p-2 text-center text-sm font-black border shadow-sm rounded-xl bg-white outline-none select-arrow">
+                            <option value="0">0 人</option><option value="1">1 人</option><option value="2">2 人</option><option value="3">3 人</option><option value="4">4 人</option><option value="5">5 人</option>
+                        </select>
+                    </div>
                 </div>
+                
                 <div class="grid grid-cols-2 gap-3"><input type="text" name="emergency_name" placeholder="緊急聯絡人" required class="p-3 bg-slate-50 border-0 shadow-inner rounded-xl text-sm font-bold"><input type="tel" name="emergency_phone" placeholder="聯絡人電話" required class="p-3 bg-slate-50 border-0 shadow-inner rounded-xl text-sm font-bold"></div>
                 
                 <div class="bg-slate-100 p-4 rounded-2xl mt-5 border border-slate-200 shadow-inner">
@@ -57,7 +97,7 @@
                         <p class="mb-2"><strong>甲方（雇主）：</strong>海帕斯科技股份有限公司<br><strong>乙方（受僱人）：</strong>新進員工 (您)</p>
                         <hr class="my-3 border-slate-200">
                         <p class="font-black text-slate-900 text-xs mb-1 mt-2">第一章：職位與工作內容</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方各項業務推動。</li><li>工作區域：甲方得視營運需求，指派乙方於實體據點或指定分區執行職務。</li></ul>
-                        <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據，絕不從事代打卡或偽造定位之情事。</li><li>打卡範圍：系統自動偵測並記錄員工所在座標與據點，無距離限制限制。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
+                        <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統自動偵測並記錄員工所在座標與據點，無距離限制限制。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
                         <p class="font-black text-slate-900 text-xs mb-1">第三章：請假與休假規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>請假程序：一般請假（如特休、事假）應至少提前三日於線上申請；突發狀況應第一時間告知並補單。</li><li>颱風假原則：依政府發布，遵循「放假但該日不支薪」原則，不扣特休亦不影響全勤。</li><li>加班申請：例假日出勤須於系統填寫「起訖時間」送出加班單。</li></ul>
                         <p class="font-black text-slate-900 text-xs mb-1">第四章：保密協定 (NDA) 與智慧財產權</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>保密義務：乙方對甲方之客戶未公開營業秘密，負絕對保密義務。未經同意絕不洩漏。</li><li>歸還義務：離職時，應將所有隸屬公司之財產、機密資訊、設備、實體與數位檔案全數歸還，絕對不得私自拷貝或保留。</li><li>違約罰則：乙方若違反保密義務，同意無條件負擔新台幣壹佰萬元整之懲罰性違約金。</li></ul>
                     </div>
@@ -117,7 +157,7 @@
                 <h3 class="font-black text-2xl text-slate-900 pl-2 flex justify-between items-end"><span>線上請假加班申請</span></h3>
                 <div class="glass-card p-6 rounded-[2rem] shadow-sm">
                     <form id="leave-form" onsubmit="submitLeave(event)" class="space-y-4 border-b border-slate-100 pb-6 mb-5">
-                        <select name="leave_type" id="leave-type-select" onchange="checkLeaveType()" class="w-full bg-slate-50 border-0 shadow-inner p-3 rounded-2xl text-sm font-bold appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_1rem_center] bg-no-repeat">
+                        <select name="leave_type" id="leave-type-select" onchange="checkLeaveType()" class="w-full bg-slate-50 border-0 shadow-inner p-3 rounded-2xl text-sm font-bold select-arrow">
                             <option value="特休">🏖️ 特休 (可抵扣遲到時數)</option><option value="事假">📄 事假</option><option value="病假">💊 病假</option><option value="公假">💼 公假</option><option value="颱風假">🌪️ 颱風假</option><option value="緊急加班">🚨 假日緊急加班</option>
                         </select>
                         <div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-bold text-slate-500 ml-1 mb-1 block">起始時間</label><input type="datetime-local" name="start_time" required class="w-full bg-slate-50 border-0 shadow-inner p-3 rounded-2xl text-sm font-bold"></div><div><label class="text-xs font-bold text-slate-500 ml-1 mb-1 block">結束時間</label><input type="datetime-local" name="end_time" required class="w-full bg-slate-50 border-0 shadow-inner p-3 rounded-2xl text-sm font-bold"></div></div>
@@ -131,7 +171,7 @@
             <div id="tab-payroll" class="app-view space-y-5">
                 <h3 class="font-black text-2xl text-slate-900 pl-2">薪資明細</h3>
                 <div class="glass-card p-6 rounded-[2rem] space-y-4 shadow-sm">
-                    <select id="payroll-month" onchange="loadPayrollDetail()" class="w-full bg-slate-50 text-slate-800 font-bold border-0 shadow-inner p-3 rounded-2xl text-sm outline-none appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_1rem_center] bg-no-repeat"></select>
+                    <select id="payroll-month" onchange="loadPayrollDetail()" class="w-full bg-slate-50 text-slate-800 font-bold border-0 shadow-inner p-3 rounded-2xl text-sm outline-none select-arrow"></select>
                     <div class="bg-white border border-slate-100 rounded-2xl p-5 space-y-4 mt-2 shadow-sm">
                         <div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">底薪</span><span id="p-base" class="text-base font-black text-slate-800">NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">獎金津貼</span><span id="p-bonus" class="text-base font-black text-emerald-600">NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">年終獎金</span><span id="p-yeb" class="text-base font-black text-emerald-600">NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">勞健保自付</span><span id="p-ins" class="text-base font-black text-red-500">- NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">二代健保</span><span id="p-2nd" class="text-base font-black text-red-500">- NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-xs font-bold text-slate-400">勞退提撥 (公司負擔 6%)</span><span id="p-pen" class="text-xs font-black text-slate-400">NT$ 0</span></div>
                         <div class="flex justify-between items-end pt-3 border-t border-slate-100"><span class="text-base font-black text-slate-800">總計實領</span><span id="p-net" class="text-3xl font-black text-sky-600 tracking-tight">NT$ 0</span></div>
@@ -147,7 +187,7 @@
                 </div>
             </div>
             
-            <div class="text-center mt-6 text-[10px] font-mono text-slate-300 tracking-widest pb-6 pointer-events-none">HYPASS v27.2</div>
+            <div class="text-center mt-6 text-[10px] font-mono text-slate-300 tracking-widest pb-6 pointer-events-none">HYPASS v27.3</div>
 
             <nav class="absolute bottom-0 left-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-200/60 flex justify-around items-center py-3 pb-8 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] rounded-t-3xl">
                 <button onclick="switchTab('home')" class="nav-item active flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🏠</span><span class="text-[10px] font-bold">打卡</span></button><button onclick="switchTab('leave')" class="nav-item flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">📅</span><span class="text-[10px] font-bold">請假</span></button><button onclick="switchTab('payroll')" class="nav-item flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">💰</span><span class="text-[10px] font-bold">薪資</span></button><button onclick="switchTab('profile')" class="nav-item flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">👤</span><span class="text-[10px] font-bold">資料</span></button>
@@ -173,24 +213,38 @@
 </div>
 
     <script>
-        // 🚨 部署前請更換為您的真實 ANON_KEY
         const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'; 
         const LIFF_ID = '2009148826-RoogHmxk'; 
         
         const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        let currentUser = null;
-        window.branches = [];
-        window.calData = {}; 
+        let currentUser = null; window.branches = []; window.calData = {}; 
 
-        // 🌟 即時動態時鐘引擎
+        // 🌟 台灣全縣市鄉鎮資料庫 (極速離線版)
+        const twAddrs = { "基隆市":["仁愛區","信義區","中正區","中山區","安樂區","暖暖區","七堵區"], "台北市":["中正區","大同區","中山區","松山區","大安區","萬華區","信義區","士林區","北投區","內湖區","南港區","文山區"], "新北市":["板橋區","三重區","中和區","永和區","新莊區","新店區","樹林區","鶯歌區","三峽區","淡水區","汐止區","瑞芳區","土城區","蘆洲區","五股區","泰山區","林口區","深坑區","石碇區","坪林區","三芝區","石門區","八里區","平溪區","雙溪區","貢寮區","金山區","萬里區","烏來區"], "桃園市":["桃園區","中壢區","大溪區","楊梅區","蘆竹區","大園區","龜山區","八德區","平鎮區","新屋區","觀音區","龍潭區","復興區"], "新竹市":["東區","北區","香山區"], "新竹縣":["竹北市","竹東鎮","新埔鎮","關西鎮","湖口鄉","新豐鄉","芎林鄉","橫山鄉","北埔鄉","寶山鄉","峨眉鄉","尖石鄉","五峰鄉"], "苗栗縣":["苗栗市","苑裡鎮","通霄鎮","竹南鎮","頭份市","後龍鎮","卓蘭鎮","大湖鄉","公館鄉","銅鑼鄉","南庄鄉","頭屋鄉","三義鄉","西湖鄉","造橋鄉","三灣鄉","獅潭鄉","泰安鄉"], "台中市":["中區","東區","南區","西區","北區","北屯區","西屯區","南屯區","太平區","大里區","霧峰區","烏日區","豐原區","后里區","石岡區","東勢區","和平區","新社區","潭子區","大雅區","神岡區","大肚區","沙鹿區","龍井區","梧棲區","清水區","大甲區","外埔區","大安區"], "彰化縣":["彰化市","鹿港鎮","和美鎮","線西鄉","伸港鄉","福興鄉","秀水鄉","花壇鄉","芬園鄉","員林市","溪湖鎮","田中鎮","大村鄉","埔鹽鄉","埔心鄉","永靖鄉","社頭鄉","二水鄉","北斗鎮","二林鎮","田尾鄉","埤頭鄉","芳苑鄉","大城鄉","竹塘鄉","溪州鄉"], "南投縣":["南投市","埔里鎮","草屯鎮","竹山鎮","集集鎮","名間鄉","鹿谷鄉","中寮鄉","魚池鄉","國姓鄉","水里鄉","信義鄉","仁愛鄉"], "雲林縣":["斗六市","斗南鎮","虎尾鎮","西螺鎮","土庫鎮","北港鎮","古坑鄉","大埤鄉","莿桐鄉","林內鄉","二崙鄉","崙背鄉","麥寮鄉","東勢鄉","褒忠鄉","臺西鄉","元長鄉","四湖鄉","口湖鄉","水林鄉"], "嘉義市":["東區","西區"], "嘉義縣":["太保市","朴子市","布袋鎮","大林鎮","民雄鄉","溪口鄉","新港鄉","六腳鄉","東石鄉","義竹鄉","鹿草鄉","水上鄉","中埔鄉","竹崎鄉","梅山鄉","番路鄉","大埔鄉","阿里山鄉"], "台南市":["新營區","鹽水區","白河區","柳營區","後壁區","東山區","麻豆區","下營區","六甲區","官田區","大內區","佳里區","學甲區","西港區","七股區","將軍區","北門區","新化區","善化區","新市區","安定區","山上區","玉井區","楠西區","南化區","左鎮區","仁德區","歸仁區","關廟區","龍崎區","永康區","東區","南區","中西區","北區","安南區","安平區"], "高雄市":["鹽埕區","鼓山區","左營區","楠梓區","三民區","新興區","前金區","苓雅區","前鎮區","旗津區","小港區","鳳山區","林園區","大寮區","大樹區","大社區","仁武區","鳥松區","岡山區","橋頭區","燕巢區","田寮區","阿蓮區","路竹區","湖內區","茄萣區","永安區","彌陀區","梓官區","旗山區","美濃區","六龜區","甲仙區","杉林區","內門區","茂林區","桃源區","那瑪夏區"], "屏東縣":["屏東市","潮州鎮","東港鎮","恆春鎮","萬丹鄉","長治鄉","麟洛鄉","九如鄉","里港鄉","鹽埔鄉","高樹鄉","萬巒鄉","內埔鄉","竹田鄉","新埤鄉","枋寮鄉","新園鄉","崁頂鄉","林邊鄉","南州鄉","佳冬鄉","琉球鄉","車城鄉","滿州鄉","枋山鄉","三地門鄉","霧臺鄉","瑪家鄉","泰武鄉","來義鄉","春日鄉","獅子鄉","牡丹鄉"], "台東縣":["臺東市","成功鎮","關山鎮","卑南鄉","鹿野鄉","池上鄉","東河鄉","長濱鄉","太麻里鄉","大武鄉","綠島鄉","海端鄉","延平鄉","金峰鄉","達仁鄉","蘭嶼鄉"], "花蓮縣":["花蓮市","鳳林鎮","玉里鎮","新城鄉","吉安鄉","壽豐鄉","光復鄉","豐濱鄉","瑞穗鄉","富里鄉","秀林鄉","萬榮鄉","卓溪鄉"], "宜蘭縣":["宜蘭市","羅東鎮","蘇澳鎮","頭城鎮","礁溪鄉","壯圍鄉","員山鄉","冬山鄉","五結鄉","三星鄉","大同鄉","南澳鄉"], "澎湖縣":["馬公市","湖西鄉","白沙鄉","西嶼鄉","望安鄉","七美鄉"], "金門縣":["金城鎮","金湖鎮","金沙鎮","金寧鄉","烈嶼鄉","烏坵鄉"], "連江縣":["南竿鄉","北竿鄉","莒光鄉","東引鄉"] };
+
+        function initAddressForm() {
+            const countySel = document.getElementById('addr-county');
+            if(countySel) {
+                let opts = '<option value="" disabled selected>選擇縣市</option>';
+                for(let c in twAddrs) opts += `<option value="${c}">${c}</option>`;
+                countySel.innerHTML = opts;
+            }
+        }
+        
+        function updateDistricts() {
+            const c = document.getElementById('addr-county').value;
+            const distSel = document.getElementById('addr-district');
+            if(c && twAddrs[c]) {
+                distSel.innerHTML = '<option value="" disabled selected>鄉鎮市區</option>' + twAddrs[c].map(d => `<option value="${d}">${d}</option>`).join('');
+            }
+        }
+
         function updateClock() {
             const now = new Date();
             const clockEl = document.getElementById('live-clock');
             const dateEl = document.getElementById('live-date');
-            if (clockEl) {
-                clockEl.innerText = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            }
+            if (clockEl) clockEl.innerText = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
             if (dateEl) {
                 const days = ['日', '一', '二', '三', '四', '五', '六'];
                 const y = now.getFullYear();
@@ -199,8 +253,7 @@
                 dateEl.innerText = `${y}/${m}/${d} 星期${days[now.getDay()]}`;
             }
         }
-        setInterval(updateClock, 1000);
-        updateClock(); // 初始化呼叫一次
+        setInterval(updateClock, 1000); updateClock(); 
 
         function syncCalendar() {
             const y1 = new Date().getFullYear(); const y2 = y1 + 1;
@@ -216,35 +269,25 @@
         async function init() {
             try {
                 syncCalendar(); 
-                
                 await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) { 
-                    liff.login(); 
-                    return; 
-                }
+                if (!liff.isLoggedIn()) { liff.login(); return; }
                 const profile = await liff.getProfile();
                 document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-emerald-400 rounded-full"></span>' + profile.displayName;
-                
                 await checkUser(profile.userId);
             } catch (e) {
-                document.getElementById('sys-loading').innerHTML = `
-                    <div class="text-6xl mb-4">⚠️</div>
-                    <h2 class="text-xl font-black text-red-600 mb-2">系統連線異常</h2>
-                    <p class="text-xs text-slate-500 font-bold">請確認網路環境或 LIFF 設定<br><br>${e.message}</p>
-                `;
+                document.getElementById('sys-loading').innerHTML = `<div class="text-6xl mb-4">⚠️</div><h2 class="text-xl font-black text-red-600 mb-2">系統連線異常</h2><p class="text-xs text-slate-500 font-bold">請確認網路環境或 LIFF 設定</p>`;
             }
         }
 
         async function checkUser(lineId) {
             try {
                 const { data, error } = await _sb.from('employees').select('*, branch_locations(branch_name)').eq('line_id', lineId).single();
-                
                 if (error && error.code !== 'PGRST116') throw error; 
-
                 document.getElementById('sys-loading').style.display = 'none';
                 
                 if (!data) {
                     await loadBranches('reg-branch'); 
+                    initAddressForm(); // 初始化地址選單
                     document.getElementById('view-onboarding').style.display = 'block';
                 }
                 else if (!data.is_approved || data.employment_status === '離職') { 
@@ -257,22 +300,13 @@
                     renderUI(); 
                     document.getElementById('view-dashboard').style.display = 'block'; 
                 }
-            } catch (e) {
-                document.getElementById('sys-loading').innerHTML = `
-                    <div class="text-6xl mb-4">⚠️</div>
-                    <h2 class="text-xl font-black text-red-600 mb-2">資料庫異常</h2>
-                    <p class="text-xs text-slate-500 font-bold">讀取員工資料失敗<br><br>${e.message}</p>
-                `;
-            }
+            } catch (e) { document.getElementById('sys-loading').innerHTML = `<div class="text-6xl mb-4">⚠️</div><h2 class="text-xl font-black text-red-600 mb-2">資料庫異常</h2><p class="text-xs text-slate-500 font-bold">讀取資料失敗</p>`; }
         }
 
         async function loadBranches(targetId) { 
             const { data } = await _sb.from('branch_locations').select('id, branch_name, lat, lng, radius_m').eq('is_active', true); 
             window.branches = data || [];
-            if(targetId) {
-                const sel = document.getElementById(targetId); 
-                if(sel) sel.innerHTML = window.branches.map(b => `<option value="${b.id}">${b.branch_name}</option>`).join(''); 
-            }
+            if(targetId) { const sel = document.getElementById(targetId); if(sel) sel.innerHTML = window.branches.map(b => `<option value="${b.id}">${b.branch_name}</option>`).join(''); }
         }
 
         function switchTab(id) { document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active')); document.getElementById('tab-' + id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active')); document.querySelector(`button[onclick="switchTab('${id}')"]`).classList.add('active'); if(id === 'leave') loadLeaveHistory(); if(id === 'payroll') loadPayrollMonths(); }
@@ -304,7 +338,6 @@
 
         function renderMiniCalendar() {
             if(Object.keys(window.calData).length === 0) return; 
-            
             const today = new Date(); 
             const currentWeekStart = new Date(today); currentWeekStart.setDate(today.getDate() - today.getDay());
             const startDay = new Date(currentWeekStart); startDay.setDate(currentWeekStart.getDate() - 7);
@@ -348,29 +381,18 @@
 
         function autoFillLeaveForm(punchType) {
             switchTab('leave');
-            
             const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
+            const yyyy = now.getFullYear(); const mm = String(now.getMonth() + 1).padStart(2, '0'); const dd = String(now.getDate()).padStart(2, '0');
             const datePrefix = `${yyyy}-${mm}-${dd}T`;
-            
             const nowTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-            const startTime = (currentUser.work_start_time || '09:00').slice(0, 5);
-            const endTime = (currentUser.work_end_time || '18:00').slice(0, 5);
+            const startTime = (currentUser.work_start_time || '09:00').slice(0, 5); const endTime = (currentUser.work_end_time || '18:00').slice(0, 5);
             
             let leaveStart, leaveEnd;
-            if (punchType === 'IN') { 
-                leaveStart = datePrefix + startTime; leaveEnd = datePrefix + nowTime;
-            } else { 
-                leaveStart = datePrefix + nowTime; leaveEnd = datePrefix + endTime;
-            }
+            if (punchType === 'IN') { leaveStart = datePrefix + startTime; leaveEnd = datePrefix + nowTime; } 
+            else { leaveStart = datePrefix + nowTime; leaveEnd = datePrefix + endTime; }
             
-            document.getElementById('leave-type-select').value = '特休';
-            checkLeaveType(); 
-            
-            document.querySelector('input[name="start_time"]').value = leaveStart;
-            document.querySelector('input[name="end_time"]').value = leaveEnd;
+            document.getElementById('leave-type-select').value = '特休'; checkLeaveType(); 
+            document.querySelector('input[name="start_time"]').value = leaveStart; document.querySelector('input[name="end_time"]').value = leaveEnd;
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
@@ -390,11 +412,8 @@
                 
                 if (!hasOvertime) {
                     document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-emerald-400 rounded-full"></span>已連線';
-                    if (type === 'IN') {
-                        showAlert('🛑 假日打卡阻擋', `今日為排定之休假日${holidayName}，無法直接打卡。<br><br>若需出勤，請先至請假區送出【🚨 假日緊急加班單】，送出後即可正常打卡。`, 'error');
-                    } else {
-                        showAlert('🛑 錯誤', `今日為休假日${holidayName}，系統查無您的加班紀錄，無法進行下班打卡。`, 'error');
-                    }
+                    if (type === 'IN') showAlert('🛑 假日打卡阻擋', `今日為排定之休假日${holidayName}，無法直接打卡。<br><br>若需出勤，請先至請假區送出【🚨 假日緊急加班單】，送出後即可正常打卡。`, 'error');
+                    else showAlert('🛑 錯誤', `今日為休假日${holidayName}，系統查無您的加班紀錄，無法進行下班打卡。`, 'error');
                     return;
                 }
             }
@@ -403,27 +422,18 @@
             
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 const lat = pos.coords.latitude; const lng = pos.coords.longitude;
-                
                 const { data, error } = await _sb.rpc('fn_process_punch', { p_emp_id: currentUser.id, p_type: type, p_lat: lat, p_lng: lng, p_is_offday: isOffDay });
                 document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-emerald-400 rounded-full"></span>已連線';
                 
                 if (error) { showAlert('⚠️ 系統錯誤', error.message, 'error'); } 
                 else {
                     let title = type === 'IN' ? '上班打卡' : '下班打卡';
-                    if(data.status === 'error') {
-                        showAlert('❌ 失敗', data.message, 'error');
-                    } 
+                    if(data.status === 'error') showAlert('❌ 失敗', data.message, 'error');
                     else if(data.status === 'late' || (data.status === 'warning' && data.message.includes('早退'))) {
-                        showAlert(`⚠️ ${title}異常`, data.message + '<br><br><span class="text-xs text-amber-700 bg-amber-50 p-2 rounded-lg block mt-2 border border-amber-200 text-left">💡 系統可自動計算缺失時數，是否立即填寫特休單抵扣，以維持全薪？</span>', 'warning', () => {
-                            autoFillLeaveForm(type);
-                        });
+                        showAlert(`⚠️ ${title}異常`, data.message + '<br><br><span class="text-xs text-amber-700 bg-amber-50 p-2 rounded-lg block mt-2 border border-amber-200 text-left">💡 系統可自動計算缺失時數，是否立即填寫特休單抵扣，以維持全薪？</span>', 'warning', () => { autoFillLeaveForm(type); });
                     }
-                    else if (data.status === 'warning') {
-                        showAlert(`⚠️ ${title}異常`, data.message, 'warning');
-                    } 
-                    else {
-                        showAlert(`✅ ${title}成功`, data.message, 'success');
-                    }
+                    else if (data.status === 'warning') showAlert(`⚠️ ${title}異常`, data.message, 'warning');
+                    else showAlert(`✅ ${title}成功`, data.message, 'success');
                 }
             }, () => {
                 document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-red-400 rounded-full"></span>定位失敗';
@@ -461,14 +471,8 @@
         }
 
         function closeAlert(isConfirm = true) { 
-            const box = document.getElementById('alert-box'); 
-            box.classList.remove('scale-100', 'opacity-100'); 
-            box.classList.add('scale-95', 'opacity-0'); 
-            setTimeout(() => { 
-                document.getElementById('alert-modal').classList.remove('active'); 
-                if(isConfirm && alertCallback) alertCallback();
-                alertCallback = null;
-            }, 200); 
+            const box = document.getElementById('alert-box'); box.classList.remove('scale-100', 'opacity-100'); box.classList.add('scale-95', 'opacity-0'); 
+            setTimeout(() => { document.getElementById('alert-modal').classList.remove('active'); if(isConfirm && alertCallback) alertCallback(); alertCallback = null; }, 200); 
         }
 
         async function loadPunchHistory() {
@@ -528,7 +532,7 @@
                     <p class="font-black text-slate-900 text-xs mb-1">第一章：職位與工作內容</p>
                     <ul class="list-decimal pl-4 space-y-1 mb-3"><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方各項業務推動。</li><li>工作區域：甲方得視營運需求，指派乙方於實體據點或指定分區執行職務。</li></ul>
                     <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p>
-                    <ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統自動記錄座標與鄰近據點。業務職位開放外勤定位。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
+                    <ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統自動偵測並記錄員工所在座標與據點，無距離限制限制。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
                     <p class="font-black text-slate-900 text-xs mb-1">第三章：請假與休假規範</p>
                     <ul class="list-decimal pl-4 space-y-1 mb-3"><li>請假程序：一般請假（如特休、事假）應至少提前三日於線上申請；突發狀況應第一時間告知並補單。</li><li>颱風假原則：依政府發布，遵循「放假但該日不支薪」原則，不扣特休亦不影響全勤。</li><li>加班申請：例假日出勤須於系統填寫「起訖時間」送出加班單。</li></ul>
                     <p class="font-black text-slate-900 text-xs mb-1">第四章：保密協定 (NDA) 與智慧財產權</p>
@@ -541,16 +545,36 @@
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
+        // 🌟 組合分離的表單數值並送出
         document.getElementById('onboarding-form').onsubmit = async (e) => {
-            e.preventDefault(); document.getElementById('btn-submit').innerText = '資料加密上傳中...'; const fd = new FormData(e.target); const payload = Object.fromEntries(fd.entries());
-            payload.line_id = (await liff.getProfile()).userId; payload.dependents_count = parseInt(payload.dependents_count) || 0;
+            e.preventDefault(); 
+            document.getElementById('btn-submit').innerText = '資料加密上傳中...'; 
+            
+            const fd = new FormData(e.target); 
+            const payload = Object.fromEntries(fd.entries());
+            
+            const county = document.getElementById('addr-county').value;
+            const district = document.getElementById('addr-district').value;
+            const street = document.getElementById('addr-street').value;
+            payload.address = county + district + street;
+
+            const bankVal = document.getElementById('bank-select').value;
+            payload.bank_code = bankVal.split(' ')[0];
+            payload.bank_name = bankVal.split(' ')[1];
+
+            payload.line_id = (await liff.getProfile()).userId; 
+            payload.dependents_count = parseInt(payload.dependents_count) || 0;
+            
             const { data, error } = await _sb.from('employees').insert([payload]).select(); 
-            if(error) { alert(error.message); document.getElementById('btn-submit').innerText = '數位簽署並提交審核'; } 
-            else { 
+            if(error) { 
+                alert(error.message); 
+                document.getElementById('btn-submit').innerText = '數位簽署並提交審核'; 
+            } else { 
                 await _sb.functions.invoke('line-webhook', { body: { action: 'notify_signup', id: data[0].id, name: payload.full_name, role: payload.job_title }});
                 location.reload(); 
             }
         };
+        
         window.onload = init;
     </script>
 </body>
