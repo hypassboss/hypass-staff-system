@@ -29,7 +29,7 @@
     </header>
     
     <main class="p-5">
-        <div id="sys-loading" class="text-center py-40 active-view"><div class="animate-spin h-10 w-10 border-4 border-sky-600 border-t-transparent rounded-full mx-auto mb-4"></div><p class="text-sm text-slate-500 font-bold tracking-wider">系統與行事曆同步中...</p></div>
+        <div id="sys-loading" class="text-center py-40 active-view"><div class="animate-spin h-10 w-10 border-4 border-sky-600 border-t-transparent rounded-full mx-auto mb-4"></div><p class="text-sm text-slate-500 font-bold tracking-wider">系統安全載入中...</p></div>
         <div id="sys-pending" class="text-center py-32 hidden"><div class="text-6xl mb-6 grayscale opacity-50">⏳</div><h2 class="text-2xl font-black text-slate-800 mb-2">帳號審核中</h2><p class="text-sm text-slate-500 font-medium">已通知主管，請耐心等候權限開通。</p></div>
 
         <div id="view-onboarding" class="hidden glass-card p-6 rounded-3xl shadow-xl">
@@ -57,7 +57,7 @@
                         <p class="mb-2"><strong>甲方（雇主）：</strong>海帕斯科技股份有限公司<br><strong>乙方（受僱人）：</strong>新進員工 (您)</p>
                         <hr class="my-3 border-slate-200">
                         <p class="font-black text-slate-900 text-xs mb-1 mt-2">第一章：職位與工作內容</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方各項業務推動。</li><li>工作區域：甲方得視營運需求，指派乙方於實體據點或指定分區執行職務。</li></ul>
-                        <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據，絕不從事代打卡或偽造定位之情事。</li><li>打卡範圍：系統自動偵測並記錄員工所在座標與據點，無距離限制。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
+                        <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統自動偵測並記錄員工所在座標與據點，無距離限制限制。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
                         <p class="font-black text-slate-900 text-xs mb-1">第三章：請假與休假規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>請假程序：一般請假（如特休、事假）應至少提前三日於線上申請；突發狀況應第一時間告知並補單。</li><li>颱風假原則：依政府發布，遵循「放假但該日不支薪」原則，不扣特休亦不影響全勤。</li><li>加班申請：例假日出勤須於系統填寫「起訖時間」送出加班單。</li></ul>
                         <p class="font-black text-slate-900 text-xs mb-1">第四章：保密協定 (NDA) 與智慧財產權</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>保密義務：乙方對甲方之客戶未公開營業秘密，負絕對保密義務。未經同意絕不洩漏。</li><li>歸還義務：離職時，應將所有隸屬公司之財產、機密資訊、設備、實體與數位檔案全數歸還，絕對不得私自拷貝或保留。</li><li>違約罰則：乙方若違反保密義務，同意無條件負擔新台幣壹佰萬元整之懲罰性違約金。</li></ul>
                     </div>
@@ -90,7 +90,7 @@
                         <span class="flex items-center"><span class="text-lg mr-1.5">📅</span>出勤行事曆 (同步政府版)</span>
                         <span class="text-[9px] bg-slate-100 px-2 py-1 rounded text-slate-400 border border-slate-200">🔴休假 🟡補班 ⚫️工作日</span>
                     </h4>
-                    <div id="ui-mini-calendar" class="px-1 pb-1"><div class="animate-pulse text-center py-4 text-xs text-slate-400 font-bold">載入行事曆中...</div></div>
+                    <div id="ui-mini-calendar" class="px-1 pb-1"></div>
                 </div>
 
                 <div class="glass-card p-5 rounded-[2rem] shadow-sm relative overflow-hidden">
@@ -153,51 +153,77 @@
 </div>
 
     <script>
-        // 🚨 部署前請更換為您的真實 ANON_KEY
         const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0'; 
+        const LIFF_ID = '2009148826-RoogHmxk'; 
         
         const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
         window.branches = [];
         window.calData = {}; 
 
-        async function syncCalendar() {
+        // 🌟 背景載入，不卡死主畫面
+        function syncCalendar() {
             const y1 = new Date().getFullYear(); const y2 = y1 + 1;
-            try {
-                const [r1, r2] = await Promise.all([
-                    fetch(`https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${y1}.json`).then(r => r.json()),
-                    fetch(`https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${y2}.json`).then(r => r.json()).catch(() => [])
-                ]);
+            Promise.all([
+                fetch(`https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${y1}.json`).then(r => r.json()),
+                fetch(`https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${y2}.json`).then(r => r.json()).catch(() => [])
+            ]).then(([r1, r2]) => {
                 [...(r1||[]), ...(r2||[])].forEach(d => { window.calData[d.date] = d; });
-            } catch(e) { console.warn('行事曆同步失敗'); }
+                if(document.getElementById('view-dashboard').style.display === 'block') renderMiniCalendar();
+            }).catch(e => console.warn('行事曆同步延遲'));
         }
 
         async function init() {
-            await syncCalendar(); 
-            await liff.init({ liffId: LIFF_ID });
-            if (!liff.isLoggedIn()) { liff.login(); return; }
-            const profile = await liff.getProfile();
-            document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-emerald-400 rounded-full"></span>' + profile.displayName;
-            checkUser(profile.userId);
+            try {
+                syncCalendar(); 
+                
+                await liff.init({ liffId: LIFF_ID });
+                if (!liff.isLoggedIn()) { 
+                    liff.login(); 
+                    return; 
+                }
+                const profile = await liff.getProfile();
+                document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-emerald-400 rounded-full"></span>' + profile.displayName;
+                
+                await checkUser(profile.userId);
+            } catch (e) {
+                document.getElementById('sys-loading').innerHTML = `
+                    <div class="text-6xl mb-4">⚠️</div>
+                    <h2 class="text-xl font-black text-red-600 mb-2">系統連線異常</h2>
+                    <p class="text-xs text-slate-500 font-bold">請確認網路環境或 LIFF 設定<br><br>${e.message}</p>
+                `;
+            }
         }
 
         async function checkUser(lineId) {
-            const { data } = await _sb.from('employees').select('*, branch_locations(branch_name)').eq('line_id', lineId).single();
-            document.getElementById('sys-loading').style.display = 'none';
-            if (!data) {
-                await loadBranches('reg-branch'); 
-                document.getElementById('view-onboarding').style.display = 'block';
-            }
-            else if (!data.is_approved || data.employment_status === '離職') { 
-                document.getElementById('sys-pending').style.display = 'block'; 
-                if(data.employment_status === '離職') document.querySelector('#sys-pending h2').innerText = '帳號已停權';
-            }
-            else { 
-                currentUser = data; 
-                await loadBranches(null); 
-                renderUI(); 
-                document.getElementById('view-dashboard').style.display = 'block'; 
+            try {
+                const { data, error } = await _sb.from('employees').select('*, branch_locations(branch_name)').eq('line_id', lineId).single();
+                
+                if (error && error.code !== 'PGRST116') throw error; 
+
+                document.getElementById('sys-loading').style.display = 'none';
+                
+                if (!data) {
+                    await loadBranches('reg-branch'); 
+                    document.getElementById('view-onboarding').style.display = 'block';
+                }
+                else if (!data.is_approved || data.employment_status === '離職') { 
+                    document.getElementById('sys-pending').style.display = 'block'; 
+                    if(data.employment_status === '離職') document.querySelector('#sys-pending h2').innerText = '帳號已停權';
+                }
+                else { 
+                    currentUser = data; 
+                    await loadBranches(null); 
+                    renderUI(); 
+                    document.getElementById('view-dashboard').style.display = 'block'; 
+                }
+            } catch (e) {
+                document.getElementById('sys-loading').innerHTML = `
+                    <div class="text-6xl mb-4">⚠️</div>
+                    <h2 class="text-xl font-black text-red-600 mb-2">資料庫異常</h2>
+                    <p class="text-xs text-slate-500 font-bold">讀取員工資料失敗<br><br>${e.message}</p>
+                `;
             }
         }
 
@@ -238,6 +264,8 @@
         }
 
         function renderMiniCalendar() {
+            if(Object.keys(window.calData).length === 0) return; // 若政府資料還沒回來，就不繪製避免錯亂
+            
             const today = new Date(); 
             const currentWeekStart = new Date(today); currentWeekStart.setDate(today.getDate() - today.getDay());
             const startDay = new Date(currentWeekStart); startDay.setDate(currentWeekStart.getDate() - 7);
