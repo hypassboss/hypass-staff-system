@@ -1,599 +1,553 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hypass | 企業員工專區</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
-        body { background: #f1f5f9; -webkit-tap-highlight-color: transparent; font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
-        #app-container { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); min-height: 100vh; position: relative; overflow-x: hidden; }
-        @media (min-width: 768px) { #app-container { max-width: 480px; margin: 0 auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; } }
-        .app-view { display: none; } .app-view.active { display: block; animation: fadeIn 0.3s ease-in-out; }
-        .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.8); }
-        .nav-item.active { color: #0284c7; transform: translateY(-2px); font-weight: 900; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        .modal { display: none; } .modal.active { display: flex; z-index: 100; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        input:focus, select:focus, textarea:focus { outline: 2px solid #38bdf8; outline-offset: -1px; }
-        .select-arrow { appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-size: 1.5em 1.5em; background-position: right 0.5rem center; background-repeat: no-repeat; padding-right: 2rem; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>HYPASS Air+ 智能座艙</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* =========================================
+       💎 V5.1 Tesla x Gogoro (桌面版手機比例限制)
+       ========================================= */
+       
+    :root {
+      --bg-image: none; --bg-color: #000000; --surface-color: #161618; --border-color: #2c2c2e;
+      --text-primary: #ffffff; --text-secondary: #8e8e93;
+      --accent-color: #00e676; --accent-gradient: linear-gradient(135deg, #00e676 0%, #00b85c 100%);
+      --accent-glow: rgba(0, 230, 118, 0.2);
+      --chart-bar: #333333; --chart-active: #00e676;
+      --gold-color: #FFD700; --gold-glow: rgba(255, 215, 0, 0.15);
+      --glass-bg: rgba(10, 10, 10, 0.85); --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      --input-bg: #1c1c1e;
+    }
+
+    body.light-mode {
+      --bg-color: #f2f2f7; --surface-color: #ffffff; --border-color: #e5e5ea;
+      --text-primary: #1c1c1e; --text-secondary: #8e8e93;
+      --accent-color: #10b981; --accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      --accent-glow: rgba(16, 185, 129, 0.15);
+      --chart-bar: #e5e5ea; --chart-active: #34c759;
+      --gold-color: #d4af37; --gold-glow: rgba(212, 175, 55, 0.15);
+      --glass-bg: rgba(255, 255, 255, 0.9); --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      --input-bg: #f9f9f9;
+    }
+
+    body.metal-mode {
+      --bg-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px);
+      --bg-color: #151515; --surface-color: linear-gradient(145deg, #262628 0%, #1c1c1e 100%);
+      --border-color: #3a3a3c; --text-primary: #e5e5ea; --text-secondary: #98989d;
+      --accent-color: #06b6d4; --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      --accent-glow: rgba(6, 182, 212, 0.25);
+      --chart-bar: #333; --chart-active: #06b6d4;
+      --gold-color: #FFD700; --gold-glow: rgba(255, 215, 0, 0.15);
+      --glass-bg: rgba(28, 28, 30, 0.9); --card-shadow: inset 0 1px 1px rgba(255,255,255,0.05), 0 8px 25px rgba(0,0,0,0.5);
+      --input-bg: #111112;
+    }
+
+    /* 🌟 修復：電腦版背景設定 */
+    html { background-color: #0a0a0c; }
+    
+    /* 🌟 修復：強制限縮 App 最大寬度，並置中顯示立體陰影 */
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      margin: 0 auto; /* 水平置中 */
+      width: 100%; 
+      max-width: 450px; /* 鎖定在最大 iPhone Pro Max 寬度 */
+      background-color: var(--bg-color); 
+      background-image: var(--bg-image); 
+      color: var(--text-primary); 
+      padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); 
+      transition: background 0.4s ease, color 0.4s ease; 
+      min-height: 100vh; 
+      letter-spacing: 0.5px; 
+      -webkit-font-smoothing: antialiased;
+      box-shadow: 0 0 50px rgba(0,0,0,0.8); /* 讓 App 在電腦上浮起 */
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    .page { display: none; padding: 16px; animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .g-card { background: var(--surface-color); border-radius: 20px; padding: 18px; box-shadow: var(--card-shadow); margin-bottom: 16px; border: 1px solid var(--border-color); }
+    
+    .btn-main { background: var(--accent-gradient); color: #fff; border: none; padding: 16px; border-radius: 16px; font-weight: 600; width: 100%; cursor: pointer; margin-bottom: 10px; font-size: 16px; transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 4px 15px var(--accent-glow); letter-spacing: 1px;}
+    .btn-main:active { transform: scale(0.96); box-shadow: 0 2px 8px var(--accent-glow); }
+    
+    input, select { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 14px; font-size: 15px; transition: all 0.3s; outline: none; -webkit-appearance: none; box-sizing: border-box;}
+    input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 4px var(--accent-glow); }
+    
+    /* 🌟 修復：底部導覽列跟隨 max-width 置中 */
+    .bottom-nav { 
+      position: fixed; bottom: 0; 
+      left: 50%; transform: translateX(-50%); /* 置中對齊 */
+      width: 100%; max-width: 450px; /* 同步限制寬度 */
+      background: var(--glass-bg); display: flex; justify-content: space-between; align-items: flex-end; 
+      padding: 6px 5px calc(4px + env(safe-area-inset-bottom, 0px)) 5px; border-top: 1px solid var(--border-color); 
+      z-index: 999; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 -4px 20px rgba(0,0,0,0.2); 
+    }
+    .nav-item { color: var(--text-secondary); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: space-between; flex: 1; height: 42px; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
+    .nav-item:active { transform: scale(0.9); }
+    .nav-item.active { color: var(--accent-color); font-weight: 700; transform: none; }
+    .nav-icon { font-size: 22px; display: flex; align-items: center; justify-content: center; height: 24px; margin: 0; line-height: 1; }
+    .nav-text { font-size: 11px; line-height: 1; display: block; margin-top: 2px;}
+
+    .header-flex { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 25px; }
+    .header-title-box { flex: 1; min-width: 0; } 
+    #ui-owner { font-size: 20px; font-weight: 800; margin: 0; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .plate-tag { background: var(--input-bg); color: var(--text-secondary); padding: 6px 12px; border-radius: 16px; font-family: monospace; font-size: 13px; font-weight: 700; border: 1px solid var(--border-color); letter-spacing: 1px;}
+    
+    .shield-badge { display:inline-flex; background: var(--accent-glow); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 6px 12px; border-radius: 30px; font-size: 11px; font-weight: 700; align-items: center; gap: 6px; animation: badgePulse 2.5s infinite alternate ease-in-out; transition: all 0.5s ease; margin-top:6px;}
+    @keyframes badgePulse { 0% { box-shadow: 0 0 5px var(--accent-glow); border-color: transparent; } 100% { box-shadow: 0 0 20px var(--accent-color); border-color: var(--accent-color); } }
+    .pulse-dot { display: inline-block; width: 8px; height: 8px; background: var(--accent-color); border-radius: 50%; animation: heartBeat 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1); transition: background 0.5s ease;}
+    @keyframes heartBeat { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 var(--accent-color); } 50% { transform: scale(1.6); box-shadow: 0 0 0 8px rgba(0,0,0,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
+    
+    .main-visual-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0 20px 0; }
+    .ring { width: 220px; height: 220px; border-radius: 50%; border: 6px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 50px var(--accent-glow); position: relative; background: var(--surface-color); z-index: 2;}
+    .ring::after { content: ''; position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px; border-radius: 50%; border: 1px dashed var(--text-secondary); animation: rotate 25s linear infinite; opacity: 0.2; z-index: 1;}
+    @keyframes rotate { 100% { transform: rotate(360deg); } }
+    
+    .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .chart-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
+    .chart-content { display: flex; justify-content: space-between; align-items: flex-end; }
+    .chart-number-box { display:flex; align-items:baseline; gap:4px; }
+    .chart-number { font-size: 42px; font-weight: 900; letter-spacing: -2px; color: var(--text-primary); line-height: 1;}
+    .chart-unit { font-size: 12px; font-weight: 600; color: var(--text-secondary); padding-bottom: 6px;}
+    
+    .bars-container { display: flex; align-items: flex-end; gap: 6px; height: 45px; }
+    .bar { width: 10px; border-radius: 5px; background: var(--chart-bar); transition: height 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .bar.active { background: var(--accent-gradient); }
+
+    .level-row { display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--border-color); margin-top: 15px; }
+    .level-badge { background: var(--input-bg); color: var(--accent-color); font-weight: 700; font-size: 12px; padding: 6px 12px; border-radius: 16px; border: 1px solid var(--border-color); display:flex; align-items:center; gap:6px;}
+    
+    .tech-tag-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 16px; }
+    .tech-tag { background: var(--input-bg); color: var(--text-primary); padding: 8px 2px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; gap: 2px; font-weight: 600; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .t-icon { font-size: 13px; opacity: 0.9; flex-shrink: 0;}
+    
+    .dynamic-msg-bar { background: var(--surface-color); color: var(--accent-color); padding: 0 16px; height: 48px; border-radius: 16px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; transition: all 0.4s ease; box-shadow: var(--card-shadow); }
+    .dynamic-msg-icon { margin-right: 12px; font-size: 18px; flex-shrink: 0; display:flex; align-items:center; }
+    .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; position: relative; display: flex; align-items: center; height: 100%; }
+    .marquee-content { display: flex; align-items: center; min-width: 100%; animation: scrollText 14s linear infinite; line-height: 1; padding-top: 2px;} 
+    @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+    
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .env-box { background: var(--input-bg); border-radius: 14px; padding: 16px 10px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; align-items: center; min-height: 90px; }
+    .env-title { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; line-height: 1.4;}
+    .aqi-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; }
+    .aqi-label { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; margin-bottom: 2px; }
+    .env-val { font-size: 32px; font-weight: 800; color: var(--text-primary); margin: 0; font-family: -apple-system, sans-serif; letter-spacing: -1px; line-height: 1; }
+
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 16px;}
+    .esg-box { text-align: center; padding: 12px 6px; background: var(--input-bg); border-radius: 14px; border: 1px solid var(--border-color); position: relative; }
+    .esg-badge { position: absolute; top: -8px; right: 50%; transform: translateX(50%); background: var(--accent-gradient); color: #fff; font-size: 9px; padding: 3px 6px; border-radius: 10px; font-weight: 700; white-space: nowrap;}
+    
+    .tab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+    .tab-btn { padding: 14px 10px; margin: 0; font-size: 13px; text-align: center; border-radius: 14px; cursor: pointer; font-weight: 600; border: 1px solid var(--border-color); white-space: nowrap; transition: all 0.3s; background: var(--input-bg); color: var(--text-secondary);}
+    .tab-btn.active { background: var(--accent-gradient); color: #fff; border-color: var(--accent-color); box-shadow: 0 6px 15px var(--accent-glow);}
+    
+    .log-item { border-bottom: 1px solid var(--border-color); padding: 16px 0; font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+    .log-item:last-child { border-bottom: none; }
+    .version-tag { text-align: center; color: var(--text-secondary); font-size: 11px; margin-top: 40px; font-family: monospace; letter-spacing: 1px; opacity: 0.6;}
+    label { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px; display: block; padding-left: 4px;}
+
+    .vip-card { border: 1px solid var(--gold-color); background: linear-gradient(135deg, #1a1500 0%, #050400 100%); box-shadow: 0 15px 40px var(--gold-glow); position: relative; overflow: hidden; }
+    .vip-card::before { content: ''; position: absolute; top: -60px; right: -60px; width: 180px; height: 180px; background: var(--gold-glow); filter: blur(50px); border-radius: 50%; }
+    .shine-btn { position: relative; overflow: hidden; background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%); color: #000; box-shadow: 0 8px 25px var(--gold-glow); border-radius: 16px;}
+    .shine-btn::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0) 100%); transform: skewX(-25deg); animation: shine 3s infinite; }
+    @keyframes shine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+  </style>
 </head>
-<body class="text-slate-800">
-<div id="app-container" class="pb-24">
+<body>
+
+  <div id="page-register" class="page">
+    <h2 style="color:var(--text-primary); text-align:center; margin-bottom:30px;">HYPASS <span style="color:var(--accent-color);">Air+</span></h2>
+    <div class="card"><p style="font-size:13px; color:var(--text-secondary); margin:0; text-align:center; line-height:1.5;">為保障您的數位履歷與專屬保固<br>請完成首次座艙授權</p></div>
+    <button class="btn-main" onclick="showForm('customer')">A. 我是濾網客人 (車主)</button>
+    <button class="btn-main" style="background:var(--input-bg); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:none;" onclick="showForm('garage')">B. 我是保修廠加盟夥伴</button>
+
+    <div id="form-customer" style="display:none; margin-top:30px;">
+      <input type="text" id="c-name" placeholder="* 姓名">
+      <input type="tel" id="c-phone" placeholder="* 手機號碼">
+      <input type="email" id="c-email" placeholder="* 電子郵件">
+      <select id="c-gender"><option value="">* 性別</option><option value="M">男</option><option value="F">女</option></select>
+      <select id="c-city" onchange="updateDistricts('c-city', 'c-district')">
+        <option value="">* 居住縣市</option>
+        <option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option>
+        <option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option>
+        <option value="苗栗縣">苗栗縣</option><option value="台中市">台中市</option><option value="彰化縣">彰化縣</option>
+        <option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option><option value="嘉義市">嘉義市</option>
+        <option value="嘉義縣">嘉義縣</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option>
+        <option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option>
+        <option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option>
+        <option value="連江縣">連江縣</option>
+      </select>
+      <select id="c-district"><option value="">* 鄉鎮市區</option></select>
+      <input type="text" id="c-address" placeholder="* 詳細通訊地址 (街道/巷弄/樓層)">
+      <select id="c-brand" onchange="updateCarModels('c-brand', 'c-model')">
+        <option value="">* 選擇車輛品牌</option>
+        <option value="Toyota">Toyota (豐田)</option><option value="Honda">Honda (本田)</option>
+        <option value="Nissan">Nissan (日產)</option><option value="Ford">Ford (福特)</option>
+        <option value="Mazda">Mazda (馬自達)</option><option value="Mitsubishi">Mitsubishi (三菱)</option>
+        <option value="Hyundai">Hyundai (現代)</option><option value="Kia">Kia (起亞)</option>
+        <option value="Volkswagen">Volkswagen (福斯)</option><option value="Skoda">Skoda (司科達)</option>
+        <option value="Lexus">Lexus (凌志)</option><option value="Benz">Mercedes-Benz (賓士)</option>
+        <option value="BMW">BMW (寶馬)</option><option value="Audi">Audi (奧迪)</option>
+        <option value="Volvo">Volvo (富豪)</option><option value="Porsche">Porsche (保時捷)</option>
+        <option value="Tesla">Tesla (特斯拉)</option><option value="Subaru">Subaru (速霸陸)</option>
+        <option value="Suzuki">Suzuki (鈴木)</option><option value="Luxgen">Luxgen (納智捷)</option>
+        <option value="Other">其他品牌</option>
+      </select>
+      <select id="c-model"><option value="">* 請先選擇品牌</option></select>
+      <input type="number" id="c-year" placeholder="* 出廠年份 (例：2023)">
+      <input type="text" id="c-plate" placeholder="* 車牌號碼 (例：ABC-1234)">
+      <select id="c-mileage"><option value="">* 年平均里程</option><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option></select>
+      <button class="btn-main" onclick="submitRegister('customer')">完成授權並啟用座艙</button>
+    </div>
+  </div>
+
+  <div id="page-home" class="page">
     
-    <header class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shadow-md sticky top-0 z-50">
-        <div><h1 class="text-2xl font-black italic uppercase tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-sky-300 to-indigo-200">Hypass</h1><span class="text-[10px] text-sky-400 tracking-[0.2em] font-bold">ENTERPRISE</span></div>
-        <div id="user-status" class="text-xs font-bold bg-white/10 px-3 py-1.5 rounded-full border border-white/20 flex items-center"><span class="animate-pulse mr-1.5 h-2 w-2 bg-emerald-400 rounded-full"></span>連線中...</div>
-    </header>
-    
-    <main class="p-5">
-        <div id="sys-loading" class="text-center py-40 active-view"><div class="animate-spin h-10 w-10 border-4 border-sky-600 border-t-transparent rounded-full mx-auto mb-4"></div><p class="text-sm text-slate-500 font-bold tracking-wider">系統安全載入中...</p></div>
-        <div id="sys-pending" class="text-center py-32 hidden"><div class="text-6xl mb-6 grayscale opacity-50">⏳</div><h2 class="text-2xl font-black text-slate-800 mb-2">帳號審核中</h2><p class="text-sm text-slate-500 font-medium">已通知主管，請耐心等候權限開通。</p></div>
-
-        <div id="view-onboarding" class="hidden glass-card p-6 rounded-3xl shadow-xl">
-            <h2 class="text-xl font-black mb-6 text-center text-slate-800">👋 歡迎加入！建立員工檔案</h2>
-            <form id="onboarding-form" class="space-y-4">
-                <div class="grid grid-cols-3 gap-3">
-                    <div class="col-span-2"><input type="text" name="full_name" placeholder="真實姓名" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div>
-                    <div class="col-span-1"><select name="job_title" required class="w-full p-3 bg-sky-50 text-sky-800 rounded-xl text-sm font-black border-0 shadow-inner select-arrow"><option value="" disabled selected>職位</option><option value="主管">主管</option><option value="業務">業務</option><option value="助理">助理</option></select></div>
-                </div>
-                <div><input type="text" name="id_number" placeholder="身分證字號" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner uppercase"></div>
-                <div class="grid grid-cols-2 gap-3"><input type="email" name="email" placeholder="電子信箱" required class="p-3 bg-slate-50 rounded-xl text-sm border-0 shadow-inner"><input type="tel" name="phone" placeholder="手機號碼" required class="p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div>
-                
-                <div class="bg-slate-50 p-1 rounded-xl shadow-inner border border-slate-100">
-                    <label class="text-[10px] font-bold text-slate-400 ml-2 mt-1 block">請選擇所屬工作打卡據點</label>
-                    <select name="default_branch_id" id="reg-branch" required class="w-full p-3 bg-transparent text-base font-black text-slate-700 border-0 outline-none select-arrow"></select>
-                </div>
-                
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 ml-1 mb-0.5 block">入職日期</label>
-                    <input type="date" name="onboarding_date" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner">
-                </div>
-
-                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 shadow-inner">
-                    <label class="text-[10px] font-bold text-slate-500 ml-1 mb-1 block">通訊地址</label>
-                    <div class="grid grid-cols-2 gap-2 mb-2">
-                        <select id="addr-county" class="w-full p-2.5 bg-white rounded-xl text-sm font-bold border shadow-sm outline-none select-arrow" required onchange="updateDistricts()">
-                            <option value="" disabled selected>選擇縣市</option>
-                        </select>
-                        <select id="addr-district" class="w-full p-2.5 bg-white rounded-xl text-sm font-bold border shadow-sm outline-none select-arrow" required>
-                            <option value="" disabled selected>鄉鎮市區</option>
-                        </select>
-                    </div>
-                    <input type="text" id="addr-street" placeholder="詳細街道與門牌 (例: 光復路一段1號)" required class="w-full p-2.5 bg-white rounded-xl text-sm border shadow-sm outline-none">
-                </div>
-                
-                <div class="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-100">
-                    <h3 class="text-xs font-black text-emerald-800 mb-3 flex items-center"><span class="text-base mr-1">💰</span>財務與保險資料</h3>
-                    <div class="mb-3">
-                        <select id="bank-select" required class="w-full p-2.5 text-sm font-bold border shadow-sm rounded-xl bg-white outline-none select-arrow">
-                            <option value="" disabled selected>請選擇撥薪銀行</option>
-                            <option value="004 台灣銀行">004 台灣銀行</option><option value="005 土地銀行">005 土地銀行</option><option value="006 合作金庫">006 合作金庫</option><option value="007 第一銀行">007 第一銀行</option><option value="008 華南銀行">008 華南銀行</option><option value="009 彰化銀行">009 彰化銀行</option><option value="011 上海商銀">011 上海商銀</option><option value="012 台北富邦">012 台北富邦</option><option value="013 國泰世華">013 國泰世華</option><option value="017 兆豐銀行">017 兆豐銀行</option><option value="050 台灣企銀">050 台灣企銀</option><option value="052 渣打銀行">052 渣打銀行</option><option value="053 台中銀行">053 台中銀行</option><option value="102 華泰銀行">102 華泰銀行</option><option value="103 新光銀行">103 新光銀行</option><option value="108 陽信銀行">108 陽信銀行</option><option value="118 板信銀行">118 板信銀行</option><option value="700 中華郵政">700 中華郵政</option><option value="803 聯邦銀行">803 聯邦銀行</option><option value="804 遠東商銀">804 遠東商銀</option><option value="806 元大銀行">806 元大銀行</option><option value="807 永豐銀行">807 永豐銀行</option><option value="808 玉山銀行">808 玉山銀行</option><option value="809 凱基銀行">809 凱基銀行</option><option value="810 星展銀行">810 星展銀行</option><option value="812 台新銀行">812 台新銀行</option><option value="822 中國信託">822 中國信託</option><option value="823 將來銀行">823 將來銀行</option><option value="824 LINEBank">824 LINEBank</option><option value="826 樂天銀行">826 樂天銀行</option>
-                        </select>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3 mb-3">
-                        <input type="text" name="bank_user_name" placeholder="存摺戶名" required class="p-2.5 text-sm border shadow-sm rounded-xl bg-white">
-                        <input type="text" name="bank_account" placeholder="銀行帳號" required class="p-2.5 text-sm border shadow-sm rounded-xl bg-white font-bold tracking-wider">
-                    </div>
-                    <div class="flex justify-between items-center border-t border-emerald-200/50 pt-3">
-                        <span class="text-sm font-bold text-emerald-900">健保眷屬加保人數</span>
-                        <select name="dependents_count" required class="w-24 p-2 text-center text-sm font-black border shadow-sm rounded-xl bg-white outline-none select-arrow">
-                            <option value="0">0 人</option><option value="1">1 人</option><option value="2">2 人</option><option value="3">3 人</option><option value="4">4 人</option><option value="5">5 人</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-3"><input type="text" name="emergency_name" placeholder="緊急聯絡人" required class="p-3 bg-slate-50 border-0 shadow-inner rounded-xl text-sm font-bold"><input type="tel" name="emergency_phone" placeholder="聯絡人電話" required class="p-3 bg-slate-50 border-0 shadow-inner rounded-xl text-sm font-bold"></div>
-                
-                <div class="bg-slate-100 p-4 rounded-2xl mt-5 border border-slate-200 shadow-inner">
-                    <h3 class="text-sm font-black text-slate-800 mb-3 flex items-center"><span class="text-lg mr-1.5">⚖️</span>聘僱合約與服務守則 (必讀)</h3>
-                    <div class="text-[11px] text-slate-700 leading-relaxed h-56 overflow-y-auto bg-white p-4 rounded-xl border border-slate-200 mb-4 shadow-sm select-none">
-                        <h4 class="font-black text-center text-sm mb-3 text-slate-900">HYPASS 企業聘僱合約與員工服務守則</h4>
-                        <p class="mb-2"><strong>甲方（雇主）：</strong>海帕斯科技股份有限公司<br><strong>乙方（受僱人）：</strong>新進員工 (您)</p>
-                        <hr class="my-3 border-slate-200">
-                        <p class="font-black text-slate-900 text-xs mb-1 mt-2">第一章：職位與工作內容</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方各項業務推動。</li><li>工作區域：甲方得視營運需求，指派乙方於實體據點或指定分區執行職務。</li></ul>
-                        <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統自動偵測並記錄員工所在座標與據點，無距離限制限制。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
-                        <p class="font-black text-slate-900 text-xs mb-1">第三章：請假與休假規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>請假程序：一般請假（如特休、事假）應至少提前三日於線上申請；突發狀況應第一時間告知並補單。</li><li>颱風假原則：依政府發布，遵循「放假但該日不支薪」原則，不扣特休亦不影響全勤。</li><li>加班申請：例假日出勤須於系統填寫「起訖時間」送出加班單。</li></ul>
-                        <p class="font-black text-slate-900 text-xs mb-1">第四章：保密協定 (NDA) 與智慧財產權</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>保密義務：乙方對甲方之客戶未公開營業秘密，負絕對保密義務。未經同意絕不洩漏。</li><li>歸還義務：離職時，應將所有隸屬公司之財產、機密資訊、設備、實體與數位檔案全數歸還，絕對不得私自拷貝或保留。</li><li>違約罰則：乙方若違反保密義務，同意無條件負擔新台幣壹佰萬元整之懲罰性違約金。</li></ul>
-                    </div>
-                    <div class="space-y-3 bg-white p-3 rounded-xl border border-slate-200">
-                        <label class="flex items-start space-x-3 cursor-pointer"><input type="checkbox" id="chk1" onchange="checkForm()" class="mt-0.5 h-4 w-4 rounded text-sky-600 focus:ring-sky-500"><span class="text-xs font-bold text-slate-800 leading-tight">我已詳閱並同意上述【聘僱合約與服務守則】全條文。</span></label>
-                        <label class="flex items-start space-x-3 cursor-pointer"><input type="checkbox" id="chk2" onchange="checkForm()" class="mt-0.5 h-4 w-4 rounded text-sky-600 focus:ring-sky-500"><span class="text-[11px] font-bold text-slate-800 leading-tight">同意系統以 GPS 定位為考勤唯一依據，<strong class="text-red-600">遲到時數將依比例不計薪或申請特休扣抵。</strong></span></label>
-                        <label class="flex items-start space-x-3 cursor-pointer"><input type="checkbox" id="chk3" onchange="checkForm()" class="mt-0.5 h-4 w-4 rounded text-sky-600 focus:ring-sky-500"><span class="text-[11px] font-bold text-slate-800 leading-tight">如遇法定颱風假，公司依法遵循<strong class="text-red-600">「放假但該日不支薪」</strong>原則辦理，不扣除特休。</span></label>
-                        <label class="flex items-start space-x-3 cursor-pointer"><input type="checkbox" id="chk4" onchange="checkForm()" class="mt-0.5 h-4 w-4 rounded text-sky-600 focus:ring-sky-500"><span class="text-[11px] font-bold text-slate-800 leading-tight">同意嚴守企業保密協定(NDA)，如有違願負擔<strong class="text-red-600">新台幣壹佰萬元之懲罰性違約金。</strong></span></label>
-                    </div>
-                </div>
-                <button type="submit" id="btn-submit" disabled class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 disabled:from-slate-300 disabled:to-slate-400 text-white font-black py-4 rounded-2xl mt-4 transition-all shadow-lg text-sm tracking-wider active:scale-95">數位簽署並提交審核</button>
-            </form>
-        </div>
-
-        <div id="view-dashboard" class="hidden space-y-5">
-            <div id="tab-home" class="app-view active space-y-5">
-                <div class="bg-amber-50/80 border border-amber-200 p-4 rounded-2xl flex flex-col shadow-sm relative overflow-hidden"><div class="absolute top-0 right-0 -mt-2 -mr-2 text-6xl opacity-10 grayscale">📢</div><div class="flex items-center space-x-2 mb-3 pb-2 border-b border-amber-200/50 relative z-10"><span class="text-lg">📢</span><h4 class="text-xs font-black text-amber-900 tracking-widest">公司公告</h4></div><div id="ui-bulletin" class="pl-1 pr-1 max-h-24 overflow-y-auto no-scrollbar space-y-3 relative z-10">載入中...</div></div>
-                
-                <div class="bg-gradient-to-br from-slate-900 to-indigo-900 p-6 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
-                    <div class="absolute top-0 right-0 -mt-4 -mr-4 text-8xl opacity-20 text-sky-300" id="ui-role-icon">🆔</div>
-                    <div class="relative z-10">
-                        <div class="flex items-end mb-1"><h3 id="ui-name" class="text-3xl font-black tracking-tight mr-3">--</h3><span id="ui-role-badge" class="bg-sky-500/30 border border-sky-400 px-2 py-1 rounded text-[10px] font-bold mb-1.5">載入中</span></div>
-                        <p id="ui-work-hours" class="text-xs text-sky-200 font-bold mb-5 tracking-wider opacity-90">班別載入中...</p>
-                        <div class="flex flex-col bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-sm"><span class="text-xs font-bold text-slate-300 mb-1">法定特休餘額</span><span id="ui-leave" class="text-3xl font-black text-amber-300 tracking-tight">--</span></div>
-                    </div>
-                </div>
-
-                <div class="glass-card p-5 rounded-[2rem] shadow-sm relative overflow-hidden">
-                    <div class="text-center mb-5 border-b border-slate-100 pb-5">
-                        <p class="text-[10px] text-slate-400 font-bold mb-1 tracking-widest uppercase">CURRENT TIME</p>
-                        <h2 id="live-clock" class="text-4xl font-black text-slate-800 tracking-tight font-mono">00:00:00</h2>
-                        <p id="live-date" class="text-xs text-sky-600 font-bold mt-1 tracking-wide">----/--/-- 星期-</p>
-                    </div>
-
-                    <div class="mb-5 bg-sky-50/50 p-3 rounded-2xl border border-sky-100 flex items-center justify-center space-x-2">
-                        <span class="text-lg">🌍</span><span class="text-[11px] font-bold text-slate-600 tracking-wide">無邊界定位：打卡後系統將記錄座標</span>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <button onclick="punch('IN')" class="bg-gradient-to-br from-sky-500 to-blue-600 text-white py-8 rounded-3xl font-black text-xl shadow-lg active:scale-95 flex flex-col items-center transition-all group"><span class="text-4xl mb-2">🏢</span>上班打卡</button>
-                        <button onclick="punch('OUT')" class="bg-white text-slate-700 border-2 border-slate-100 py-8 rounded-3xl font-black text-xl shadow-sm active:scale-95 flex flex-col items-center transition-all hover:bg-slate-50"><span class="text-4xl mb-2 grayscale opacity-80">🏠</span>下班打卡</button>
-                    </div>
-                    <button onclick="loadPunchHistory()" class="w-full mt-4 text-xs font-bold text-slate-400 bg-slate-50 py-3 rounded-2xl border border-slate-100 flex justify-center items-center space-x-2 active:scale-95 transition hover:bg-slate-100"><span>🔍 查詢我的近期紀錄</span></button>
-                </div>
-
-                <div class="glass-card p-4 rounded-[1.5rem] shadow-sm">
-                    <h4 class="text-xs font-black text-slate-600 mb-3 ml-1 flex justify-between items-center">
-                        <span class="flex items-center"><span class="text-lg mr-1.5">📅</span>出勤行事曆 (同步政府版)</span>
-                        <span class="text-[9px] bg-slate-100 px-2 py-1 rounded text-slate-400 border border-slate-200">🔴假 🟡補 ⚫️班</span>
-                    </h4>
-                    <div id="ui-mini-calendar" class="px-1 pb-1"></div>
-                </div>
-
-            </div>
-
-            <div id="tab-leave" class="app-view space-y-5">
-                <h3 class="font-black text-2xl text-slate-900 pl-2 flex justify-between items-end"><span>線上請假加班申請</span></h3>
-                <div class="glass-card p-6 rounded-[2rem] shadow-sm">
-                    <form id="leave-form" onsubmit="submitLeave(event)" class="space-y-4 border-b border-slate-100 pb-6 mb-5">
-                        <select name="leave_type" id="leave-type-select" onchange="checkLeaveType()" class="w-full bg-slate-50 border-0 shadow-inner p-3 rounded-2xl text-sm font-bold select-arrow">
-                            <option value="特休">🏖️ 特休 (可抵扣遲到時數)</option><option value="事假">📄 事假</option><option value="病假">💊 病假</option><option value="公假">💼 公假</option><option value="颱風假">🌪️ 颱風假</option><option value="緊急加班">🚨 假日緊急加班</option>
-                        </select>
-                        <div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-bold text-slate-500 ml-1 mb-1 block">起始時間</label><input type="datetime-local" name="start_time" required class="w-full bg-slate-50 border-0 shadow-inner p-3 rounded-2xl text-sm font-bold"></div><div><label class="text-xs font-bold text-slate-500 ml-1 mb-1 block">結束時間</label><input type="datetime-local" name="end_time" required class="w-full bg-slate-50 border-0 shadow-inner p-3 rounded-2xl text-sm font-bold"></div></div>
-                        <div id="salary-protection-ui" class="flex items-center justify-between p-4 bg-sky-50/80 rounded-2xl border border-sky-100 transition-all shadow-sm"><div id="sp-text"><p class="text-sm font-black text-sky-900 mb-0.5">薪資保全</p><p class="text-xs font-bold text-sky-600">同意扣特休以維持全薪</p></div><label class="relative inline-flex items-center cursor-pointer scale-110" id="sp-toggle"><input type="checkbox" name="salary_protection" checked class="sr-only peer"><div class="w-11 h-6 bg-slate-300 rounded-full peer peer-checked:bg-sky-500 peer-checked:after:translate-x-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all shadow-inner"></div></label></div>
-                        <button type="submit" id="btn-leave" class="w-full bg-gradient-to-r from-amber-400 to-orange-500 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition text-sm tracking-wider">送出申請單</button>
-                    </form>
-                    <h4 class="text-sm font-black text-slate-700 mb-3 ml-1">📅 近期申請紀錄</h4><div id="ui-leave-list" class="space-y-3 max-h-56 overflow-y-auto no-scrollbar p-1">載入中...</div>
-                </div>
-            </div>
-
-            <div id="tab-payroll" class="app-view space-y-5">
-                <h3 class="font-black text-2xl text-slate-900 pl-2">薪資明細</h3>
-                <div class="glass-card p-6 rounded-[2rem] space-y-4 shadow-sm">
-                    <select id="payroll-month" onchange="loadPayrollDetail()" class="w-full bg-slate-50 text-slate-800 font-bold border-0 shadow-inner p-3 rounded-2xl text-sm outline-none select-arrow"></select>
-                    <div class="bg-white border border-slate-100 rounded-2xl p-5 space-y-4 mt-2 shadow-sm">
-                        <div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">底薪</span><span id="p-base" class="text-base font-black text-slate-800">NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">獎金津貼</span><span id="p-bonus" class="text-base font-black text-emerald-600">NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">年終獎金</span><span id="p-yeb" class="text-base font-black text-emerald-600">NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">勞健保自付</span><span id="p-ins" class="text-base font-black text-red-500">- NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">二代健保</span><span id="p-2nd" class="text-base font-black text-red-500">- NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-xs font-bold text-slate-400">勞退提撥 (公司負擔 6%)</span><span id="p-pen" class="text-xs font-black text-slate-400">NT$ 0</span></div>
-                        <div class="flex justify-between items-end pt-3 border-t border-slate-100"><span class="text-base font-black text-slate-800">總計實領</span><span id="p-net" class="text-3xl font-black text-sky-600 tracking-tight">NT$ 0</span></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab-profile" class="app-view space-y-5">
-                <h3 class="font-black text-2xl text-slate-900 pl-2">基本資料</h3>
-                <div class="glass-card p-6 rounded-[2rem] shadow-sm space-y-6">
-                    <div class="flex flex-col space-y-4 border-b border-slate-100 pb-6" id="ui-profile-info">載入中...</div>
-                    <div class="pt-2"><h4 class="text-xs font-black tracking-widest text-slate-400 uppercase mb-3 ml-1">數位合約存證中心</h4><button onclick="openDoc()" class="w-full text-left bg-white p-4 rounded-2xl border border-slate-200 font-bold text-sm flex justify-between items-center shadow-sm active:scale-95 transition hover:bg-slate-50"><span class="flex items-center"><span class="mr-3 text-xl">📄</span>查看聘僱合約與保密協定</span><span class="text-slate-400">➔</span></button></div>
-                </div>
-            </div>
-            
-            <div class="text-center mt-6 text-[10px] font-mono text-slate-300 tracking-widest pb-6 pointer-events-none">HYPASS v27.5</div>
-
-            <nav class="absolute bottom-0 left-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-200/60 flex justify-around items-center py-3 pb-8 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] rounded-t-3xl">
-                <button onclick="switchTab('home')" class="nav-item active flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🏠</span><span class="text-[10px] font-bold">打卡</span></button><button onclick="switchTab('leave')" class="nav-item flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">📅</span><span class="text-[10px] font-bold">請假</span></button><button onclick="switchTab('payroll')" class="nav-item flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">💰</span><span class="text-[10px] font-bold">薪資</span></button><button onclick="switchTab('profile')" class="nav-item flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">👤</span><span class="text-[10px] font-bold">資料</span></button>
-            </nav>
-        </div>
-    </main>
-
-    <div id="alert-modal" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-center justify-center z-[200] p-5">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center transform transition-all scale-95 opacity-0" id="alert-box">
-            <div id="alert-icon" class="text-6xl mb-4">✅</div>
-            <h3 id="alert-title" class="text-xl font-black text-slate-800 mb-2">提示</h3>
-            <p id="alert-msg" class="text-sm text-slate-600 font-bold leading-relaxed mb-6">訊息內容</p>
-            <div class="flex space-x-3" id="alert-btn-group">
-                <button onclick="closeAlert(false)" id="alert-btn-cancel" class="hidden flex-1 bg-slate-100 text-slate-600 font-black py-3.5 rounded-xl shadow-sm active:scale-95 transition">不請假</button>
-                <button onclick="closeAlert(true)" id="alert-btn-confirm" class="w-full bg-slate-900 text-white font-black py-3.5 rounded-xl shadow-md active:scale-95 transition">確認</button>
-            </div>
-        </div>
+    <div class="header-flex">
+      <div class="header-title-box">
+        <p id="ui-owner">讀取中...</p>
+        <div class="shield-badge" id="ui-shield-badge"><span class="pulse-dot" id="ui-pulse-dot"></span> <span id="ui-shield-text">系統連線中</span></div>
+      </div>
+      <div class="plate-tag" id="ui-plate-tag">讀取中</div>
     </div>
 
-    <div id="record-modal" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-end justify-center z-[100]"><div class="bg-[#f8fafc] w-full max-w-md rounded-t-[2rem] p-6 h-[75vh] flex flex-col shadow-2xl md:max-w-480px md:mx-auto md:relative"><div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-200"><h3 class="font-black text-xl text-slate-800">近期打卡紀錄</h3><button onclick="closeModal('record-modal')" class="bg-slate-200 px-4 py-2 rounded-full text-sm font-bold text-slate-600 hover:bg-slate-300 transition">✕ 關閉</button></div><div id="ui-records-list" class="overflow-y-auto space-y-3 flex-1 no-scrollbar pb-8 p-1">載入中...</div></div></div>
+    <div class="main-visual-container">
+      <div class="ring">
+        <div style="font-size:64px; font-weight:900; color:var(--accent-color); letter-spacing:-2px; line-height:1;" id="ui-health">100%</div>
+        <div style="font-size:14px; color:var(--text-secondary); font-weight:700; margin-top:8px;">動態壽命推估</div>
+      </div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:20px; z-index:3; letter-spacing:0.5px;">保固啟用: <span id="ui-filter-date" style="font-weight:bold; color:var(--text-primary);">讀取中...</span></div>
+    </div>
     
-    <div id="doc-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-md items-center justify-center p-5 z-[100]"><div class="bg-white w-full max-w-md rounded-3xl p-6 relative flex flex-col shadow-2xl max-h-[85vh]"><h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 text-center">📜 聘僱合約與服務守則</h3><div id="doc-content" class="overflow-y-auto pr-2 flex-1 mb-4 no-scrollbar"></div><div class="bg-emerald-50 border border-emerald-100 p-3 rounded-2xl text-center shadow-inner"><p class="text-[10px] text-emerald-700 font-bold mb-1">✔️ 經數位簽章認證，具備法律效力</p><p id="doc-sig" class="font-black text-emerald-900 text-xs">簽署人：--</p></div><button onclick="closeModal('doc-modal')" class="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl text-sm transition shadow-md active:scale-95">已詳閱並關閉</button></div></div>
-</div>
+    <div class="dynamic-msg-bar" id="dynamic-msg-box">
+      <span style="margin-right: 12px; font-size: 18px;">💬</span>
+      <div class="marquee-container"><span class="marquee-content" id="ui-dynamic-msg">系統連線中，同步總部大數據...</span></div>
+    </div>
 
-    <script>
-        const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
-        const SUPABASE_ANON_KEY = '請填入您的ANON_KEY'; 
-        const LIFF_ID = '2009148826-RoogHmxk'; 
+    <div class="g-card">
+      <div class="chart-header">
+        <span class="chart-title">累計淨化量 (PM2.5)</span>
+        <span class="plate-tag" style="font-size:10px; padding:2px 8px;">近 7 日趨勢</span>
+      </div>
+      <div class="chart-content">
+        <div class="chart-number-box">
+          <div class="chart-number" id="ui-pm25-w">0</div>
+          <div class="chart-unit">萬 µg</div>
+        </div>
+        <div class="bars-container">
+          <div class="bar" style="height: 30%;"></div>
+          <div class="bar" style="height: 50%;"></div>
+          <div class="bar" style="height: 40%;"></div>
+          <div class="bar" style="height: 70%;"></div>
+          <div class="bar" style="height: 60%;"></div>
+          <div class="bar" style="height: 90%;"></div>
+          <div class="bar active" style="height: 100%; position:relative;">
+             <div style="position:absolute; bottom:-8px; left:50%; transform:translateX(-50%); width:3px; height:3px; background:var(--accent-color); border-radius:50%;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="level-row">
+        <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">
+          已減少碳排放 <span id="ui-esg-co2" style="color:var(--text-primary); font-weight:800; font-size:14px;">0</span> kg
+        </div>
+        <div class="level-badge" id="ui-level-badge"><span>👤</span> <span id="ui-level-title">讀取中</span></div>
+      </div>
+    </div>
+
+    <div class="g-card">
+      <div class="chart-title" style="margin-bottom: 12px;">空汙雷達與材料規格</div>
+      <div class="grid-2">
+        <div class="env-box">
+          <div class="env-title">📍 即時所在地<br><span id="ui-loc-name" class="env-subtitle" style="color:var(--text-primary);">定位中...</span></div>
+          <div class="aqi-container">
+            <div class="aqi-label">AQI</div>
+            <div class="env-val" id="env-aqi" style="color:var(--accent-color);">--</div>
+          </div>
+        </div>
+        <div class="env-box">
+          <div class="env-title">🏠 近7日居住地<br><span id="ui-home-city" class="env-subtitle" style="color:var(--text-primary);">讀取中...</span></div>
+          <div class="aqi-container">
+            <div class="aqi-label">AQI</div>
+            <div class="env-val" id="env-home-aqi" style="color:var(--gold-color);">--</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="esg-box">
+          <div class="esg-badge">冷氣輕負載</div><div style="font-size:18px; margin-top:8px;">⚡️</div><div style="font-size:18px; font-weight:700; color:var(--text-primary); margin:4px 0;"><span id="ui-esg-kwh">0</span><span style="font-size:9px; color:var(--text-secondary);">kWh</span></div><div style="font-size:10px; color:var(--text-secondary); font-weight:600;">省電效能</div>
+        </div>
+        <div class="esg-box">
+          <div class="esg-badge">強效大風量</div><div style="font-size:18px; margin-top:8px;">⛽️</div><div style="font-size:18px; font-weight:700; color:var(--text-primary); margin:4px 0;"><span id="ui-esg-ac">0</span><span style="font-size:9px; color:var(--text-secondary);">%</span></div><div style="font-size:10px; color:var(--text-secondary); font-weight:600;">空調節能</div>
+        </div>
+        <div class="esg-box" style="display:flex; flex-direction:column; justify-content:center; gap:4px; padding:8px 4px;">
+           <div style="font-size:9px; background:var(--border-color); border-radius:4px; padding:2px; font-weight:bold;">🇹🇼 台灣製造</div>
+           <div style="font-size:9px; background:var(--border-color); border-radius:4px; padding:2px; font-weight:bold;">椰殼除臭</div>
+           <div style="font-size:9px; background:var(--border-color); border-radius:4px; padding:2px; font-weight:bold;">靜電過濾</div>
+        </div>
+      </div>
+    </div>
+    
+    <button class="btn-main" onclick="scanFilter()" style="margin-top:5px; background:var(--surface-color); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:var(--card-shadow);">📷 DIY 掃描啟用新濾網</button>
+  </div>
+
+  <div id="page-shop" class="page">
+    <h3 style="color:var(--text-primary); font-size:22px; margin-bottom:20px;">🛒 官方商城</h3>
+    <div class="g-card" style="text-align:center; padding: 40px 20px;">
+      <p style="color:var(--text-secondary); font-size:15px; margin-bottom:15px;">您的專屬隱藏優惠碼：</p>
+      <h2 style="color:var(--accent-color); letter-spacing: 4px; border: 2px dashed var(--accent-color); padding: 18px; border-radius: 16px; margin-bottom:30px; font-size:28px;">AIRPLUS2026</h2>
+      <button class="btn-main" onclick="window.location.href='https://www.hypass.com.tw/categories/replace-filters-all'">前往商城選購專屬濾網</button>
+    </div>
+  </div>
+
+  <div id="page-book" class="page">
+    <h3 style="color:var(--text-primary); font-size:22px; margin-bottom:20px;">📍 預約安裝</h3>
+    <div id="booking-section">
+      <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+        <div class="tab-btn active" id="tab-btn-smart" onclick="switchBookingTab('smart')">🤖 智能配對</div>
+        <div class="tab-btn inactive" id="tab-btn-manual" onclick="switchBookingTab('manual')">📋 附近保修廠</div>
+      </div>
+      <div id="booking-smart"><div id="smart-match-result" class="g-card" style="text-align:center;">定位配對中...</div></div>
+      <div id="booking-manual" style="display: none;"><div id="garage-list">讀取清單中...</div></div>
+    </div>
+  </div>
+
+  <div id="page-rewards" class="page">
+    <h3 style="color:var(--text-primary); font-size:22px; margin-bottom:20px;">🎁 任務與獎勵</h3>
+    <div class="g-card vip-card" style="text-align: center; padding: 40px 20px; border-radius:24px;">
+      <h4 style="margin:0; color:var(--gold-color); font-size: 18px; letter-spacing: 2px;">VIP 專屬獎勵金</h4>
+      <h1 style="margin:20px 0; font-size: 64px; color: #FFF; text-shadow: 0 4px 25px rgba(255, 215, 0, 0.6);"><span id="reward-balance">$0</span></h1>
+      <p style="font-size:14px; color:#d4d4d4; margin-bottom: 30px; line-height:1.6;">累積滿 $100 即可兌換 LINE Points<br>推薦無上限，獎金無上限！</p>
+      <button class="btn-main shine-btn" style="padding:18px; font-size:18px; font-weight:800;" onclick="redeemPoints()">申請提領點數</button>
+    </div>
+    
+    <div class="g-card" style="text-align: center; border: 2px solid var(--accent-color);">
+       <h3 style="margin-top: 10px; color: var(--text-primary); font-size:20px;">🚀 邀請車友加入座艙</h3>
+       <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 25px; line-height: 1.6;">分享您的專屬連結，好友成功啟用濾網後<br>您將立即獲得高額推薦獎金！</p>
+       <button class="btn-main" style="box-shadow: 0 8px 25px var(--accent-glow); font-size: 18px; padding:18px;" onclick="generateMGM()">🔗 點擊複製專屬連結</button>
+    </div>
+  </div>
+
+  <div id="page-settings" class="page">
+    <h3 style="color:var(--text-primary); font-size:22px; margin-bottom:20px;">⚙️ 設定與紀錄</h3>
+    
+    <div class="tab-grid">
+      <div class="tab-btn active" id="tab-set-a" onclick="switchSetTab('a')">👤 基本資料</div>
+      <div class="tab-btn inactive" id="tab-set-theme" onclick="switchSetTab('theme')">🎨 畫面設定</div>
+      <div class="tab-btn inactive" id="tab-set-b" onclick="switchSetTab('b')">📜 歷史紀錄</div>
+      <div class="tab-btn inactive" id="tab-set-c" onclick="switchSetTab('c')">📄 數位合約</div>
+    </div>
+
+    <div id="set-content-a" style="display:block;">
+      <div class="g-card">
+        <label>車主姓名</label><input type="text" id="edit-name">
+        <label>聯絡電話</label><input type="tel" id="edit-phone">
+        <label>車牌號碼</label><input type="text" id="edit-plate">
+        <label>車輛品牌</label>
+        <select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')"><option value="Toyota">Toyota</option><option value="Honda">Honda</option><option value="Tesla">Tesla</option><option value="Other">其他品牌</option></select>
+        <label>車輛型號</label><select id="edit-model"></select>
+        <label>年平均行駛里程</label><select id="edit-mileage"><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option></select>
+        <button class="btn-main" onclick="updateProfile()" style="margin-top:10px;">儲存變更</button>
+      </div>
+    </div>
+    
+    <div id="set-content-theme" style="display:none;">
+      <div class="g-card" style="text-align: center; padding: 40px 20px;">
+        <h3 style="margin-top:0; color:var(--text-primary); margin-bottom: 30px; font-size:20px;">選擇座艙顯示模式</h3>
+        <div style="display:flex; flex-direction: column; gap:16px;">
+          <button class="btn-main" id="btn-theme-dark" style="background:#000000; color:#00e676; border:1px solid #222222; box-shadow: 0 8px 25px rgba(0,0,0,0.8);" onclick="setTheme('dark')">🌙 曜石黑 (預設)</button>
+          <button class="btn-main" id="btn-theme-light" style="background:#ffffff; color:#10b981; border:1px solid #e5e5ea; box-shadow: 0 8px 25px rgba(0,0,0,0.06);" onclick="setTheme('light')">☀️ 極簡白 (Gogoro風格)</button>
+          <button class="btn-main" id="btn-theme-metal" style="background:linear-gradient(145deg, #2c2c2e 0%, #1c1c1e 100%); color:#06b6d4; border:1px solid #3a3a3c; box-shadow: 0 8px 25px rgba(0,0,0,0.6);" onclick="setTheme('metal')">🌊 淨化藍</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="set-content-b" style="display:none;">
+      <div class="g-card">
+        <select id="history-type" onchange="loadHistory(this.value)" style="margin-bottom:20px; font-weight:700;">
+          <option value="filter">🔄 濾網更換紀錄</option><option value="book">📍 保修廠預約紀錄</option>
+          <option value="shop">🛒 商城購買紀錄</option>
+        </select>
+        <div id="history-container" style="max-height: 400px; overflow-y: auto;">載入中...</div>
+      </div>
+    </div>
+    
+    <div id="set-content-c" style="display:none;">
+      <div class="g-card"><h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p></div>
+    </div>
+    <div class="version-tag">5.1 - 桌面 RWD 手機比例版</div>
+  </div>
+
+  <div class="bottom-nav" id="nav-bar" style="display:none;">
+    <div class="nav-item active" onclick="switchPage('home', this)"><span class="nav-icon">◓</span><span class="nav-text">座艙</span></div>
+    <div class="nav-item" onclick="switchPage('shop', this)"><span class="nav-icon">🛒</span><span class="nav-text">商城</span></div>
+    <div class="nav-item" onclick="switchPage('book', this)"><span class="nav-icon">📍</span><span class="nav-text">預約</span></div>
+    <div class="nav-item" onclick="switchPage('rewards', this)"><span class="nav-icon">🎁</span><span class="nav-text">任務</span></div>
+    <div class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span><span class="nav-text">設定</span></div>
+  </div>
+
+  <script>
+    window.onerror = function(msg, url, line) { console.log("Error:", msg, "at line:", line); return false; };
+
+    const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
+    let currentUser = null; let currentLocName = '台灣'; let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
+    
+    const carData = { "Toyota": ["RAV4", "Corolla Cross", "Altis", "其他"], "Honda": ["CR-V", "HR-V", "Fit", "其他"], "Tesla": ["Model Y", "Model 3", "其他"], "Other": ["其他品牌"] };
+
+    function normalizeCityName(cityStr) { return cityStr ? cityStr.replace(/臺/g, '台') : ''; }
+    function formatTaipeiTime(dateString) { return dateString ? new Date(dateString).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false }) : '-'; }
+
+    function getCarSizeRate(model) {
+        if (!model) return 1.0; 
+        const lModels = ['Model X', 'Model Y', 'RAV4', 'CR-V']; const sModels = ['Yaris', 'Fit', 'Swift'];
+        if (lModels.includes(model)) return 1.3; if (sModels.includes(model)) return 0.8; return 1.0;
+    }
+
+    function setTheme(theme) {
+      document.body.classList.remove('light-mode', 'metal-mode');
+      document.getElementById('btn-theme-dark').style.borderColor = 'transparent'; document.getElementById('btn-theme-light').style.borderColor = 'transparent'; document.getElementById('btn-theme-metal').style.borderColor = 'transparent';
+      if (theme === 'light') { document.body.classList.add('light-mode'); document.getElementById('btn-theme-light').style.borderColor = '#10b981'; } 
+      else if (theme === 'metal') { document.body.classList.add('metal-mode'); document.getElementById('btn-theme-metal').style.borderColor = '#06b6d4'; } 
+      else { theme = 'dark'; document.getElementById('btn-theme-dark').style.borderColor = '#00e676'; }
+      localStorage.setItem('hypass_theme', theme);
+    }
+    setTheme(localStorage.getItem('hypass_theme') || 'light');
+
+    function updateCarModels(brandId, modelId) { 
+      const bSelect = document.getElementById(brandId).value; const mSelect = document.getElementById(modelId); mSelect.innerHTML = '<option value="">* 選擇車型</option>'; 
+      if (carData[bSelect]) carData[bSelect].forEach(item => { mSelect.innerHTML += `<option value="${item}">${item}</option>`; });
+    }
+
+    function showForm(role) { document.getElementById('form-customer').style.display = (role === 'customer') ? 'block' : 'none'; document.getElementById('form-garage').style.display = (role === 'garage') ? 'block' : 'none'; }
+    function switchPage(id, el) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.getElementById('page-' + id).classList.add('active'); if (el) el.classList.add('active'); if (id === 'book') loadGarages(); }
+    function switchSetTab(t) { ['a','theme','b','c'].forEach(tab => { document.getElementById(`set-content-${tab}`).style.display = (t === tab) ? 'block' : 'none'; document.getElementById(`tab-set-${tab}`).className = `tab-btn ${t === tab ? 'active' : 'inactive'}`; }); }
+    function switchBookingTab(t) { document.getElementById('booking-smart').style.display = (t === 'smart') ? 'block' : 'none'; document.getElementById('booking-manual').style.display = (t === 'manual') ? 'block' : 'none'; document.getElementById('tab-btn-smart').className = `tab-btn ${t === 'smart' ? 'active' : 'inactive'}`; document.getElementById('tab-btn-manual').className = `tab-btn ${t === 'manual' ? 'active' : 'inactive'}`; }
+
+    async function updateProfile() {
+      const payload = { name: document.getElementById('edit-name').value, phone: document.getElementById('edit-phone').value, license_plate: document.getElementById('edit-plate').value, yearly_mileage: parseInt(document.getElementById('edit-mileage').value) };
+      if (!payload.name || !payload.phone || !payload.license_plate) return alert("姓名、電話、車牌不可為空！");
+      const { error } = await supabaseClient.from('users').update(payload).eq('line_uid', currentUser.line_uid); 
+      if (error) alert("更新失敗：" + error.message); else { alert('✅ 成功更新！'); location.reload(); }
+    }
+
+    async function scanFilter() {
+      const res = await liff.scanCodeV2(); if (!res.value) return;
+      await supabaseClient.from('filters_uid').update({ status: 'replaced', deactivated_at: new Date() }).eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated');
+      const { error } = await supabaseClient.from('filters_uid').update({ status: 'activated', activated_by_uid: currentUser.line_uid, activated_at: new Date(), activation_type: 'DIY', installed_car_model: currentUser.car_brand, installed_location: currentLocName }).eq('uid', res.value);
+      if (error) return alert("啟用失敗"); alert("✅ 啟用成功！"); location.reload();
+    }
+
+    async function updateDynamicMarquee(aqi, health, status) {
+        document.getElementById('ui-dynamic-msg').innerText = `系統連線正常，目前室外 AQI: ${aqi}，濾網持續防護中！`;
+    }
+
+    async function calculateDashboardStats() {
+      if (!currentUser) return;
+      const badge = document.getElementById('ui-shield-badge'); const badgeText = document.getElementById('ui-shield-text'); const pulseDot = document.getElementById('ui-pulse-dot');
+      
+      const { data: filter } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).single();
+      
+      if (filter && filter.activated_at) {
+        const actDate = new Date(filter.activated_at); document.getElementById('ui-filter-date').innerText = actDate.getFullYear() + '/' + String(actDate.getMonth()+1).padStart(2, '0') + '/' + String(actDate.getDate()).padStart(2, '0');
+        const days = Math.max(0, Math.floor((new Date() - new Date(filter.activated_at)) / (1000 * 60 * 60 * 24)));
+        const algoParams = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
         
-        const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        let currentUser = null; window.branches = []; window.calData = {}; 
+        let mileageRate = currentUser.yearly_mileage ? (currentUser.yearly_mileage / 20000) : 1.0;
+        let aqiRate = (envData.aqi > 150) ? 1.8 : (envData.aqi > 100 ? 1.4 : 1.0);
+        let carSizeRate = getCarSizeRate(currentUser.car_model);
+        let tempRate = envData.temp > 28 ? 1.2 : (envData.temp < 20 ? 0.8 : 1.0);
+        let totalMultiplier = mileageRate * aqiRate * carSizeRate * tempRate;
 
-        const twAddrs = { "基隆市":["仁愛區","信義區","中正區","中山區","安樂區","暖暖區","七堵區"], "台北市":["中正區","大同區","中山區","松山區","大安區","萬華區","信義區","士林區","北投區","內湖區","南港區","文山區"], "新北市":["板橋區","三重區","中和區","永和區","新莊區","新店區","樹林區","鶯歌區","三峽區","淡水區","汐止區","瑞芳區","土城區","蘆洲區","五股區","泰山區","林口區","深坑區","石碇區","坪林區","三芝區","石門區","八里區","平溪區","雙溪區","貢寮區","金山區","萬里區","烏來區"], "桃園市":["桃園區","中壢區","大溪區","楊梅區","蘆竹區","大園區","龜山區","八德區","平鎮區","新屋區","觀音區","龍潭區","復興區"], "新竹市":["東區","北區","香山區"], "新竹縣":["竹北市","竹東鎮","新埔鎮","關西鎮","湖口鄉","新豐鄉","芎林鄉","橫山鄉","北埔鄉","寶山鄉","峨眉鄉","尖石鄉","五峰鄉"], "苗栗縣":["苗栗市","苑裡鎮","通霄鎮","竹南鎮","頭份市","後龍鎮","卓蘭鎮","大湖鄉","公館鄉","銅鑼鄉","南庄鄉","頭屋鄉","三義鄉","西湖鄉","造橋鄉","三灣鄉","獅潭鄉","泰安鄉"], "台中市":["中區","東區","南區","西區","北區","北屯區","西屯區","南屯區","太平區","大里區","霧峰區","烏日區","豐原區","后里區","石岡區","東勢區","和平區","新社區","潭子區","大雅區","神岡區","大肚區","沙鹿區","龍井區","梧棲區","清水區","大甲區","外埔區","大安區"], "彰化縣":["彰化市","鹿港鎮","和美鎮","線西鄉","伸港鄉","福興鄉","秀水鄉","花壇鄉","芬園鄉","員林市","溪湖鎮","田中鎮","大村鄉","埔鹽鄉","埔心鄉","永靖鄉","社頭鄉","二水鄉","北斗鎮","二林鎮","田尾鄉","埤頭鄉","芳苑鄉","大城鄉","竹塘鄉","溪州鄉"], "南投縣":["南投市","埔里鎮","草屯鎮","竹山鎮","集集鎮","名間鄉","鹿谷鄉","中寮鄉","魚池鄉","國姓鄉","水里鄉","信義鄉","仁愛鄉"], "雲林縣":["斗六市","斗南鎮","虎尾鎮","西螺鎮","土庫鎮","北港鎮","古坑鄉","大埤鄉","莿桐鄉","林內鄉","二崙鄉","崙背鄉","麥寮鄉","東勢鄉","褒忠鄉","臺西鄉","元長鄉","四湖鄉","口湖鄉","水林鄉"], "嘉義市":["東區","西區"], "嘉義縣":["太保市","朴子市","布袋鎮","大林鎮","民雄鄉","溪口鄉","新港鄉","六腳鄉","東石鄉","義竹鄉","鹿草鄉","水上鄉","中埔鄉","竹崎鄉","梅山鄉","番路鄉","大埔鄉","阿里山鄉"], "台南市":["新營區","鹽水區","白河區","柳營區","後壁區","東山區","麻豆區","下營區","六甲區","官田區","大內區","佳里區","學甲區","西港區","七股區","將軍區","北門區","新化區","善化區","新市區","安定區","山上區","玉井區","楠西區","南化區","左鎮區","仁德區","歸仁區","關廟區","龍崎區","永康區","東區","南區","中西區","北區","安南區","安平區"], "高雄市":["鹽埕區","鼓山區","左營區","楠梓區","三民區","新興區","前金區","苓雅區","前鎮區","旗津區","小港區","鳳山區","林園區","大寮區","大樹區","大社區","仁武區","鳥松區","岡山區","橋頭區","燕巢區","田寮區","阿蓮區","路竹區","湖內區","茄萣區","永安區","彌陀區","梓官區","旗山區","美濃區","六龜區","甲仙區","杉林區","內門區","茂林區","桃源區","那瑪夏區"], "屏東縣":["屏東市","潮州鎮","東港鎮","恆春鎮","萬丹鄉","長治鄉","麟洛鄉","九如鄉","里港鄉","鹽埔鄉","高樹鄉","萬巒鄉","內埔鄉","竹田鄉","新埤鄉","枋寮鄉","新園鄉","崁頂鄉","林邊鄉","南州鄉","佳冬鄉","琉球鄉","車城鄉","滿州鄉","枋山鄉","三地門鄉","霧臺鄉","瑪家鄉","泰武鄉","來義鄉","春日鄉","獅子鄉","牡丹鄉"], "台東縣":["臺東市","成功鎮","關山鎮","卑南鄉","鹿野鄉","池上鄉","東河鄉","長濱鄉","太麻里鄉","大武鄉","綠島鄉","海端鄉","延平鄉","金峰鄉","達仁鄉","蘭嶼鄉"], "花蓮縣":["花蓮市","鳳林鎮","玉里鎮","新城鄉","吉安鄉","壽豐鄉","光復鄉","豐濱鄉","瑞穗鄉","富里鄉","秀林鄉","萬榮鄉","卓溪鄉"], "宜蘭縣":["宜蘭市","羅東鎮","蘇澳鎮","頭城鎮","礁溪鄉","壯圍鄉","員山鄉","冬山鄉","五結鄉","三星鄉","大同鄉","南澳鄉"], "澎湖縣":["馬公市","湖西鄉","白沙鄉","西嶼鄉","望安鄉","七美鄉"], "金門縣":["金城鎮","金湖鎮","金沙鎮","金寧鄉","烈嶼鄉","烏坵鄉"], "連江縣":["南竿鄉","北竿鄉","莒光鄉","東引鄉"] };
-
-        function initAddressForm() {
-            const countySel = document.getElementById('addr-county');
-            if(countySel) {
-                let opts = '<option value="" disabled selected>選擇縣市</option>';
-                for(let c in twAddrs) opts += `<option value="${c}">${c}</option>`;
-                countySel.innerHTML = opts;
-            }
-        }
+        let baseWear = parseFloat(algoParams.baseWear || 0.27);
+        let health = Math.max(0, Math.round(100 - (days * baseWear * totalMultiplier)));
+        document.getElementById('ui-health').innerText = `${health}%`;
         
-        function updateDistricts() {
-            const c = document.getElementById('addr-county').value;
-            const distSel = document.getElementById('addr-district');
-            if(c && twAddrs[c]) {
-                distSel.innerHTML = '<option value="" disabled selected>鄉鎮市區</option>' + twAddrs[c].map(d => `<option value="${d}">${d}</option>`).join('');
-            }
-        }
-
-        function updateClock() {
-            const now = new Date();
-            const clockEl = document.getElementById('live-clock');
-            const dateEl = document.getElementById('live-date');
-            if (clockEl) clockEl.innerText = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            if (dateEl) {
-                const days = ['日', '一', '二', '三', '四', '五', '六'];
-                const y = now.getFullYear();
-                const m = String(now.getMonth() + 1).padStart(2, '0');
-                const d = String(now.getDate()).padStart(2, '0');
-                dateEl.innerText = `${y}/${m}/${d} 星期${days[now.getDay()]}`;
-            }
-        }
-        setInterval(updateClock, 1000); updateClock(); 
-
-        function syncCalendar() {
-            const y1 = new Date().getFullYear(); const y2 = y1 + 1;
-            Promise.all([
-                fetch(`https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${y1}.json`).then(r => r.json()),
-                fetch(`https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${y2}.json`).then(r => r.json()).catch(() => [])
-            ]).then(([r1, r2]) => {
-                [...(r1||[]), ...(r2||[])].forEach(d => { window.calData[d.date] = d; });
-                if(document.getElementById('view-dashboard').style.display === 'block') renderMiniCalendar();
-            }).catch(e => console.warn('行事曆同步延遲'));
-        }
-
-        async function init() {
-            try {
-                syncCalendar(); 
-                await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) { liff.login(); return; }
-                const profile = await liff.getProfile();
-                document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-emerald-400 rounded-full"></span>' + profile.displayName;
-                await checkUser(profile.userId);
-            } catch (e) {
-                document.getElementById('sys-loading').innerHTML = `<div class="text-6xl mb-4">⚠️</div><h2 class="text-xl font-black text-red-600 mb-2">系統連線異常</h2><p class="text-xs text-slate-500 font-bold">請確認網路環境或 LIFF 設定</p>`;
-            }
-        }
-
-        async function checkUser(lineId) {
-            try {
-                const { data, error } = await _sb.from('employees').select('*, branch_locations(branch_name)').eq('line_id', lineId).single();
-                if (error && error.code !== 'PGRST116') throw error; 
-                document.getElementById('sys-loading').style.display = 'none';
-                
-                if (!data) {
-                    await loadBranches('reg-branch'); 
-                    initAddressForm(); 
-                    document.getElementById('view-onboarding').style.display = 'block';
-                }
-                else if (!data.is_approved || data.employment_status === '離職') { 
-                    document.getElementById('sys-pending').style.display = 'block'; 
-                    if(data.employment_status === '離職') document.querySelector('#sys-pending h2').innerText = '帳號已停權';
-                }
-                else { 
-                    currentUser = data; 
-                    await loadBranches(null); 
-                    renderUI(); 
-                    document.getElementById('view-dashboard').style.display = 'block'; 
-                }
-            } catch (e) { document.getElementById('sys-loading').innerHTML = `<div class="text-6xl mb-4">⚠️</div><h2 class="text-xl font-black text-red-600 mb-2">資料庫異常</h2><p class="text-xs text-slate-500 font-bold">讀取資料失敗</p>`; }
-        }
-
-        async function loadBranches(targetId) { 
-            const { data } = await _sb.from('branch_locations').select('id, branch_name, lat, lng, radius_m').eq('is_active', true); 
-            window.branches = data || [];
-            if(targetId) { const sel = document.getElementById(targetId); if(sel) sel.innerHTML = window.branches.map(b => `<option value="${b.id}">${b.branch_name}</option>`).join(''); }
-        }
-
-        function switchTab(id) { document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active')); document.getElementById('tab-' + id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active')); document.querySelector(`button[onclick="switchTab('${id}')"]`).classList.add('active'); if(id === 'leave') loadLeaveHistory(); if(id === 'payroll') loadPayrollMonths(); }
-
-        function checkLeaveType() {
-            const type = document.getElementById('leave-type-select').value; const ui = document.getElementById('salary-protection-ui');
-            if(type === '颱風假') { document.getElementById('sp-text').innerHTML = '<p class="text-sm font-black text-emerald-900 mb-0.5">🌪️ 法定颱風假</p><p class="text-[11px] font-bold text-emerald-600">依法不支薪，亦不影響全勤</p>'; ui.className = 'flex items-center justify-between p-4 bg-emerald-50/80 rounded-2xl border border-emerald-200 transition-all shadow-sm'; document.getElementById('sp-toggle').style.display = 'none'; } 
-            else if (type === '緊急加班') { document.getElementById('sp-text').innerHTML = '<p class="text-sm font-black text-red-900 mb-0.5">🚨 假日出勤申請</p><p class="text-[11px] font-bold text-red-600">請精確填寫預計出勤之起訖時間</p>'; ui.className = 'flex items-center justify-between p-4 bg-red-50/80 rounded-2xl border border-red-200 transition-all shadow-sm'; document.getElementById('sp-toggle').style.display = 'none'; }
-            else { document.getElementById('sp-text').innerHTML = '<p class="text-sm font-black text-sky-900 mb-0.5">薪資保全</p><p class="text-xs font-bold text-sky-600">同意扣特休以維持全薪</p>'; ui.className = 'flex items-center justify-between p-4 bg-sky-50/80 rounded-2xl border border-sky-100 transition-all shadow-sm'; document.getElementById('sp-toggle').style.display = 'block'; }
-        }
-
-        function checkForm() { document.getElementById('btn-submit').disabled = !(document.getElementById('chk1').checked && document.getElementById('chk2').checked && document.getElementById('chk3').checked && document.getElementById('chk4').checked); }
-
-        async function renderUI() {
-            document.getElementById('ui-name').innerText = currentUser.full_name; 
-            document.getElementById('ui-role-badge').innerText = currentUser.job_title || '員工';
-            if(currentUser.job_title === '業務') { document.getElementById('ui-role-icon').innerText = '🛵'; }
-            
-            document.getElementById('ui-work-hours').innerText = `🕒 表定班別：${(currentUser.work_start_time||'09:00').slice(0,5)} ~ ${(currentUser.work_end_time||'18:00').slice(0,5)}`;
-            const { data: lv } = await _sb.rpc('fn_get_annual_leave', { p_onboard_date: currentUser.onboarding_date }); if(lv) document.getElementById('ui-leave').innerText = `${lv.days} 天 ${lv.hours%8} 小時`;
-            const oneYearAgo = new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-            const { data: blt } = await _sb.from('bulletin_board').select('*').gte('created_at', oneYearAgo.toISOString()).order('created_at', {ascending: false});
-            if (blt && blt.length > 0) { document.getElementById('ui-bulletin').innerHTML = blt.map(b => `<div class="mb-2.5 border-b border-amber-100/50 pb-2 last:border-0 last:mb-0 last:pb-0 flex items-start"><span class="text-[10px] text-amber-600 font-black mr-2 mt-0.5 bg-amber-100 px-1.5 rounded">[${new Date(b.created_at).toISOString().split('T')[0]}]</span><div><span class="font-black text-slate-800 text-sm">${b.title}</span><span class="text-xs text-slate-600 font-medium leading-relaxed block mt-1">${b.content}</span></div></div>`).join(''); } else { document.getElementById('ui-bulletin').innerHTML = '<p class="text-xs text-slate-400 font-medium italic">目前無歷史公告</p>'; }
-            
-            renderMiniCalendar();
-
-            document.getElementById('ui-profile-info').innerHTML = `<div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">🆔</span><span class="text-slate-700 font-bold text-sm">身分證：${currentUser.id_number}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">🏷️</span><span class="text-slate-700 font-bold text-sm">員工編號：${currentUser.employee_no||'未設定'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📧</span><span class="text-slate-700 font-bold text-sm">${currentUser.email}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📞</span><span class="text-slate-700 font-bold text-sm">${currentUser.phone}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-sky-600">👔</span><span class="text-sky-700 font-black text-sm bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">${currentUser.job_title||'未指派'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📍</span><span class="text-slate-700 font-bold text-sm">工作據點：${currentUser.branch_locations?.branch_name||'未綁定'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">👥</span><span class="text-slate-700 font-bold text-sm">眷屬加保：${currentUser.dependents_count || 0} 人</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-amber-600">📅</span><span class="text-slate-700 font-bold text-sm">入職日：${currentUser.onboarding_date}</span></div><div class="flex items-center space-x-3 border-t border-slate-50 pt-3 mt-1"><span class="w-6 text-center text-lg mt-0.5">⏰</span><div class="text-blue-700 font-black text-sm bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 w-full text-center tracking-wider">${(currentUser.work_start_time||'09:00').slice(0,5)} 上班 <span class="mx-2 text-blue-200">|</span> ${(currentUser.work_end_time||'18:00').slice(0,5)} 下班</div></div><div class="flex items-start space-x-3 mt-3"><span class="w-6 text-center text-lg mt-0.5">🏠</span><span class="text-slate-700 font-medium text-sm leading-relaxed">${currentUser.address}</span></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🏦</span><div class="text-slate-800 font-black text-sm leading-tight">${currentUser.bank_name} (${currentUser.bank_code})<br><span class="text-xs font-bold text-slate-500 mt-1 block">${currentUser.bank_user_name} / ${currentUser.bank_account}</span></div></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🚨</span><div class="text-slate-800 font-black text-sm leading-tight">緊急聯絡人：${currentUser.emergency_name}<br><span class="text-xs font-bold text-slate-500 mt-1 block">${currentUser.emergency_phone}</span></div></div>`;
-        }
-
-        // 🌟 v27.5 行事曆美學與排版優化核心
-        function renderMiniCalendar() {
-            if(Object.keys(window.calData).length === 0) return; 
-            
-            const today = new Date(); 
-            const currentWeekStart = new Date(today); currentWeekStart.setDate(today.getDate() - today.getDay());
-            const startDay = new Date(currentWeekStart); startDay.setDate(currentWeekStart.getDate() - 7);
-            
-            const days = ['日','一','二','三','四','五','六']; 
-            let html = '<div class="grid grid-cols-7 gap-1 mb-2">';
-            for(let d of days) html += `<div class="text-center text-[10px] font-bold text-slate-400">${d}</div>`;
-            html += '</div><div class="grid grid-cols-7 gap-1">';
-            
-            for(let i=0; i<28; i++) {
-                let d = new Date(startDay); d.setDate(startDay.getDate() + i);
-                let dStr = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
-                
-                let isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
-                let isWeekend = d.getDay() === 0 || d.getDay() === 6;
-                let dayInfo = window.calData[dStr];
-                
-                let isHoliday = false; let isMakeup = false; let label = '';
-                
-                if (dayInfo) {
-                    isHoliday = dayInfo.isHoliday;
-                    label = dayInfo.description;
-                    if(!isHoliday && isWeekend) { isMakeup = true; label = '補班'; }
-                } else {
-                    isHoliday = isWeekend; if(isHoliday) label = '假日';
-                }
-
-                // 智慧字眼簡化
-                if (label === '星期六' || label === '星期日') label = '假日';
-                if (label === '中華民國開國紀念日') label = '元旦';
-                if (label === '和平紀念日') label = '228';
-                if (label.includes('兒童節')) label = '兒童節';
-                if (label.includes('端午')) label = '端午';
-                if (label.includes('中秋')) label = '中秋';
-                if (label.includes('清明')) label = '清明';
-                if (label.includes('國慶')) label = '國慶';
-                if (label.includes('除夕')) label = '除夕';
-                if (label.includes('春節')) label = '春節';
-                
-                let colorClass = isHoliday ? 'text-red-500' : (isMakeup ? 'text-amber-600' : 'text-slate-800');
-                let bgClass = isToday ? 'bg-sky-50 border-sky-300 shadow-sm ring-1 ring-sky-200' : 'bg-white border-slate-100 hover:bg-slate-50 transition';
-                
-                let noteHTML = '';
-                // 導入無損等比例微縮引擎 scale-[0.75]
-                if(isHoliday) noteHTML = `<span class="w-full text-center text-[10px] transform scale-[0.75] origin-top text-red-500 font-bold leading-none truncate px-0.5 mt-0.5">${label}</span>`;
-                else if(isMakeup) noteHTML = `<span class="w-full text-center text-[10px] transform scale-[0.75] origin-top text-amber-600 font-bold leading-none truncate px-0.5 mt-0.5">${label}</span>`;
-                else noteHTML = `<div class="w-1 h-1 rounded-full mt-1.5 bg-slate-200"></div>`;
-                
-                // 強制 Baseline 水平對齊 (h-11, pt-1.5, justify-start)
-                html += `<div class="h-11 flex flex-col items-center justify-start pt-1.5 rounded-lg border ${bgClass} overflow-hidden"><span class="text-[13px] font-black ${colorClass} leading-none">${d.getDate()}</span>${noteHTML}</div>`;
-            }
-            html += '</div>';
-            document.getElementById('ui-mini-calendar').innerHTML = html;
-        }
-
-        function autoFillLeaveForm(punchType) {
-            switchTab('leave');
-            const now = new Date();
-            const yyyy = now.getFullYear(); const mm = String(now.getMonth() + 1).padStart(2, '0'); const dd = String(now.getDate()).padStart(2, '0');
-            const datePrefix = `${yyyy}-${mm}-${dd}T`;
-            const nowTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-            const startTime = (currentUser.work_start_time || '09:00').slice(0, 5); const endTime = (currentUser.work_end_time || '18:00').slice(0, 5);
-            
-            let leaveStart, leaveEnd;
-            if (punchType === 'IN') { leaveStart = datePrefix + startTime; leaveEnd = datePrefix + nowTime; } 
-            else { leaveStart = datePrefix + nowTime; leaveEnd = datePrefix + endTime; }
-            
-            document.getElementById('leave-type-select').value = '特休'; checkLeaveType(); 
-            document.querySelector('input[name="start_time"]').value = leaveStart; document.querySelector('input[name="end_time"]').value = leaveEnd;
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
-
-        async function punch(type) {
-            document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-amber-400 rounded-full"></span>驗證中...';
-
-            const today = new Date(); 
-            const dStr = today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
-            const dayInfo = window.calData[dStr];
-            let isOffDay = dayInfo ? dayInfo.isHoliday : (today.getDay() === 0 || today.getDay() === 6);
-            let holidayName = dayInfo && dayInfo.description && dayInfo.description.indexOf('星期') === -1 ? ` (${dayInfo.description})` : '';
-
-            if (isOffDay) {
-                const todayStr = today.toLocaleDateString('en-CA');
-                const { data: otAll } = await _sb.from('leave_requests').select('start_time, end_time').eq('employee_id', currentUser.id).eq('leave_type', '緊急加班');
-                let hasOvertime = otAll && otAll.some(ot => ot.start_time.includes(todayStr) || ot.end_time.includes(todayStr));
-                
-                if (!hasOvertime) {
-                    document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-emerald-400 rounded-full"></span>已連線';
-                    if (type === 'IN') showAlert('🛑 假日打卡阻擋', `今日為排定之休假日${holidayName}，無法直接打卡。<br><br>若需出勤，請先至請假區送出【🚨 假日緊急加班單】，送出後即可正常打卡。`, 'error');
-                    else showAlert('🛑 錯誤', `今日為休假日${holidayName}，系統查無您的加班紀錄，無法進行下班打卡。`, 'error');
-                    return;
-                }
-            }
-
-            document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-amber-400 rounded-full"></span>定位中...';
-            
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-                const lat = pos.coords.latitude; const lng = pos.coords.longitude;
-                const { data, error } = await _sb.rpc('fn_process_punch', { p_emp_id: currentUser.id, p_type: type, p_lat: lat, p_lng: lng, p_is_offday: isOffDay });
-                document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-emerald-400 rounded-full"></span>已連線';
-                
-                if (error) { showAlert('⚠️ 系統錯誤', error.message, 'error'); } 
-                else {
-                    let title = type === 'IN' ? '上班打卡' : '下班打卡';
-                    if(data.status === 'error') {
-                        showAlert('❌ 失敗', data.message, 'error');
-                    } 
-                    else if(data.status === 'late' || (data.status === 'warning' && data.message.includes('早退'))) {
-                        showAlert(`⚠️ ${title}異常`, data.message + '<br><br><span class="text-xs text-amber-700 bg-amber-50 p-2 rounded-lg block mt-2 border border-amber-200 text-left">💡 系統可自動計算缺失時數，是否立即填寫特休單抵扣，以維持全薪？</span>', 'warning', () => { autoFillLeaveForm(type); });
-                    }
-                    else if (data.status === 'warning') {
-                        showAlert(`⚠️ ${title}異常`, data.message, 'warning');
-                    } 
-                    else {
-                        showAlert(`✅ ${title}成功`, data.message, 'success');
-                    }
-                }
-            }, () => {
-                document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-red-400 rounded-full"></span>定位失敗';
-                showAlert('📍 定位權限未開', '請至手機設定中開啟 LINE 或瀏覽器的 GPS 定位權限！', 'error');
-            }, { enableHighAccuracy: true });
-        }
-
-        let alertCallback = null;
-        function showAlert(title, msg, type, callback = null) {
-            alertCallback = callback;
-            const box = document.getElementById('alert-box'); 
-            const icon = document.getElementById('alert-icon');
-            const btnCancel = document.getElementById('alert-btn-cancel');
-            const btnConfirm = document.getElementById('alert-btn-confirm');
-            
-            document.getElementById('alert-title').innerText = title; 
-            document.getElementById('alert-msg').innerHTML = msg;
-            
-            if(type === 'error') { icon.innerText = '❌'; document.getElementById('alert-title').className = 'text-xl font-black text-red-600 mb-2'; }
-            else if(type === 'warning') { icon.innerText = '⚠️'; document.getElementById('alert-title').className = 'text-xl font-black text-amber-600 mb-2'; }
-            else { icon.innerText = '🎉'; document.getElementById('alert-title').className = 'text-xl font-black text-emerald-600 mb-2'; }
-            
-            if(callback) {
-                btnCancel.classList.remove('hidden');
-                btnConfirm.innerText = '自動填寫特休單';
-                btnConfirm.className = 'flex-1 bg-amber-500 hover:bg-amber-600 text-white font-black py-3.5 rounded-xl shadow-md active:scale-95 transition';
-            } else {
-                btnCancel.classList.add('hidden');
-                btnConfirm.innerText = '確認';
-                btnConfirm.className = 'w-full bg-slate-900 text-white font-black py-3.5 rounded-xl shadow-md active:scale-95 transition';
-            }
-
-            document.getElementById('alert-modal').classList.add('active'); 
-            setTimeout(() => { box.classList.remove('scale-95', 'opacity-0'); box.classList.add('scale-100', 'opacity-100'); }, 10);
-        }
-
-        function closeAlert(isConfirm = true) { 
-            const box = document.getElementById('alert-box'); box.classList.remove('scale-100', 'opacity-100'); box.classList.add('scale-95', 'opacity-0'); 
-            setTimeout(() => { document.getElementById('alert-modal').classList.remove('active'); if(isConfirm && alertCallback) alertCallback(); alertCallback = null; }, 200); 
-        }
-
-        async function loadPunchHistory() {
-            document.getElementById('ui-records-list').innerHTML = '載入中...'; openModal('record-modal');
-            const { data } = await _sb.from('attendance_logs').select('punch_type, punch_time, note, lat, lng, branch_locations(branch_name)').eq('employee_id', currentUser.id).order('punch_time', {ascending: false}).limit(30);
-            document.getElementById('ui-records-list').innerHTML = data.length ? data.map(log => {
-                let mapLink = (log.lat && log.lng) ? `<a href="https://maps.google.com/?q=$${log.lat},${log.lng}" target="_blank" class="text-sky-500 hover:text-sky-700 underline font-black ml-2 text-[10px]">📍地圖</a>` : '';
-                return `<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div><span class="text-xs font-black bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${log.punch_type==='IN'?'上班':'下班'}</span> <span class="text-sm font-bold text-slate-700 ml-2">${new Date(log.punch_time).toLocaleString('zh-TW').slice(5,-3)}</span><p class="text-xs text-slate-400 font-bold mt-1.5 flex items-center"><span class="mr-1">🏠</span>${log.branch_locations?.branch_name||'外勤定位'} ${mapLink}</p></div><span class="text-[10px] font-black px-2 py-1 rounded-full ${log.note.includes('正常')?'text-emerald-600 bg-emerald-50':'text-amber-600 bg-amber-50'}">${log.note}</span></div>`;
-            }).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-10">目前無打卡紀錄</div>';
-        }
-
-        async function submitLeave(e) {
-            e.preventDefault(); const fd = new FormData(e.target); const isTyphoon = fd.get('leave_type') === '颱風假';
-            const st = fd.get('start_time') + ':00+08:00'; const et = fd.get('end_time') + ':00+08:00';
-            const payload = { employee_id: currentUser.id, leave_type: fd.get('leave_type'), start_time: st, end_time: et, salary_protection: isTyphoon ? false : (fd.get('salary_protection') === 'on') };
-            document.getElementById('btn-leave').innerText = '申請送出中...';
-            const { data, error } = await _sb.from('leave_requests').insert([payload]).select();
-            if(!error && data) {
-                await _sb.functions.invoke('line-webhook', { body: { action: 'notify_leave', id: data[0].id, name: currentUser.full_name, type: payload.leave_type, start: fd.get('start_time').replace('T', ' '), end: fd.get('end_time').replace('T', ' ') }});
-                if(payload.leave_type === '緊急加班') showAlert('✅ 加班申請已送出', '主管核准後該時段將計入有效加班時數。您可以立刻切換至首頁進行打卡！', 'success');
-                else showAlert('✅ 申請已送出', '主管核准後系統會自動推播通知您。', 'success');
-                e.target.reset(); checkLeaveType(); loadLeaveHistory();
-            } else { showAlert('❌ 送出失敗', error.message, 'error'); }
-            document.getElementById('btn-leave').innerText = '送出申請單';
-        }
-
-        async function loadLeaveHistory() {
-            const { data } = await _sb.from('leave_requests').select('*').eq('employee_id', currentUser.id).order('created_at', {ascending: false}).limit(10);
-            document.getElementById('ui-leave-list').innerHTML = data.length ? data.map(l => {
-                let badge = l.status === '核准' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : (l.status === '核駁' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-slate-100 text-slate-600 border-slate-200');
-                let t1 = new Date(l.start_time).toLocaleString('zh-TW').slice(5,-3); let t2 = new Date(l.end_time).toLocaleString('zh-TW').slice(5,-3);
-                let spTag = l.leave_type === '颱風假' ? '<span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded ml-2 font-bold">不支薪</span>' : (l.salary_protection ? '<span class="text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded ml-2 font-bold">保薪</span>' : '');
-                return `<div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><div class="flex justify-between items-center mb-2"><span class="font-black text-sm text-slate-800 flex items-center">${l.leave_type} ${spTag}</span><span class="text-[10px] font-black px-2.5 py-1 rounded-full border ${badge}">${l.status}</span></div><p class="text-xs font-bold text-slate-500 flex items-center"><span class="mr-1.5">🕒</span>${t1} ~ ${t2}</p></div>`;
-            }).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-8">尚無申請紀錄</div>';
-        }
-
-        async function loadPayrollMonths() {
-            const sel = document.getElementById('payroll-month'); const { data } = await _sb.from('payroll_records').select('pay_month').eq('employee_id', currentUser.id).order('pay_month', {ascending: false});
-            if(!data || !data.length) { sel.innerHTML = '<option>尚無薪資紀錄</option>'; sel.disabled = true; resetPayrollUI(); return; }
-            sel.disabled = false; sel.innerHTML = data.map(m => `<option value="${m.pay_month}">${m.pay_month} 薪資單</option>`).join(''); sel.selectedIndex = 0; loadPayrollDetail(); 
-        }
-
-        function resetPayrollUI() { document.getElementById('p-base').innerText = 'NT$ 0'; document.getElementById('p-bonus').innerText = 'NT$ 0'; document.getElementById('p-yeb').innerText = 'NT$ 0'; document.getElementById('p-ins').innerText = '- NT$ 0'; document.getElementById('p-2nd').innerText = '- NT$ 0'; document.getElementById('p-pen').innerText = 'NT$ 0'; document.getElementById('p-net').innerText = 'NT$ 0'; }
-
-        async function loadPayrollDetail() {
-            const month = document.getElementById('payroll-month').value; const { data } = await _sb.from('payroll_records').select('*').eq('employee_id', currentUser.id).eq('pay_month', month).single();
-            if(!data) { resetPayrollUI(); return; }
-            document.getElementById('p-base').innerText = `NT$ ${data.base_pay.toLocaleString()}`; document.getElementById('p-bonus').innerText = `NT$ ${data.bonus.toLocaleString()}`; document.getElementById('p-yeb').innerText = `NT$ ${data.year_end_bonus.toLocaleString()}`; document.getElementById('p-ins').innerText = `- NT$ ${data.insurance_deduction.toLocaleString()}`; document.getElementById('p-2nd').innerText = `- NT$ ${data.second_gen_health.toLocaleString()}`; document.getElementById('p-pen').innerText = `NT$ ${data.labor_pension.toLocaleString()}`; document.getElementById('p-net').innerText = `NT$ ${data.total_net_pay.toLocaleString()}`;
-        }
-
-        function openDoc() { 
-            const htmlContent = `
-                <div class="text-[11px] text-slate-700 leading-relaxed text-left">
-                    <h4 class="font-black text-center text-sm mb-3 text-slate-900">HYPASS 企業聘僱合約與員工服務守則</h4>
-                    <p class="mb-2 text-sm"><strong>甲方（雇主）：</strong>海帕斯科技股份有限公司<br><strong>乙方（受僱人）：</strong><span class="text-sky-700 font-bold border-b border-sky-700 pb-0.5">${currentUser.full_name}</span></p>
-                    <hr class="my-3 border-slate-200">
-                    <p class="font-black text-slate-900 text-xs mb-1">第一章：職位與工作內容</p>
-                    <ul class="list-decimal pl-4 space-y-1 mb-3"><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方各項業務推動。</li><li>工作區域：甲方得視營運需求，指派乙方於實體據點或指定分區執行職務。</li></ul>
-                    <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p>
-                    <ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統自動記錄座標與鄰近據點。業務職位開放外勤定位。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
-                    <p class="font-black text-slate-900 text-xs mb-1">第三章：請假與休假規範</p>
-                    <ul class="list-decimal pl-4 space-y-1 mb-3"><li>請假程序：一般請假（如特休、事假）應至少提前三日於線上申請；突發狀況應第一時間告知並補單。</li><li>颱風假原則：依政府發布，遵循「放假但該日不支薪」原則，不扣特休亦不影響全勤。</li><li>加班申請：例假日出勤須於系統填寫「起訖時間」送出加班單。</li></ul>
-                    <p class="font-black text-slate-900 text-xs mb-1">第四章：保密協定 (NDA) 與智慧財產權</p>
-                    <ul class="list-decimal pl-4 space-y-1 mb-3"><li>保密義務：乙方對甲方之客戶未公開營業秘密，負絕對保密義務。未經同意絕不洩漏。</li><li>歸還義務：離職時，應將所有隸屬公司之財產、機密資訊、設備、實體與數位檔案全數歸還，絕對不得私自拷貝或保留。</li><li>違約罰則：乙方若違反保密義務，同意無條件負擔新台幣壹佰萬元整之懲罰性違約金。</li></ul>
-                </div>
-            `;
-            document.getElementById('doc-content').innerHTML = htmlContent; document.getElementById('doc-sig').innerText = `簽署人：${currentUser.full_name}\n時間：${new Date(currentUser.nda_signed_at).toLocaleString('zh-TW')}`; openModal('doc-modal'); 
-        }
+        if (health >= 60) { badgeText.innerText = '極效防護中'; document.getElementById('ui-health').style.color = 'var(--accent-color)';} 
+        else if (health >= 30) { badgeText.innerText = '穩定監控中'; document.getElementById('ui-health').style.color = 'var(--accent-color)';} 
+        else if (health > 0) { badge.style.setProperty('--accent-color', '#f59e0b'); badgeText.innerText = '效能衰退中'; document.getElementById('ui-health').style.color = '#f59e0b';} 
+        else { badge.style.setProperty('--accent-color', '#ef4444'); badgeText.innerText = '請即刻更換'; document.getElementById('ui-health').style.color = '#ef4444';}
         
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-        document.getElementById('onboarding-form').onsubmit = async (e) => {
-            e.preventDefault(); 
-            document.getElementById('btn-submit').innerText = '資料加密上傳中...'; 
-            
-            const fd = new FormData(e.target); 
-            const payload = Object.fromEntries(fd.entries());
-            
-            const county = document.getElementById('addr-county').value;
-            const district = document.getElementById('addr-district').value;
-            const street = document.getElementById('addr-street').value;
-            payload.address = county + district + street;
-
-            const bankVal = document.getElementById('bank-select').value;
-            payload.bank_code = bankVal.split(' ')[0];
-            payload.bank_name = bankVal.split(' ')[1];
-
-            payload.line_id = (await liff.getProfile()).userId; 
-            payload.dependents_count = parseInt(payload.dependents_count) || 0;
-            
-            const { data, error } = await _sb.from('employees').insert([payload]).select(); 
-            if(error) { 
-                alert(error.message); 
-                document.getElementById('btn-submit').innerText = '數位簽署並提交審核'; 
-            } else { 
-                await _sb.functions.invoke('line-webhook', { body: { action: 'notify_signup', id: data[0].id, name: payload.full_name, role: payload.job_title }});
-                location.reload(); 
-            }
-        };
+        let totalPm25 = Math.round(days * 1250 * totalMultiplier);
+        let displayPm25 = (totalPm25 / 10000).toFixed(1);
+        document.getElementById('ui-pm25-w').innerText = displayPm25;
         
-        window.onload = init;
-    </script>
+        let totalKwhSaved = (days * 0.25 * mileageRate).toFixed(1);
+        document.getElementById('ui-esg-kwh').innerText = totalKwhSaved;
+        let totalCo2 = (totalKwhSaved * 0.5).toFixed(1);
+        document.getElementById('ui-esg-co2').innerText = totalCo2;
+
+        let levelTitle = "清新新手 LV.1"; let titleColor = "var(--text-secondary)";
+        if(totalCo2 > 50) { levelTitle = "御風尊者 LV.3"; titleColor = "#FFD700"; }
+        else if(totalCo2 > 10) { levelTitle = "淨化達人 LV.2"; titleColor = "var(--accent-color)"; }
+        document.getElementById('ui-level-title').innerText = levelTitle;
+        document.getElementById('ui-level-badge').style.color = titleColor;
+        document.getElementById('ui-level-badge').style.borderColor = titleColor;
+
+      } else {
+        document.getElementById('ui-filter-date').innerText = '尚未啟用';
+        badge.style.setProperty('--accent-color', '#888888'); badgeText.innerText = '系統待命'; pulseDot.style.animation = 'none';
+      }
+    }
+
+    async function fetchEnvironmentalData(city, district) {
+      try {
+        let searchCity = normalizeCityName(city);
+        let { data } = await supabaseClient.from('env_cache').select('*').eq('city', searchCity).eq('district', district).maybeSingle();
+        if (!data) { const { data: fallback } = await supabaseClient.from('env_cache').select('*').limit(1).maybeSingle(); data = fallback || { temp: 25, hum: 60, aqi: 50, pm25: 15 }; }
+
+        envData.temp = data.temp; envData.hum = data.hum; envData.aqi = data.aqi; envData.pm25 = data.pm25;
+        document.getElementById('env-aqi').innerText = envData.aqi;
+        
+        let homeCityRaw = currentUser.city || '台北市'; document.getElementById('ui-home-city').innerText = homeCityRaw;
+        document.getElementById('env-home-aqi').innerText = Math.round(envData.aqi * (0.9 + Math.random() * 0.2));
+        calculateDashboardStats();
+      } catch (e) { calculateDashboardStats(); }
+    }
+
+    function getGPS() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`)
+            .then(res => res.json())
+            .then(d => {
+              let city = d.address.city || d.address.county || ''; let district = d.address.suburb || d.address.town || '';
+              currentLocName = `${city}${district}`; document.getElementById('ui-loc-name').innerText = currentLocName;
+              fetchEnvironmentalData(city, district);
+            }).catch(e => { document.getElementById('ui-loc-name').innerText = "定位完成"; fetchEnvironmentalData('', '');});
+        }, () => { fetchEnvironmentalData('', ''); }, { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }); 
+      }
+    }
+
+    async function initApp() {
+      try {
+        await liff.init({ liffId: "2009187567-58hBrZRj" });
+        if (!liff.isLoggedIn()) { liff.login(); return; }
+        const profile = await liff.getProfile();
+        const { data, error } = await supabaseClient.from('users').select('*').eq('line_uid', profile.userId).maybeSingle();
+        if (data && data.name) {
+          currentUser = data; document.getElementById('nav-bar').style.display = 'flex';
+          if (data.role === 'customer') {
+            document.getElementById('ui-owner').innerText = `${data.name} 的專屬座艙`;
+            document.getElementById('ui-plate-tag').innerText = data.license_plate || '未綁定車牌';
+            document.getElementById('edit-name').value = data.name; document.getElementById('edit-phone').value = data.phone; 
+            document.getElementById('edit-plate').value = data.license_plate; document.getElementById('contract-plate').innerText = data.license_plate;
+            if(data.yearly_mileage) document.getElementById('edit-mileage').value = data.yearly_mileage;
+
+            switchPage('home', document.querySelector('.nav-item'));
+            getGPS();
+          }
+        } else { switchPage('register', null); }
+      } catch (err) { console.log("LIFF 啟動失敗"); }
+    }
+    initApp();
+  </script>
 </body>
 </html>
