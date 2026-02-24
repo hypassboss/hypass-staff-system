@@ -97,7 +97,7 @@
                         <p class="mb-2"><strong>甲方（雇主）：</strong>海帕斯科技股份有限公司<br><strong>乙方（受僱人）：</strong>新進員工 (您)</p>
                         <hr class="my-3 border-slate-200">
                         <p class="font-black text-slate-900 text-xs mb-1 mt-2">第一章：職位與工作內容</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方各項業務推動。</li><li>工作區域：甲方得視營運需求，指派乙方於實體據點或指定分區執行職務。</li></ul>
-                        <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統自動偵測並記錄員工所在座標與據點，無距離限制限制。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
+                        <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據，絕不從事代打卡或偽造定位之情事。</li><li>打卡範圍：系統自動偵測並記錄員工所在座標與據點，無距離限制限制。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
                         <p class="font-black text-slate-900 text-xs mb-1">第三章：請假與休假規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>請假程序：一般請假（如特休、事假）應至少提前三日於線上申請；突發狀況應第一時間告知並補單。</li><li>颱風假原則：依政府發布，遵循「放假但該日不支薪」原則，不扣特休亦不影響全勤。</li><li>加班申請：例假日出勤須於系統填寫「起訖時間」送出加班單。</li></ul>
                         <p class="font-black text-slate-900 text-xs mb-1">第四章：保密協定 (NDA) 與智慧財產權</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>保密義務：乙方對甲方之客戶未公開營業秘密，負絕對保密義務。未經同意絕不洩漏。</li><li>歸還義務：離職時，應將所有隸屬公司之財產、機密資訊、設備、實體與數位檔案全數歸還，絕對不得私自拷貝或保留。</li><li>違約罰則：乙方若違反保密義務，同意無條件負擔新台幣壹佰萬元整之懲罰性違約金。</li></ul>
                     </div>
@@ -125,16 +125,7 @@
                     </div>
                 </div>
 
-                <div class="glass-card p-4 rounded-[1.5rem] shadow-sm">
-                    <h4 class="text-xs font-black text-slate-600 mb-3 ml-1 flex justify-between items-center">
-                        <span class="flex items-center"><span class="text-lg mr-1.5">📅</span>出勤行事曆 (同步政府版)</span>
-                        <span class="text-[9px] bg-slate-100 px-2 py-1 rounded text-slate-400 border border-slate-200">🔴休假 🟡補班 ⚫️工作日</span>
-                    </h4>
-                    <div id="ui-mini-calendar" class="px-1 pb-1"></div>
-                </div>
-
                 <div class="glass-card p-5 rounded-[2rem] shadow-sm relative overflow-hidden">
-                    
                     <div class="text-center mb-5 border-b border-slate-100 pb-5">
                         <p class="text-[10px] text-slate-400 font-bold mb-1 tracking-widest uppercase">CURRENT TIME</p>
                         <h2 id="live-clock" class="text-4xl font-black text-slate-800 tracking-tight font-mono">00:00:00</h2>
@@ -151,13 +142,22 @@
                     </div>
                     <button onclick="loadPunchHistory()" class="w-full mt-4 text-xs font-bold text-slate-400 bg-slate-50 py-3 rounded-2xl border border-slate-100 flex justify-center items-center space-x-2 active:scale-95 transition hover:bg-slate-100"><span>🔍 查詢我的近期紀錄</span></button>
                 </div>
+
+                <div class="glass-card p-4 rounded-[1.5rem] shadow-sm">
+                    <h4 class="text-xs font-black text-slate-600 mb-3 ml-1 flex justify-between items-center">
+                        <span class="flex items-center"><span class="text-lg mr-1.5">📅</span>出勤行事曆 (同步政府版)</span>
+                        <span class="text-[9px] bg-slate-100 px-2 py-1 rounded text-slate-400 border border-slate-200">🔴休假 🟡補班 ⚫️工作日</span>
+                    </h4>
+                    <div id="ui-mini-calendar" class="px-1 pb-1"></div>
+                </div>
+
             </div>
 
             <div id="tab-leave" class="app-view space-y-5">
                 <h3 class="font-black text-2xl text-slate-900 pl-2 flex justify-between items-end"><span>線上請假加班申請</span></h3>
                 <div class="glass-card p-6 rounded-[2rem] shadow-sm">
                     <form id="leave-form" onsubmit="submitLeave(event)" class="space-y-4 border-b border-slate-100 pb-6 mb-5">
-                        <select name="leave_type" id="leave-type-select" onchange="checkLeaveType()" class="w-full bg-slate-50 border-0 shadow-inner p-3 rounded-2xl text-sm font-bold select-arrow">
+                        <select name="leave_type" id="leave-type-select" onchange="checkLeaveType()" class="w-full bg-slate-50 border-0 shadow-inner p-3 rounded-2xl text-sm font-bold appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_1rem_center] bg-no-repeat">
                             <option value="特休">🏖️ 特休 (可抵扣遲到時數)</option><option value="事假">📄 事假</option><option value="病假">💊 病假</option><option value="公假">💼 公假</option><option value="颱風假">🌪️ 颱風假</option><option value="緊急加班">🚨 假日緊急加班</option>
                         </select>
                         <div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-bold text-slate-500 ml-1 mb-1 block">起始時間</label><input type="datetime-local" name="start_time" required class="w-full bg-slate-50 border-0 shadow-inner p-3 rounded-2xl text-sm font-bold"></div><div><label class="text-xs font-bold text-slate-500 ml-1 mb-1 block">結束時間</label><input type="datetime-local" name="end_time" required class="w-full bg-slate-50 border-0 shadow-inner p-3 rounded-2xl text-sm font-bold"></div></div>
@@ -187,7 +187,7 @@
                 </div>
             </div>
             
-            <div class="text-center mt-6 text-[10px] font-mono text-slate-300 tracking-widest pb-6 pointer-events-none">HYPASS v27.3</div>
+            <div class="text-center mt-6 text-[10px] font-mono text-slate-300 tracking-widest pb-6 pointer-events-none">HYPASS v27.4</div>
 
             <nav class="absolute bottom-0 left-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-200/60 flex justify-around items-center py-3 pb-8 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] rounded-t-3xl">
                 <button onclick="switchTab('home')" class="nav-item active flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🏠</span><span class="text-[10px] font-bold">打卡</span></button><button onclick="switchTab('leave')" class="nav-item flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">📅</span><span class="text-[10px] font-bold">請假</span></button><button onclick="switchTab('payroll')" class="nav-item flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">💰</span><span class="text-[10px] font-bold">薪資</span></button><button onclick="switchTab('profile')" class="nav-item flex flex-col items-center w-16 text-slate-400 transition-all group"><span class="text-2xl mb-1 group-hover:scale-110 transition-transform">👤</span><span class="text-[10px] font-bold">資料</span></button>
@@ -220,7 +220,6 @@
         const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null; window.branches = []; window.calData = {}; 
 
-        // 🌟 台灣全縣市鄉鎮資料庫 (極速離線版)
         const twAddrs = { "基隆市":["仁愛區","信義區","中正區","中山區","安樂區","暖暖區","七堵區"], "台北市":["中正區","大同區","中山區","松山區","大安區","萬華區","信義區","士林區","北投區","內湖區","南港區","文山區"], "新北市":["板橋區","三重區","中和區","永和區","新莊區","新店區","樹林區","鶯歌區","三峽區","淡水區","汐止區","瑞芳區","土城區","蘆洲區","五股區","泰山區","林口區","深坑區","石碇區","坪林區","三芝區","石門區","八里區","平溪區","雙溪區","貢寮區","金山區","萬里區","烏來區"], "桃園市":["桃園區","中壢區","大溪區","楊梅區","蘆竹區","大園區","龜山區","八德區","平鎮區","新屋區","觀音區","龍潭區","復興區"], "新竹市":["東區","北區","香山區"], "新竹縣":["竹北市","竹東鎮","新埔鎮","關西鎮","湖口鄉","新豐鄉","芎林鄉","橫山鄉","北埔鄉","寶山鄉","峨眉鄉","尖石鄉","五峰鄉"], "苗栗縣":["苗栗市","苑裡鎮","通霄鎮","竹南鎮","頭份市","後龍鎮","卓蘭鎮","大湖鄉","公館鄉","銅鑼鄉","南庄鄉","頭屋鄉","三義鄉","西湖鄉","造橋鄉","三灣鄉","獅潭鄉","泰安鄉"], "台中市":["中區","東區","南區","西區","北區","北屯區","西屯區","南屯區","太平區","大里區","霧峰區","烏日區","豐原區","后里區","石岡區","東勢區","和平區","新社區","潭子區","大雅區","神岡區","大肚區","沙鹿區","龍井區","梧棲區","清水區","大甲區","外埔區","大安區"], "彰化縣":["彰化市","鹿港鎮","和美鎮","線西鄉","伸港鄉","福興鄉","秀水鄉","花壇鄉","芬園鄉","員林市","溪湖鎮","田中鎮","大村鄉","埔鹽鄉","埔心鄉","永靖鄉","社頭鄉","二水鄉","北斗鎮","二林鎮","田尾鄉","埤頭鄉","芳苑鄉","大城鄉","竹塘鄉","溪州鄉"], "南投縣":["南投市","埔里鎮","草屯鎮","竹山鎮","集集鎮","名間鄉","鹿谷鄉","中寮鄉","魚池鄉","國姓鄉","水里鄉","信義鄉","仁愛鄉"], "雲林縣":["斗六市","斗南鎮","虎尾鎮","西螺鎮","土庫鎮","北港鎮","古坑鄉","大埤鄉","莿桐鄉","林內鄉","二崙鄉","崙背鄉","麥寮鄉","東勢鄉","褒忠鄉","臺西鄉","元長鄉","四湖鄉","口湖鄉","水林鄉"], "嘉義市":["東區","西區"], "嘉義縣":["太保市","朴子市","布袋鎮","大林鎮","民雄鄉","溪口鄉","新港鄉","六腳鄉","東石鄉","義竹鄉","鹿草鄉","水上鄉","中埔鄉","竹崎鄉","梅山鄉","番路鄉","大埔鄉","阿里山鄉"], "台南市":["新營區","鹽水區","白河區","柳營區","後壁區","東山區","麻豆區","下營區","六甲區","官田區","大內區","佳里區","學甲區","西港區","七股區","將軍區","北門區","新化區","善化區","新市區","安定區","山上區","玉井區","楠西區","南化區","左鎮區","仁德區","歸仁區","關廟區","龍崎區","永康區","東區","南區","中西區","北區","安南區","安平區"], "高雄市":["鹽埕區","鼓山區","左營區","楠梓區","三民區","新興區","前金區","苓雅區","前鎮區","旗津區","小港區","鳳山區","林園區","大寮區","大樹區","大社區","仁武區","鳥松區","岡山區","橋頭區","燕巢區","田寮區","阿蓮區","路竹區","湖內區","茄萣區","永安區","彌陀區","梓官區","旗山區","美濃區","六龜區","甲仙區","杉林區","內門區","茂林區","桃源區","那瑪夏區"], "屏東縣":["屏東市","潮州鎮","東港鎮","恆春鎮","萬丹鄉","長治鄉","麟洛鄉","九如鄉","里港鄉","鹽埔鄉","高樹鄉","萬巒鄉","內埔鄉","竹田鄉","新埤鄉","枋寮鄉","新園鄉","崁頂鄉","林邊鄉","南州鄉","佳冬鄉","琉球鄉","車城鄉","滿州鄉","枋山鄉","三地門鄉","霧臺鄉","瑪家鄉","泰武鄉","來義鄉","春日鄉","獅子鄉","牡丹鄉"], "台東縣":["臺東市","成功鎮","關山鎮","卑南鄉","鹿野鄉","池上鄉","東河鄉","長濱鄉","太麻里鄉","大武鄉","綠島鄉","海端鄉","延平鄉","金峰鄉","達仁鄉","蘭嶼鄉"], "花蓮縣":["花蓮市","鳳林鎮","玉里鎮","新城鄉","吉安鄉","壽豐鄉","光復鄉","豐濱鄉","瑞穗鄉","富里鄉","秀林鄉","萬榮鄉","卓溪鄉"], "宜蘭縣":["宜蘭市","羅東鎮","蘇澳鎮","頭城鎮","礁溪鄉","壯圍鄉","員山鄉","冬山鄉","五結鄉","三星鄉","大同鄉","南澳鄉"], "澎湖縣":["馬公市","湖西鄉","白沙鄉","西嶼鄉","望安鄉","七美鄉"], "金門縣":["金城鎮","金湖鎮","金沙鎮","金寧鄉","烈嶼鄉","烏坵鄉"], "連江縣":["南竿鄉","北竿鄉","莒光鄉","東引鄉"] };
 
         function initAddressForm() {
@@ -287,7 +286,7 @@
                 
                 if (!data) {
                     await loadBranches('reg-branch'); 
-                    initAddressForm(); // 初始化地址選單
+                    initAddressForm(); 
                     document.getElementById('view-onboarding').style.display = 'block';
                 }
                 else if (!data.is_approved || data.employment_status === '離職') { 
@@ -338,6 +337,7 @@
 
         function renderMiniCalendar() {
             if(Object.keys(window.calData).length === 0) return; 
+            
             const today = new Date(); 
             const currentWeekStart = new Date(today); currentWeekStart.setDate(today.getDate() - today.getDay());
             const startDay = new Date(currentWeekStart); startDay.setDate(currentWeekStart.getDate() - 7);
@@ -428,12 +428,18 @@
                 if (error) { showAlert('⚠️ 系統錯誤', error.message, 'error'); } 
                 else {
                     let title = type === 'IN' ? '上班打卡' : '下班打卡';
-                    if(data.status === 'error') showAlert('❌ 失敗', data.message, 'error');
+                    if(data.status === 'error') {
+                        showAlert('❌ 失敗', data.message, 'error');
+                    } 
                     else if(data.status === 'late' || (data.status === 'warning' && data.message.includes('早退'))) {
                         showAlert(`⚠️ ${title}異常`, data.message + '<br><br><span class="text-xs text-amber-700 bg-amber-50 p-2 rounded-lg block mt-2 border border-amber-200 text-left">💡 系統可自動計算缺失時數，是否立即填寫特休單抵扣，以維持全薪？</span>', 'warning', () => { autoFillLeaveForm(type); });
                     }
-                    else if (data.status === 'warning') showAlert(`⚠️ ${title}異常`, data.message, 'warning');
-                    else showAlert(`✅ ${title}成功`, data.message, 'success');
+                    else if (data.status === 'warning') {
+                        showAlert(`⚠️ ${title}異常`, data.message, 'warning');
+                    } 
+                    else {
+                        showAlert(`✅ ${title}成功`, data.message, 'success');
+                    }
                 }
             }, () => {
                 document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1.5 h-2 w-2 bg-red-400 rounded-full"></span>定位失敗';
@@ -532,7 +538,7 @@
                     <p class="font-black text-slate-900 text-xs mb-1">第一章：職位與工作內容</p>
                     <ul class="list-decimal pl-4 space-y-1 mb-3"><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方各項業務推動。</li><li>工作區域：甲方得視營運需求，指派乙方於實體據點或指定分區執行職務。</li></ul>
                     <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p>
-                    <ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統自動偵測並記錄員工所在座標與據點，無距離限制限制。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
+                    <ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統自動記錄座標與鄰近據點。業務職位開放外勤定位。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li></ul>
                     <p class="font-black text-slate-900 text-xs mb-1">第三章：請假與休假規範</p>
                     <ul class="list-decimal pl-4 space-y-1 mb-3"><li>請假程序：一般請假（如特休、事假）應至少提前三日於線上申請；突發狀況應第一時間告知並補單。</li><li>颱風假原則：依政府發布，遵循「放假但該日不支薪」原則，不扣特休亦不影響全勤。</li><li>加班申請：例假日出勤須於系統填寫「起訖時間」送出加班單。</li></ul>
                     <p class="font-black text-slate-900 text-xs mb-1">第四章：保密協定 (NDA) 與智慧財產權</p>
@@ -545,7 +551,6 @@
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // 🌟 組合分離的表單數值並送出
         document.getElementById('onboarding-form').onsubmit = async (e) => {
             e.preventDefault(); 
             document.getElementById('btn-submit').innerText = '資料加密上傳中...'; 
