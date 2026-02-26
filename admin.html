@@ -22,7 +22,7 @@
 
     <div id="login-box" class="flex flex-col items-center justify-center min-h-screen px-5 md:w-full z-50">
         <div class="glass-panel p-8 w-full max-w-sm text-center relative overflow-hidden">
-            <div class="absolute top-0 right-0 bg-sky-600 text-white text-[9px] font-bold px-2 py-1 rounded-bl-lg">v30.0</div>
+            <div class="absolute top-0 right-0 bg-sky-600 text-white text-[9px] font-bold px-2 py-1 rounded-bl-lg">v30.1</div>
             <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">👑</div>
             <h2 class="text-2xl font-black mb-2 text-slate-800">最高權限驗證</h2>
             <p class="text-xs text-slate-500 mb-6">請輸入管理金鑰解鎖指揮中心</p>
@@ -33,12 +33,12 @@
 
     <div id="dashboard-ui" class="hidden flex-col md:flex-row h-screen w-full md:overflow-hidden">
         <header class="md:hidden bg-gradient-to-r from-slate-900 to-slate-800 text-white p-5 flex justify-between items-center shadow-lg sticky top-0 z-50 shrink-0">
-            <div><h1 class="text-xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-300">HYPASS</h1><span class="text-[9px] text-slate-400 tracking-[0.2em] uppercase font-bold">Admin v30.0</span></div>
+            <div><h1 class="text-xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-300">HYPASS</h1><span class="text-[9px] text-slate-400 tracking-[0.2em] uppercase font-bold">Admin v30.1</span></div>
             <button onclick="location.reload()" class="text-[10px] bg-white/10 border border-white/20 hover:bg-red-500 hover:border-red-500 px-3 py-1.5 rounded-full font-bold transition-all">安全登出</button>
         </header>
 
         <aside class="hidden md:flex w-64 bg-slate-900 text-white flex-col h-full shadow-2xl shrink-0 z-20">
-            <div class="p-6 pb-2 border-b border-slate-800 mb-4"><h1 class="text-2xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-300">HYPASS</h1><span class="text-[10px] text-slate-400 tracking-[0.2em] uppercase font-bold">Admin Dashboard v30.0</span></div>
+            <div class="p-6 pb-2 border-b border-slate-800 mb-4"><h1 class="text-2xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-300">HYPASS</h1><span class="text-[10px] text-slate-400 tracking-[0.2em] uppercase font-bold">Admin Dashboard v30.1</span></div>
             <nav class="flex-1 px-4 space-y-2">
                 <button onclick="st('pend')" id="dt-pend" class="dt-btn active w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">🔴</span> 待辦審核</button>
                 <button onclick="st('pay')" id="dt-pay" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">💰</span> 薪資發放</button>
@@ -209,7 +209,6 @@
                 let t1 = new Date(l.start_time).toLocaleString('zh-TW').slice(5,-3); let t2 = new Date(l.end_time).toLocaleString('zh-TW').slice(5,-3);
                 let spBadge = l.leave_type === '颱風假' ? '<span class="text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded ml-2">不支薪</span>' : (l.salary_protection?'<span class="text-[9px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded ml-2">特休保薪</span>':'<span class="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded ml-2">不保薪</span>');
                 
-                // 🌟 v30.0 後台待辦：補登單專屬排版
                 let isRetro = l.leave_type === '忘記打卡(補登)';
                 if(isRetro) {
                     spBadge = `<span class="text-[9px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded ml-2 font-bold">補登${l.target_punch_type==='IN'?'上班':'下班'}</span>`;
@@ -243,7 +242,6 @@
                 logs.forEach(l => {
                     const eid = l.employees?.id; if(!eid || !empLogs[eid]) return;
                     const timeStr = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
-                    // 🌟 判斷是否為補登核准
                     const isRetro = l.note && l.note.includes('[補登核准]');
                     const branchName = isRetro ? '手動補登(免定位)' : (l.branch_locations?.branch_name || '外勤定位');
 
@@ -450,9 +448,9 @@
                     <div class="section-title">第一章：職位與工作內容</div>
                     <ul><li>職務說明：乙方同意擔任甲方所指派之職務，並秉持誠信原則與專業技能，協助甲方各項業務之推動。</li><li>工作區域：甲方得視營運需求，指派乙方於甲方之實體據點、廠區或指定之工作分區執行職務。乙方同意配合公司調度。</li></ul>
                     <div class="section-title">第二章：考勤管理與打卡規範</div>
-                    <ul><li>考勤依據：乙方同意以 HYPASS 員工 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據，絕不從事代打卡或偽造定位之情事。</li><li>打卡範圍：系統將自動偵測員工所在之工作打卡據點。若為「業務」職位，則開放外勤定位打卡權限，但須確實記錄當下經緯度供備查。</li><li>遲到與早退處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若遲到超過寬限次數或時間，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動向主管申請以剩餘特休時數進行扣抵。</li></ul>
+                    <ul><li>考勤依據：乙方同意以 HYPASS 員工 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統自動偵測並記錄員工所在座標與據點，無距離限制限制。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li><li>忘記打卡與補登：若忘記打卡，應於系統提出「補登申請」。每人每月補登上限為 3 次，超過次數將無法申請，該異常時段以曠職或事假論處。若前一日漏打下班卡，須先完成補登申請方可進行次日打卡。</li></ul>
                     <div class="section-title">第三章：請假與休假規範</div>
-                    <ul><li>請假程序：一般請假（如特休、事假）應至少提前三日於線上系統提出申請，經主管核准後始生效力；病假或突發狀況應於當日上班前第一時間告知主管並補單。</li><li>颱風假原則：如遇政府機關發布法定颱風假，甲方依法遵循「放假但該日不支薪」原則辦理。該日之休假不扣除乙方之特休天數，亦不影響全勤考核。</li><li>加班申請：若逢例假日因公務需緊急出勤，乙方須於系統確實填寫「起始時間」與「結束時間」送出加班申請，經核准後方可計入加班時數。</li></ul>
+                    <ul><li>請假程序：一般請假（如特休、事假）應至少提前三日於線上系統提出申請，經主管核准後始生效力；病假或突發狀況應於當日上班前第一時間告知主管並補單。</li><li>颱風假原則：依政府發布，遵循「放假但該日不支薪」原則，不扣特休亦不影響全勤。</li><li>加班申請：例假日出勤須於系統填寫「起訖時間」送出加班單。</li></ul>
                     <div class="section-title">第四章：保密協定 (NDA) 與智慧財產權</div>
                     <ul><li>保密義務：乙方於任職期間及離職後，對於甲方之客戶名單、研發技術、產品配方、財務資訊、商業策略、對話紀錄及所有未公開之營業秘密，負有絕對保密義務。未經甲方書面同意，絕不洩漏或交付予任何第三方。</li><li>違約罰則：乙方若違反上述保密義務，致甲方受有損害或有外洩之虞，乙方同意無條件負擔新台幣壹佰萬元整之懲罰性違約金，甲方並保留法律追訴權。</li></ul>
                     <div class="section-title">第五章：離職與資遣結算</div>
@@ -497,7 +495,6 @@
 
         async function exportBankCSV() { const month = document.getElementById('export-mon').value; if(!month) return; const { data } = await _sb.from('payroll_records').select('total_net_pay, employees(full_name, bank_code, bank_name, bank_user_name, bank_account)').eq('pay_month', month); if(!data || data.length === 0) return; let csv = "\uFEFF銀行代碼,銀行名稱,收款帳號,戶名,匯款金額,備註\n"; data.forEach(r => { csv += `="${r.employees.bank_code}",${r.employees.bank_name},="${r.employees.bank_account}",${r.employees.bank_user_name},${r.total_net_pay},${month}薪資\n`; }); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `HYPASS_${month}_轉帳檔.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
         
-        // 🌟 v30.0 使用 RPC 核准，處理「上帝之手」補登邏輯
         async function updLeave(id, st) { 
             try { 
                 const { error } = await _sb.rpc('fn_approve_leave', { p_leave_id: id, p_status: st });
