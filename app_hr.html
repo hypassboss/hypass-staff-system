@@ -27,6 +27,15 @@
         </header>
 
         <main class="p-5">
+            <div id="penalty-alert" class="hidden bg-red-600 text-white p-4 rounded-2xl shadow-lg mb-5 animate-pulse border-2 border-red-400">
+                <div class="flex items-center space-x-3 mb-2">
+                    <span class="text-3xl">⚠️</span>
+                    <h3 class="font-black text-lg tracking-wider">紀律警告通知</h3>
+                </div>
+                <p class="text-sm font-bold text-red-100">您已被系統計點，目前累計 <span id="penalty-points" class="text-2xl font-black text-white px-2">0</span> 點！</p>
+                <p class="text-[10px] mt-2 bg-red-800/50 p-2 rounded-lg">※ 計點原因可能包含：規避每週五法定盤點、考勤嚴重異常等。請立即向主管說明原因，以免影響考核與薪資權益。</p>
+            </div>
+
             <div id="view-dashboard" class="view-panel active">
                 <div class="bg-amber-50/80 border border-amber-200 p-4 rounded-2xl flex flex-col shadow-sm relative overflow-hidden mb-5"><div class="absolute top-0 right-0 -mt-2 -mr-2 text-6xl opacity-10 grayscale">📢</div><div class="flex items-center space-x-2 mb-3 pb-2 border-b border-amber-200/50 relative z-10"><span class="text-lg">📢</span><h4 class="text-xs font-black text-amber-900 tracking-widest">公司公告</h4></div><div id="ui-bulletin" class="pl-1 pr-1 max-h-24 overflow-y-auto no-scrollbar space-y-3 relative z-10">載入中...</div></div>
                 
@@ -153,19 +162,20 @@
                 const u = window.currentUser; syncCalendar();
                 document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1 h-1.5 w-1.5 bg-emerald-400 rounded-full"></span>已連線';
                 
+                // 🌟 記點警告機制
+                if (u.penalty_points > 0) {
+                    document.getElementById('penalty-alert').classList.remove('hidden');
+                    document.getElementById('penalty-points').innerText = u.penalty_points;
+                }
+                
                 document.getElementById('dash-name').innerText = u.full_name; 
                 document.getElementById('dash-role').innerText = u.job_title || '員工';
                 document.getElementById('ui-work-hours').innerText = `🕒 表定班別：${(u.work_start_time||'09:00').slice(0,5)} ~ ${(u.work_end_time||'18:00').slice(0,5)}`;
                 if(u.job_title === '業務') document.getElementById('ui-role-icon').innerText = '🛵';
                 
                 const { data: lv, error: errLv } = await window._sb.rpc('fn_get_annual_leave_v2', { p_emp_id: u.id });
-                if(errLv) { 
-                    console.error("特休計算異常:", errLv); 
-                    document.getElementById('dash-leave').innerHTML = '<span class="text-sm text-red-300">連線中</span>'; 
-                } else if(lv) { 
-                    let rHours = Math.round((lv.remain_hours % 8) * 10) / 10; 
-                    document.getElementById('dash-leave').innerHTML = `${lv.remain_days}<span class="text-sm font-bold mx-1.5 text-amber-100/70 tracking-normal">天</span>${rHours}<span class="text-sm font-bold ml-1.5 text-amber-100/70 tracking-normal">小時</span>`; 
-                }
+                if(errLv) { console.error("特休計算異常:", errLv); document.getElementById('dash-leave').innerHTML = '<span class="text-sm text-red-300">連線中</span>'; }
+                else if(lv) { let rHours = Math.round((lv.remain_hours % 8) * 10) / 10; document.getElementById('dash-leave').innerHTML = `${lv.remain_days}<span class="text-sm font-bold mx-1.5 text-amber-100/70 tracking-normal">天</span>${rHours}<span class="text-sm font-bold ml-1.5 text-amber-100/70 tracking-normal">小時</span>`; }
 
                 const { data: s, error: errS } = await window._sb.rpc('fn_get_emp_stats', { p_emp_id: u.id });
                 if (errS) { console.error("統計資料異常:", errS); }
@@ -245,7 +255,7 @@
         async function submitLeave(e) {
             e.preventDefault(); const fd = new FormData(e.target); const isRet = fd.get('leave_type') === '忘記打卡(補登)'; 
             
-            // 🌟 假日防呆阻擋
+            // 🌟 防呆：假日時阻擋申請特休與補登
             const stVal = fd.get('start_time');
             const startDateStr = stVal.split('T')[0];
             const parts = startDateStr.split('-');
@@ -276,7 +286,6 @@
                 document.getElementById('st-m-ann').innerText = fmt(s.month.annual) + ' h'; document.getElementById('st-m-per').innerText = fmt(s.month.personal) + ' h'; document.getElementById('st-m-sic').innerText = fmt(s.month.sick) + ' h'; document.getElementById('st-m-lat').innerText = s.month.late + ' 次'; document.getElementById('st-y-ann').innerText = fmt(s.year.annual) + ' h'; document.getElementById('st-y-per').innerText = fmt(s.year.personal) + ' h'; document.getElementById('st-y-sic').innerText = fmt(s.year.sick) + ' h'; document.getElementById('st-y-lat').innerText = s.year.late + ' 次'; 
             }
 
-            // 🌟 依照月份選擇器過濾紀錄
             const qMonth = document.getElementById('leave-query-month') ? document.getElementById('leave-query-month').value : '';
             let query = window._sb.from('leave_requests').select('*').eq('employee_id', window.currentUser.id).order('created_at', {ascending: false});
             if (qMonth) { query = query.gte('start_time', qMonth + '-01T00:00:00+08:00').lte('start_time', qMonth + '-31T23:59:59+08:00'); } 
