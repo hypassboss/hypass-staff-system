@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hypass | 庫存系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>body { background: #f1f5f9; -webkit-tap-highlight-color: transparent; padding-bottom: 90px;} .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.8); }</style>
+</head>
+<body class="text-slate-800">
+    <header class="bg-slate-900 text-white px-5 py-4 shadow-md sticky top-0 z-50 flex items-center h-16"><h1 class="text-xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-200">庫存與盤點</h1><div class="ml-auto text-[10px] font-bold bg-white/10 px-3 py-1 rounded-full border border-white/20" id="user-badge">載入中</div></header>
+    <main class="p-5 max-w-md mx-auto space-y-5">
+        <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[2rem] p-6 text-white shadow-lg relative overflow-hidden"><div class="absolute -right-4 -top-4 text-7xl opacity-20">📦</div><h2 class="text-2xl font-black mb-1">行動盤點中心</h2><p class="text-xs font-bold text-emerald-100 mb-4">支援相機掃碼與快速滑動輸入</p></div>
+        <div class="grid grid-cols-2 gap-4">
+            <button onclick="alert('即將呼叫手機鏡頭 API... (開發中)')" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-emerald-200 hover:bg-emerald-50 col-span-2 bg-emerald-50/50"><span class="text-5xl mb-3 drop-shadow-md">📷</span><span class="font-black text-emerald-800 tracking-wider text-lg">開啟相機掃碼盤點</span></button>
+            <button onclick="alert('連接 4x6 熱感應標籤機中... (開發中)')" class="glass-card p-5 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm hover:bg-slate-50"><span class="text-3xl mb-2 drop-shadow-md">🖨️</span><span class="font-bold text-slate-700 text-sm">列印料號條碼</span></button>
+            <button onclick="alert('讀取 BOM 表中... (開發中)')" class="glass-card p-5 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm hover:bg-slate-50"><span class="text-3xl mb-2 drop-shadow-md">⚙️</span><span class="font-bold text-slate-700 text-sm">BOM組裝扣料</span></button>
+        </div>
+    </main>
+    <script src="shared.js"></script>
+    <script>
+        async function bootInventory() { const isAuth = await authGuard('inv'); if(isAuth) { document.getElementById('user-badge').innerText = window.currentUser.full_name; } }
+        window.onload = bootInventory;
+    </script>
+</body>
+</html>
