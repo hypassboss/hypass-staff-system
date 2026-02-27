@@ -222,9 +222,18 @@
             aEmps.forEach(e => { window.empData[e.id] = { base: e.base_salary, deps: e.dependents_count || 0, start: e.work_start_time || '09:00:00' }; }); 
             document.getElementById('p-emp').innerHTML = aEmps.map(e => `<option value="${e.id}">[${e.employee_no||'未設定'}] ${e.full_name}</option>`).join('');
 
+            // 🌟 員工總表顯示記點與盤點負責人標籤
             if (aEmps.length) {
-                document.getElementById('list-emps-mobile').innerHTML = aEmps.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><div class="w-10 h-10 bg-slate-100 border border-slate-200 rounded-full flex items-center justify-center text-slate-500 font-black mr-3">${e.full_name.charAt(0)}</div><div><h4 class="font-black text-sm text-slate-800">${e.full_name} <span class="text-[9px] bg-emerald-50 border border-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded ml-1">${(e.base_salary/1000).toFixed(0)}k</span></h4><p class="text-[10px] text-slate-500 mt-1"><span class="text-sky-600 font-bold mr-1">${e.employee_no||'未編號'}</span> | ${e.branch_locations?.branch_name||'未綁定'}</p></div></div><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl">管理</button></div>`).join('');
-                document.getElementById('list-emps-desktop').innerHTML = aEmps.map(e => `<tr class="hover:bg-slate-50 transition"><td class="px-6 py-4 font-black text-sky-700 text-xs">${e.employee_no||'--'}</td><td class="px-6 py-4 font-black text-slate-800">${e.full_name}<br><span class="text-slate-400 text-[10px] font-normal">${e.branch_locations?.branch_name||'未綁定'}</span></td><td class="px-6 py-4 text-slate-600 font-mono text-xs">${e.phone}</td><td class="px-6 py-4 text-emerald-600 font-black">NT$ ${e.base_salary.toLocaleString()}</td><td class="px-6 py-4 text-center"><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">管理與結算</button></td></tr>`).join('');
+                document.getElementById('list-emps-mobile').innerHTML = aEmps.map(e => {
+                    let mgrTag = e.is_inventory_manager ? '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1 rounded ml-1">盤點負責人</span>' : '';
+                    let pntTag = e.penalty_points > 0 ? `<span class="text-[9px] bg-red-100 text-red-700 px-1 rounded ml-1">記點:${e.penalty_points}</span>` : '';
+                    return `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><div class="w-10 h-10 bg-slate-100 border border-slate-200 rounded-full flex items-center justify-center text-slate-500 font-black mr-3">${e.full_name.charAt(0)}</div><div><h4 class="font-black text-sm text-slate-800">${e.full_name} <span class="text-[9px] bg-emerald-50 border border-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded ml-1">${(e.base_salary/1000).toFixed(0)}k</span>${mgrTag}${pntTag}</h4><p class="text-[10px] text-slate-500 mt-1"><span class="text-sky-600 font-bold mr-1">${e.employee_no||'未編號'}</span> | ${e.branch_locations?.branch_name||'未綁定'}</p></div></div><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl">管理</button></div>`;
+                }).join('');
+                document.getElementById('list-emps-desktop').innerHTML = aEmps.map(e => {
+                    let mgrTag = e.is_inventory_manager ? '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1 rounded block mt-1 w-max">盤點負責人</span>' : '';
+                    let pntTag = e.penalty_points > 0 ? `<span class="text-[9px] bg-red-100 text-red-700 px-1 rounded block mt-1 w-max">記點:${e.penalty_points}</span>` : '';
+                    return `<tr class="hover:bg-slate-50 transition"><td class="px-6 py-4 font-black text-sky-700 text-xs">${e.employee_no||'--'}</td><td class="px-6 py-4 font-black text-slate-800">${e.full_name}${mgrTag}${pntTag}</td><td class="px-6 py-4 text-slate-600 font-mono text-xs">${e.phone}</td><td class="px-6 py-4 text-emerald-600 font-black">NT$ ${e.base_salary.toLocaleString()}</td><td class="px-6 py-4 text-center"><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">管理與結算</button></td></tr>`;
+                }).join('');
             } else {
                 document.getElementById('list-emps-mobile').innerHTML = '<p class="text-center text-xs text-slate-400 py-4">無在職員工</p>';
                 document.getElementById('list-emps-desktop').innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">無在職員工</td></tr>';
@@ -281,6 +290,7 @@
             document.getElementById('list-attendance-desktop').innerHTML = htmlD;
         }
 
+        // 🌟 顯示員工詳細資料，加入記點與負責人標籤
         function openEmpDetail(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             window.currentOffboardEmpId = empId; 
@@ -288,9 +298,12 @@
             document.getElementById('ui-emp-offboard-section').style.display = 'block';
             const editBtn = document.getElementById('btn-edit-emp'); editBtn.onclick = () => renderEditEmpForm(empId); editBtn.style.display = 'block';
 
+            let mgrTag = e.is_inventory_manager ? '<span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded ml-1 align-middle border border-emerald-200">庫存盤點員</span>' : '';
+            let pntTag = e.penalty_points > 0 ? `<span class="text-[10px] font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded ml-1 align-middle border border-red-200">記點: ${e.penalty_points}</span>` : '';
+
             const html = `
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <div class="flex items-center space-x-3 mb-4 pb-4 border-b border-slate-100"><div class="w-14 h-14 bg-slate-900 rounded-full flex items-center justify-center text-white text-xl font-black shadow-inner">${e.full_name.charAt(0)}</div><div><h4 class="text-xl font-black text-slate-800 tracking-tight">${e.full_name} <span class="text-[10px] font-bold text-sky-600 bg-sky-50 px-2 py-0.5 rounded ml-1 align-middle border border-sky-100">${e.employment_status}</span></h4><p class="text-[10px] text-slate-500 font-bold mt-0.5">${e.job_title||'未指派職位'}</p></div></div>
+                    <div class="flex items-center space-x-3 mb-4 pb-4 border-b border-slate-100"><div class="w-14 h-14 bg-slate-900 rounded-full flex items-center justify-center text-white text-xl font-black shadow-inner">${e.full_name.charAt(0)}</div><div><h4 class="text-xl font-black text-slate-800 tracking-tight">${e.full_name} <span class="text-[10px] font-bold text-sky-600 bg-sky-50 px-2 py-0.5 rounded ml-1 align-middle border border-sky-100">${e.employment_status}</span>${mgrTag}${pntTag}</h4><p class="text-[10px] text-slate-500 font-bold mt-0.5">${e.job_title||'未指派職位'}</p></div></div>
                     <div class="grid grid-cols-2 gap-y-4 gap-x-3 text-sm">
                         <div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">員工編號</p><p class="font-black text-sky-700 text-base">${e.employee_no||'未設定'}</p></div><div class="col-span-1"><p class="text-[10px] font-bold text-slate-400 mb-0.5">入職日期</p><p class="font-black text-slate-700 mt-1">${e.onboarding_date}</p></div>
                         <div class="col-span-2 border-t border-slate-100 pt-3 mt-1"><h5 class="text-xs font-black text-blue-700 flex items-center"><span class="mr-1">⏰</span> 考勤班別與據點</h5></div>
@@ -318,6 +331,7 @@
             document.getElementById('emp-detail-modal').classList.add('active');
         }
 
+        // 🌟 修改員工資料表單，加入盤點負責人與記點輸入框
         function renderEditEmpForm(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             document.getElementById('btn-edit-emp').style.display = 'none'; document.getElementById('ui-emp-offboard-section').style.display = 'none';
@@ -331,6 +345,9 @@
                             <div><label class="text-[10px] font-bold text-slate-500 ml-1">員工編號</label><input type="text" id="edit-emp-no" value="${e.employee_no==='未設定'?'':e.employee_no}" class="admin-input bg-white font-black text-sky-700" placeholder="系統自動發放" disabled></div>
                             <div><label class="text-[10px] font-bold text-slate-500 ml-1">身分證字號</label><input type="text" id="edit-idnum" value="${e.id_number}" class="admin-input bg-white uppercase" required></div>
                             <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">員工職位</label><select id="edit-job-title" class="admin-input bg-white font-bold"><option value="主管" ${e.job_title==='主管'?'selected':''}>主管</option><option value="業務" ${e.job_title==='業務'?'selected':''}>業務</option><option value="助理" ${e.job_title==='助理'?'selected':''}>助理</option></select></div>
+                            
+                            <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-red-700 mb-2">⚙️ 權限與懲處設定</h5><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">盤點負責人</label><select id="edit-inv-mgr" class="admin-input bg-white font-bold"><option value="false" ${!e.is_inventory_manager?'selected':''}>否</option><option value="true" ${e.is_inventory_manager?'selected':''}>是 (需執行盤點)</option></select></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">記點累計次數</label><input type="number" id="edit-penalty" value="${e.penalty_points||0}" class="admin-input bg-white font-black text-red-600" required></div></div></div>
+
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-blue-700 mb-2">⏰ 考勤班別設定</h5><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">上班時間</label><input type="time" id="edit-start-time" value="${(e.work_start_time||'09:00').slice(0,5)}" class="admin-input bg-white font-black text-blue-700" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">下班時間</label><input type="time" id="edit-end-time" value="${(e.work_end_time||'18:00').slice(0,5)}" class="admin-input bg-white font-black text-blue-700" required></div></div></div>
                             <div><label class="text-[10px] font-bold text-slate-500 ml-1">入職日期</label><input type="date" id="edit-onboard" value="${e.onboarding_date}" class="admin-input bg-white" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">工作打卡據點</label><select id="edit-branch" class="admin-input bg-white font-bold">${brOptions}</select></div>
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><label class="text-[10px] font-bold text-slate-500 ml-1">電子信箱</label><input type="email" id="edit-email" value="${e.email}" class="admin-input bg-white" required></div>
@@ -361,14 +378,16 @@
                 default_branch_id: document.getElementById('edit-branch').value, address: document.getElementById('edit-address').value, 
                 emergency_name: document.getElementById('edit-emg-name').value, emergency_phone: document.getElementById('edit-emg-phone').value, 
                 bank_name: document.getElementById('edit-bank-name').value, bank_code: document.getElementById('edit-bank-code').value, 
-                bank_user_name: document.getElementById('edit-bank-user').value, bank_account: document.getElementById('edit-bank-account').value 
+                bank_user_name: document.getElementById('edit-bank-user').value, bank_account: document.getElementById('edit-bank-account').value,
+                is_inventory_manager: document.getElementById('edit-inv-mgr').value === 'true',
+                penalty_points: parseInt(document.getElementById('edit-penalty').value) || 0
             };
             const { error } = await window._sb.from('employees').update(p).eq('id', empId);
             if (error) { alert('更新失敗: ' + error.message); btn.innerHTML = originText; btn.disabled = false; } 
             else { btn.innerHTML = '✅ 儲存完畢'; await loadAll(); setTimeout(() => openEmpDetail(empId), 1000); }
         }
 
-        // 🌟 100% 完整合約 PDF 匯出 (包含忘記打卡條款)
+        // 🌟 100% 完整合約 PDF 匯出
         function exportContract(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             const printWindow = window.open('', '_blank', 'width=900,height=900');
@@ -468,7 +487,6 @@
 
         async function updLeave(id, st) { try { const { error } = await window._sb.rpc('fn_approve_leave', { p_leave_id: id, p_status: st }); if(error) throw error; alert(`✅ 已${st}`); loadAll(); } catch(e) { alert('錯誤: ' + e.message); } }
         
-        // 🌟 自動呼叫新大腦配發員工編號
         async function appr(id) { 
             try { 
                 const { data, error } = await window._sb.rpc('fn_approve_employee', { p_emp_id: id }); 
