@@ -76,13 +76,13 @@
             <section id="pay" class="tab-content space-y-6 max-w-3xl">
                 <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-[1.5rem] shadow-lg text-white relative overflow-hidden"><div class="absolute -right-4 -bottom-4 text-7xl opacity-20">🏦</div><h3 class="font-black text-lg mb-1 relative z-10">銀行薪資轉帳檔 (CSV)</h3><p class="text-xs text-emerald-100 mb-4 relative z-10 font-medium">支援銀行代碼，可直接匯入網銀批次轉帳</p><div class="flex space-x-2 relative z-10"><input type="month" id="export-mon" class="admin-input bg-white/20 border-white/30 text-white placeholder-white/50 flex-1" style="color-scheme: dark;"><button onclick="exportBankCSV()" class="bg-white text-emerald-700 font-black px-5 py-3 rounded-xl shadow-md active:scale-95 transition">立即下載</button></div></div>
                 
-                <div class="glass-panel p-6 space-y-4">
-                    <h3 class="font-black text-slate-800 border-l-4 border-indigo-500 pl-3 text-lg mb-4">發派當月薪資與獎金</h3>
+                <div class="glass-panel p-6 space-y-4 border-t-4 border-indigo-500">
+                    <h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">💰</span>發派當月薪資與獎金</h3>
                     <div class="grid grid-cols-2 gap-3 mb-2"><select id="p-emp" class="admin-input bg-slate-50 font-bold" onchange="onEmpChange()"></select><input type="month" id="p-mon" class="admin-input bg-slate-50 font-bold" onchange="updateAttendanceRate()"></div>
                     <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">本薪</label><input type="number" id="p-base" oninput="calcPayroll()" class="admin-input font-black text-slate-800 bg-white"></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">獎金津貼</label><input type="number" id="p-bonus" oninput="calcPayroll()" class="admin-input font-black text-emerald-600"></div></div>
                     
                     <div class="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
-                        <div class="flex justify-between items-center mb-2"><h4 class="text-[10px] font-black text-indigo-800 tracking-widest">🤖 系統出勤與加班分析</h4><button onclick="updateAttendanceRate()" class="text-[9px] bg-indigo-200 text-indigo-800 px-2 py-1 rounded font-bold hover:bg-indigo-300">重新讀取</button></div>
+                        <div class="flex justify-between items-center mb-2"><h4 class="text-[10px] font-black text-indigo-800 tracking-widest">🤖 當月出勤與加班分析</h4><button onclick="updateAttendanceRate()" class="text-[9px] bg-indigo-200 text-indigo-800 px-2 py-1 rounded font-bold hover:bg-indigo-300">重新讀取</button></div>
                         <div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-600 bg-white p-2 rounded-lg border border-indigo-100 shadow-sm mb-3">
                             <div>病假<br><span id="sd-sick" class="text-indigo-600 text-sm font-black">0</span>h</div>
                             <div>事假<br><span id="sd-per" class="text-indigo-600 text-sm font-black">0</span>h</div>
@@ -96,11 +96,11 @@
                     
                     <div class="p-4 bg-red-50 rounded-xl border border-red-100 grid grid-cols-2 gap-3 relative"><button onclick="calcPayroll()" class="absolute -top-3 right-3 text-[9px] bg-slate-800 text-white font-bold px-2 py-1 rounded shadow-sm">🤖 依眷屬重新計算</button><div><label class="text-[10px] font-bold text-red-800 ml-1">勞健保扣除</label><input type="number" id="p-ins" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200"></div><div><label class="text-[10px] font-bold text-red-800 ml-1">二代健保</label><input type="number" id="p-2nd" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200"></div></div>
                     <div class="flex justify-between items-center p-4 mt-2 bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl border border-sky-100"><span class="text-sm font-black text-slate-700">結算當月實領</span><span class="text-4xl font-black text-sky-600 tracking-tighter" id="p-net-display">NT$ 0</span><input type="hidden" id="p-net"><input type="hidden" id="p-pen"></div>
-                    <button onclick="issuePayroll()" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform mt-2">正式發送薪資單</button>
+                    <button onclick="issuePayroll()" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform mt-2">正式發送當月薪資</button>
                 </div>
 
-                <div class="glass-panel p-6 space-y-4">
-                    <h3 class="font-black text-slate-800 border-l-4 border-amber-500 pl-3 text-lg mb-4">發放年終獎金評估</h3>
+                <div class="glass-panel p-6 space-y-4 border-t-4 border-amber-500">
+                    <h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">🎁</span>發放年終獎金</h3>
                     <div class="grid grid-cols-2 gap-3 mb-2">
                         <select id="yeb-emp" class="admin-input bg-slate-50 font-bold" onchange="onYebEmpChange()"></select>
                         <select id="yeb-year" class="admin-input bg-slate-50 font-bold" onchange="updateYearEndStats()">
@@ -110,9 +110,14 @@
                         </select>
                     </div>
                     
-                    <div class="p-4 bg-amber-50 rounded-xl border border-amber-200">
+                    <div>
+                        <label class="text-[10px] font-bold text-amber-700 ml-1">核定年終獎金金額 (發放前請先參考下方出勤評估)</label>
+                        <input type="number" id="yeb-amount" class="admin-input font-black text-amber-600 bg-white border-amber-300 text-xl shadow-inner" value="0">
+                    </div>
+
+                    <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 mt-2 shadow-sm">
                         <h4 class="text-[10px] font-black text-amber-800 tracking-widest mb-2 flex justify-between items-center"><span>📊 該年度出勤與紀律總評估</span><button onclick="updateYearEndStats()" class="text-[9px] bg-amber-200 text-amber-800 px-2 py-1 rounded hover:bg-amber-300 transition">重新讀取</button></h4>
-                        <div class="grid grid-cols-3 gap-2 text-center text-[11px] font-bold text-slate-600 bg-white p-3 rounded-lg border border-amber-100 shadow-sm">
+                        <div class="grid grid-cols-3 gap-2 text-center text-[11px] font-bold text-slate-600 bg-white p-3 rounded-lg border border-amber-100 shadow-inner">
                             <div>未休特休<br><span id="sy-ann" class="text-amber-600 text-base font-black">0</span>h</div>
                             <div>事假<br><span id="sy-per" class="text-amber-600 text-base font-black">0</span>h</div>
                             <div>病假<br><span id="sy-sic" class="text-amber-600 text-base font-black">0</span>h</div>
@@ -122,13 +127,8 @@
                         </div>
                         <p class="text-[9px] text-amber-700 mt-2 font-bold leading-relaxed">※ 年終獎金發放基準：依據勞基法及公司守則，將參考上述年度之請假、加班與違規計點狀況進行綜合評估。</p>
                     </div>
-
-                    <div>
-                        <label class="text-[10px] font-bold text-amber-700 ml-1">核定年終獎金金額</label>
-                        <input type="number" id="yeb-amount" class="admin-input font-black text-amber-600 bg-white border-amber-300 text-xl" value="0">
-                    </div>
                     
-                    <button onclick="issueYearEndBonus()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform mt-2">正式發放年終獎金</button>
+                    <button onclick="issueYearEndBonus()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform mt-2 tracking-widest">正式發放年終獎金</button>
                 </div>
             </section>
 
@@ -317,7 +317,6 @@
             document.getElementById('list-attendance-mobile').innerHTML = htmlM; document.getElementById('list-attendance-desktop').innerHTML = htmlD;
         }
 
-        // 🌟 庫存總表更新：支援類別顯示與編輯
         async function loadAdminInventory() {
             document.getElementById('list-inv-mobile').innerHTML = '載入中...'; document.getElementById('list-inv-desktop').innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400 font-bold">載入中...</td></tr>';
             const { data: items } = await window._sb.from('items').select('*').order('created_at', {ascending: false});
@@ -353,26 +352,14 @@
             document.getElementById('edit-item-name').value = i.item_name; 
             document.getElementById('edit-item-safe').value = i.safe_stock_level || 0; 
             document.getElementById('edit-item-lead').value = i.lead_time_days || 15;
-            
-            // 設定類別選單 (若不存在則預設未分類)
             const catSelect = document.getElementById('edit-item-cat');
-            if (Array.from(catSelect.options).some(opt => opt.value === i.category)) {
-                catSelect.value = i.category;
-            } else {
-                catSelect.value = '未分類';
-            }
-            
+            if (Array.from(catSelect.options).some(opt => opt.value === i.category)) { catSelect.value = i.category; } else { catSelect.value = '未分類'; }
             openModal('item-edit-modal');
         }
 
         async function saveAdminItem() {
             const id = document.getElementById('edit-item-id').value;
-            const p = { 
-                item_name: document.getElementById('edit-item-name').value, 
-                category: document.getElementById('edit-item-cat').value,
-                safe_stock_level: parseInt(document.getElementById('edit-item-safe').value) || 0, 
-                lead_time_days: parseInt(document.getElementById('edit-item-lead').value) || 15 
-            };
+            const p = { item_name: document.getElementById('edit-item-name').value, category: document.getElementById('edit-item-cat').value, safe_stock_level: parseInt(document.getElementById('edit-item-safe').value) || 0, lead_time_days: parseInt(document.getElementById('edit-item-lead').value) || 15 };
             const { error } = await window._sb.from('items').update(p).eq('id', id);
             if(error) alert('修改失敗'); else { alert('✅ 參數更新成功！'); closeModal('item-edit-modal'); loadAdminInventory(); }
         }
@@ -515,7 +502,7 @@
         }
 
         async function calculateSettlement() { const empId = window.currentOffboardEmpId; const lastDay = document.getElementById('modal-off-date').value; const type = document.getElementById('modal-off-type').value; if(!empId || !lastDay) { alert('請填寫最後工作日'); return; } const e = window.allEmps.find(x => x.id === empId); const { data: lv } = await window._sb.rpc('fn_get_annual_leave_v2', { p_emp_id: e.id }); const proRat = new Date(lastDay).getDate() / 30.0; const proSal = Math.round((proRat > 1 ? 1 : proRat) * e.base_salary); const uHrs = lv?.remain_hours || 0; const lPay = Math.round(uHrs * (e.base_salary / 240)); let sev = 0; if(type === '非自願離職(資遣)') { const ty = (new Date(lastDay).getTime() - new Date(e.onboarding_date).getTime()) / 31557600000; sev = Math.round(Math.max(0, ty) * 0.5 * e.base_salary); } const tot = proSal + lPay + sev; document.getElementById('res-base').innerText = `NT$ ${e.base_salary.toLocaleString()}`; document.getElementById('res-pro').innerText = `+ NT$ ${proSal.toLocaleString()}`; document.getElementById('res-lvh').innerText = uHrs; document.getElementById('res-lvp').innerText = `+ NT$ ${lPay.toLocaleString()}`; document.getElementById('res-sev').innerText = `+ NT$ ${sev.toLocaleString()}`; document.getElementById('res-total').innerText = `NT$ ${tot.toLocaleString()}`; document.getElementById('modal-off-result').classList.remove('hidden'); globalOffboardData = { employee_id: empId, settlement_type: type, last_working_day: lastDay, base_salary_ref: e.base_salary, prorated_salary: proSal, unused_leave_hours: uHrs, unused_leave_pay: lPay, severance_pay: sev, total_settlement: tot }; }
-        async function confirmOffboarding() { if(!globalOffboardData || !confirm('⚠️ 確定結算並停權？')) return; await window._sb.from('settlement_records').insert([globalOffboardData]); await window._sb.from('employees').update({ employment_status: '離職', is_approved: false, resignation_date: globalOffboardData.last_working_day }).eq('id', globalOffboardData.employee_id); alert('✅ 帳號已永久停權。'); closeEmpDetail(); loadAll(); }
+        async function confirmOffboarding() { if(!globalOffboardData || !confirm('⚠️ 確定結算並停權？')) return; await window._sb.from('settlement_records').insert([globalOffboardData]); await window._sb.from('employees').update({ employment_status: '離職', is_approved: false, resignation_date: globalOffboardData.last_working_day }).eq('id', globalOffboardData.employee_id); alert('✅ 帳號已永久停權。'); closeModal('emp-detail-modal'); loadAll(); }
         async function exportBankCSV() { const month = document.getElementById('export-mon').value; if(!month) return; const { data } = await window._sb.from('payroll_records').select('total_net_pay, employees(full_name, bank_code, bank_name, bank_user_name, bank_account)').eq('pay_month', month); if(!data || data.length === 0) return; let csv = "\uFEFF銀行代碼,銀行名稱,收款帳號,戶名,匯款金額,備註\n"; data.forEach(r => { csv += `="${r.employees.bank_code}",${r.employees.bank_name},="${r.employees.bank_account}",${r.employees.bank_user_name},${r.total_net_pay},${month}薪資\n`; }); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `HYPASS_${month}_轉帳檔.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
         async function loadAdminBlt() { const { data: blt } = await window._sb.from('bulletin_board').select('*').order('created_at', {ascending: false}); window.bulletins = blt || []; document.getElementById('list-admin-blt').innerHTML = window.bulletins.map(b => `<div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center hover:bg-white transition shadow-sm"><div><div class="text-[10px] text-amber-600 font-black mb-1">${new Date(b.created_at).toISOString().split('T')[0]}</div><div class="font-black text-sm text-slate-800 truncate w-48">${b.title}</div></div><div class="flex space-x-2"><button onclick="editBlt('${b.id}')" class="text-xs bg-sky-100 text-sky-700 font-bold px-3 py-1.5 rounded-lg active:scale-95">✏️</button><button onclick="delBlt('${b.id}')" class="text-xs bg-red-100 text-red-700 font-bold px-3 py-1.5 rounded-lg active:scale-95">刪除</button></div></div>`).join('') || '<div class="text-center text-xs text-slate-400 py-3">無歷史公告</div>'; }
         function editBlt(id) { const b = window.bulletins.find(x => x.id === id); if(!b) return; document.getElementById('blt-edit-id').value = b.id; document.getElementById('blt-title').value = b.title; document.getElementById('blt-content').value = b.content; document.getElementById('blt-form-title').innerText = '✏️ 編輯企業公告'; document.getElementById('btn-post-blt').innerText = '儲存公告變更'; document.getElementById('btn-cancel-blt').classList.remove('hidden'); window.scrollTo({top: 0, behavior: 'smooth'}); }
