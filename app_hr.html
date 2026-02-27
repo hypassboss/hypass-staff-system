@@ -19,11 +19,17 @@
     </style>
 </head>
 <body class="text-slate-800">
-    <div id="app-container" class="max-w-md mx-auto shadow-2xl">
+    <div id="app-container" class="max-w-md mx-auto shadow-2xl relative">
         <header class="bg-slate-900 text-white px-5 py-4 shadow-md sticky top-0 z-50 flex items-center h-16">
-            <button id="btn-back" onclick="backToDashboard()" class="hidden mr-3 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition">🔙 返回</button>
-            <div><h1 class="text-xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-200" id="header-title">員工大廳</h1></div>
-            <div class="ml-auto flex items-center space-x-2"><div id="user-status" class="text-[9px] font-bold bg-white/10 px-2 py-1 rounded-full border border-white/20 flex items-center"><span class="animate-pulse mr-1 h-1.5 w-1.5 bg-amber-400 rounded-full"></span>連線中</div></div>
+            <button id="btn-back" onclick="backToDashboard()" class="hidden mr-3 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap flex-shrink-0">🔙 返回</button>
+            <div class="flex-1 min-w-0 mr-2">
+                <h1 class="text-lg sm:text-xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-200 truncate whitespace-nowrap" id="header-title">員工大廳</h1>
+            </div>
+            <div class="flex items-center space-x-2 flex-shrink-0">
+                <div id="user-status" class="text-[9px] font-bold bg-white/10 px-2 py-1 rounded-full border border-white/20 flex items-center whitespace-nowrap">
+                    <span class="animate-pulse mr-1 h-1.5 w-1.5 bg-amber-400 rounded-full"></span>連線中
+                </div>
+            </div>
         </header>
 
         <main class="p-5">
@@ -73,7 +79,7 @@
                         <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">考勤打卡</span>
                         <span class="font-bold text-sky-600/70 text-[10px] tracking-wider">GPS定位防呆</span>
                     </button>
-                    <button onclick="openView('leave', '請假補登加班申請')" class="glass-card p-5 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-amber-100 hover:bg-amber-50">
+                    <button onclick="openView('leave', '請假與加班申請')" class="glass-card p-5 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-amber-100 hover:bg-amber-50">
                         <span class="text-4xl mb-2 drop-shadow-md">📝</span>
                         <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">請假補登</span>
                         <span class="font-bold text-amber-600/70 text-[10px] tracking-wider">加班申請單</span>
@@ -119,7 +125,7 @@
                     
                     <div class="flex justify-between items-center mb-3 ml-1 mt-4">
                         <h4 class="text-sm font-black text-slate-700">📅 申請紀錄查詢</h4>
-                        <input type="month" id="leave-query-month" onchange="loadLeaveHistory()" class="bg-slate-50 border border-slate-200 text-xs font-bold p-1.5 rounded-lg outline-none text-slate-600">
+                        <input type="month" id="leave-query-month" onchange="loadLeaveHistory()" class="bg-slate-50 border border-slate-200 text-xs font-bold p-1.5 rounded-lg outline-none text-slate-600 shadow-inner">
                     </div>
                     <div id="ui-leave-list" class="space-y-3 max-h-56 overflow-y-auto no-scrollbar p-1">載入中...</div>
                 </div>
@@ -162,7 +168,6 @@
                 const u = window.currentUser; syncCalendar();
                 document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1 h-1.5 w-1.5 bg-emerald-400 rounded-full"></span>已連線';
                 
-                // 🌟 記點警告機制
                 if (u.penalty_points > 0) {
                     document.getElementById('penalty-alert').classList.remove('hidden');
                     document.getElementById('penalty-points').innerText = u.penalty_points;
@@ -235,7 +240,7 @@
         
         async function loadPunchHistory() { document.getElementById('ui-records-list').innerHTML = '載入中...'; openModal('record-modal'); const { data } = await window._sb.from('attendance_logs').select('punch_type, punch_time, note, lat, lng, branch_locations(branch_name)').eq('employee_id', window.currentUser.id).order('punch_time', {ascending: false}).limit(30); document.getElementById('ui-records-list').innerHTML = data.length ? data.map(l => `<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div><span class="text-xs font-black bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${l.punch_type==='IN'?'上班':'下班'}</span> <span class="text-sm font-bold text-slate-700 ml-2">${new Date(l.punch_time).toLocaleString('zh-TW').slice(5,-3)}</span><p class="text-xs text-slate-400 font-bold mt-1.5 flex items-center"><span class="mr-1">🏠</span>${l.branch_locations?.branch_name||(l.note.includes('[補登')?'手動補登':'外勤定位')} ${(l.lat&&l.lng)?`<a href="https://maps.google.com/?q=${l.lat},${l.lng}" target="_blank" class="text-sky-500 hover:text-sky-700 underline font-black ml-2 text-[10px]">📍地圖</a>`:''}</p></div><span class="text-[10px] font-black px-2 py-1 rounded-full ${l.note.includes('正常')?'text-emerald-600 bg-emerald-50':'text-amber-600 bg-amber-50'}">${l.note}</span></div>`).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-10">目前無打卡紀錄</div>'; }
 
-        function autoFillLeaveForm(pType) { openView('leave', '請假補登加班申請'); const now = new Date(); const st = (window.currentUser.work_start_time||'09:00').slice(0,5); const et = (window.currentUser.work_end_time||'18:00').slice(0,5); const dPx = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}T`; const nTx = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'); document.getElementById('leave-type-select').value = '特休'; checkLeaveType(); document.querySelector('input[name="start_time"]').value = pType==='IN'?dPx+st:dPx+nTx; document.querySelector('input[name="end_time"]').value = pType==='IN'?dPx+nTx:dPx+et; }
+        function autoFillLeaveForm(pType) { openView('leave', '出勤單據申請'); const now = new Date(); const st = (window.currentUser.work_start_time||'09:00').slice(0,5); const et = (window.currentUser.work_end_time||'18:00').slice(0,5); const dPx = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}T`; const nTx = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'); document.getElementById('leave-type-select').value = '特休'; checkLeaveType(); document.querySelector('input[name="start_time"]').value = pType==='IN'?dPx+st:dPx+nTx; document.querySelector('input[name="end_time"]').value = pType==='IN'?dPx+nTx:dPx+et; }
         
         async function checkLeaveType() {
             const t = document.getElementById('leave-type-select').value; const sp = document.getElementById('salary-protection-ui'); const rUi = document.getElementById('retro-punch-ui'); const nEu = document.getElementById('normal-end-ui'); const bx = document.getElementById('box-start-time'); const lbl = document.getElementById('label-start'); const btn = document.getElementById('btn-leave');
@@ -255,7 +260,7 @@
         async function submitLeave(e) {
             e.preventDefault(); const fd = new FormData(e.target); const isRet = fd.get('leave_type') === '忘記打卡(補登)'; 
             
-            // 🌟 防呆：假日時阻擋申請特休與補登
+            // 🌟 終極假日防呆阻擋 (封鎖特休、事病假、補登等)
             const stVal = fd.get('start_time');
             const startDateStr = stVal.split('T')[0];
             const parts = startDateStr.split('-');
@@ -264,13 +269,16 @@
             const dayInfo = window.calData[dStr];
             let isOffDay = dayInfo ? dayInfo.isHoliday : (dObj.getDay() === 0 || dObj.getDay() === 6);
             
-            if (isOffDay && (fd.get('leave_type') === '特休' || isRet)) {
-                showAlert('🛑 假日防呆阻擋', '假日時無法申請「特休」與「忘記打卡(補登)」。<br><br>若為假日出勤，請選擇【假日緊急加班】！', 'error');
+            const blockedOnHoliday = ['特休', '事假', '病假', '公假', '颱風假', '忘記打卡(補登)'];
+            const leaveType = fd.get('leave_type');
+            
+            if (isOffDay && blockedOnHoliday.includes(leaveType)) {
+                showAlert('🛑 假日防呆阻擋', `假日時系統鎖定，無法申請「${leaveType.replace('(補登)','')}」。<br><br>假日若有出勤事實，請一律使用【🚨 假日緊急加班】單！`, 'error');
                 return;
             }
 
             const st = stVal + ':00+08:00'; let et = isRet ? st : fd.get('end_time') + ':00+08:00';
-            const payload = { employee_id: window.currentUser.id, leave_type: fd.get('leave_type'), start_time: st, end_time: et, salary_protection: (fd.get('leave_type')==='颱風假'||isRet)?false:(fd.get('salary_protection')==='on'), target_punch_type: isRet?fd.get('target_punch_type'):null };
+            const payload = { employee_id: window.currentUser.id, leave_type: leaveType, start_time: st, end_time: et, salary_protection: (leaveType==='颱風假'||isRet)?false:(fd.get('salary_protection')==='on'), target_punch_type: isRet?fd.get('target_punch_type'):null };
             document.getElementById('btn-leave').innerText = '申請送出中...';
             const { data, error } = await window._sb.from('leave_requests').insert([payload]).select();
             if(!error) { await window._sb.functions.invoke('line-webhook', { body: { action: 'notify_leave', name: window.currentUser.full_name, type: payload.leave_type, start: st.slice(0,16).replace('T',' '), end: isRet?'':et.slice(0,16).replace('T',' ') }}); 
