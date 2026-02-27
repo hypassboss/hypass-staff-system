@@ -210,12 +210,10 @@
         }
         
         async function loadAll() {
-            // 利用 shared.js 的 _sb 實體連線資料庫
             const { data: emps } = await window._sb.from('employees').select('*, branch_locations(branch_name)');
             const { data: brs } = await window._sb.from('branch_locations').select('*');
             window.allEmps = emps || []; window.branches = brs || [];
 
-            // 待辦審核渲染
             const p = window.allEmps.filter(e => !e.is_approved && e.employment_status === '在職');
             document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><span class="text-2xl mr-3">👤</span><div><h4 class="font-black text-sm text-slate-800"><span class="text-[10px] text-sky-600 mr-1">[${e.job_title||'未指定'}]</span>${e.full_name}</h4><p class="text-[10px] text-slate-500">${e.onboarding_date} 申請</p></div></div><button onclick="appr('${e.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-4 py-2 rounded-lg shadow-sm transition">開通</button></div>`).join('') : '<div class="text-center py-6 bg-slate-100/50 rounded-xl border border-dashed border-slate-300"><p class="text-xs text-slate-400 font-bold">目前無待辦審核人員</p></div>';
             
@@ -224,7 +222,6 @@
             aEmps.forEach(e => { window.empData[e.id] = { base: e.base_salary, deps: e.dependents_count || 0, start: e.work_start_time || '09:00:00' }; }); 
             document.getElementById('p-emp').innerHTML = aEmps.map(e => `<option value="${e.id}">[${e.employee_no||'未設定'}] ${e.full_name}</option>`).join('');
 
-            // 員工總表雙視圖渲染 (手機版與電腦版)
             if (aEmps.length) {
                 document.getElementById('list-emps-mobile').innerHTML = aEmps.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><div class="w-10 h-10 bg-slate-100 border border-slate-200 rounded-full flex items-center justify-center text-slate-500 font-black mr-3">${e.full_name.charAt(0)}</div><div><h4 class="font-black text-sm text-slate-800">${e.full_name} <span class="text-[9px] bg-emerald-50 border border-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded ml-1">${(e.base_salary/1000).toFixed(0)}k</span></h4><p class="text-[10px] text-slate-500 mt-1"><span class="text-sky-600 font-bold mr-1">${e.employee_no||'未編號'}</span> | ${e.branch_locations?.branch_name||'未綁定'}</p></div></div><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl">管理</button></div>`).join('');
                 document.getElementById('list-emps-desktop').innerHTML = aEmps.map(e => `<tr class="hover:bg-slate-50 transition"><td class="px-6 py-4 font-black text-sky-700 text-xs">${e.employee_no||'--'}</td><td class="px-6 py-4 font-black text-slate-800">${e.full_name}<br><span class="text-slate-400 text-[10px] font-normal">${e.branch_locations?.branch_name||'未綁定'}</span></td><td class="px-6 py-4 text-slate-600 font-mono text-xs">${e.phone}</td><td class="px-6 py-4 text-emerald-600 font-black">NT$ ${e.base_salary.toLocaleString()}</td><td class="px-6 py-4 text-center"><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">管理與結算</button></td></tr>`).join('');
@@ -233,7 +230,6 @@
                 document.getElementById('list-emps-desktop').innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">無在職員工</td></tr>';
             }
 
-            // 請假單與補登單審核
             const { data: lv } = await window._sb.from('leave_requests').select('*, employees(full_name)').eq('status', '審核中');
             document.getElementById('list-leaves').innerHTML = (lv && lv.length) ? lv.map(l => {
                 let isRet = l.leave_type === '忘記打卡(補登)'; let t1 = new Date(l.start_time).toLocaleString('zh-TW').slice(5,-3); let t2 = isRet?'':new Date(l.end_time).toLocaleString('zh-TW').slice(5,-3);
@@ -278,16 +274,13 @@
                 let outStatus = '<span class="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded font-bold ml-2">未打卡</span>';
                 if(e.out) { if(e.out.retro) outStatus = '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold ml-2">主管補登</span>'; else if(e.out.time < e.end.slice(0,5)) outStatus = '<span class="text-[9px] bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded font-bold ml-2">早退</span>'; else outStatus = '<span class="text-[9px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold ml-2">正常</span>'; }
                 
-                // 手機版卡片
                 htmlM += `<div class="glass-panel p-4 shadow-sm border-l-4 ${e.in&&e.out?'border-emerald-400':'border-slate-200'}"><div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-3"><span class="font-black text-slate-800 text-sm flex items-center">${e.name} <span class="text-[10px] text-sky-600 ml-1 font-bold">(${e.eno||'--'})</span><span class="text-[9px] font-bold text-slate-400 ml-2 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded">班別 ${e.start.slice(0,5)}~${e.end.slice(0,5)}</span></span></div><div class="grid grid-cols-2 gap-3 text-xs"><div class="bg-white p-2.5 rounded-xl border border-slate-100"><div class="font-bold text-slate-500 mb-1 flex justify-between">上班 ${inStatus}</div><div class="font-black ${e.in?'text-slate-800':'text-slate-300'} text-lg">${e.in?e.in.time:'--:--'}</div><div class="text-[9px] text-slate-400 truncate ${e.in?.retro ? 'text-amber-600' : ''}">${e.in?'📍'+e.in.branch:''}</div></div><div class="bg-white p-2.5 rounded-xl border border-slate-100"><div class="font-bold text-slate-500 mb-1 flex justify-between">下班 ${outStatus}</div><div class="font-black ${e.out?'text-slate-800':'text-slate-300'} text-lg">${e.out?e.out.time:'--:--'}</div><div class="text-[9px] text-slate-400 truncate ${e.out?.retro ? 'text-amber-600' : ''}">${e.out?'📍'+e.out.branch:''}</div></div></div></div>`;
-                // 電腦版表格
                 htmlD += `<tr class="hover:bg-slate-50"><td class="px-6 py-4 font-black text-slate-800">${e.name} <span class="text-[10px] text-sky-600 font-bold ml-1">${e.eno||''}</span></td><td class="px-6 py-4 text-xs font-mono text-slate-500">${e.start.slice(0,5)} ~ ${e.end.slice(0,5)}</td><td class="px-6 py-4"><span class="font-black ${e.in?'text-slate-800':'text-slate-300'} text-base mr-2">${e.in?e.in.time:'--:--'}</span>${inStatus}<br><span class="text-[10px] ${e.in?.retro ? 'text-amber-600 font-bold' : 'text-slate-400'}">${e.in?e.in.branch:''}</span></td><td class="px-6 py-4"><span class="font-black ${e.out?'text-slate-800':'text-slate-300'} text-base mr-2">${e.out?e.out.time:'--:--'}</span>${outStatus}<br><span class="text-[10px] ${e.out?.retro ? 'text-amber-600 font-bold' : 'text-slate-400'}">${e.out?e.out.branch:''}</span></td></tr>`;
             });
             document.getElementById('list-attendance-mobile').innerHTML = htmlM;
             document.getElementById('list-attendance-desktop').innerHTML = htmlD;
         }
 
-        // 🌟 100% 還原的員工詳細資料卡 (包含所有欄位)
         function openEmpDetail(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             window.currentOffboardEmpId = empId; 
@@ -325,7 +318,6 @@
             document.getElementById('emp-detail-modal').classList.add('active');
         }
 
-        // 🌟 100% 還原的員工編輯表單
         function renderEditEmpForm(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             document.getElementById('btn-edit-emp').style.display = 'none'; document.getElementById('ui-emp-offboard-section').style.display = 'none';
@@ -376,71 +368,6 @@
             else { btn.innerHTML = '✅ 儲存完畢'; await loadAll(); setTimeout(() => openEmpDetail(empId), 1000); }
         }
 
-        // 🌟 100% 還原的合約 PDF 匯出 (包含忘記打卡條款)
-        function exportContract(empId) {
-            const e = window.allEmps.find(x => x.id === empId); if(!e) return;
-            const printWindow = window.open('', '_blank', 'width=900,height=900');
-            const startScript = "<scr" + "ipt>"; const endScript = "</scr" + "ipt>";
-            const html = `
-                <html>
-                <head>
-                    <title>${e.full_name} - 數位聘僱合約</title>
-                    <style>
-                        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; padding: 40px 60px; line-height: 1.8; color: #111; max-width: 800px; margin: 0 auto; }
-                        h2 { text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 30px; letter-spacing: 2px;}
-                        .info-box { border: 1px solid #ddd; padding: 20px; background: #f9fafb; margin-bottom: 30px; border-radius: 8px; }
-                        .info-box p { margin: 8px 0; font-size: 15px; }
-                        .section-title { font-weight: bold; margin-top: 30px; margin-bottom: 10px; font-size: 1.1em; background: #eee; padding: 5px 10px; border-left: 4px solid #333;}
-                        ul { padding-left: 25px; margin-top: 0; }
-                        li { margin-bottom: 8px; text-align: justify; }
-                        .signature-box { margin-top: 50px; border-top: 2px dashed #999; padding-top: 30px; text-align: right; }
-                        .signature-box p { margin: 5px 0; font-size: 14px; }
-                        .stamp { display: inline-block; border: 3px solid #b91c1c; color: #b91c1c; padding: 10px 20px; font-weight: bold; font-size: 18px; transform: rotate(-5deg); margin-bottom: 15px; border-radius: 5px;}
-                    </style>
-                </head>
-                <body>
-                    <h2>HYPASS 企業聘僱合約與員工服務守則</h2>
-                    <div class="info-box">
-                        <p><strong>甲方（雇主）：</strong>海帕斯科技股份有限公司</p>
-                        <p><strong>乙方（受僱人）：</strong>${e.full_name} <span style="color:#666; font-size:12px;">(員工編號: ${e.employee_no||'未設定'})</span></p>
-                        <p><strong>身分證字號：</strong>${e.id_number}</p>
-                        <p><strong>通訊地址：</strong>${e.address}</p>
-                    </div>
-                    <div class="section-title">第一章：職位與工作內容</div>
-                    <ul><li>職務說明：乙方同意擔任甲方所指派之職務，並秉持誠信原則與專業技能，協助甲方各項業務之推動。</li><li>工作區域：甲方得視營運需求，指派乙方於甲方之實體據點、廠區或指定之工作分區執行職務。乙方同意配合公司調度。</li></ul>
-                    <div class="section-title">第二章：考勤管理與打卡規範</div>
-                    <ul>
-                        <li>考勤依據：乙方同意以 HYPASS 員工 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據，絕不從事代打卡或偽造定位之情事。</li>
-                        <li>打卡範圍：系統自動偵測並記錄員工所在座標與據點，無距離限制。</li>
-                        <li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li>
-                        <li>忘記打卡與補登：若忘記打卡，應於系統提出「補登申請」。每人每月補登上限為 3 次，超過次數將無法申請，該異常時段以曠職或事假論處。若前一日漏打下班卡，須先完成補登申請方可進行次日打卡。</li>
-                    </ul>
-                    <div class="section-title">第三章：請假與休假規範</div>
-                    <ul><li>請假程序：一般請假（如特休、事假）應至少提前三日於線上系統提出申請，經主管核准後始生效力；病假或突發狀況應於當日上班前第一時間告知主管並補單。</li><li>颱風假原則：如遇政府機關發布法定颱風假，甲方依法遵循「放假但該日不支薪」原則辦理。該日之休假不扣除乙方之特休天數，亦不影響全勤考核。</li><li>加班申請：若逢例假日因公務需緊急出勤，乙方須於系統確實填寫「起始時間」與「結束時間」送出加班申請，經核准後方可計入加班時數。</li></ul>
-                    <div class="section-title">第四章：保密協定 (NDA) 與智慧財產權</div>
-                    <ul><li>保密義務：乙方於任職期間及離職後，對於甲方之客戶名單、研發技術、產品配方、財務資訊、商業策略、對話紀錄及所有未公開之營業秘密，負有絕對保密義務。未經甲方書面同意，絕不洩漏或交付予任何第三方。</li><li>違約罰則：乙方若違反上述保密義務，致甲方受有損害或有外洩之虞，乙方同意無條件負擔新台幣壹佰萬元整之懲罰性違約金，甲方並保留法律追訴權。</li></ul>
-                    <div class="section-title">第五章：離職與資遣結算</div>
-                    <ul><li>離職預告與交接：乙方欲終止勞動契約時，應依勞動基準法規定提前預告。離職時，應將所有隸屬公司之財產、機密資訊、設備、實體與數位檔案全數歸還，絕對不得私自拷貝或保留。</li><li>最終結算：離職時，系統將自動精算當月破月薪資、未休特休換發現金，及法定資遣費（限非自願離職），於確認交接無誤後隨次月薪資撥付。</li></ul>
-                    <div class="signature-box">
-                        <div class="stamp">合法數位簽章認證</div>
-                        <p><strong>✔️ 乙方已詳閱並同意上述全條文</strong></p>
-                        <p><strong>✔️ 乙方同意系統以 GPS 定位為考勤唯一依據</strong></p>
-                        <p><strong>✔️ 乙方同意嚴守保密協定(NDA)，如有違願負擔懲罰性違約金</strong></p>
-                        <br>
-                        <p><strong>數位簽署人（乙方）：</strong>${e.full_name}</p>
-                        <p><strong>簽署裝置授權：</strong>LINE LIFF 綁定驗證 (${e.line_id})</p>
-                        <p><strong>生效時間：</strong>${new Date(e.nda_signed_at).toLocaleString('zh-TW')}</p>
-                    </div>
-                    ${startScript}
-                        window.onload = function() { setTimeout(() => { window.print(); }, 500); }
-                    ${endScript}
-                </body>
-                </html>
-            `;
-            printWindow.document.write(html);
-            printWindow.document.close();
-        }
-
         async function updateAttendanceRate() { const empId = document.getElementById('p-emp').value; const month = document.getElementById('p-mon').value; if(!empId || !month) return; const { data } = await window._sb.rpc('fn_get_payroll_calc', { p_emp_id: empId, p_month: month }); if(data) { document.getElementById('sd-sick').innerText = data.sick_hrs; document.getElementById('sd-per').innerText = data.personal_hrs; document.getElementById('sd-typ').innerText = data.typhoon_hrs; document.getElementById('sd-lat').innerText = data.late_count; document.getElementById('p-lvd').value = data.leave_deduct; } calcNet(); }
         function onEmpChange() { const empId = document.getElementById('p-emp').value; if(!empId) return; const emp = window.empData[empId]; if(!emp) return; document.getElementById('p-base').value = emp.base; calcPayroll(); updateAttendanceRate(); }
         function calcPayroll() { const empId = document.getElementById('p-emp').value; const emp = window.empData[empId]; if(!emp) return; const base = parseFloat(document.getElementById('p-base').value) || 0; const bonus = parseFloat(document.getElementById('p-bonus').value) || 0; const yeb = parseFloat(document.getElementById('p-yeb').value) || 0; document.getElementById('p-pen').value = Math.round(base * 0.06); document.getElementById('p-2nd').value = Math.round((bonus + yeb) * 0.0211); document.getElementById('p-ins').value = Math.round(base * 0.022) + Math.round(base * 0.0155 * (1 + emp.deps)); calcNet(); }
@@ -475,7 +402,16 @@
         async function saveBr() { const p={branch_name:document.getElementById('b-n').value, address:document.getElementById('b-a').value, lat:parseFloat(document.getElementById('b-la').value), lng:parseFloat(document.getElementById('b-ln').value)}; if(cId) await window._sb.from('branch_locations').update(p).eq('id', cId); else await window._sb.from('branch_locations').insert([p]); alert('✅ 完成'); cancelEditBr(); loadAll(); }
 
         async function updLeave(id, st) { try { const { error } = await window._sb.rpc('fn_approve_leave', { p_leave_id: id, p_status: st }); if(error) throw error; alert(`✅ 已${st}`); loadAll(); } catch(e) { alert('錯誤: ' + e.message); } }
-        async function appr(id) { try { const { error } = await window._sb.from('employees').update({ is_approved: true }).eq('id', id); if(error) throw error; alert('✅ 已開通'); loadAll(); } catch(e) { alert('錯誤'); } }
+        
+        // 🌟 呼叫新的自動編號大腦
+        async function appr(id) { 
+            try { 
+                const { data, error } = await window._sb.rpc('fn_approve_employee', { p_emp_id: id }); 
+                if(error) throw error; 
+                alert(`✅ 員工權限已開通！\n系統自動發放專屬編號：${data.employee_no}`); 
+                loadAll(); 
+            } catch(e) { alert('開通失敗: ' + e.message); } 
+        }
     </script>
 </body>
 </html>
