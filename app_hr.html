@@ -48,10 +48,10 @@
                 
                 <div class="bg-gradient-to-br from-sky-500 to-indigo-600 rounded-[2rem] p-6 text-white shadow-lg mb-6 relative overflow-hidden">
                     <div class="absolute -right-4 -top-4 text-7xl opacity-20" id="ui-role-icon">👨‍💼</div>
+                    
                     <h2 class="text-2xl font-black mb-2 flex items-center flex-wrap gap-y-2">
                         <span id="dash-name">--</span>
                         <span id="dash-role" class="ml-2 text-[10px] bg-white/20 px-2 py-0.5 rounded border border-white/30">--</span>
-                        <span id="dash-penalty" class="ml-2 text-[10px] bg-red-500/80 px-2 py-0.5 rounded border border-red-400 hidden shadow-sm">計點: 0</span>
                     </h2>
                     
                     <div class="flex items-center space-x-2 mb-4">
@@ -184,7 +184,7 @@
                 const u = window.currentUser; syncCalendar();
                 document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1 h-1.5 w-1.5 bg-emerald-400 rounded-full"></span>已連線';
                 
-                // 🌟 記點單次警告機制與總標籤
+                // 🌟 單次登入記點警告機制
                 if (u.penalty_points > 0) {
                     const lastSeen = localStorage.getItem('lastSeenPenalty');
                     if (lastSeen != u.penalty_points) {
@@ -192,9 +192,6 @@
                         document.getElementById('penalty-points').innerText = u.penalty_points;
                         localStorage.setItem('lastSeenPenalty', u.penalty_points);
                     }
-                    const badge = document.getElementById('dash-penalty');
-                    badge.innerText = `累計計點: ${u.penalty_points}`;
-                    badge.classList.remove('hidden');
                 }
                 
                 document.getElementById('dash-name').innerText = u.full_name; 
