@@ -59,10 +59,26 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <button onclick="openView('punch', '考勤打卡')" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-sky-100 hover:bg-sky-50"><span class="text-4xl mb-3 drop-shadow-md">🏢</span><span class="font-black text-slate-700 tracking-wider">考勤打卡</span></button>
-                    <button onclick="openView('leave', '請假補登加班申請')" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-amber-100 hover:bg-amber-50"><span class="text-4xl mb-3 drop-shadow-md">📝</span><span class="font-black text-slate-700 text-[11px] tracking-wide">請假補登加班申請</span></button>
-                    <button onclick="openView('payroll', '電子薪資單')" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-emerald-100 hover:bg-emerald-50"><span class="text-4xl mb-3 drop-shadow-md">💰</span><span class="font-black text-slate-700 tracking-wider">薪資查詢</span></button>
-                    <button onclick="openView('profile', '個人合約資料')" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50"><span class="text-4xl mb-3 drop-shadow-md opacity-80">👤</span><span class="font-black text-slate-700 tracking-wider">合約資料</span></button>
+                    <button onclick="openView('punch', '考勤打卡')" class="glass-card p-5 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-sky-100 hover:bg-sky-50">
+                        <span class="text-4xl mb-2 drop-shadow-md">🏢</span>
+                        <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">考勤打卡</span>
+                        <span class="font-bold text-sky-600/70 text-[10px] tracking-wider">GPS定位防呆</span>
+                    </button>
+                    <button onclick="openView('leave', '請假補登加班申請')" class="glass-card p-5 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-amber-100 hover:bg-amber-50">
+                        <span class="text-4xl mb-2 drop-shadow-md">📝</span>
+                        <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">請假補登</span>
+                        <span class="font-bold text-amber-600/70 text-[10px] tracking-wider">加班申請單</span>
+                    </button>
+                    <button onclick="openView('payroll', '電子薪資單')" class="glass-card p-5 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-emerald-100 hover:bg-emerald-50">
+                        <span class="text-4xl mb-2 drop-shadow-md">💰</span>
+                        <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">薪資查詢</span>
+                        <span class="font-bold text-emerald-600/70 text-[10px] tracking-wider">電子薪資明細</span>
+                    </button>
+                    <button onclick="openView('profile', '個人合約資料')" class="glass-card p-5 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
+                        <span class="text-4xl mb-2 drop-shadow-md opacity-80">👤</span>
+                        <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">合約資料</span>
+                        <span class="font-bold text-slate-500/70 text-[10px] tracking-wider">數位存證中心</span>
+                    </button>
                 </div>
             </div>
 
@@ -229,7 +245,7 @@
         async function submitLeave(e) {
             e.preventDefault(); const fd = new FormData(e.target); const isRet = fd.get('leave_type') === '忘記打卡(補登)'; 
             
-            // 🌟 防呆：假日時阻擋申請特休與補登
+            // 🌟 假日防呆阻擋
             const stVal = fd.get('start_time');
             const startDateStr = stVal.split('T')[0];
             const parts = startDateStr.split('-');
