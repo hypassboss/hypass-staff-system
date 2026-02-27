@@ -105,7 +105,7 @@
                         <select id="yeb-emp" class="admin-input bg-slate-50 font-bold" onchange="onYebEmpChange()"></select>
                         <select id="yeb-year" class="admin-input bg-slate-50 font-bold" onchange="updateYearEndStats()">
                             <option value="2025">2025 年度</option>
-                            <option value="2026">2026 年度</option>
+                            <option value="2026" selected>2026 年度</option>
                             <option value="2027">2027 年度</option>
                         </select>
                     </div>
@@ -405,7 +405,7 @@
                     <form onsubmit="saveEmpDetail(event, '${e.id}')" class="space-y-4">
                         <div class="grid grid-cols-2 gap-3">
                             <div class="col-span-2 flex space-x-3"><div class="flex-1"><label class="text-[10px] font-bold text-slate-500 ml-1">真實姓名</label><input type="text" id="edit-name" value="${e.full_name}" class="admin-input bg-white font-bold" required></div><div class="w-1/3"><label class="text-[10px] font-bold text-slate-500 ml-1">在職狀態</label><select id="edit-status" class="admin-input bg-white font-bold"><option value="在職" ${e.employment_status==='在職'?'selected':''}>在職</option><option value="留職停薪" ${e.employment_status==='留職停薪'?'selected':''}>留職停薪</option></select></div></div>
-                            <div><label class="text-[10px] font-bold text-slate-500 ml-1">員工編號</label><input type="text" id="edit-emp-no" value="${e.employee_no==='未設定'?'':e.employee_no}" class="admin-input bg-white font-black text-sky-700" placeholder="系統自動發放" disabled></div>
+                            <div><label class="text-[10px] font-bold text-slate-500 ml-1">員工編號</label><input type="text" id="edit-emp-no" value="${e.employee_no==='未設定'?'':e.employee_no}" class="admin-input bg-white font-black text-sky-700" placeholder="可手動修改"></div>
                             <div><label class="text-[10px] font-bold text-slate-500 ml-1">身分證字號</label><input type="text" id="edit-idnum" value="${e.id_number}" class="admin-input bg-white uppercase" required></div>
                             <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">員工職位</label><select id="edit-job-title" class="admin-input bg-white font-bold"><option value="主管" ${e.job_title==='主管'?'selected':''}>主管</option><option value="業務" ${e.job_title==='業務'?'selected':''}>業務</option><option value="助理" ${e.job_title==='助理'?'selected':''}>助理</option></select></div>
                             
@@ -438,6 +438,7 @@
 
             const p = { 
                 full_name: document.getElementById('edit-name').value, employment_status: document.getElementById('edit-status').value, 
+                employee_no: document.getElementById('edit-emp-no').value || '未設定',
                 id_number: document.getElementById('edit-idnum').value, onboarding_date: document.getElementById('edit-onboard').value, 
                 job_title: document.getElementById('edit-job-title').value, work_start_time: st, work_end_time: et,
                 email: document.getElementById('edit-email').value, base_salary: parseFloat(document.getElementById('edit-base').value) || 0, 
@@ -513,7 +514,18 @@
         function cancelEditBr() { cId=null; document.getElementById('b-n').value=''; document.getElementById('b-a').value=''; document.getElementById('b-la').value=''; document.getElementById('b-ln').value=''; document.getElementById('btn-cancel-br').classList.add('hidden'); }
         async function saveBr() { const p={branch_name:document.getElementById('b-n').value, address:document.getElementById('b-a').value, lat:parseFloat(document.getElementById('b-la').value), lng:parseFloat(document.getElementById('b-ln').value)}; if(cId) await window._sb.from('branch_locations').update(p).eq('id', cId); else await window._sb.from('branch_locations').insert([p]); alert('✅ 完成'); cancelEditBr(); loadAll(); }
         async function updLeave(id, st) { try { const { error } = await window._sb.rpc('fn_approve_leave', { p_leave_id: id, p_status: st }); if(error) throw error; alert(`✅ 已${st}`); loadAll(); } catch(e) { alert('錯誤: ' + e.message); } }
-        async function appr(id) { try { const { data, error } = await window._sb.rpc('fn_approve_employee', { p_emp_id: id }); if(error) throw error; alert(`✅ 員工權限已開通！\n系統自動發放專屬編號：${data.employee_no}`); loadAll(); } catch(e) { alert('開通失敗: ' + e.message); } }
+        async function appr(id) { 
+            try { 
+                const { data, error } = await window._sb.rpc('fn_approve_employee', { p_emp_id: id }); 
+                if(error) throw error; 
+                
+                const e = window.allEmps.find(x => x.id === id);
+                await window._sb.functions.invoke('line-webhook', { body: { action: 'notify_approved', name: e.full_name, employee_no: data.employee_no } }).catch(err=>console.log(err));
+                
+                alert(`✅ 員工權限已開通！\n系統自動發放專屬編號：${data.employee_no}`); 
+                loadAll(); 
+            } catch(e) { alert('開通失敗: ' + e.message); } 
+        }
     </script>
 </body>
 </html>
