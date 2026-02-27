@@ -15,9 +15,8 @@
         .view-panel { display: none; animation: fadeIn 0.3s ease; } .view-panel.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.8); }
-        .modal { display: none; } .modal.active { display: flex; z-index: 200; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
         .select-arrow { appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-size: 1.5em 1.5em; background-position: right 0.5rem center; background-repeat: no-repeat; padding-right: 2rem; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="text-slate-800">
@@ -57,8 +56,8 @@
                     </button>
                     <button onclick="openView('register', '料號中心')" class="glass-card p-5 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
                         <span class="text-4xl mb-2 drop-shadow-md">📝</span>
-                        <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">登記料號</span>
-                        <span class="font-bold text-slate-500/70 text-[10px] tracking-wider">建立與列印4x6</span>
+                        <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">新增與查詢料號</span>
+                        <span class="font-bold text-slate-500/70 text-[10px] tracking-wider">建立/查詢與列印</span>
                     </button>
                     <button onclick="alert('BOM表自動展開模組：資料庫已建置，待後續介面開發。')" class="glass-card p-5 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50 col-span-2">
                         <span class="text-3xl mb-2 drop-shadow-md">⚙️</span>
@@ -74,8 +73,7 @@
                     <div class="relative mb-4">
                         <input type="text" id="inv-search" placeholder="🔍 搜尋料號或品名..." class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-500 transition shadow-inner" onkeyup="filterInventory()">
                     </div>
-                    <div id="ui-inventory-list" class="space-y-3 max-h-[60vh] overflow-y-auto no-scrollbar pr-1">
-                        </div>
+                    <div id="ui-inventory-list" class="space-y-3 max-h-[60vh] overflow-y-auto no-scrollbar pr-1"></div>
                 </div>
             </div>
 
@@ -99,6 +97,7 @@
 
                 <div class="glass-card p-6 rounded-[2rem] shadow-sm border border-emerald-100">
                     <h4 class="text-sm font-black text-slate-700 mb-4 flex items-center"><span class="mr-2 text-xl">✍️</span>請輸入盤點數量</h4>
+                    
                     <div class="grid grid-cols-2 gap-4 mb-6">
                         <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 shadow-inner">
                             <label class="text-[11px] font-black text-slate-500 ml-1 mb-2 block tracking-wider">📦 儲存庫 (整箱)</label>
@@ -112,31 +111,51 @@
                         <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 shadow-inner">
                             <label class="text-[11px] font-black text-slate-500 ml-1 mb-2 block tracking-wider">🏷️ 出貨庫 (散裝)</label>
                             <select id="c-fraction-count" onchange="calcTotal()" class="w-full bg-white border border-slate-300 p-3 rounded-xl text-lg font-black text-slate-800 text-center select-arrow shadow-sm outline-none">
-                                <option value="0">0 件</option><option value="0.25">1/4 箱</option><option value="0.5">1/2 箱</option><option value="0.75">3/4 箱</option>
+                                <option value="0">0 件</option>
+                                <option value="0.25">1/4 箱</option>
+                                <option value="0.5">1/2 箱</option>
+                                <option value="0.75">3/4 箱</option>
                             </select>
                         </div>
                     </div>
+                    
                     <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl mb-6 text-center shadow-inner">
                         <p class="text-[10px] font-black text-emerald-700 mb-2 tracking-widest uppercase">系統自動換算總量</p>
                         <p class="text-[9px] font-bold text-emerald-600/70 mb-3">(此料號包裝為每箱 <span id="c-pack-num" class="font-black text-emerald-800">--</span> 件)</p>
+                        
                         <div class="flex items-center justify-center space-x-4">
                             <button onclick="adjustTotal(-1)" class="w-12 h-12 bg-white rounded-full font-black text-2xl text-emerald-600 shadow-md active:scale-90 transition transform">-</button>
                             <input type="number" id="c-total-qty" class="bg-transparent text-5xl font-black text-emerald-900 w-28 text-center outline-none tracking-tighter" readonly>
                             <button onclick="adjustTotal(1)" class="w-12 h-12 bg-white rounded-full font-black text-2xl text-emerald-600 shadow-md active:scale-90 transition transform">+</button>
                         </div>
                     </div>
+
                     <button onclick="submitCount()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition text-lg tracking-widest">💾 儲存並繼續盤點</button>
                 </div>
             </div>
 
             <div id="view-register" class="view-panel space-y-5">
-                <div class="glass-card p-6 rounded-[2rem] shadow-sm">
-                    <h3 class="font-black text-slate-800 border-l-4 border-sky-500 pl-3 text-lg mb-4 flex items-center">新增料號基本資料</h3>
+                <div class="glass-card p-6 rounded-[2rem] shadow-sm border-t-4 border-sky-500">
+                    <h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">➕</span> 新增料號基本資料</h3>
                     <form onsubmit="saveItem(event)" class="space-y-4">
                         <div class="grid grid-cols-2 gap-3">
                             <div class="col-span-2"><input type="text" id="i-name" placeholder="品名 (必填)" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none focus:border-sky-500" required></div>
                             <div><input type="text" id="i-code" placeholder="料號 (例: TMP-001)" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 uppercase outline-none focus:border-sky-500" required></div>
-                            <div><select id="i-type" class="w-full p-3 bg-white rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required><option value="原料">原料</option><option value="半成品">半成品</option><option value="成品" selected>成品</option></select></div>
+                            
+                            <div><select id="i-type" class="w-full p-3 bg-white rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required><option value="原料">原料</option><option value="成品" selected>成品</option></select></div>
+                            
+                            <div class="col-span-2">
+                                <select id="i-category" onchange="checkCustomCategory()" class="w-full p-3 bg-white rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required>
+                                    <option value="" disabled selected>請選擇產品類別</option>
+                                    <option value="汽車冷氣濾網">汽車冷氣濾網</option>
+                                    <option value="VESTA系列產品">VESTA系列產品</option>
+                                    <option value="卡卡吸管">卡卡吸管</option>
+                                    <option value="空氣瓶子">空氣瓶子</option>
+                                    <option value="custom" class="text-sky-600 font-black">➕ 新增自訂類別...</option>
+                                </select>
+                                <input type="text" id="i-custom-category" placeholder="請輸入新類別名稱" class="hidden mt-2 w-full p-3 bg-sky-50 rounded-xl text-sm font-bold border border-sky-300 outline-none">
+                            </div>
+
                             <div class="col-span-2"><input type="text" id="i-spec" placeholder="詳細規格尺寸 (選填)" class="w-full p-3 bg-slate-50 rounded-xl text-sm border border-slate-200 outline-none focus:border-sky-500"></div>
                             <div class="bg-white p-2 rounded-xl border border-slate-200"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">每箱包裝數量</label><input type="number" id="i-qty" value="1" min="1" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none" required></div>
                             
@@ -144,29 +163,28 @@
                             <div class="col-span-2 bg-white p-2 rounded-xl border border-slate-200">
                                 <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">生產/採購週期</label>
                                 <select id="i-lead" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow" required>
-                                    <option value="15">15 天</option>
-                                    <option value="30">30 天</option>
-                                    <option value="45">45 天</option>
-                                    <option value="60">60 天</option>
-                                    <option value="90">90 天</option>
+                                    <option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option>
                                 </select>
                             </div>
                         </div>
-                        <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-4 rounded-2xl shadow-md active:scale-95 transition tracking-widest">➕ 儲存至資料庫</button>
+                        <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-4 rounded-2xl shadow-md active:scale-95 transition tracking-widest">💾 儲存料號資料</button>
                     </form>
                 </div>
                 
-                <div class="glass-card p-6 rounded-[2rem] shadow-sm">
-                    <h3 class="font-black text-slate-800 border-l-4 border-slate-500 pl-3 text-lg mb-4">🖨️ 4x6 標籤列印中心</h3>
-                    <select id="print-item-select" class="w-full bg-slate-50 border border-slate-300 p-3 rounded-xl text-sm font-bold select-arrow mb-4 outline-none focus:border-slate-500" onchange="previewBarcode()"><option value="">請選擇要列印的料號...</option></select>
+                <div class="glass-card p-6 rounded-[2rem] shadow-sm border-t-4 border-slate-600">
+                    <h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">🔍</span> 查詢料號與列印標籤</h3>
+                    <input type="text" id="item-search-input" placeholder="輸入料號、品名或類別搜尋..." class="w-full bg-slate-50 border border-slate-300 p-3.5 rounded-xl text-sm font-bold mb-4 outline-none focus:border-slate-500 transition shadow-inner" onkeyup="renderItemSearch()">
                     
-                    <div id="barcode-preview" class="hidden text-center bg-white p-4 border-2 border-dashed border-slate-300 rounded-xl">
+                    <div id="item-search-results" class="space-y-3 max-h-72 overflow-y-auto pr-1 no-scrollbar">
+                        <div class="text-center text-xs text-slate-400 py-6">請輸入關鍵字搜尋料號</div>
+                    </div>
+
+                    <div id="barcode-preview" class="hidden">
                         <svg id="barcode-svg" class="mx-auto max-w-full"></svg>
-                        <p class="text-[10px] text-slate-400 mt-2 font-bold">預覽樣式 (實際將以 4x6 滿版輸出)</p>
-                        <button onclick="printBarcode()" class="w-full mt-4 bg-slate-800 hover:bg-slate-900 text-white font-black py-3.5 rounded-xl shadow-md active:scale-95 transition flex items-center justify-center tracking-widest"><span class="mr-2 text-xl">🖨️</span> 送出列印指令</button>
                     </div>
                 </div>
             </div>
+
         </main>
     </div>
 
@@ -184,7 +202,6 @@
             if(isAuth) { 
                 const u = window.currentUser;
                 document.getElementById('user-badge').innerText = u.full_name; 
-                
                 const now = new Date();
                 if (now.getDay() === 5 && u.is_inventory_manager) {
                     document.getElementById('friday-reminder').classList.remove('hidden');
@@ -214,9 +231,6 @@
             const { data } = await window._sb.from('items').select('*').order('created_at', {ascending: false});
             allItems = data || [];
             
-            const sel = document.getElementById('print-item-select');
-            sel.innerHTML = '<option value="">請選擇要列印的料號...</option>' + allItems.map(i => `<option value="${i.id}">[${i.item_code}] ${i.item_name}</option>`).join('');
-            
             const { data: ledgers } = await window._sb.from('inventory_ledgers').select('item_id, change_qty');
             let stockMap = {};
             if(ledgers) {
@@ -234,6 +248,7 @@
             });
             
             document.getElementById('low-stock-count').innerText = `${lowCount} 件`;
+            renderItemSearch(); // 載入時順便刷新查詢清單
         }
 
         async function openInventoryList() {
@@ -249,13 +264,9 @@
                 container.innerHTML = '<div class="text-center text-sm text-slate-400 font-bold py-10">目前無任何料號資料</div>';
                 return;
             }
-
             container.innerHTML = data.map(i => {
                 let isLow = i.current_stock <= (i.safe_stock_level || 0);
-                let stockStatus = isLow ? 
-                    `<span class="text-[9px] bg-red-100 text-red-700 px-2 py-0.5 rounded font-black border border-red-200 tracking-widest">低水位</span>` : 
-                    `<span class="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-black border border-emerald-200 tracking-widest">正常</span>`;
-                
+                let stockStatus = isLow ? `<span class="text-[9px] bg-red-100 text-red-700 px-2 py-0.5 rounded font-black border border-red-200 tracking-widest">低水位</span>` : `<span class="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-black border border-emerald-200 tracking-widest">正常</span>`;
                 return `
                 <div class="bg-white p-4 rounded-2xl border ${isLow ? 'border-red-200 shadow-sm' : 'border-slate-100 shadow-sm'} flex justify-between items-center inv-item transition-all" data-search="${i.item_code} ${i.item_name}">
                     <div class="flex-1 pr-2">
@@ -296,18 +307,12 @@
             }, 300);
         }
 
-        function stopScanner() { 
-            if(html5QrcodeScanner) { 
-                html5QrcodeScanner.stop().catch(e => console.error(e)); 
-                html5QrcodeScanner.clear(); 
-            } 
-        }
+        function stopScanner() { if(html5QrcodeScanner) { html5QrcodeScanner.stop().catch(e => console.error(e)); html5QrcodeScanner.clear(); } }
         
         function onScanSuccess(decodedText) {
             stopScanner();
             if(navigator.vibrate) navigator.vibrate(100);
             document.getElementById('beep-sound').play().catch(e=>{});
-            
             const item = allItems.find(i => i.item_code.toUpperCase() === decodedText.toUpperCase() || i.id === decodedText);
             if(item) { openCountView(item); } 
             else { alert(`⚠️ 系統找不到此條碼對應的料號：\n${decodedText}`); backToDash(); }
@@ -319,10 +324,8 @@
             document.getElementById('c-item-name').innerText = item.item_name;
             document.getElementById('c-item-spec').innerText = item.specification || '無規格描述';
             document.getElementById('c-item-id').value = item.id;
-            
             currentItemPackQty = item.qty_per_pack || 1;
             document.getElementById('c-pack-num').innerText = currentItemPackQty;
-            
             document.getElementById('c-box-count').value = '0';
             document.getElementById('c-fraction-count').value = '0';
             document.getElementById('c-custom-box').value = '';
@@ -353,43 +356,104 @@
         async function submitCount() {
             const itemId = document.getElementById('c-item-id').value;
             const qty = parseInt(document.getElementById('c-total-qty').value);
-            
-            const payload = {
-                item_id: itemId, employee_id: window.currentUser.id, change_qty: qty, action_type: '盤點', note: '手機相機掃碼盤點'
-            };
+            const payload = { item_id: itemId, employee_id: window.currentUser.id, change_qty: qty, action_type: '盤點', note: '手機相機掃碼盤點' };
             const { error } = await window._sb.from('inventory_ledgers').insert([payload]);
             if(error) { alert('紀錄失敗:' + error.message); } 
             else { alert('✅ 盤點紀錄已成功寫入資料庫！'); openScanner(); }
         }
 
+        // 🌟 新增料號：包含類別判斷
+        function checkCustomCategory() {
+            const val = document.getElementById('i-category').value;
+            if(val === 'custom') document.getElementById('i-custom-category').classList.remove('hidden');
+            else document.getElementById('i-custom-category').classList.add('hidden');
+        }
+
         async function saveItem(e) {
             e.preventDefault();
+            let cat = document.getElementById('i-category').value;
+            if (cat === 'custom') cat = document.getElementById('i-custom-category').value;
+            if (!cat) { alert('請選擇或輸入產品類別！'); return; }
+
             const p = {
-                item_name: document.getElementById('i-name').value, item_code: document.getElementById('i-code').value.toUpperCase(),
-                item_type: document.getElementById('i-type').value, specification: document.getElementById('i-spec').value,
-                qty_per_pack: parseInt(document.getElementById('i-qty').value) || 1, safe_stock_level: parseInt(document.getElementById('i-safe').value) || 0, 
+                item_name: document.getElementById('i-name').value, 
+                item_code: document.getElementById('i-code').value.toUpperCase(),
+                item_type: document.getElementById('i-type').value, 
+                category: cat,
+                specification: document.getElementById('i-spec').value,
+                qty_per_pack: parseInt(document.getElementById('i-qty').value) || 1, 
+                safe_stock_level: parseInt(document.getElementById('i-safe').value) || 0, 
                 lead_time_days: parseInt(document.getElementById('i-lead').value) || 15
             };
             const { error } = await window._sb.from('items').insert([p]);
-            if(error) alert(error.message); else { alert('✅ 料號建立成功'); e.target.reset(); loadItems(); }
+            if(error) alert(error.message); 
+            else { 
+                alert('✅ 料號建立成功'); 
+                e.target.reset(); 
+                document.getElementById('i-custom-category').classList.add('hidden');
+                loadItems(); 
+            }
         }
 
-        function previewBarcode() {
-            const id = document.getElementById('print-item-select').value;
-            if(!id) { document.getElementById('barcode-preview').classList.add('hidden'); return; }
+        // 🌟 查詢與列印料號模組
+        function renderItemSearch() {
+            const kw = document.getElementById('item-search-input').value.toLowerCase();
+            const res = allItems.filter(i => i.item_code.toLowerCase().includes(kw) || i.item_name.toLowerCase().includes(kw) || (i.category||'').toLowerCase().includes(kw));
+            
+            if(res.length === 0) {
+                document.getElementById('item-search-results').innerHTML = '<div class="text-center text-xs text-slate-400 py-6">查無相關料號，請重新輸入關鍵字。</div>';
+                return;
+            }
+
+            const html = res.map(i => `
+                <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="text-[10px] font-mono font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 tracking-wider">${i.item_code}</span>
+                            <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded ml-1">${i.category || '未分類'}</span>
+                        </div>
+                        <span class="text-[10px] font-bold text-slate-400 border border-slate-200 px-1.5 rounded bg-white">${i.item_type}</span>
+                    </div>
+                    <h4 class="font-black text-sm text-slate-800 leading-tight mb-1.5">${i.item_name}</h4>
+                    <p class="text-[10px] text-slate-500 font-bold mb-3 bg-slate-50 p-2 rounded-lg leading-relaxed">規格: ${i.specification || '無'}<br>包裝: ${i.qty_per_pack}件/箱<span class="mx-2 text-slate-300">|</span>水位: ${i.safe_stock_level}件<span class="mx-2 text-slate-300">|</span>週期: ${i.lead_time_days}天</p>
+                    <button onclick="printBarcodeFromId('${i.id}')" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm flex items-center justify-center tracking-widest"><span class="text-base mr-1">🖨️</span> 列印 4x6 標籤</button>
+                </div>
+            `).join('');
+            document.getElementById('item-search-results').innerHTML = html;
+        }
+
+        function printBarcodeFromId(id) {
             const item = allItems.find(i => i.id === id);
+            if(!item) return;
+            
             document.getElementById('barcode-preview').classList.remove('hidden');
-            JsBarcode("#barcode-svg", item.item_code, { format: "CODE128", width: 2.5, height: 80, displayValue: true, fontOptions: "bold", text: `${item.item_code}`, fontSize: 24, margin: 15 });
-        }
-
-        function printBarcode() {
-            const id = document.getElementById('print-item-select').value;
-            const item = allItems.find(i => i.id === id);
-            const svgData = document.getElementById('barcode-preview').querySelector('svg').outerHTML;
-            const printWindow = window.open('', '_blank', 'width=400,height=600');
-            printWindow.document.write(`<html><head><title>Print Label</title><style>@page { size: 4in 6in; margin: 0; } body { margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; background: #fff;} .title { font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 10px; max-width: 95%; word-break: break-all;} .spec { font-size: 16px; text-align: center; margin-bottom: 20px; color: #333; } svg { max-width: 100%; height: auto; } </style></head><body><div class="title">${item.item_name}</div><div class="spec">${item.specification || ''}</div>${svgData}</body></html>`);
-            printWindow.document.close();
-            setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+            JsBarcode("#barcode-svg", item.item_code, { format: "CODE128", width: 2.5, height: 80, displayValue: true, fontOptions: "bold", text: item.item_code, fontSize: 24, margin: 15 });
+            
+            setTimeout(() => {
+                const svgData = document.getElementById('barcode-preview').querySelector('svg').outerHTML;
+                const printWindow = window.open('', '_blank', 'width=400,height=600');
+                printWindow.document.write(`
+                    <html>
+                    <head>
+                        <title>Print Label</title>
+                        <style>
+                            @page { size: 4in 6in; margin: 0; } 
+                            body { margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; background: #fff;} 
+                            .title { font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 10px; max-width: 95%; word-break: break-all;}
+                            .spec { font-size: 16px; text-align: center; margin-bottom: 20px; color: #333; }
+                            svg { max-width: 100%; height: auto; } 
+                        </style>
+                    </head>
+                    <body>
+                        <div class="title">${item.item_name}</div>
+                        <div class="spec">${item.specification || ''}</div>
+                        ${svgData}
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+                setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+            }, 100);
         }
 
         window.onload = bootInventory;
