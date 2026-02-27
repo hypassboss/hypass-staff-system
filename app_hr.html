@@ -33,17 +33,18 @@
         </header>
 
         <main class="p-5">
-            <div id="penalty-alert" class="hidden bg-red-600 text-white p-4 rounded-2xl shadow-lg mb-5 border-2 border-red-400 relative overflow-hidden">
-                <button onclick="dismissPenaltyAlert()" class="absolute top-2 right-2 bg-red-800 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">✕</button>
-                <div class="flex items-center space-x-3 mb-2">
-                    <span class="text-3xl animate-bounce">⚠️</span>
-                    <h3 class="font-black text-lg tracking-wider">紀律警告通知</h3>
-                </div>
-                <p class="text-sm font-bold text-red-100">您已被系統計點，目前累計 <span id="penalty-points" class="text-3xl font-black text-white px-2">0</span> 點！</p>
-                <p class="text-[10px] mt-2 bg-red-800/50 p-2 rounded-lg leading-relaxed">※ 警告：計點將依勞基法與工作守則直接影響年終獎金與績效發放基準。請立即向主管說明異常原因。</p>
-            </div>
-
             <div id="view-dashboard" class="view-panel active">
+                
+                <div id="penalty-alert" class="hidden bg-red-600 text-white p-4 rounded-2xl shadow-lg mb-5 animate-pulse border-2 border-red-400 relative overflow-hidden">
+                    <button onclick="dismissPenaltyAlert()" class="absolute top-2 right-2 bg-red-800 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">✕</button>
+                    <div class="flex items-center space-x-3 mb-2">
+                        <span class="text-3xl">⚠️</span>
+                        <h3 class="font-black text-lg tracking-wider">紀律警告通知</h3>
+                    </div>
+                    <p class="text-sm font-bold text-red-100">您已被系統計點，目前累計 <span id="penalty-points" class="text-3xl font-black text-white px-2">0</span> 點！</p>
+                    <p class="text-[10px] mt-2 bg-red-800/50 p-2 rounded-lg leading-relaxed">※ 警告：計點將依勞基法與工作守則直接影響年終獎金與績效發放基準。請立即向主管說明異常原因。</p>
+                </div>
+
                 <div class="bg-amber-50/80 border border-amber-200 p-4 rounded-2xl flex flex-col shadow-sm relative overflow-hidden mb-5"><div class="absolute top-0 right-0 -mt-2 -mr-2 text-6xl opacity-10 grayscale">📢</div><div class="flex items-center space-x-2 mb-3 pb-2 border-b border-amber-200/50 relative z-10"><span class="text-lg">📢</span><h4 class="text-xs font-black text-amber-900 tracking-widest">公司公告</h4></div><div id="ui-bulletin" class="pl-1 pr-1 max-h-24 overflow-y-auto no-scrollbar space-y-3 relative z-10">載入中...</div></div>
                 
                 <div class="bg-gradient-to-br from-sky-500 to-indigo-600 rounded-[2rem] p-6 text-white shadow-lg mb-6 relative overflow-hidden">
@@ -182,16 +183,19 @@
                 const u = window.currentUser; syncCalendar();
                 document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1 h-1.5 w-1.5 bg-emerald-400 rounded-full"></span>已連線';
                 
-                // 🌟 記點單次警告機制
-                if (u.penalty_points > 0 && !sessionStorage.getItem('penaltyAlertShown')) {
-                    document.getElementById('penalty-alert').classList.remove('hidden');
-                    document.getElementById('penalty-points').innerText = u.penalty_points;
+                // 🌟 單次登入記點警告機制 (關閉後當次登入不再顯示)
+                if (u.penalty_points > 0) {
+                    const lastSeen = localStorage.getItem('lastSeenPenalty');
+                    if (lastSeen != u.penalty_points) {
+                        document.getElementById('penalty-alert').classList.remove('hidden');
+                        document.getElementById('penalty-points').innerText = u.penalty_points;
+                        localStorage.setItem('lastSeenPenalty', u.penalty_points);
+                    }
                 }
                 
                 document.getElementById('dash-name').innerText = u.full_name; 
                 document.getElementById('dash-role').innerText = u.job_title || '員工';
                 
-                // 🌟 填入新增的員工編號與地點
                 document.getElementById('ui-emp-no').innerText = u.employee_no || '未編號';
                 document.getElementById('ui-work-loc').innerText = u.branch_locations?.branch_name || '未綁定地點';
                 document.getElementById('ui-work-hours').innerText = `🕒 ${u.work_start_time.slice(0,5)} ~ ${u.work_end_time.slice(0,5)}`;
@@ -227,7 +231,6 @@
 
         function dismissPenaltyAlert() {
             document.getElementById('penalty-alert').classList.add('hidden');
-            sessionStorage.setItem('penaltyAlertShown', 'true');
         }
 
         function openView(viewId, title) {
@@ -290,7 +293,7 @@
         async function submitLeave(e) {
             e.preventDefault(); const fd = new FormData(e.target); const isRet = fd.get('leave_type') === '忘記打卡(補登)'; 
             
-            // 🌟 終極假日防呆阻擋 (全面封鎖)
+            // 🌟 終極假日防呆阻擋
             const stVal = fd.get('start_time');
             const startDateStr = stVal.split('T')[0];
             const parts = startDateStr.split('-');
@@ -321,8 +324,8 @@
             const { data: s, error: errS } = await window._sb.rpc('fn_get_emp_stats', { p_emp_id: window.currentUser.id });
             if (errS) { console.error("統計資料異常:", errS); } else if (s) { 
                 const fmt = v => Math.round(Number(v)*10)/10; 
-                document.getElementById('st-m-ann').innerText = fmt(s.month.annual) + ' h'; document.getElementById('st-m-per').innerText = fmt(s.month.personal) + ' h'; document.getElementById('st-m-sic').innerText = fmt(s.month.sick) + ' h'; document.getElementById('st-m-lat').innerText = s.month.late + ' 次'; document.getElementById('st-m-ovt').innerText = fmt(s.month.overtime) + ' h'; document.getElementById('st-m-pnt').innerText = s.month.penalty + ' 次'; 
-                document.getElementById('st-y-ann').innerText = fmt(s.year.annual) + ' h'; document.getElementById('st-y-per').innerText = fmt(s.year.personal) + ' h'; document.getElementById('st-y-sic').innerText = fmt(s.year.sick) + ' h'; document.getElementById('st-y-lat').innerText = s.year.late + ' 次'; document.getElementById('st-y-ovt').innerText = fmt(s.year.overtime) + ' h'; document.getElementById('st-y-pnt').innerText = s.year.penalty + ' 次'; 
+                document.getElementById('st-m-ann').innerText = fmt(s.month.annual) + ' h'; document.getElementById('st-m-per').innerText = fmt(s.month.personal) + ' h'; document.getElementById('st-m-sic').innerText = fmt(s.month.sick) + ' h'; document.getElementById('st-m-lat').innerText = s.month.late + ' 次'; 
+                document.getElementById('st-y-ann').innerText = fmt(s.year.annual) + ' h'; document.getElementById('st-y-per').innerText = fmt(s.year.personal) + ' h'; document.getElementById('st-y-sic').innerText = fmt(s.year.sick) + ' h'; document.getElementById('st-y-lat').innerText = s.year.late + ' 次'; 
             }
 
             const qMonth = document.getElementById('leave-query-month') ? document.getElementById('leave-query-month').value : '';
@@ -348,7 +351,6 @@
             document.getElementById('ui-profile-info').innerHTML = `<div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">🆔</span><span class="text-slate-700 font-bold text-sm">身分證：${u.id_number}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">🏷️</span><span class="text-slate-700 font-bold text-sm">員工編號：${u.employee_no||'未設定'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📧</span><span class="text-slate-700 font-bold text-sm">${u.email}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📞</span><span class="text-slate-700 font-bold text-sm">${u.phone}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-sky-600">👔</span><span class="text-sky-700 font-black text-sm bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">${u.job_title||'未指派'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📍</span><span class="text-slate-700 font-bold text-sm">據點：${u.branch_locations?.branch_name||'未綁定'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">👥</span><span class="text-slate-700 font-bold text-sm">眷屬加保：${u.dependents_count || 0} 人</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-amber-600">📅</span><span class="text-slate-700 font-bold text-sm">入職日：${u.onboarding_date}</span></div><div class="flex items-center space-x-3 border-t border-slate-50 pt-3 mt-1"><span class="w-6 text-center text-lg mt-0.5">⏰</span><div class="text-blue-700 font-black text-sm bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 w-full text-center tracking-wider">${(u.work_start_time||'09:00').slice(0,5)} 上班 <span class="mx-2 text-blue-200">|</span> ${(u.work_end_time||'18:00').slice(0,5)} 下班</div></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🏦</span><div class="text-slate-800 font-black text-sm leading-tight">${u.bank_name} (${u.bank_code})<br><span class="text-xs font-bold text-slate-500 mt-1 block">${u.bank_user_name} / ${u.bank_account}</span></div></div>`;
         }
         
-        // 🌟 勞基法算薪條文已寫入第五章
         function openDoc() { 
             document.getElementById('doc-content').innerHTML = `
                 <p class="font-black text-slate-900 text-xs mb-1 mt-2">第一章：職位與工作內容</p>
