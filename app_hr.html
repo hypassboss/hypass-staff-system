@@ -48,8 +48,10 @@
                 
                 <div class="bg-gradient-to-br from-sky-500 to-indigo-600 rounded-[2rem] p-6 text-white shadow-lg mb-6 relative overflow-hidden">
                     <div class="absolute -right-4 -top-4 text-7xl opacity-20" id="ui-role-icon">👨‍💼</div>
-                    <h2 class="text-2xl font-black mb-2 flex items-center">
-                        <span id="dash-name">--</span><span id="dash-role" class="ml-2 text-[10px] bg-white/20 px-2 py-0.5 rounded border border-white/30">--</span>
+                    <h2 class="text-2xl font-black mb-2 flex items-center flex-wrap gap-y-2">
+                        <span id="dash-name">--</span>
+                        <span id="dash-role" class="ml-2 text-[10px] bg-white/20 px-2 py-0.5 rounded border border-white/30">--</span>
+                        <span id="dash-penalty" class="ml-2 text-[10px] bg-red-500/80 px-2 py-0.5 rounded border border-red-400 hidden shadow-sm">計點: 0</span>
                     </h2>
                     
                     <div class="flex items-center space-x-2 mb-4">
@@ -71,7 +73,7 @@
                                 <div class="text-sky-50 flex justify-between">病假 <span class="font-black text-white" id="d-m-sic">0h</span></div>
                                 <div class="text-sky-50 flex justify-between">遲到 <span class="font-black text-amber-300" id="d-m-lat">0次</span></div>
                                 <div class="text-sky-50 flex justify-between">加班 <span class="font-black text-emerald-300" id="d-m-ovt">0h</span></div>
-                                <div class="text-sky-50 flex justify-between col-span-2 mt-1 pt-1 border-t border-white/10">計點懲處 <span class="font-black text-red-300" id="d-m-pnt">0次</span></div>
+                                <div class="text-sky-50 flex justify-between col-span-2 mt-1 pt-1 border-t border-white/10">計點 <span class="font-black text-red-300" id="d-m-pnt">0次</span></div>
                             </div>
                         </div>
                         <div class="bg-white/10 p-3 rounded-xl border border-white/10 text-xs shadow-sm">
@@ -81,7 +83,7 @@
                                 <div class="text-sky-50 flex justify-between">病假 <span class="font-black text-white" id="d-y-sic">0h</span></div>
                                 <div class="text-sky-50 flex justify-between">遲到 <span class="font-black text-amber-300" id="d-y-lat">0次</span></div>
                                 <div class="text-sky-50 flex justify-between">加班 <span class="font-black text-emerald-300" id="d-y-ovt">0h</span></div>
-                                <div class="text-sky-50 flex justify-between col-span-2 mt-1 pt-1 border-t border-white/10">計點懲處 <span class="font-black text-red-300" id="d-y-pnt">0次</span></div>
+                                <div class="text-sky-50 flex justify-between col-span-2 mt-1 pt-1 border-t border-white/10">計點 <span class="font-black text-red-300" id="d-y-pnt">0次</span></div>
                             </div>
                         </div>
                     </div>
@@ -182,6 +184,7 @@
                 const u = window.currentUser; syncCalendar();
                 document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1 h-1.5 w-1.5 bg-emerald-400 rounded-full"></span>已連線';
                 
+                // 🌟 記點單次警告機制與總標籤
                 if (u.penalty_points > 0) {
                     const lastSeen = localStorage.getItem('lastSeenPenalty');
                     if (lastSeen != u.penalty_points) {
@@ -189,6 +192,9 @@
                         document.getElementById('penalty-points').innerText = u.penalty_points;
                         localStorage.setItem('lastSeenPenalty', u.penalty_points);
                     }
+                    const badge = document.getElementById('dash-penalty');
+                    badge.innerText = `累計計點: ${u.penalty_points}`;
+                    badge.classList.remove('hidden');
                 }
                 
                 document.getElementById('dash-name').innerText = u.full_name; 
@@ -212,13 +218,13 @@
                     document.getElementById('d-m-sic').innerText = fmt(s.month.sick) + 'h';
                     document.getElementById('d-m-lat').innerText = s.month.late + '次';
                     document.getElementById('d-m-ovt').innerText = fmt(s.month.overtime) + 'h';
-                    document.getElementById('d-m-pnt').innerText = s.month.penalty + '次';
+                    document.getElementById('d-m-pnt').innerText = (s.month.penalty || 0) + '次';
                     
                     document.getElementById('d-y-per').innerText = fmt(s.year.personal) + 'h';
                     document.getElementById('d-y-sic').innerText = fmt(s.year.sick) + 'h';
                     document.getElementById('d-y-lat').innerText = s.year.late + '次';
                     document.getElementById('d-y-ovt').innerText = fmt(s.year.overtime) + 'h';
-                    document.getElementById('d-y-pnt').innerText = s.year.penalty + '次';
+                    document.getElementById('d-y-pnt').innerText = (s.year.penalty || 0) + '次';
                 }
                 
                 const oneYearAgo = new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
@@ -321,8 +327,8 @@
             const { data: s, error: errS } = await window._sb.rpc('fn_get_emp_stats', { p_emp_id: window.currentUser.id });
             if (errS) { console.error("統計資料異常:", errS); } else if (s) { 
                 const fmt = v => Math.round(Number(v)*10)/10; 
-                document.getElementById('st-m-ann').innerText = fmt(s.month.annual) + ' h'; document.getElementById('st-m-per').innerText = fmt(s.month.personal) + ' h'; document.getElementById('st-m-sic').innerText = fmt(s.month.sick) + ' h'; document.getElementById('st-m-lat').innerText = s.month.late + ' 次'; 
-                document.getElementById('st-y-ann').innerText = fmt(s.year.annual) + ' h'; document.getElementById('st-y-per').innerText = fmt(s.year.personal) + ' h'; document.getElementById('st-y-sic').innerText = fmt(s.year.sick) + ' h'; document.getElementById('st-y-lat').innerText = s.year.late + ' 次'; 
+                document.getElementById('st-m-ann').innerText = fmt(s.month.annual) + ' h'; document.getElementById('st-m-per').innerText = fmt(s.month.personal) + ' h'; document.getElementById('st-m-sic').innerText = fmt(s.month.sick) + ' h'; document.getElementById('st-m-lat').innerText = s.month.late + ' 次'; document.getElementById('st-m-ovt').innerText = fmt(s.month.overtime) + ' h'; document.getElementById('st-m-pnt').innerText = (s.month.penalty || 0) + ' 次'; 
+                document.getElementById('st-y-ann').innerText = fmt(s.year.annual) + ' h'; document.getElementById('st-y-per').innerText = fmt(s.year.personal) + ' h'; document.getElementById('st-y-sic').innerText = fmt(s.year.sick) + ' h'; document.getElementById('st-y-lat').innerText = s.year.late + ' 次'; document.getElementById('st-y-ovt').innerText = fmt(s.year.overtime) + ' h'; document.getElementById('st-y-pnt').innerText = (s.year.penalty || 0) + ' 次'; 
             }
 
             const qMonth = document.getElementById('leave-query-month') ? document.getElementById('leave-query-month').value : '';
