@@ -8,7 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        /* 外層電腦版深色背景，內部模擬手機寬度 */
         body { background: #e2e8f0; font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;}
         #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; padding-bottom: 90px; }
         .view-panel { display: none; animation: fadeIn 0.3s ease; } .view-panel.active { display: block; }
@@ -31,20 +30,35 @@
         <main class="p-5">
             <div id="view-dashboard" class="view-panel active">
                 <div class="bg-amber-50/80 border border-amber-200 p-4 rounded-2xl flex flex-col shadow-sm relative overflow-hidden mb-5"><div class="absolute top-0 right-0 -mt-2 -mr-2 text-6xl opacity-10 grayscale">📢</div><div class="flex items-center space-x-2 mb-3 pb-2 border-b border-amber-200/50 relative z-10"><span class="text-lg">📢</span><h4 class="text-xs font-black text-amber-900 tracking-widest">公司公告</h4></div><div id="ui-bulletin" class="pl-1 pr-1 max-h-24 overflow-y-auto no-scrollbar space-y-3 relative z-10">載入中...</div></div>
+                
                 <div class="bg-gradient-to-br from-sky-500 to-indigo-600 rounded-[2rem] p-6 text-white shadow-lg mb-6 relative overflow-hidden">
                     <div class="absolute -right-4 -top-4 text-7xl opacity-20" id="ui-role-icon">👨‍💼</div>
-                    
                     <h2 class="text-2xl font-black mb-1 flex items-center">
-                        <span id="dash-name">--</span>
-                        <span id="dash-role" class="ml-2 text-[10px] bg-white/20 px-2 py-0.5 rounded border border-white/30">--</span>
+                        <span id="dash-name">--</span><span id="dash-role" class="ml-2 text-[10px] bg-white/20 px-2 py-0.5 rounded border border-white/30">--</span>
                     </h2>
-                    
                     <p class="text-xs font-bold text-sky-100 mb-4" id="ui-work-hours">班別載入中...</p>
-                    <div class="bg-white/20 backdrop-blur-sm p-4 rounded-xl border border-white/20 inline-block">
-                        <span class="text-[10px] block mb-1">年度剩餘特休</span>
-                        <div class="text-3xl font-black flex items-baseline tracking-tight text-amber-300" id="dash-leave">--</div>
+                    
+                    <div class="bg-white/20 backdrop-blur-sm p-4 rounded-xl border border-white/20 mb-4">
+                        <span class="text-[10px] block mb-1 font-bold tracking-widest">年度剩餘法定特休</span>
+                        <div class="text-3xl font-black flex items-baseline text-amber-300" id="dash-leave">--</div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-white/10 p-3 rounded-xl border border-white/10 text-xs">
+                            <div class="font-bold text-sky-200 mb-2 border-b border-white/10 pb-1">當月累計</div>
+                            <div class="flex justify-between mb-1 text-sky-50"><span>事假</span><span class="font-black text-white" id="d-m-per">0 h</span></div>
+                            <div class="flex justify-between mb-1 text-sky-50"><span>病假</span><span class="font-black text-white" id="d-m-sic">0 h</span></div>
+                            <div class="flex justify-between text-sky-50"><span>遲到</span><span class="font-black text-amber-300" id="d-m-lat">0 次</span></div>
+                        </div>
+                        <div class="bg-white/10 p-3 rounded-xl border border-white/10 text-xs">
+                            <div class="font-bold text-sky-200 mb-2 border-b border-white/10 pb-1">當年累計</div>
+                            <div class="flex justify-between mb-1 text-sky-50"><span>事假</span><span class="font-black text-white" id="d-y-per">0 h</span></div>
+                            <div class="flex justify-between mb-1 text-sky-50"><span>病假</span><span class="font-black text-white" id="d-y-sic">0 h</span></div>
+                            <div class="flex justify-between text-sky-50"><span>遲到</span><span class="font-black text-amber-300" id="d-y-lat">0 次</span></div>
+                        </div>
                     </div>
                 </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <button onclick="openView('punch', '考勤打卡')" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-sky-100 hover:bg-sky-50"><span class="text-4xl mb-3 drop-shadow-md">🏢</span><span class="font-black text-slate-700 tracking-wider">考勤打卡</span></button>
                     <button onclick="openView('leave', '請假與補登')" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-amber-100 hover:bg-amber-50"><span class="text-4xl mb-3 drop-shadow-md">📝</span><span class="font-black text-slate-700 tracking-wider">請假補登</span></button>
@@ -64,10 +78,6 @@
             </div>
 
             <div id="view-leave" class="view-panel space-y-5">
-                <div class="grid grid-cols-2 gap-3 mb-2">
-                    <div class="glass-card rounded-[1.5rem] p-4 border border-sky-100 relative overflow-hidden shadow-sm"><div class="absolute -right-3 -bottom-3 text-5xl opacity-10 grayscale">📅</div><h4 class="text-[10px] font-black tracking-widest text-sky-800 mb-2 border-b border-sky-100 pb-1 relative z-10">本月累計</h4><div class="grid grid-cols-2 gap-2 text-xs relative z-10"><div class="text-slate-500 font-bold">特休 <span id="st-m-ann" class="font-black text-slate-800 ml-1">0</span><span class="text-[9px] text-slate-400">h</span></div><div class="text-slate-500 font-bold">事假 <span id="st-m-per" class="font-black text-slate-800 ml-1">0</span><span class="text-[9px] text-slate-400">h</span></div><div class="text-slate-500 font-bold">病假 <span id="st-m-sic" class="font-black text-slate-800 ml-1">0</span><span class="text-[9px] text-slate-400">h</span></div><div class="text-slate-500 font-bold">遲到 <span id="st-m-lat" class="font-black text-red-500 ml-1">0</span><span class="text-[9px] text-slate-400">次</span></div></div></div>
-                    <div class="glass-card rounded-[1.5rem] p-4 border border-indigo-100 relative overflow-hidden shadow-sm"><div class="absolute -right-3 -bottom-3 text-5xl opacity-10 grayscale">📊</div><h4 class="text-[10px] font-black tracking-widest text-indigo-800 mb-2 border-b border-indigo-100 pb-1 relative z-10">年度累計</h4><div class="grid grid-cols-2 gap-2 text-xs relative z-10"><div class="text-slate-500 font-bold">特休 <span id="st-y-ann" class="font-black text-slate-800 ml-1">0</span><span class="text-[9px] text-slate-400">h</span></div><div class="text-slate-500 font-bold">事假 <span id="st-y-per" class="font-black text-slate-800 ml-1">0</span><span class="text-[9px] text-slate-400">h</span></div><div class="text-slate-500 font-bold">病假 <span id="st-y-sic" class="font-black text-slate-800 ml-1">0</span><span class="text-[9px] text-slate-400">h</span></div><div class="text-slate-500 font-bold">遲到 <span id="st-y-lat" class="font-black text-red-500 ml-1">0</span><span class="text-[9px] text-slate-400">次</span></div></div></div>
-                </div>
                 <div class="glass-card p-6 rounded-[2rem] shadow-sm relative">
                     <form id="leave-form" onsubmit="submitLeave(event)" class="space-y-4 border-b border-slate-100 pb-6 mb-5">
                         <select name="leave_type" id="leave-type-select" onchange="checkLeaveType()" class="w-full bg-slate-50 border-0 shadow-inner p-3 rounded-2xl text-sm font-bold select-arrow">
@@ -99,7 +109,9 @@
                 </div>
             </div>
         </main>
-    </div> <div id="alert-modal" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-center justify-center p-5 z-[200]"><div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center transform transition-all scale-95 opacity-0" id="alert-box"><div id="alert-icon" class="text-6xl mb-4">✅</div><h3 id="alert-title" class="text-xl font-black text-slate-800 mb-2">提示</h3><p id="alert-msg" class="text-sm text-slate-600 font-bold leading-relaxed mb-6">訊息內容</p><div class="flex space-x-3" id="alert-btn-group"><button onclick="closeAlert(false)" id="alert-btn-cancel" class="hidden flex-1 bg-slate-100 text-slate-600 font-black py-3.5 rounded-xl shadow-sm active:scale-95 transition">不請假</button><button onclick="closeAlert(true)" id="alert-btn-confirm" class="w-full bg-slate-900 text-white font-black py-3.5 rounded-xl shadow-md active:scale-95 transition">確認</button></div></div></div>
+    </div>
+
+    <div id="alert-modal" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-center justify-center p-5 z-[200]"><div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center transform transition-all scale-95 opacity-0" id="alert-box"><div id="alert-icon" class="text-6xl mb-4">✅</div><h3 id="alert-title" class="text-xl font-black text-slate-800 mb-2">提示</h3><p id="alert-msg" class="text-sm text-slate-600 font-bold leading-relaxed mb-6">訊息內容</p><div class="flex space-x-3" id="alert-btn-group"><button onclick="closeAlert(false)" id="alert-btn-cancel" class="hidden flex-1 bg-slate-100 text-slate-600 font-black py-3.5 rounded-xl shadow-sm active:scale-95 transition">不請假</button><button onclick="closeAlert(true)" id="alert-btn-confirm" class="w-full bg-slate-900 text-white font-black py-3.5 rounded-xl shadow-md active:scale-95 transition">確認</button></div></div></div>
     <div id="record-modal" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-end justify-center z-[100]"><div class="bg-[#f8fafc] w-full max-w-md rounded-t-[2rem] p-6 h-[75vh] flex flex-col shadow-2xl md:max-w-480px md:mx-auto md:relative"><div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-200"><h3 class="font-black text-xl text-slate-800">近期打卡紀錄</h3><button onclick="closeModal('record-modal')" class="bg-slate-200 px-4 py-2 rounded-full text-sm font-bold text-slate-600 hover:bg-slate-300 transition">✕ 關閉</button></div><div id="ui-records-list" class="overflow-y-auto space-y-3 flex-1 no-scrollbar pb-8 p-1">載入中...</div></div></div>
     
     <div id="doc-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-md items-center justify-center p-5 z-[100]"><div class="bg-white w-full max-w-md rounded-3xl p-6 relative flex flex-col shadow-2xl max-h-[85vh]"><h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 text-center">📜 聘僱合約與服務守則</h3><div id="doc-content" class="overflow-y-auto pr-2 flex-1 mb-4 no-scrollbar text-[11px] text-slate-700 leading-relaxed text-left"></div><div class="bg-emerald-50 border border-emerald-100 p-3 rounded-2xl text-center shadow-inner"><p class="text-[10px] text-emerald-700 font-bold mb-1">✔️ 經數位簽章認證，具備法律效力</p><p id="doc-sig" class="font-black text-emerald-900 text-xs">簽署人：--</p></div><button onclick="closeModal('doc-modal')" class="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl text-sm transition shadow-md active:scale-95">已詳閱並關閉</button></div></div>
@@ -117,20 +129,28 @@
                 const u = window.currentUser; syncCalendar();
                 document.getElementById('user-status').innerHTML = '<span class="animate-pulse mr-1 h-1.5 w-1.5 bg-emerald-400 rounded-full"></span>已連線';
                 
-                // 🌟 寫入名字與職位 (已修復覆蓋 Bug)
                 document.getElementById('dash-name').innerText = u.full_name; 
                 document.getElementById('dash-role').innerText = u.job_title || '員工';
                 document.getElementById('ui-work-hours').innerText = `🕒 表定班別：${(u.work_start_time||'09:00').slice(0,5)} ~ ${(u.work_end_time||'18:00').slice(0,5)}`;
                 if(u.job_title === '業務') document.getElementById('ui-role-icon').innerText = '🛵';
                 
-                // 🌟 請求特休資料並加入防錯處理
-                const { data: lv, error: errLv } = await window._sb.rpc('fn_get_annual_leave_v2', { p_emp_id: u.id });
-                if(errLv) { 
-                    console.error("特休計算異常:", errLv); 
-                    document.getElementById('dash-leave').innerHTML = '<span class="text-sm text-red-300">資料庫連線中</span>'; 
-                } else if(lv) { 
+                // 讀取特休
+                const { data: lv } = await window._sb.rpc('fn_get_annual_leave_v2', { p_emp_id: u.id });
+                if(lv) { 
                     let rHours = Math.round((lv.remain_hours % 8) * 10) / 10; 
-                    document.getElementById('dash-leave').innerHTML = `${lv.remain_days}<span class="text-sm font-bold mx-1.5 text-amber-100/70 tracking-normal">天</span>${rHours}<span class="text-sm font-bold ml-1.5 text-amber-100/70 tracking-normal">小時</span>`; 
+                    document.getElementById('dash-leave').innerHTML = `${lv.remain_days}<span class="text-sm font-bold mx-1.5 text-white tracking-normal">天</span>${rHours}<span class="text-sm font-bold ml-1.5 text-white tracking-normal">小時</span>`; 
+                }
+
+                // 🌟 讀取並填寫大藍色方塊的當月/當年出勤統計
+                const { data: s } = await window._sb.rpc('fn_get_emp_stats', { p_emp_id: u.id });
+                if (s) { 
+                    const fmt = v => Math.round(Number(v)*10)/10; 
+                    document.getElementById('d-m-per').innerText = fmt(s.month.personal) + ' h';
+                    document.getElementById('d-m-sic').innerText = fmt(s.month.sick) + ' h';
+                    document.getElementById('d-m-lat').innerText = s.month.late + ' 次';
+                    document.getElementById('d-y-per').innerText = fmt(s.year.personal) + ' h';
+                    document.getElementById('d-y-sic').innerText = fmt(s.year.sick) + ' h';
+                    document.getElementById('d-y-lat').innerText = s.year.late + ' 次';
                 }
                 
                 const oneYearAgo = new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
@@ -177,7 +197,7 @@
 
         function renderMiniCalendar() { if(!window.calData) return; const startDay = new Date(); startDay.setDate(startDay.getDate() - startDay.getDay() - 7); let html = '<div class="grid grid-cols-7 gap-1 mb-2">'; ['日','一','二','三','四','五','六'].forEach(d => html += `<div class="text-center text-[10px] font-bold text-slate-400">${d}</div>`); html += '</div><div class="grid grid-cols-7 gap-1">'; for(let i=0; i<28; i++) { let d = new Date(startDay); d.setDate(startDay.getDate() + i); let dStr = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0'); let isToday = dStr === new Date().getFullYear() + String(new Date().getMonth()+1).padStart(2,'0') + String(new Date().getDate()).padStart(2,'0'); let isWeekend = d.getDay()===0||d.getDay()===6; let info = window.calData[dStr]; let isHol = info?info.isHoliday:isWeekend; let isMk = info&&!isHol&&isWeekend; let lbl = info?info.description:(isHol?'假日':''); if(lbl.includes('星期'))lbl='假日'; html += `<div class="h-11 flex flex-col items-center justify-start pt-1.5 rounded-lg border ${isToday?'bg-sky-50 border-sky-300 ring-1 ring-sky-200 shadow-sm':'bg-white border-slate-100'} overflow-hidden"><span class="text-[13px] font-black ${isHol?'text-red-500':(isMk?'text-amber-600':'text-slate-800')} leading-none">${d.getDate()}</span>${isHol?`<span class="w-full text-center text-[10px] transform scale-[0.75] origin-top text-red-500 font-bold truncate mt-0.5">${lbl.slice(0,2)}</span>`:(isMk?`<span class="w-full text-center text-[10px] transform scale-[0.75] origin-top text-amber-600 font-bold truncate mt-0.5">補班</span>`:`<div class="w-1 h-1 rounded-full mt-1.5 bg-slate-200"></div>`)}</div>`; } html += '</div>'; document.getElementById('ui-mini-calendar').innerHTML = html; }
         
-        async function loadPunchHistory() { document.getElementById('ui-records-list').innerHTML = '載入中...'; openModal('record-modal'); const { data } = await window._sb.from('attendance_logs').select('punch_type, punch_time, note, lat, lng, branch_locations(branch_name)').eq('employee_id', window.currentUser.id).order('punch_time', {ascending: false}).limit(30); document.getElementById('ui-records-list').innerHTML = data.length ? data.map(l => `<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div><span class="text-xs font-black bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${l.punch_type==='IN'?'上班':'下班'}</span> <span class="text-sm font-bold text-slate-700 ml-2">${new Date(l.punch_time).toLocaleString('zh-TW').slice(5,-3)}</span><p class="text-xs text-slate-400 font-bold mt-1.5 flex items-center"><span class="mr-1">🏠</span>${l.branch_locations?.branch_name||(l.note.includes('[補登')?'手動補登':'外勤定位')} ${(l.lat&&l.lng)?`<a href="http://maps.google.com/?q=${l.lat},${l.lng}" target="_blank" class="text-sky-500 hover:text-sky-700 underline font-black ml-2 text-[10px]">📍地圖</a>`:''}</p></div><span class="text-[10px] font-black px-2 py-1 rounded-full ${l.note.includes('正常')?'text-emerald-600 bg-emerald-50':'text-amber-600 bg-amber-50'}">${l.note}</span></div>`).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-10">目前無打卡紀錄</div>'; }
+        async function loadPunchHistory() { document.getElementById('ui-records-list').innerHTML = '載入中...'; openModal('record-modal'); const { data } = await window._sb.from('attendance_logs').select('punch_type, punch_time, note, lat, lng, branch_locations(branch_name)').eq('employee_id', window.currentUser.id).order('punch_time', {ascending: false}).limit(30); document.getElementById('ui-records-list').innerHTML = data.length ? data.map(l => `<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div><span class="text-xs font-black bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${l.punch_type==='IN'?'上班':'下班'}</span> <span class="text-sm font-bold text-slate-700 ml-2">${new Date(l.punch_time).toLocaleString('zh-TW').slice(5,-3)}</span><p class="text-xs text-slate-400 font-bold mt-1.5 flex items-center"><span class="mr-1">🏠</span>${l.branch_locations?.branch_name||(l.note.includes('[補登')?'手動補登':'外勤定位')} ${(l.lat&&l.lng)?`<a href="https://maps.google.com/?q=${l.lat},${l.lng}" target="_blank" class="text-sky-500 hover:text-sky-700 underline font-black ml-2 text-[10px]">📍地圖</a>`:''}</p></div><span class="text-[10px] font-black px-2 py-1 rounded-full ${l.note.includes('正常')?'text-emerald-600 bg-emerald-50':'text-amber-600 bg-amber-50'}">${l.note}</span></div>`).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-10">目前無打卡紀錄</div>'; }
 
         function autoFillLeaveForm(pType) { openView('leave', '請假補登'); const now = new Date(); const st = (window.currentUser.work_start_time||'09:00').slice(0,5); const et = (window.currentUser.work_end_time||'18:00').slice(0,5); const dPx = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}T`; const nTx = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'); document.getElementById('leave-type-select').value = '特休'; checkLeaveType(); document.querySelector('input[name="start_time"]').value = pType==='IN'?dPx+st:dPx+nTx; document.querySelector('input[name="end_time"]').value = pType==='IN'?dPx+nTx:dPx+et; }
         
@@ -208,13 +228,17 @@
         }
 
         async function loadLeaveHistory() {
-            // 🌟 強化防呆：如果統計 SQL 有錯誤，會直接在 Console 顯示，不會讓整個畫面掛掉
-            const { data: s, error: errS } = await window._sb.rpc('fn_get_emp_stats', { p_emp_id: window.currentUser.id });
-            if (errS) { 
-                console.error("統計資料異常:", errS); 
-            } else if (s) { 
+            const { data: s } = await window._sb.rpc('fn_get_emp_stats', { p_emp_id: window.currentUser.id });
+            if (s) { 
                 const fmt = v => Math.round(Number(v)*10)/10; 
-                document.getElementById('st-m-ann').innerText = fmt(s.month.annual); document.getElementById('st-m-per').innerText = fmt(s.month.personal); document.getElementById('st-m-sic').innerText = fmt(s.month.sick); document.getElementById('st-m-lat').innerText = s.month.late; document.getElementById('st-y-ann').innerText = fmt(s.year.annual); document.getElementById('st-y-per').innerText = fmt(s.year.personal); document.getElementById('st-y-sic').innerText = fmt(s.year.sick); document.getElementById('st-y-lat').innerText = s.year.late; 
+                document.getElementById('st-m-ann').innerText = fmt(s.month.annual) + ' h'; 
+                document.getElementById('st-m-per').innerText = fmt(s.month.personal) + ' h'; 
+                document.getElementById('st-m-sic').innerText = fmt(s.month.sick) + ' h'; 
+                document.getElementById('st-m-lat').innerText = s.month.late + ' 次'; 
+                document.getElementById('st-y-ann').innerText = fmt(s.year.annual) + ' h'; 
+                document.getElementById('st-y-per').innerText = fmt(s.year.personal) + ' h'; 
+                document.getElementById('st-y-sic').innerText = fmt(s.year.sick) + ' h'; 
+                document.getElementById('st-y-lat').innerText = s.year.late + ' 次'; 
             }
             
             const { data } = await window._sb.from('leave_requests').select('*').eq('employee_id', window.currentUser.id).order('created_at', {ascending: false}).limit(10);
@@ -230,17 +254,29 @@
         async function loadPayrollMonths() { const s = document.getElementById('payroll-month'); const { data } = await window._sb.from('payroll_records').select('pay_month').eq('employee_id', window.currentUser.id).order('pay_month', {ascending: false}); if(!data||!data.length){ s.innerHTML='<option>尚無薪資紀錄</option>'; s.disabled=true; return;} s.disabled=false; s.innerHTML = data.map(m=>`<option value="${m.pay_month}">${m.pay_month} 薪資單</option>`).join(''); loadPayrollDetail(); }
         async function loadPayrollDetail() { const m = document.getElementById('payroll-month').value; const { data } = await window._sb.from('payroll_records').select('*').eq('employee_id', window.currentUser.id).eq('pay_month', m).single(); if(data) { document.getElementById('p-base').innerText = `NT$ ${data.base_pay.toLocaleString()}`; document.getElementById('p-bonus').innerText = `NT$ ${data.bonus.toLocaleString()}`; document.getElementById('p-yeb').innerText = `NT$ ${data.year_end_bonus.toLocaleString()}`; document.getElementById('p-ins').innerText = `- NT$ ${data.insurance_deduction.toLocaleString()}`; document.getElementById('p-2nd').innerText = `- NT$ ${data.second_gen_health.toLocaleString()}`; document.getElementById('p-pen').innerText = `NT$ ${data.labor_pension.toLocaleString()}`; document.getElementById('p-lvd').innerText = `- NT$ ${(data.leave_deduction||0).toLocaleString()}`; document.getElementById('p-net').innerText = `NT$ ${data.total_net_pay.toLocaleString()}`; } }
 
+        // 🌟 完全恢復：所有的員工欄位與合約全文
         function renderProfileUI() {
             const u = window.currentUser;
-            document.getElementById('ui-profile-info').innerHTML = `<div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">🆔</span><span class="text-slate-700 font-bold text-sm">身分證：${u.id_number}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">🏷️</span><span class="text-slate-700 font-bold text-sm">員工編號：${u.employee_no||'未設定'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📧</span><span class="text-slate-700 font-bold text-sm">${u.email}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📞</span><span class="text-slate-700 font-bold text-sm">${u.phone}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-sky-600">👔</span><span class="text-sky-700 font-black text-sm bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">${u.job_title||'未指派'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📍</span><span class="text-slate-700 font-bold text-sm">據點：${u.branch_locations?.branch_name||'未綁定'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">👥</span><span class="text-slate-700 font-bold text-sm">眷屬加保：${u.dependents_count || 0} 人</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-amber-600">📅</span><span class="text-slate-700 font-bold text-sm">入職日：${u.onboarding_date}</span></div><div class="flex items-center space-x-3 border-t border-slate-50 pt-3 mt-1"><span class="w-6 text-center text-lg mt-0.5">⏰</span><div class="text-blue-700 font-black text-sm bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 w-full text-center tracking-wider">${(u.work_start_time||'09:00').slice(0,5)} 上班 <span class="mx-2 text-blue-200">|</span> ${(u.work_end_time||'18:00').slice(0,5)} 下班</div></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🏦</span><div class="text-slate-800 font-black text-sm leading-tight">${u.bank_name} (${u.bank_code})<br><span class="text-xs font-bold text-slate-500 mt-1 block">${u.bank_user_name} / ${u.bank_account}</span></div></div>`;
+            document.getElementById('ui-profile-info').innerHTML = `<div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">🆔</span><span class="text-slate-700 font-bold text-sm">身分證：${u.id_number}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">🏷️</span><span class="text-slate-700 font-bold text-sm">員工編號：${u.employee_no||'未設定'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📧</span><span class="text-slate-700 font-bold text-sm">${u.email}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📞</span><span class="text-slate-700 font-bold text-sm">${u.phone}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-sky-600">👔</span><span class="text-sky-700 font-black text-sm bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">${u.job_title||'未指派'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">📍</span><span class="text-slate-700 font-bold text-sm">據點：${u.branch_locations?.branch_name||'未綁定'}</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg">👥</span><span class="text-slate-700 font-bold text-sm">眷屬加保：${u.dependents_count || 0} 人</span></div><div class="flex items-center space-x-3"><span class="w-6 text-center text-lg text-amber-600">📅</span><span class="text-slate-700 font-bold text-sm">入職日：${u.onboarding_date}</span></div><div class="flex items-center space-x-3 border-t border-slate-50 pt-3 mt-1"><span class="w-6 text-center text-lg mt-0.5">⏰</span><div class="text-blue-700 font-black text-sm bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 w-full text-center tracking-wider">${(u.work_start_time||'09:00').slice(0,5)} 上班 <span class="mx-2 text-blue-200">|</span> ${(u.work_end_time||'18:00').slice(0,5)} 下班</div></div><div class="flex items-start space-x-3 mt-3"><span class="w-6 text-center text-lg mt-0.5">🏠</span><span class="text-slate-700 font-medium text-sm leading-relaxed">${u.address}</span></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🏦</span><div class="text-slate-800 font-black text-sm leading-tight">${u.bank_name} (${u.bank_code})<br><span class="text-xs font-bold text-slate-500 mt-1 block">${u.bank_user_name} / ${u.bank_account}</span></div></div><div class="flex items-start space-x-3 mt-2 pt-3 border-t border-slate-50"><span class="w-6 text-center text-lg mt-0.5">🚨</span><div class="text-slate-800 font-black text-sm leading-tight">緊急聯絡人：${u.emergency_name}<br><span class="text-xs font-bold text-slate-500 mt-1 block">${u.emergency_phone}</span></div></div>`;
         }
         
         function openDoc() { 
             document.getElementById('doc-content').innerHTML = `
-                <p class="font-black text-slate-900 text-xs mb-1 mt-2">第一章：職位與工作內容</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方各項業務推動。</li><li>工作區域：甲方得視營運需求，指派乙方於實體據點或指定分區執行職務。</li></ul>
-                <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統自動偵測並記錄員工所在座標與據點，無距離限制。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li><li>忘記打卡與補登：若忘記打卡，應於系統提出「補登申請」。每人每月補登上限為 3 次，超過次數將無法申請，該異常時段以曠職或事假論處。若前一日漏打下班卡，須先完成補登申請方可進行次日打卡。</li></ul>
-                <p class="font-black text-slate-900 text-xs mb-1">第三章：請假與休假規範</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>請假程序：一般請假應至少提前三日於線上申請；突發狀況應第一時間告知並補單。</li><li>颱風假原則：依政府發布，遵循「放假但該日不支薪」原則，不扣特休亦不影響全勤。</li><li>加班申請：例假日出勤須於系統填寫「起訖時間」送出加班單。</li></ul>
-                <p class="font-black text-slate-900 text-xs mb-1">第四章：保密協定 (NDA) 與智慧財產權</p><ul class="list-decimal pl-4 space-y-1 mb-3"><li>保密義務：乙方對甲方之客戶未公開營業秘密，負絕對保密義務。未經同意絕不洩漏。</li><li>歸還義務：離職時，應將所有隸屬公司之財產、機密資訊、設備、實體與數位檔案全數歸還，絕對不得私自拷貝或保留。</li><li>違約罰則：乙方若違反保密義務，同意無條件負擔新台幣壹佰萬元整之懲罰性違約金。</li></ul>
+                <h4 class="font-black text-center text-sm mb-3 text-slate-900">HYPASS 企業聘僱合約與員工服務守則</h4>
+                <hr class="my-3 border-slate-200">
+                <p class="font-black text-slate-900 text-xs mb-1">第一章：職位與工作內容</p>
+                <ul class="list-decimal pl-4 space-y-1 mb-3"><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方各項業務推動。</li><li>工作區域：甲方得視營運需求，指派乙方於實體據點或指定分區執行職務。</li></ul>
+                <p class="font-black text-slate-900 text-xs mb-1">第二章：考勤管理與打卡規範</p>
+                <ul class="list-decimal pl-4 space-y-1 mb-3">
+                    <li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li>
+                    <li>打卡範圍：系統自動偵測並記錄員工所在座標與據點，無距離限制。</li>
+                    <li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li>
+                    <li>忘記打卡與補登：若忘記打卡，應於系統提出「補登申請」。每人每月補登上限為 3 次，超過次數將無法申請，該異常時段以曠職或事假論處。若前一日漏打下班卡，須先完成補登申請方可進行次日打卡。</li>
+                </ul>
+                <p class="font-black text-slate-900 text-xs mb-1">第三章：請假與休假規範</p>
+                <ul class="list-decimal pl-4 space-y-1 mb-3"><li>請假程序：一般請假應至少提前三日於線上申請；突發狀況應第一時間告知並補單。</li><li>颱風假原則：依政府發布，遵循「放假但該日不支薪」原則，不扣特休亦不影響全勤。</li><li>加班申請：例假日出勤須於系統填寫「起訖時間」送出加班單。</li></ul>
+                <p class="font-black text-slate-900 text-xs mb-1">第四章：保密協定 (NDA) 與智慧財產權</p>
+                <ul class="list-decimal pl-4 space-y-1 mb-3"><li>保密義務：乙方對甲方之客戶未公開營業秘密，負絕對保密義務。未經同意絕不洩漏。</li><li>歸還義務：離職時，應將所有隸屬公司之財產、機密資訊、設備、實體與數位檔案全數歸還，絕對不得私自拷貝或保留。</li><li>違約罰則：乙方若違反保密義務，同意無條件負擔新台幣壹佰萬元整之懲罰性違約金。</li></ul>
             `; 
             document.getElementById('doc-sig').innerText = `簽署人：${window.currentUser.full_name}\n時間：${new Date(window.currentUser.nda_signed_at).toLocaleString('zh-TW')}`; 
             openModal('doc-modal'); 
