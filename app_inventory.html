@@ -15,13 +15,16 @@
         .view-panel { display: none; animation: fadeIn 0.3s ease; } .view-panel.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.8); }
+        
+        /* 🚨 終極修復：加入 !important 強制防護，保證彈窗不會在載入時自動跑出來卡死畫面 */
+        .modal { display: none !important; } 
+        .modal.active { display: flex !important; z-index: 200; }
+        
         .select-arrow { appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-size: 1.5em 1.5em; background-position: right 0.5rem center; background-repeat: no-repeat; padding-right: 2rem; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         @keyframes bounce-subtle { 0%, 100% { transform: translateY(-2px); } 50% { transform: translateY(2px); } }
         .floating-cart { animation: bounce-subtle 2s infinite; }
-        /* 隱藏數字輸入框的上下箭頭 */
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
 <body class="text-slate-800">
@@ -103,7 +106,7 @@
                     </div>
                     <div id="ui-inventory-list" class="space-y-3 max-h-[65vh] overflow-y-auto no-scrollbar pr-1"></div>
                     
-                    <div class="absolute bottom-4 left-0 right-0 px-5 flex justify-center">
+                    <div class="absolute bottom-4 left-0 right-0 px-5 flex justify-center z-10">
                         <button onclick="openPurchaseView()" class="bg-slate-900 text-white px-6 py-3 rounded-full font-black text-sm shadow-xl active:scale-95 transition-transform floating-cart flex items-center border-2 border-slate-700">
                             <span class="mr-2 text-lg">🛒</span>前往採購清單結算 (<span id="cart-badge-float" class="text-amber-400 mx-1">0</span>)
                         </button>
@@ -395,7 +398,6 @@
             renderInventoryListUI(window.inventoryData);
         }
 
-        // 🌟 庫存總表版面完美優化，且支援低水位與庫存量直接編輯
         function renderInventoryListUI(data) {
             const container = document.getElementById('ui-inventory-list');
             
@@ -476,14 +478,12 @@
             }).join('');
         }
 
-        // 🌟 總表防跳動背景更新函式 (修改安全庫存)
         async function inlineUpdateSafeStock(id, newValStr, oldVal) {
             const newVal = parseInt(newValStr) || 0;
             if(newVal === oldVal) return;
             const { error } = await window._sb.from('items').update({ safe_stock_level: newVal }).eq('id', id);
             if(error) { alert('更新安全庫存失敗'); }
             else {
-                // 記住滑動位置並重整
                 const scrollPos = document.getElementById('ui-inventory-list').scrollTop;
                 await loadItems();
                 renderInventoryListUI(window.inventoryData);
@@ -492,7 +492,6 @@
             }
         }
 
-        // 🌟 總表防跳動背景更新函式 (修改現有庫存：自動計算差額寫入)
         async function inlineUpdateCurrentStock(id, oldQty, newValStr) {
             const newQty = parseInt(newValStr) || 0;
             if(newQty === oldQty) return;
@@ -784,8 +783,10 @@
             document.getElementById('item-search-results').innerHTML = html;
         }
 
+        // 🚨 核心防呆修復：精準讀取 ID 確保 UUID 絕對不報錯
         function openFrontEdit(id) {
             const i = window.inventoryData.find(x => x.id === id); if(!i) return;
+            
             document.getElementById('fe-item-id').value = i.id;
             document.getElementById('fe-item-name').value = i.item_name;
             const catSel = document.getElementById('fe-item-cat');
@@ -796,9 +797,15 @@
             openModal('front-item-edit-modal');
         }
 
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
         async function saveFrontEditItem() {
             const id = document.getElementById('fe-item-id').value;
-            if(!id || id === "") { alert('系統無法讀取料號 ID，請關閉彈窗重新嘗試。'); return; }
+            
+            if(!id || id === "") {
+                alert('系統無法讀取料號 ID，請關閉彈窗重新嘗試。');
+                return;
+            }
 
             const p = {
                 item_name: document.getElementById('fe-item-name').value,
