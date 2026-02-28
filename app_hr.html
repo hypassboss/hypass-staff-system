@@ -174,15 +174,6 @@
         </main>
     </div>
 
-    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[100] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <a href="app_hr.html" class="flex-1 flex flex-col items-center py-1 transition text-sky-600"><span class="text-xl mb-1">👨‍💼</span><span class="scale-90">員工</span></a>
-        
-        <a href="app_inventory.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></a>
-        <a href="app_purchase.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></a>
-        <a href="app_sales.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></a>
-        <a href="app_finance.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></a>
-    </nav>
-
     <div id="alert-modal" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-center justify-center p-5 z-[200]"><div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center transform transition-all scale-95 opacity-0" id="alert-box"><div id="alert-icon" class="text-6xl mb-4">✅</div><h3 id="alert-title" class="text-xl font-black text-slate-800 mb-2">提示</h3><p id="alert-msg" class="text-sm text-slate-600 font-bold leading-relaxed mb-6">訊息內容</p><div class="flex space-x-3" id="alert-btn-group"><button onclick="closeAlert(false)" id="alert-btn-cancel" class="hidden flex-1 bg-slate-100 text-slate-600 font-black py-3.5 rounded-xl shadow-sm active:scale-95 transition">不請假</button><button onclick="closeAlert(true)" id="alert-btn-confirm" class="w-full bg-slate-900 text-white font-black py-3.5 rounded-xl shadow-md active:scale-95 transition">確認</button></div></div></div>
     <div id="record-modal" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-end justify-center z-[100]"><div class="bg-[#f8fafc] w-full max-w-md rounded-t-[2rem] p-6 h-[75vh] flex flex-col shadow-2xl md:max-w-480px md:mx-auto md:relative"><div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-200"><h3 class="font-black text-xl text-slate-800">近期打卡紀錄</h3><button onclick="closeModal('record-modal')" class="bg-slate-200 px-4 py-2 rounded-full text-sm font-bold text-slate-600 hover:bg-slate-300 transition">✕ 關閉</button></div><div id="ui-records-list" class="overflow-y-auto space-y-3 flex-1 no-scrollbar pb-8 p-1">載入中...</div></div></div>
     
@@ -372,7 +363,7 @@
             
             s.disabled=false; 
             const uniqueMonths = [...new Set(data.map(item => item.pay_month))];
-            s.innerHTML = uniqueMonths.map(m=>`<option value="${m}">${m} 薪資單</option>`).join(''); 
+            s.innerHTML = uniqueMonths.map(m=>`<option value="${m}">${m} 薪薪單</option>`).join(''); 
             
             loadPayrollDetail(); 
         }
@@ -435,6 +426,26 @@
         }
 
         window.onload = bootHR;
+
+        // 🚨 終極強制覆寫導覽列 (攔截 shared.js 的舊設定，鎖死正確排序)
+        const enforceNavObserver = new MutationObserver(() => {
+            const oldNav = document.querySelector('nav');
+            if (oldNav && !oldNav.hasAttribute('data-new-nav')) {
+                oldNav.remove();
+                const newNav = document.createElement('nav');
+                newNav.setAttribute('data-new-nav', 'true');
+                newNav.className = "fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[100] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]";
+                newNav.innerHTML = `
+                    <a href="app_hr.html" class="flex-1 flex flex-col items-center py-1 transition text-sky-600"><span class="text-xl mb-1">👨‍💼</span><span class="scale-90">員工</span></a>
+                    <a href="app_inventory.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></a>
+                    <a href="app_purchase.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></a>
+                    <a href="app_sales.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></a>
+                    <a href="app_finance.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></a>
+                `;
+                document.body.appendChild(newNav);
+            }
+        });
+        enforceNavObserver.observe(document.body, { childList: true, subtree: true });
     </script>
 </body>
 </html>
