@@ -17,7 +17,6 @@
         .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.8); }
         .select-arrow { appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-size: 1.5em 1.5em; background-position: right 0.5rem center; background-repeat: no-repeat; padding-right: 2rem; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        /* 採購車浮動按鈕動畫 */
         @keyframes bounce-subtle { 0%, 100% { transform: translateY(-2px); } 50% { transform: translateY(2px); } }
         .floating-cart { animation: bounce-subtle 2s infinite; }
     </style>
@@ -33,7 +32,7 @@
         <main class="p-5">
             <div id="friday-reminder" class="hidden bg-amber-500 text-white p-4 rounded-2xl shadow-lg mb-5 animate-pulse border-2 border-amber-300">
                 <div class="flex items-center space-x-3 mb-2"><span class="text-3xl">⚠️</span><h3 class="font-black text-lg tracking-wider">每週法定盤點提醒</h3></div>
-                <p class="text-sm font-bold text-amber-50 leading-relaxed">今日為系統排定盤點日，請務必於下班前完成庫存清點，若超過 3 次提醒未完成，系統將自動進行記點懲處。</p>
+                <p class="text-sm font-bold text-amber-50 leading-relaxed">今日為系統排定盤點日，請務必於下班前完成庫存清點，若超過 3 次提醒未完成，系統將自動進行計點懲處。</p>
             </div>
 
             <div id="view-dashboard" class="view-panel active space-y-5">
@@ -255,7 +254,7 @@
     </div>
 
     <div id="front-item-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
-        <div class="bg-white w-full max-w-md rounded-[2rem] p-5 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
+        <div class="bg-white w-full max-w-md mx-auto rounded-[2rem] p-5 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
             <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯基本資料與 BOM</h3>
             <input type="hidden" id="fe-item-id">
             <div class="space-y-3">
@@ -301,8 +300,8 @@
         let currentItemPackQty = 1;
         let allItems = [];
         window.inventoryData = [];
-        window.latestChecks = {}; // 存放各料號的最新盤點資訊
-        let purchaseCart = new Set(); // 採購車 Set
+        window.latestChecks = {}; 
+        let purchaseCart = new Set(); 
 
         async function bootInventory() {
             const isAuth = await authGuard('inv'); 
@@ -313,7 +312,7 @@
                 if (now.getDay() === 5 && u.is_inventory_manager) {
                     document.getElementById('friday-reminder').classList.remove('hidden');
                 }
-                renderBomTable('bom-table-body');
+                renderBomTable('bom-table-body'); 
                 loadItems();
             }
         }
@@ -325,7 +324,6 @@
             document.getElementById('btn-back').classList.remove('hidden'); 
             window.scrollTo({top: 0, behavior: 'smooth'});
             
-            // 如果進入採購畫面，渲染車內清單
             if(viewId === 'purchase') renderPurchaseCart();
         }
 
@@ -342,12 +340,10 @@
             const { data } = await window._sb.from('items').select('*').order('created_at', {ascending: false});
             allItems = data || [];
             
-            // 抓取庫存異動加總
             const { data: ledgers } = await window._sb.from('inventory_ledgers').select('item_id, change_qty');
             let stockMap = {};
             if(ledgers) { ledgers.forEach(l => { if(!stockMap[l.item_id]) stockMap[l.item_id] = 0; stockMap[l.item_id] += l.change_qty; }); }
             
-            // 抓取最新盤點紀錄足跡
             const { data: checks } = await window._sb.from('inventory_ledgers').select('item_id, created_at, employees(full_name)').eq('action_type', '盤點').order('created_at', {ascending: false});
             window.latestChecks = {};
             if(checks) { checks.forEach(c => { if(!window.latestChecks[c.item_id]) window.latestChecks[c.item_id] = { date: new Date(c.created_at).toLocaleDateString('zh-TW'), emp: c.employees?.full_name || '未知' }; }); }
@@ -355,7 +351,6 @@
             let lowCount = 0;
             let lowStockHtml = '';
             
-            // 🌟 產生類別過濾器
             const cats = [...new Set(allItems.map(i => i.category || '未分類'))];
             const catOptions = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
             document.getElementById('inv-cat-filter').innerHTML = catOptions;
@@ -363,7 +358,6 @@
 
             window.inventoryData = allItems.map(i => {
                 let current_stock = stockMap[i.id] || 0;
-                // 低水位判定 ( <= 安全水位)
                 if(current_stock <= (i.safe_stock_level || 0)) {
                     lowCount++;
                     lowStockHtml += `
@@ -387,7 +381,6 @@
             document.getElementById('low-stock-count').innerText = `${lowCount} 件`;
             document.getElementById('ui-dash-low-stock').innerHTML = lowStockHtml || '<p class="text-xs text-center py-4 text-emerald-100 font-bold">目前無低水位庫存 🎉</p>';
             
-            // 刷新若在查詢畫面
             if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
         }
 
@@ -398,25 +391,30 @@
             renderInventoryListUI(window.inventoryData);
         }
 
-        // 🌟 庫存總表 UI 渲染 (三色警示框、盤點足跡、採購勾選)
         function renderInventoryListUI(data) {
             const container = document.getElementById('ui-inventory-list');
-            if(!data || data.length === 0) { container.innerHTML = '<div class="text-center text-sm text-slate-400 font-bold py-10">目前無任何料號資料</div>'; return; }
+            
+            const cats = [...new Set(data.map(i => i.category || '未分類'))];
+            document.getElementById('inv-cat-filter').innerHTML = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+
+            if(!data || data.length === 0) {
+                container.innerHTML = '<div class="text-center text-sm text-slate-400 font-bold py-10">目前無任何料號資料</div>';
+                return;
+            }
             
             container.innerHTML = data.map(i => {
                 const safe = i.safe_stock_level || 0;
-                // 三色水位邏輯
                 let isLow = i.current_stock <= safe;
                 let isWarn = !isLow && i.current_stock <= (safe * 1.5);
                 
-                let borderClass = 'border-emerald-400 bg-emerald-50/20'; // 綠框：標準
+                let borderClass = 'border-emerald-400 bg-emerald-50/20'; 
                 let statusBadge = `<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-black border border-emerald-200">標準水位</span>`;
                 
                 if (isLow) {
-                    borderClass = 'border-red-500 bg-red-50/40 shadow-sm'; // 紅框：低水位
+                    borderClass = 'border-red-500 bg-red-50/40 shadow-sm'; 
                     statusBadge = `<span class="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded font-black shadow-sm animate-pulse">⚠️ 低水位</span>`;
                 } else if (isWarn) {
-                    borderClass = 'border-amber-400 bg-amber-50/40'; // 黃框：警示
+                    borderClass = 'border-amber-400 bg-amber-50/40'; 
                     statusBadge = `<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-black border border-amber-300">警示水位</span>`;
                 }
 
@@ -453,7 +451,8 @@
         function filterInventory() {
             const keyword = document.getElementById('inv-search').value.toLowerCase();
             const cat = document.getElementById('inv-cat-filter').value;
-            document.querySelectorAll('.inv-item').forEach(el => {
+            const items = document.querySelectorAll('.inv-item');
+            items.forEach(el => {
                 const text = el.getAttribute('data-search').toLowerCase();
                 const elCat = el.getAttribute('data-cat');
                 const matchKw = text.includes(keyword);
@@ -519,7 +518,6 @@
 
             if(!isValid) { alert('請確保所有採購項目都有輸入大於 0 的數量！'); return; }
 
-            // 1. 寫入資料庫 Purchase Orders
             const { data: po, error: poErr } = await window._sb.from('purchase_orders').insert([{ employee_id: window.currentUser.id, total_items: poItems.length }]).select();
             if(poErr || !po) { alert('採購單建立失敗'); return; }
             const poId = po[0].id;
@@ -527,7 +525,6 @@
             const insertItems = poItems.map(p => ({ po_id: poId, item_id: p.item_id, purchase_qty: p.qty }));
             await window._sb.from('purchase_order_items').insert(insertItems);
 
-            // 2. 產出 CSV 下載
             let csv = "\uFEFF採購單號,建檔日期,申請人,料號,品名,規格,目前庫存,生產週期(天),建議採購量\n";
             const dateStr = new Date().toLocaleDateString('zh-TW');
             
@@ -548,7 +545,6 @@
             backToDash();
         }
 
-        // 相機盤點模組
         function openScanner() { 
             openView('scanner', '相機掃描盤點'); 
             setTimeout(() => {
@@ -583,14 +579,30 @@
             document.getElementById('c-total-qty').value = Math.round((boxes * currentItemPackQty) + (frac * currentItemPackQty));
         }
         function adjustTotal(val) { document.getElementById('c-total-qty').value = Math.max(0, (parseInt(document.getElementById('c-total-qty').value) || 0) + val); }
+        
+        // 🌟 核心修復：盤點寫入差額，解決無限累加崩潰問題
         async function submitCount() {
-            const itemId = document.getElementById('c-item-id').value; const qty = parseInt(document.getElementById('c-total-qty').value);
-            const payload = { item_id: itemId, employee_id: window.currentUser.id, change_qty: qty, action_type: '盤點', note: '手機相機掃碼盤點' };
+            const itemId = document.getElementById('c-item-id').value; 
+            const newQty = parseInt(document.getElementById('c-total-qty').value) || 0;
+            
+            const item = window.inventoryData.find(x => x.id === itemId);
+            const currentQty = item ? item.current_stock : 0;
+            const diff = newQty - currentQty;
+            
+            if (diff === 0) {
+                const payload = { item_id: itemId, employee_id: window.currentUser.id, change_qty: 0, action_type: '盤點', note: '盤點數量相符' };
+                await window._sb.from('inventory_ledgers').insert([payload]);
+                alert('✅ 盤點數量相符，已更新盤點足跡時間！');
+                openScanner();
+                return;
+            }
+
+            const payload = { item_id: itemId, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: `盤點校正 (原:${currentQty} -> 新:${newQty})` };
             const { error } = await window._sb.from('inventory_ledgers').insert([payload]);
-            if(error) alert('紀錄失敗'); else { alert('✅ 盤點寫入成功！'); openScanner(); }
+            if(error) alert('紀錄失敗'); else { alert('✅ 盤點校正已成功寫入資料庫！'); openScanner(); }
         }
 
-        // 🌟 BOM 表與建檔模組 (極簡版)
+        // 🌟 BOM 表與建檔模組
         function renderBomTable(tbodyId, existingData = []) {
             let html = '';
             for(let i=0; i<10; i++) {
@@ -651,7 +663,7 @@
                 category: cat,
                 specification: document.getElementById('i-spec').value,
                 qty_per_pack: parseInt(document.getElementById('i-qty').value) || 1, 
-                safe_stock_level: 0, // 移除設定，寫死預設0 (前端移除輸入框)
+                safe_stock_level: 0, 
                 lead_time_days: parseInt(document.getElementById('i-lead').value) || 15,
                 bom_data: extractBomData('bom-table-body')
             };
@@ -662,12 +674,11 @@
                 alert('✅ 料號與 BOM 表建檔成功！'); 
                 e.target.reset(); 
                 document.getElementById('i-custom-category').classList.add('hidden');
-                renderBomTable('bom-table-body'); // 清空 BOM
+                renderBomTable('bom-table-body'); 
                 loadItems(); 
             }
         }
 
-        // 🌟 獨立查詢與編輯中心 (BOM顯示與修正)
         function renderItemSearch() {
             const kw = document.getElementById('item-search-input').value.toLowerCase();
             const cat = document.getElementById('search-cat-filter').value;
