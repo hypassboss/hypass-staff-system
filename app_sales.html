@@ -3,26 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hypass | 業務系統</title>
+    <title>Hypass | 業務管理系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>body { background: #f1f5f9; -webkit-tap-highlight-color: transparent; padding-bottom: 90px;} .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.8); }</style>
+    <style>
+        body { background: #e2e8f0; font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; padding-bottom: 80px;}
+        #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; }
+        .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.8); }
+        
+        /* 🚨 終極防禦裝甲：封殺 shared.js 產生的舊導覽列 */
+        nav { display: none !important; }
+        #core-bottom-nav { display: flex !important; }
+    </style>
 </head>
-<body class="text-slate-800">
-    <header class="bg-slate-900 text-white px-5 py-4 shadow-md sticky top-0 z-50 flex items-center h-16"><h1 class="text-xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-200">業務與報價</h1><div class="ml-auto text-[10px] font-bold bg-white/10 px-3 py-1 rounded-full border border-white/20" id="user-badge">載入中</div></header>
-    <main class="p-5 max-w-md mx-auto space-y-5">
-        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2rem] p-6 text-white shadow-lg relative overflow-hidden"><div class="absolute -right-4 -top-4 text-7xl opacity-20">💼</div><h2 class="text-2xl font-black mb-1">行動銷售中心</h2><p class="text-xs font-bold text-indigo-100 mb-4">建立報價單與轉入訂單</p></div>
-        <div class="grid grid-cols-2 gap-4">
-            <button onclick="alert('表單設計中...')" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-indigo-200 hover:bg-indigo-50 col-span-2 bg-indigo-50/50"><span class="text-5xl mb-3 drop-shadow-md">📄</span><span class="font-black text-indigo-800 tracking-wider text-lg">新建報價單 (PDF)</span></button>
-            <button onclick="alert('客戶庫設計中...')" class="glass-card p-5 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm hover:bg-slate-50"><span class="text-3xl mb-2 drop-shadow-md">🤝</span><span class="font-bold text-slate-700 text-sm">客戶資料庫</span></button>
-            <button onclick="alert('訂單模組設計中...')" class="glass-card p-5 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm hover:bg-slate-50"><span class="text-3xl mb-2 drop-shadow-md">🛒</span><span class="font-bold text-slate-700 text-sm">正式訂單總表</span></button>
-        </div>
-    </main>
+<body class="text-slate-800 relative">
+
+    <div id="app-container" class="max-w-md mx-auto shadow-2xl relative">
+        <header class="bg-slate-900 text-white px-5 py-4 shadow-md sticky top-0 z-50 flex items-center h-16 relative">
+            <div><h1 class="text-xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-200" id="header-title">業務管理中心</h1></div>
+            <div class="ml-auto text-[10px] font-bold bg-white/10 px-3 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
+        </header>
+
+        <main class="p-5 relative z-10">
+            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2rem] p-6 text-white shadow-lg relative overflow-hidden mb-6">
+                <div class="absolute -right-4 -top-4 text-7xl opacity-20">💼</div>
+                <h2 class="text-2xl font-black mb-1">業務大廳</h2>
+                <p class="text-xs font-bold text-indigo-100 mb-4 tracking-wider">即將解鎖全新銷售利器</p>
+                
+                <div class="bg-white/20 p-4 rounded-xl border border-white/20 backdrop-blur-sm mt-4">
+                    <p class="text-[10px] font-bold tracking-widest uppercase mb-1">系統開發進度</p>
+                    <div class="text-sm font-black flex items-center"><span class="animate-pulse mr-2 text-amber-300">🚧</span> 模組準備中，敬請期待</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center shadow-sm border border-slate-200 opacity-60">
+                    <span class="text-4xl mb-2 drop-shadow-md">🤝</span>
+                    <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">客戶管理</span>
+                </div>
+                <div class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center shadow-sm border border-slate-200 opacity-60">
+                    <span class="text-4xl mb-2 drop-shadow-md">📝</span>
+                    <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">報價單生成</span>
+                </div>
+                <div class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center shadow-sm border border-slate-200 opacity-60 col-span-2">
+                    <span class="text-4xl mb-2 drop-shadow-md">📈</span>
+                    <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">業績統計大盤</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <nav id="core-bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9999] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <div onclick="window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
+        <div onclick="window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></div>
+        <div onclick="window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></div>
+        
+        <div onclick="window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-indigo-600"><span class="text-xl mb-1">💼</span><span class="scale-90">業務</span></div>
+        
+        <div onclick="window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
+    </nav>
+
     <script src="shared.js"></script>
     <script>
-        async function bootSales() { const isAuth = await authGuard('sales'); if(isAuth) { document.getElementById('user-badge').innerText = window.currentUser.full_name; } }
+        async function bootSales() {
+            const isAuth = await authGuard('sales'); 
+            if(isAuth) { 
+                document.getElementById('user-badge').innerText = window.currentUser.full_name; 
+            }
+        }
         window.onload = bootSales;
+
+        // 🚨 終極強制覆寫導覽列 (攔截 shared.js 的舊設定，鎖死正確排序與跳轉)
+        const enforceNavObserver = new MutationObserver(() => {
+            const oldNav = document.querySelector('nav:not(#core-bottom-nav)');
+            if (oldNav) oldNav.remove();
+        });
+        enforceNavObserver.observe(document.body, { childList: true, subtree: true });
     </script>
 </body>
 </html>
