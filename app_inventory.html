@@ -90,7 +90,7 @@
                         <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">新增料號</span>
                         <span class="font-bold text-sky-600/70 text-[10px] tracking-wider">建檔與 BOM 表</span>
                     </button>
-                    <button onclick="openView('search-print', '料號查詢編輯與標籤列印')" class="glass-card p-5 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50 col-span-2">
+                    <button onclick="openSearchPrintView()" class="glass-card p-5 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50 col-span-2">
                         <span class="text-4xl mb-2 drop-shadow-md">🖨️</span>
                         <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">查詢編輯中心</span>
                         <span class="font-bold text-slate-500/70 text-[10px] tracking-wider">料號修改/列印標籤</span>
@@ -217,7 +217,8 @@
                         </select>
                         <input type="text" id="item-search-input" placeholder="搜尋料號或品名..." class="w-2/3 bg-slate-50 border border-slate-300 p-3 rounded-xl text-sm font-bold outline-none focus:border-slate-500 transition shadow-inner" onkeyup="renderItemSearch()">
                     </div>
-                    <div id="item-search-results" class="space-y-4 max-h-[60vh] overflow-y-auto pr-1 no-scrollbar pb-10">
+                    
+                    <div id="item-search-results" class="space-y-4 max-h-[65vh] overflow-y-auto pr-1 no-scrollbar pb-10">
                         <div class="text-center text-xs text-slate-400 py-6 italic">請輸入關鍵字搜尋料號...</div>
                     </div>
                 </div>
@@ -293,6 +294,16 @@
             loadItems();
         }
 
+        function openSearchPrintView() {
+            openView('search-print', '料號查詢編輯與標籤列印');
+            // 🚨 預設選擇汽車冷氣濾網並自動搜尋
+            const searchCatSel = document.getElementById('search-cat-filter');
+            if(Array.from(searchCatSel.options).some(o=>o.value==='汽車冷氣濾網')) {
+                searchCatSel.value = '汽車冷氣濾網';
+            }
+            renderItemSearch();
+        }
+
         async function loadItems() {
             const { data } = await window._sb.from('items').select('*').order('created_at', {ascending: false}); allItems = data || [];
             const { data: ledgers } = await window._sb.from('inventory_ledgers').select('item_id, change_qty');
@@ -317,6 +328,7 @@
             });
             document.getElementById('low-stock-count').innerText = `${lowCount} 件`;
             document.getElementById('ui-dash-low-stock').innerHTML = lowStockHtml || '<p class="text-xs text-center py-4 text-emerald-100 font-bold">目前無低水位庫存 🎉</p>';
+            
             if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
         }
 
@@ -410,6 +422,7 @@
         function extractBomData(tbodyId) { let data = []; document.querySelectorAll(`#${tbodyId} tr`).forEach(tr => { const mat = tr.querySelector('.bom-mat').value; if(mat) data.push({ material: mat, usage: parseFloat(tr.querySelector('.bom-qty').value) || 0, unit: tr.querySelector('.bom-unit').value, total_qty: parseFloat(tr.querySelector('.bom-total').value) || 0 }); }); return data; }
         async function saveItem(e) { e.preventDefault(); let cat = document.getElementById('i-category').value === 'custom' ? document.getElementById('i-custom-category').value : document.getElementById('i-category').value; const p = { item_name: document.getElementById('i-name').value, item_code: document.getElementById('i-code').value.toUpperCase(), item_type: document.getElementById('i-type').value, category: cat, specification: document.getElementById('i-spec').value, qty_per_pack: parseInt(document.getElementById('i-qty').value) || 1, safe_stock_level: 0, lead_time_days: parseInt(document.getElementById('i-lead').value) || 15, bom_data: extractBomData('bom-table-body') }; const { error } = await window._sb.from('items').insert([p]); if(!error) { alert('✅ 成功！'); e.target.reset(); renderBomTable('bom-table-body'); loadItems(); } }
         
+        // 🚨 查詢編輯中心：渲染真實條碼圖片與列印按鈕
         function renderItemSearch() {
             const kw = document.getElementById('item-search-input').value.toLowerCase(); const cat = document.getElementById('search-cat-filter').value;
             const res = window.inventoryData.filter(i => (i.item_code.toLowerCase().includes(kw) || i.item_name.toLowerCase().includes(kw)) && (cat === '' || i.category === cat));
@@ -432,14 +445,28 @@
                         <div class="bg-sky-50 text-sky-700 px-3 py-1.5 rounded-lg border border-sky-100 shadow-inner flex items-center">週期: <span class="text-base font-black ml-1">${i.lead_time_days}</span> <span class="text-[9px] ml-0.5 font-bold">天</span></div>
                     </div>
                     ${bomHtml}
-                    <div class="flex space-x-3 mt-5 border-t border-slate-100 pt-5">
-                        <button onclick="openFrontEdit('${i.id}')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-black py-3 rounded-xl text-sm shadow-md active:scale-95 transition flex justify-center items-center"><span class="mr-1.5">✏️</span> 編輯料號與 BOM</button>
-                        <button onclick="printBarcodeFromId('${i.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-black px-5 py-3 rounded-xl text-sm active:scale-95 transition border border-slate-200 flex justify-center items-center"><span class="mr-1.5 text-lg">🖨️</span> 列印標籤</button>
+                    
+                    <div class="mt-4 flex flex-col space-y-3 border-t border-slate-100 pt-4">
+                        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
+                            <div class="bg-white p-2 rounded-lg border border-slate-100 shadow-sm overflow-hidden flex-1 flex justify-center">
+                                <svg class="item-barcode" data-value="${i.item_code}"></svg>
+                            </div>
+                            <div onclick="printInlineBarcode('${i.id}')" class="cursor-pointer ml-3 bg-slate-800 text-white font-black rounded-xl shadow-md active:scale-95 transition flex flex-col items-center justify-center w-20 py-3 shrink-0">
+                                <span class="text-xl mb-1">🖨️</span><span class="text-[10px] tracking-widest">列印</span>
+                            </div>
+                        </div>
+                        <button onclick="openFrontEdit('${i.id}')" class="w-full bg-sky-50 hover:bg-sky-100 text-sky-700 font-black py-3 rounded-xl text-sm active:scale-95 transition border border-sky-200 flex justify-center items-center"><span class="mr-1.5">✏️</span> 修改基本資料與 BOM</button>
                     </div>
                 </div>`;
             }).join('');
+            
+            // 🚨 自動生成條碼圖片
+            document.querySelectorAll('.item-barcode').forEach(svg => {
+                JsBarcode(svg, svg.getAttribute('data-value'), { format: "CODE128", width: 1.5, height: 40, displayValue: true, fontSize: 12, margin: 0 });
+            });
         }
 
+        // 🚨 修正：確保只呼叫唯一的 modal 並抓取正確 ID
         function openFrontEdit(id) {
             const i = window.inventoryData.find(x => x.id === id); if(!i) return;
             document.getElementById('fe-item-id').value = i.id;
@@ -460,13 +487,13 @@
 
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        function printBarcodeFromId(id) { 
+        // 🚨 隱藏式 CSS 列印黑科技
+        function printInlineBarcode(id) { 
             const item = allItems.find(i => i.id === id); if(!item) return; 
-            JsBarcode("#barcode-svg", item.item_code, { format: "CODE128", width: 2.5, height: 80, displayValue: true, fontSize: 24, fontOptions: "bold" }); 
-            const svgData = document.getElementById('barcode-preview').innerHTML;
             const printZone = document.getElementById('print-zone');
-            printZone.innerHTML = `<div style="text-align:center; font-family:sans-serif; margin-bottom:10px;"><h2 style="margin:0 0 5px 0; font-size:24px;">${item.item_name}</h2><p style="margin:0 0 15px 0; font-size:16px; color:#555;">${item.specification || ''}</p>${svgData}</div>`;
-            window.print();
+            printZone.innerHTML = `<div style="text-align:center; font-family:sans-serif; margin-bottom:10px;"><h2 style="margin:0 0 5px 0; font-size:24px;">${item.item_name}</h2><p style="margin:0 0 15px 0; font-size:16px; color:#555;">${item.specification || ''}</p><svg id="print-barcode-svg"></svg></div>`;
+            JsBarcode("#print-barcode-svg", item.item_code, { format: "CODE128", width: 2.5, height: 80, displayValue: true, fontSize: 24, fontOptions: "bold", margin: 10 }); 
+            setTimeout(() => { window.print(); }, 150);
         }
 
         window.onload = bootInventory;
