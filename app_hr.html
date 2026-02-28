@@ -151,7 +151,15 @@
                 <div class="glass-card p-6 rounded-[2rem] space-y-4 shadow-sm">
                     <select id="payroll-month" onchange="loadPayrollDetail()" class="w-full bg-slate-50 text-slate-800 font-bold border-0 shadow-inner p-3 rounded-2xl text-sm outline-none select-arrow"></select>
                     <div class="bg-white border border-slate-100 rounded-2xl p-5 space-y-4 mt-2 shadow-sm">
-                        <div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">底薪</span><span id="p-base" class="text-base font-black text-slate-800">NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">獎金津貼</span><span id="p-bonus" class="text-base font-black text-emerald-600">NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">年終獎金</span><span id="p-yeb" class="text-base font-black text-emerald-600">NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">勞健保自付</span><span id="p-ins" class="text-base font-black text-red-500">- NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">二代健保</span><span id="p-2nd" class="text-base font-black text-red-500">- NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-xs font-bold text-slate-400">勞退提撥(公司6%)</span><span id="p-pen" class="text-xs font-black text-slate-400">NT$ 0</span></div><div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-amber-600">請假扣薪</span><span id="p-lvd" class="text-base font-black text-amber-600">- NT$ 0</span></div>
+                        <div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">底薪</span><span id="p-base" class="text-base font-black text-slate-800">NT$ 0</span></div>
+                        <div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">獎金津貼</span><span id="p-bonus" class="text-base font-black text-emerald-600">NT$ 0</span></div>
+                        <div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">年終獎金</span><span id="p-yeb" class="text-base font-black text-emerald-600">NT$ 0</span></div>
+                        <div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">未休特休結算</span><span id="p-ulp" class="text-base font-black text-emerald-600">+ NT$ 0</span></div>
+                        
+                        <div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">勞健保自付</span><span id="p-ins" class="text-base font-black text-red-500">- NT$ 0</span></div>
+                        <div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-slate-500">二代健保</span><span id="p-2nd" class="text-base font-black text-red-500">- NT$ 0</span></div>
+                        <div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-xs font-bold text-slate-400">勞退提撥(公司6%)</span><span id="p-pen" class="text-xs font-black text-slate-400">NT$ 0</span></div>
+                        <div class="flex justify-between border-b border-slate-50 pb-2"><span class="text-sm font-bold text-amber-600">請假扣薪</span><span id="p-lvd" class="text-base font-black text-amber-600">- NT$ 0</span></div>
                         <div class="flex justify-between items-end pt-3 border-t border-slate-100"><span class="text-base font-black text-slate-800">總計實領</span><span id="p-net" class="text-3xl font-black text-sky-600 tracking-tight">NT$ 0</span></div>
                     </div>
                 </div>
@@ -343,7 +351,23 @@
         }
 
         async function loadPayrollMonths() { const s = document.getElementById('payroll-month'); const { data } = await window._sb.from('payroll_records').select('pay_month').eq('employee_id', window.currentUser.id).order('pay_month', {ascending: false}); if(!data||!data.length){ s.innerHTML='<option>尚無薪資紀錄</option>'; s.disabled=true; return;} s.disabled=false; s.innerHTML = data.map(m=>`<option value="${m.pay_month}">${m.pay_month} 薪資單</option>`).join(''); loadPayrollDetail(); }
-        async function loadPayrollDetail() { const m = document.getElementById('payroll-month').value; const { data } = await window._sb.from('payroll_records').select('*').eq('employee_id', window.currentUser.id).eq('pay_month', m).single(); if(data) { document.getElementById('p-base').innerText = `NT$ ${data.base_pay.toLocaleString()}`; document.getElementById('p-bonus').innerText = `NT$ ${data.bonus.toLocaleString()}`; document.getElementById('p-yeb').innerText = `NT$ ${data.year_end_bonus.toLocaleString()}`; document.getElementById('p-ins').innerText = `- NT$ ${data.insurance_deduction.toLocaleString()}`; document.getElementById('p-2nd').innerText = `- NT$ ${data.second_gen_health.toLocaleString()}`; document.getElementById('p-pen').innerText = `NT$ ${data.labor_pension.toLocaleString()}`; document.getElementById('p-lvd').innerText = `- NT$ ${(data.leave_deduction||0).toLocaleString()}`; document.getElementById('p-net').innerText = `NT$ ${data.total_net_pay.toLocaleString()}`; } }
+        
+        // 🌟 更新電子薪資單載入邏輯，包含特休結算
+        async function loadPayrollDetail() { 
+            const m = document.getElementById('payroll-month').value; 
+            const { data } = await window._sb.from('payroll_records').select('*').eq('employee_id', window.currentUser.id).eq('pay_month', m).single(); 
+            if(data) { 
+                document.getElementById('p-base').innerText = `NT$ ${data.base_pay.toLocaleString()}`; 
+                document.getElementById('p-bonus').innerText = `NT$ ${data.bonus.toLocaleString()}`; 
+                document.getElementById('p-yeb').innerText = `NT$ ${data.year_end_bonus.toLocaleString()}`; 
+                document.getElementById('p-ulp').innerText = `+ NT$ ${(data.unused_leave_pay||0).toLocaleString()}`; 
+                document.getElementById('p-ins').innerText = `- NT$ ${data.insurance_deduction.toLocaleString()}`; 
+                document.getElementById('p-2nd').innerText = `- NT$ ${data.second_gen_health.toLocaleString()}`; 
+                document.getElementById('p-pen').innerText = `NT$ ${data.labor_pension.toLocaleString()}`; 
+                document.getElementById('p-lvd').innerText = `- NT$ ${(data.leave_deduction||0).toLocaleString()}`; 
+                document.getElementById('p-net').innerText = `NT$ ${data.total_net_pay.toLocaleString()}`; 
+            } 
+        }
 
         function renderProfileUI() {
             const u = window.currentUser;
