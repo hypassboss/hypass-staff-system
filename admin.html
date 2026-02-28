@@ -87,8 +87,18 @@
                     
                     <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
                         <div class="grid grid-cols-2 gap-3">
-                            <div><label class="text-[10px] font-bold text-slate-500 ml-1">當月本薪</label><input type="number" id="p-base" oninput="calcPayroll()" class="admin-input font-black text-slate-800 bg-white"></div>
-                            <div><label class="text-[10px] font-bold text-slate-500 ml-1">當月獎金津貼</label><input type="number" id="p-bonus" oninput="calcPayroll()" class="admin-input font-black text-emerald-600 bg-white"></div>
+                            <div><label class="text-[10px] font-bold text-slate-500 ml-1">當月本薪 (自動帶入)</label><input type="number" id="p-base" oninput="calcPayroll()" class="admin-input font-black text-slate-800 bg-white"></div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 ml-1">當月獎金津貼</label>
+                                <select id="p-bonus" onchange="calcPayroll()" class="admin-input font-black text-emerald-600 bg-white select-arrow">
+                                    <option value="0">0</option>
+                                    <option value="1000">1,000</option>
+                                    <option value="3000">3,000</option>
+                                    <option value="5000">5,000</option>
+                                    <option value="7000">7,000</option>
+                                    <option value="10000">10,000</option>
+                                </select>
+                            </div>
                         </div>
                         
                         <div class="border-t border-slate-200 pt-4">
@@ -99,11 +109,11 @@
                             
                             <div id="yeb-section" class="hidden grid grid-cols-2 gap-3 bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-inner">
                                 <div>
-                                    <label class="text-[11px] font-black text-amber-800 ml-1">核定年終獎金</label>
-                                    <input type="number" id="p-yeb" oninput="calcPayroll()" class="admin-input font-black text-amber-600 bg-white border-amber-300 text-lg mt-1" value="0">
+                                    <label id="lbl-yeb" class="text-[11px] font-black text-amber-800 ml-1">🎁 核定年終獎金</label>
+                                    <input type="number" id="p-yeb" oninput="calcPayroll()" class="admin-input font-black text-amber-600 bg-white border-amber-300 text-lg mt-1" placeholder="輸入金額">
                                 </div>
                                 <div>
-                                    <label class="text-[11px] font-black text-emerald-700 ml-1 flex justify-between"><span>未休特休結算</span><span class="text-[9px] text-emerald-600/70 font-bold mt-0.5">系統自動換算</span></label>
+                                    <label class="text-[11px] font-black text-emerald-700 ml-1 flex justify-between"><span id="lbl-ulp-text">✨ 未休特休結算</span><span class="text-[9px] text-emerald-600/70 font-bold mt-0.5">自動換算</span></label>
                                     <input type="number" id="p-ulp" oninput="calcPayroll()" class="admin-input font-black text-emerald-600 bg-white border-emerald-300 text-lg mt-1" value="0">
                                 </div>
                             </div>
@@ -111,7 +121,7 @@
                     </div>
                     
                     <div class="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
-                        <div class="flex justify-between items-center mb-2"><h4 class="text-[10px] font-black text-indigo-800 tracking-widest">🤖 當月出勤分析 (依上方月份)</h4><button onclick="updateAttendanceRate()" class="text-[9px] bg-indigo-200 text-indigo-800 px-2 py-1 rounded font-bold hover:bg-indigo-300">重新讀取</button></div>
+                        <div class="flex justify-between items-center mb-2"><h4 class="text-[10px] font-black text-indigo-800 tracking-widest">🤖 當月出勤分析 (同步連動)</h4><button onclick="updateAttendanceRate()" class="text-[9px] bg-indigo-200 text-indigo-800 px-2 py-1 rounded font-bold hover:bg-indigo-300">手動刷新</button></div>
                         <div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-600 bg-white p-2 rounded-lg border border-indigo-100 shadow-sm mb-3">
                             <div>病假<br><span id="sd-sick" class="text-indigo-600 text-sm font-black">0</span>h</div>
                             <div>事假<br><span id="sd-per" class="text-indigo-600 text-sm font-black">0</span>h</div>
@@ -124,7 +134,7 @@
                     </div>
 
                     <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 shadow-sm">
-                        <h4 class="text-[10px] font-black text-amber-800 tracking-widest mb-2 flex justify-between items-center"><span>📊 當年度出勤與紀律總評估 (依上方年份)</span></h4>
+                        <h4 class="text-[10px] font-black text-amber-800 tracking-widest mb-2 flex justify-between items-center"><span>📊 當年度出勤與紀律總評估 (同步連動)</span></h4>
                         <div class="grid grid-cols-3 gap-2 text-center text-[11px] font-bold text-slate-600 bg-white p-3 rounded-lg border border-amber-100 shadow-inner">
                             <div>未休特休<br><span id="sy-ann" class="text-amber-600 text-base font-black">0</span>h</div>
                             <div>事假<br><span id="sy-per" class="text-amber-600 text-base font-black">0</span>h</div>
@@ -442,31 +452,148 @@
             if(error) alert('修改失敗'); else { alert('✅ 參數更新成功！'); closeModal('item-edit-modal'); loadAdminInventory(); }
         }
 
-        // 🌟 條件式切換年終特休計算
+        // 🌟 條件式切換年終特休計算，並動態改標籤年份
         async function handleYebToggle() {
             const isChecked = document.getElementById('toggle-yeb').checked;
             const yebSec = document.getElementById('yeb-section');
             if(isChecked) {
                 yebSec.classList.remove('hidden');
-                await autoCalcUlp();
+                await updateAttendanceRate();
             } else {
                 yebSec.classList.add('hidden');
-                document.getElementById('p-yeb').value = 0;
-                document.getElementById('p-ulp').value = 0;
+                document.getElementById('p-yeb').value = '';
+                document.getElementById('p-ulp').value = '';
                 calcPayroll();
             }
         }
 
-        async function autoCalcUlp() {
-            const empId = document.getElementById('p-emp').value;
-            if(!empId) return;
-            const { data: lv } = await window._sb.rpc('fn_get_annual_leave_v2', { p_emp_id: empId });
-            if(lv) {
-                const base = window.empData[empId]?.base || 0;
-                const hrRate = base / 240;
-                document.getElementById('p-ulp').value = Math.round((lv.remain_hours || 0) * hrRate);
+        // 🌟 精準同步出勤統計，確保不卡死
+        async function updateAttendanceRate() { 
+            const empId = document.getElementById('p-emp').value; 
+            const month = document.getElementById('p-mon').value; 
+            if(!empId || !month) return; 
+
+            const y = month.split('-')[0];
+            
+            try {
+                // 抓取當月
+                const { data } = await window._sb.rpc('fn_get_payroll_calc', { p_emp_id: empId, p_month: month }); 
+                if(data) { 
+                    document.getElementById('sd-sick').innerText = data.sick_hrs || 0; 
+                    document.getElementById('sd-per').innerText = data.personal_hrs || 0; 
+                    document.getElementById('sd-typ').innerText = data.typhoon_hrs || 0; 
+                    document.getElementById('sd-lat').innerText = data.late_count || 0; 
+                    document.getElementById('sd-ovt').innerText = data.overtime_hrs || 0; 
+                    document.getElementById('sd-pnt').innerText = data.total_penalty || 0; 
+                    document.getElementById('p-lvd').value = data.leave_deduct || 0; 
+                } 
+                
+                // 抓取當年
+                const { data: yData } = await window._sb.rpc('fn_get_year_end_stats', { p_emp_id: empId, p_year: y });
+                const { data: lv } = await window._sb.rpc('fn_get_annual_leave_v2', { p_emp_id: empId });
+                let remainHrs = lv ? (lv.remain_hours || 0) : 0;
+
+                if(yData) {
+                    document.getElementById('sy-ann').innerText = remainHrs; 
+                    document.getElementById('sy-per').innerText = yData.personal || 0; 
+                    document.getElementById('sy-sic').innerText = yData.sick || 0; 
+                    document.getElementById('sy-lat').innerText = yData.late || 0; 
+                    document.getElementById('sy-ovt').innerText = yData.overtime || 0; 
+                    document.getElementById('sy-pnt').innerText = yData.total_penalty || 0;
+                }
+
+                // 更新動態標籤
+                document.getElementById('lbl-yeb').innerText = `🎁 核定年終獎金 (${y}年度)`;
+                document.getElementById('lbl-ulp-text').innerText = `✨ 未休特休結算 (${y}年度，剩餘 ${remainHrs}h)`;
+                
+                // 只有開啟年終模式時，才自動換算特休
+                if(document.getElementById('toggle-yeb').checked) {
+                    const base = window.empData[empId]?.base || 0;
+                    const hrRate = base / 240;
+                    document.getElementById('p-ulp').value = Math.round(remainHrs * hrRate);
+                }
+
+                calcNet(); 
+            } catch (err) {
+                console.error("更新出勤失敗", err);
             }
-            calcPayroll();
+        }
+
+        async function onEmpChange() { 
+            const empId = document.getElementById('p-emp').value; 
+            if(!empId) return; 
+            const emp = window.empData[empId]; 
+            if(!emp) return; 
+            
+            // 🌟 自動帶出核定底薪
+            document.getElementById('p-base').value = emp.base; 
+            
+            // 確保有先讀到 DOM 後再去查出勤與重算
+            await updateAttendanceRate(); 
+        }
+        
+        function calcPayroll() { 
+            const empId = document.getElementById('p-emp').value; 
+            const emp = window.empData[empId]; 
+            if(!emp) return; 
+            const base = parseFloat(document.getElementById('p-base').value) || 0; 
+            const bonus = parseFloat(document.getElementById('p-bonus').value) || 0; 
+            const yeb = parseFloat(document.getElementById('p-yeb').value) || 0; 
+            
+            document.getElementById('p-pen').value = Math.round(base * 0.06); 
+            document.getElementById('p-2nd').value = Math.round((bonus + yeb) * 0.0211); 
+            document.getElementById('p-ins').value = Math.round(base * 0.022) + Math.round(base * 0.0155 * (1 + emp.deps)); 
+            
+            calcNet(); 
+        }
+
+        function calcNet() { 
+            const base = parseFloat(document.getElementById('p-base').value) || 0;
+            const bonus = parseFloat(document.getElementById('p-bonus').value) || 0;
+            const yeb = parseFloat(document.getElementById('p-yeb').value) || 0;
+            const ulp = parseFloat(document.getElementById('p-ulp').value) || 0;
+            const ins = parseFloat(document.getElementById('p-ins').value) || 0;
+            const sec = parseFloat(document.getElementById('p-2nd').value) || 0;
+            const lvd = parseFloat(document.getElementById('p-lvd').value) || 0;
+            
+            const net = base + bonus + yeb + ulp - ins - sec - lvd; 
+            document.getElementById('p-net').value = net > 0 ? net : 0; 
+            document.getElementById('p-net-display').innerText = `NT$ ${net > 0 ? net : 0}`; 
+        }
+
+        async function issuePayroll() { 
+            const empId = document.getElementById('p-emp').value;
+            const base = parseFloat(document.getElementById('p-base').value) || 0;
+            const bonus = parseFloat(document.getElementById('p-bonus').value) || 0;
+            const yeb = parseFloat(document.getElementById('p-yeb').value) || 0;
+            const ulp = parseFloat(document.getElementById('p-ulp').value) || 0;
+            
+            if(!empId) { alert('請選擇員工！'); return; }
+            if(base === 0 && bonus === 0 && yeb === 0 && ulp === 0) { alert('發放金額不能全部為 0！'); return; }
+            
+            const isYeb = document.getElementById('toggle-yeb').checked;
+            const pm = document.getElementById('p-mon').value;
+            const finalMonth = isYeb ? `${pm.split('-')[0]}-13 (年終結算)` : pm;
+
+            const p = { 
+                employee_id: empId, 
+                pay_month: finalMonth, 
+                base_pay: base, 
+                bonus: bonus, 
+                year_end_bonus: yeb,
+                unused_leave_pay: ulp,
+                labor_pension: parseFloat(document.getElementById('p-pen').value) || 0, 
+                insurance_deduction: parseFloat(document.getElementById('p-ins').value) || 0, 
+                second_gen_health: parseFloat(document.getElementById('p-2nd').value) || 0, 
+                leave_deduction: parseFloat(document.getElementById('p-lvd').value) || 0, 
+                total_net_pay: parseFloat(document.getElementById('p-net').value) || 0 
+            }; 
+            
+            await window._sb.from('payroll_records').insert([p]); 
+            alert('✅ 綜合薪資發送成功！'); 
+            
+            document.getElementById('hist-emp').value = empId;
+            loadPayrollHistory();
         }
 
         async function loadPayrollHistory() {
@@ -542,7 +669,7 @@
         }
 
         async function deletePayroll(id) {
-            if(!confirm('⚠️ 確定要刪除這筆薪資單嗎？刪除後前台將自動重整同步。')) return;
+            if(!confirm('⚠️ 確定要刪除這筆薪資單嗎？刪除後前台畫面將瞬間歸零同步。')) return;
             const { error } = await window._sb.from('payroll_records').delete().eq('id', id);
             if(error) alert('刪除失敗:' + error.message);
             else { alert('✅ 薪資單已成功刪除'); loadPayrollHistory(); }
