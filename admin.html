@@ -16,6 +16,7 @@
         .admin-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); } 
         .modal { display: none; } .modal.active { display: flex; z-index: 100; } 
         .dt-btn.active { background-color: #0284c7; color: white; }
+        .select-arrow { appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-size: 1.5em 1.5em; background-position: right 0.5rem center; background-repeat: no-repeat; padding-right: 2rem; }
     </style>
 </head>
 <body class="text-slate-800 font-sans min-h-screen md:h-screen md:overflow-hidden md:flex bg-slate-50">
@@ -89,11 +90,14 @@
                         <div><label class="text-[10px] font-bold text-slate-500 ml-1">當月獎金津貼</label><input type="number" id="p-bonus" oninput="calcPayroll()" class="admin-input font-black text-emerald-600"></div>
                         
                         <div class="col-span-2 border-t border-slate-200 pt-3 mt-1">
-                            <label class="text-[11px] font-black text-amber-700 ml-1 tracking-widest">🎁 核定年終獎金金額 (選填)</label>
+                            <label class="text-[11px] font-black text-amber-700 ml-1 tracking-widest">🎁 評估核定之年終獎金金額</label>
                             <input type="number" id="p-yeb" oninput="calcPayroll()" class="admin-input font-black text-amber-600 bg-white border-amber-300 text-xl shadow-inner mt-1" value="0">
                         </div>
                         <div class="col-span-2">
-                            <label class="text-[11px] font-black text-emerald-700 ml-1 tracking-widest">✨ 未休特休結算 (以系統剩餘時數自動換算)</label>
+                            <label class="text-[11px] font-black text-emerald-700 ml-1 tracking-widest flex justify-between">
+                                <span>✨ 未休特休結算 (自動換算)</span>
+                                <span class="text-[9px] text-emerald-600/70 font-bold">可手動微調</span>
+                            </label>
                             <input type="number" id="p-ulp" oninput="calcPayroll()" class="admin-input font-black text-emerald-600 bg-white border-emerald-300 text-xl shadow-inner mt-1" value="0">
                         </div>
                     </div>
@@ -112,7 +116,7 @@
                     </div>
 
                     <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 shadow-sm">
-                        <h4 class="text-[10px] font-black text-amber-800 tracking-widest mb-2 flex justify-between items-center"><span>📊 當年度出勤與紀律總評估 (依上方月份之所屬年份)</span></h4>
+                        <h4 class="text-[10px] font-black text-amber-800 tracking-widest mb-2 flex justify-between items-center"><span>📊 當年度出勤與紀律總評估 (依上方年份)</span></h4>
                         <div class="grid grid-cols-3 gap-2 text-center text-[11px] font-bold text-slate-600 bg-white p-3 rounded-lg border border-amber-100 shadow-inner">
                             <div>未休特休<br><span id="sy-ann" class="text-amber-600 text-base font-black">0</span>h</div>
                             <div>事假<br><span id="sy-per" class="text-amber-600 text-base font-black">0</span>h</div>
@@ -125,7 +129,9 @@
                     </div>
                     
                     <div class="p-4 bg-red-50 rounded-xl border border-red-100 grid grid-cols-2 gap-3 relative"><button onclick="calcPayroll()" class="absolute -top-3 right-3 text-[9px] bg-slate-800 text-white font-bold px-2 py-1 rounded shadow-sm">🤖 依眷屬重新計算</button><div><label class="text-[10px] font-bold text-red-800 ml-1">勞健保扣除</label><input type="number" id="p-ins" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200"></div><div><label class="text-[10px] font-bold text-red-800 ml-1">二代健保 (含年終)</label><input type="number" id="p-2nd" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200"></div></div>
+                    
                     <div class="flex justify-between items-center p-4 mt-2 bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl border border-sky-100"><span class="text-sm font-black text-slate-700">綜合結算實領</span><span class="text-4xl font-black text-sky-600 tracking-tighter" id="p-net-display">NT$ 0</span><input type="hidden" id="p-net"><input type="hidden" id="p-pen"></div>
+                    
                     <button onclick="issuePayroll()" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform mt-2 tracking-widest">🚀 正式發送綜合薪資單</button>
                 </div>
 
@@ -133,7 +139,7 @@
                     <h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">📜</span>歷史薪資單管理 (編輯與刪除)</h3>
                     <select id="hist-emp" class="admin-input bg-slate-50 font-bold mb-4" onchange="loadPayrollHistory()"></select>
                     <div id="ui-payroll-hist" class="space-y-3 max-h-64 overflow-y-auto pr-1 no-scrollbar">
-                        <div class="text-center text-xs text-slate-400 py-4">請先選擇員工</div>
+                        <div class="text-center text-xs text-slate-400 py-4">請先選擇員工以載入歷史薪資單</div>
                     </div>
                 </div>
             </section>
@@ -162,12 +168,17 @@
             <section id="inv" class="tab-content space-y-5 max-w-6xl">
                 <div>
                     <h3 class="font-black text-slate-800 border-l-4 border-emerald-500 pl-3 text-lg mb-4">庫存清單與料號管理</h3>
-                    <div class="glass-panel p-5 shadow-sm mb-4"><input type="text" id="admin-inv-search" placeholder="🔍 搜尋料號或品名..." class="admin-input bg-slate-50 font-bold" onkeyup="filterAdminInventory()"></div>
+                    <div class="glass-panel p-5 shadow-sm mb-4 flex space-x-2">
+                        <select id="admin-inv-cat-filter" class="w-1/3 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none select-arrow shadow-inner" onchange="filterAdminInventory()">
+                            <option value="">全部分類</option>
+                        </select>
+                        <input type="text" id="admin-inv-search" placeholder="🔍 搜尋料號/品名/規格..." class="w-2/3 admin-input bg-slate-50 font-bold" onkeyup="filterAdminInventory()">
+                    </div>
                     <div id="list-inv-mobile" class="space-y-3 md:hidden">載入中...</div>
                     <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                         <table class="w-full text-left text-sm whitespace-nowrap">
                             <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
-                                <tr><th class="px-6 py-4">料號 / 品名</th><th class="px-6 py-4 text-right">當前庫存</th><th class="px-6 py-4 text-right">安全低水位(件)</th><th class="px-6 py-4 text-center">生產週期</th><th class="px-6 py-4 text-center">操作</th></tr>
+                                <tr><th class="px-6 py-4">料號 / 品名 / 規格</th><th class="px-6 py-4 text-right">當前庫存</th><th class="px-6 py-4 text-right">安全低水位(件)</th><th class="px-6 py-4 text-center">生產週期</th><th class="px-6 py-4 text-center">操作</th></tr>
                             </thead>
                             <tbody id="list-inv-desktop" class="divide-y divide-slate-100"></tbody>
                         </table>
@@ -361,14 +372,19 @@
 
         function renderAdminInventory() {
             let htmlM = '', htmlD = '';
+            
+            // 🌟 動態產生類別選單
+            const cats = [...new Set(window.adminInvData.map(i => i.category || '未分類'))];
+            document.getElementById('admin-inv-cat-filter').innerHTML = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+
             if(!window.adminInvData.length) { htmlM = '<p class="text-slate-400 py-4 text-center">無庫存資料</p>'; htmlD = '<tr><td colspan="5" class="text-center py-6 text-slate-400">無庫存資料</td></tr>'; }
             else {
                 window.adminInvData.forEach(i => {
                     let isLow = i.current_stock <= (i.safe_stock_level || 0);
                     let badge = isLow ? `<span class="text-[9px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold border border-red-200">低水位</span>` : '';
                     let catTag = `<span class="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded ml-1">${i.category || '未分類'}</span>`;
-                    htmlM += `<div class="glass-panel p-4 flex justify-between items-center inv-admin-item" data-search="${i.item_code} ${i.item_name} ${i.category}"><div class="flex-1"><span class="text-[10px] text-indigo-600 bg-indigo-50 px-1.5 rounded font-mono">${i.item_code}</span>${catTag}<h4 class="font-black text-sm text-slate-800 mt-1">${i.item_name} ${badge}</h4><p class="text-[10px] text-slate-500 mt-0.5">安全水位: ${i.safe_stock_level}件 | 週期: ${i.lead_time_days}天</p></div><div class="text-right pl-3 border-l border-slate-100"><div class="text-xl font-black ${isLow?'text-red-600':'text-slate-800'}">${i.current_stock}</div><button onclick="openEditItem('${i.id}')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded mt-1 font-bold hover:bg-slate-200">修改</button></div></div>`;
-                    htmlD += `<tr class="hover:bg-slate-50 inv-admin-item" data-search="${i.item_code} ${i.item_name} ${i.category}"><td class="px-6 py-4"><span class="text-[10px] text-indigo-600 font-mono bg-indigo-50 px-1.5 rounded mr-2">${i.item_code}</span><span class="font-black text-slate-800">${i.item_name}</span>${catTag} ${badge}</td><td class="px-6 py-4 text-right font-black ${isLow?'text-red-600':'text-slate-800'} text-lg">${i.current_stock}</td><td class="px-6 py-4 text-right text-slate-500 font-bold">${i.safe_stock_level}</td><td class="px-6 py-4 text-center text-slate-500 font-bold">${i.lead_time_days}</td><td class="px-6 py-4 text-center"><button onclick="openEditItem('${i.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">修改參數</button></td></tr>`;
+                    htmlM += `<div class="glass-panel p-4 flex justify-between items-center inv-admin-item" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><div class="flex-1"><span class="text-[10px] text-indigo-600 bg-indigo-50 px-1.5 rounded font-mono">${i.item_code}</span>${catTag}<h4 class="font-black text-sm text-slate-800 mt-1">${i.item_name} ${badge}</h4><p class="text-[10px] text-slate-500 mt-0.5">規格: ${i.specification||'無'} | 週期: ${i.lead_time_days}天</p></div><div class="text-right pl-3 border-l border-slate-100"><div class="text-xl font-black ${isLow?'text-red-600':'text-slate-800'}">${i.current_stock}</div><button onclick="openEditItem('${i.id}')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded mt-1 font-bold hover:bg-slate-200">修改</button></div></div>`;
+                    htmlD += `<tr class="hover:bg-slate-50 inv-admin-item" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><td class="px-6 py-4"><div class="mb-1"><span class="text-[10px] text-indigo-600 font-mono bg-indigo-50 px-1.5 rounded mr-1">${i.item_code}</span>${catTag}</div><span class="font-black text-slate-800">${i.item_name}</span> ${badge}<br><span class="text-[10px] text-slate-400 font-bold">${i.specification||'無規格'}</span></td><td class="px-6 py-4 text-right font-black ${isLow?'text-red-600':'text-slate-800'} text-lg">${i.current_stock}</td><td class="px-6 py-4 text-right text-slate-500 font-bold">${i.safe_stock_level}</td><td class="px-6 py-4 text-center text-slate-500 font-bold">${i.lead_time_days}</td><td class="px-6 py-4 text-center"><button onclick="openEditItem('${i.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">修改參數</button></td></tr>`;
                 });
             }
             document.getElementById('list-inv-mobile').innerHTML = htmlM; document.getElementById('list-inv-desktop').innerHTML = htmlD;
@@ -376,7 +392,14 @@
 
         function filterAdminInventory() {
             const kw = document.getElementById('admin-inv-search').value.toLowerCase();
-            document.querySelectorAll('.inv-admin-item').forEach(el => { el.style.display = el.getAttribute('data-search').toLowerCase().includes(kw) ? '' : 'none'; });
+            const cat = document.getElementById('admin-inv-cat-filter').value;
+            document.querySelectorAll('.inv-admin-item').forEach(el => { 
+                const text = el.getAttribute('data-search').toLowerCase();
+                const elCat = el.getAttribute('data-cat');
+                const matchKw = text.includes(kw);
+                const matchCat = cat === '' || elCat === cat;
+                el.style.display = (matchKw && matchCat) ? '' : 'none'; 
+            });
         }
 
         function openEditItem(id) {
@@ -415,7 +438,7 @@
                         <span class="font-black text-slate-800 text-sm">實領: NT$ ${r.total_net_pay.toLocaleString()}</span>
                     </div>
                     <div class="flex space-x-2">
-                        <button onclick="openEditPayroll('${r.id}')" class="text-[10px] bg-sky-100 text-sky-700 font-bold px-3 py-2 rounded-lg active:scale-95 shadow-sm">✏️</button>
+                        <button onclick="openEditPayroll('${r.id}')" class="text-[10px] bg-sky-100 text-sky-700 font-bold px-3 py-2 rounded-lg active:scale-95 shadow-sm">✏️ 編輯</button>
                         <button onclick="deletePayroll('${r.id}')" class="text-[10px] bg-red-100 text-red-700 font-bold px-3 py-2 rounded-lg active:scale-95 shadow-sm">🗑️</button>
                     </div>
                 </div>
@@ -617,6 +640,12 @@
                 document.getElementById('sy-pnt').innerText = yData.total_penalty || 0;
             }
             
+            if(lv && document.getElementById('p-ulp')) {
+                const base = window.empData[empId]?.base || 0;
+                const hrRate = base / 240;
+                document.getElementById('p-ulp').value = Math.round((lv.remain_hours || 0) * hrRate);
+            }
+
             calcNet(); 
         }
 
