@@ -350,22 +350,50 @@
             }).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-8">查無申請紀錄</div>';
         }
 
-        async function loadPayrollMonths() { const s = document.getElementById('payroll-month'); const { data } = await window._sb.from('payroll_records').select('pay_month').eq('employee_id', window.currentUser.id).order('pay_month', {ascending: false}); if(!data||!data.length){ s.innerHTML='<option>尚無薪資紀錄</option>'; s.disabled=true; return;} s.disabled=false; s.innerHTML = data.map(m=>`<option value="${m.pay_month}">${m.pay_month} 薪資單</option>`).join(''); loadPayrollDetail(); }
+        // 🌟 解除前台卡死防呆機制
+        async function loadPayrollMonths() { 
+            const s = document.getElementById('payroll-month'); 
+            const { data } = await window._sb.from('payroll_records').select('pay_month').eq('employee_id', window.currentUser.id).order('pay_month', {ascending: false}); 
+            
+            if(!data || !data.length) { 
+                s.innerHTML='<option value="">尚無薪資紀錄</option>'; 
+                s.disabled=true; 
+                // 清空 UI
+                document.getElementById('p-base').innerText = `NT$ 0`; document.getElementById('p-bonus').innerText = `NT$ 0`; document.getElementById('p-yeb').innerText = `NT$ 0`; document.getElementById('p-ulp').innerText = `+ NT$ 0`; document.getElementById('p-ins').innerText = `- NT$ 0`; document.getElementById('p-2nd').innerText = `- NT$ 0`; document.getElementById('p-pen').innerText = `NT$ 0`; document.getElementById('p-lvd').innerText = `- NT$ 0`; document.getElementById('p-net').innerText = `NT$ 0`;
+                return;
+            } 
+            
+            s.disabled=false; 
+            // 過濾掉後台手誤產生的重複月份，確保選單乾淨
+            const uniqueMonths = [...new Set(data.map(item => item.pay_month))];
+            s.innerHTML = uniqueMonths.map(m=>`<option value="${m}">${m} 薪資單</option>`).join(''); 
+            
+            loadPayrollDetail(); 
+        }
         
-        // 🌟 更新電子薪資單載入邏輯，包含特休結算
         async function loadPayrollDetail() { 
             const m = document.getElementById('payroll-month').value; 
-            const { data } = await window._sb.from('payroll_records').select('*').eq('employee_id', window.currentUser.id).eq('pay_month', m).single(); 
-            if(data) { 
-                document.getElementById('p-base').innerText = `NT$ ${data.base_pay.toLocaleString()}`; 
-                document.getElementById('p-bonus').innerText = `NT$ ${data.bonus.toLocaleString()}`; 
-                document.getElementById('p-yeb').innerText = `NT$ ${data.year_end_bonus.toLocaleString()}`; 
-                document.getElementById('p-ulp').innerText = `+ NT$ ${(data.unused_leave_pay||0).toLocaleString()}`; 
-                document.getElementById('p-ins').innerText = `- NT$ ${data.insurance_deduction.toLocaleString()}`; 
-                document.getElementById('p-2nd').innerText = `- NT$ ${data.second_gen_health.toLocaleString()}`; 
-                document.getElementById('p-pen').innerText = `NT$ ${data.labor_pension.toLocaleString()}`; 
-                document.getElementById('p-lvd').innerText = `- NT$ ${(data.leave_deduction||0).toLocaleString()}`; 
-                document.getElementById('p-net').innerText = `NT$ ${data.total_net_pay.toLocaleString()}`; 
+            if(!m || m === '尚無薪資紀錄') return;
+            
+            // 🌟 嚴格防呆：改用 limit(1) 避免後台重複發送導致前台 single() 崩潰卡死
+            const { data, error } = await window._sb.from('payroll_records')
+                .select('*')
+                .eq('employee_id', window.currentUser.id)
+                .eq('pay_month', m)
+                .order('created_at', {ascending: false})
+                .limit(1); 
+            
+            if(data && data.length > 0) { 
+                const record = data[0];
+                document.getElementById('p-base').innerText = `NT$ ${record.base_pay.toLocaleString()}`; 
+                document.getElementById('p-bonus').innerText = `NT$ ${record.bonus.toLocaleString()}`; 
+                document.getElementById('p-yeb').innerText = `NT$ ${record.year_end_bonus.toLocaleString()}`; 
+                document.getElementById('p-ulp').innerText = `+ NT$ ${(record.unused_leave_pay||0).toLocaleString()}`; 
+                document.getElementById('p-ins').innerText = `- NT$ ${record.insurance_deduction.toLocaleString()}`; 
+                document.getElementById('p-2nd').innerText = `- NT$ ${record.second_gen_health.toLocaleString()}`; 
+                document.getElementById('p-pen').innerText = `NT$ ${record.labor_pension.toLocaleString()}`; 
+                document.getElementById('p-lvd').innerText = `- NT$ ${(record.leave_deduction||0).toLocaleString()}`; 
+                document.getElementById('p-net').innerText = `NT$ ${record.total_net_pay.toLocaleString()}`; 
             } 
         }
 
