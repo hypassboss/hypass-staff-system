@@ -59,7 +59,7 @@
                     <div class="flex items-center space-x-3"><span class="text-3xl animate-pulse drop-shadow-md">⚠️</span><h3 class="font-black text-lg tracking-wider">法定盤點日</h3></div>
                     <span class="bg-red-600 text-white px-2.5 py-1 rounded-lg text-xs font-black shadow-inner" id="friday-overdue-count">待盤: 0 件</span>
                 </div>
-                <p class="text-[11px] font-bold text-amber-50 mb-3 relative z-10">以下項目「從未盤點」或「已超過設定週期」，請盡速完成清點：</p>
+                <p class="text-[11px] font-bold text-amber-50 mb-3 relative z-10 bg-black/10 p-2 rounded-lg leading-relaxed border border-white/20 shadow-inner">📌 以下為<strong class="text-white">「尚未盤點」</strong>或<strong class="text-white">「已逾期」</strong>的清單，盤點完成後將自動從此清單移除，請盡速清點：</p>
                 <div id="friday-overdue-list" class="max-h-48 overflow-y-auto space-y-2 no-scrollbar pr-1 relative z-10"></div>
             </div>
 
@@ -120,7 +120,7 @@
                         </select>
                         <input type="text" id="inv-search" placeholder="🔍 搜尋料號/品名..." class="w-2/3 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-500 transition shadow-inner" onkeyup="filterInventory()">
                     </div>
-                    <div id="ui-inventory-list" class="space-y-3 max-h-[70vh] overflow-y-auto no-scrollbar pr-1"></div>
+                    <div id="ui-inventory-list" class="space-y-3 max-h-[70vh] overflow-y-auto no-scrollbar pr-1 pb-10"></div>
                 </div>
             </div>
 
@@ -202,8 +202,8 @@
                             <div class="col-span-2"><input type="text" id="i-spec" placeholder="詳細規格尺寸 (選填)" class="w-full p-3 bg-slate-50 rounded-xl text-sm border border-slate-200 outline-none focus:border-sky-500"></div>
                             
                             <div class="bg-white p-2 rounded-xl border border-slate-200"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">每箱包裝數量</label><input type="number" id="i-qty" value="1" min="1" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none" required></div>
-                            <div class="bg-white p-2 rounded-xl border border-slate-200"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">生產/採購週期</label><select id="i-lead" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow" required><option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option></select></div>
                             
+                            <div class="bg-white p-2 rounded-xl border border-slate-200"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">生產週期</label><select id="i-lead" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow" required><option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option></select></div>
                             <div class="col-span-2 bg-white p-2.5 rounded-xl border border-sky-200 shadow-sm"><label class="text-[10px] font-black text-sky-700 ml-1 block mb-1 tracking-widest">盤點週期 (逾期提醒頻率)</label><select id="i-cycle" class="w-full p-2.5 bg-sky-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow text-sky-900" required><option value="7">7 天 (每週)</option><option value="30" selected>30 天 (每月)</option><option value="60">60 天 (雙月)</option><option value="90">90 天 (每季)</option></select></div>
 
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1">
@@ -270,13 +270,13 @@
 
     <nav id="core-bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9999] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <div onclick="window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
+        
         <div onclick="window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-emerald-600"><span class="text-xl mb-1">📦</span><span class="scale-90">庫存</span></div>
+        
         <div onclick="window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></div>
         <div onclick="window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
         <div onclick="window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
     </nav>
-
-    <audio id="beep-sound" src="data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
 
     <script src="shared.js"></script>
     <script>
@@ -388,7 +388,6 @@
             if(document.getElementById('view-inventory-list').classList.contains('active')) renderInventoryListUI(window.inventoryData);
         }
 
-        // 🚨 專屬從 Dashboard 點擊去盤點的函式
         function openCountViewFromId(id) {
             const item = window.inventoryData.find(x => x.id === id);
             if(item) openCountView(item);
@@ -396,6 +395,7 @@
 
         async function openInventoryList() { openView('inventory-list', '即時庫存總表'); loadItems(); renderInventoryListUI(window.inventoryData); updateTopPurchaseBar(); }
 
+        // 🌟 升級版：總表嵌入盤點週期設定
         function renderInventoryListUI(data) {
             const container = document.getElementById('ui-inventory-list');
             if(!data || data.length === 0) { container.innerHTML = '<div class="text-center text-sm text-slate-400 font-bold py-10">無資料</div>'; return; }
@@ -409,7 +409,7 @@
                 const chk = window.latestChecks[i.id]; const inCart = purchaseCart.has(i.id) ? 'checked' : '';
                 
                 let overdueTag = i.is_overdue 
-                    ? `<span class="text-[9px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded border border-red-200 font-black ml-1 shadow-sm">🚨 逾期</span>` 
+                    ? `<span class="text-[9px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded border border-red-200 font-black ml-1 shadow-sm animate-pulse">🚨 逾期</span>` 
                     : `<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200 font-black ml-1">✅ 正常</span>`;
 
                 return `
@@ -418,15 +418,18 @@
                         <div class="flex flex-wrap items-center gap-1.5 pr-12"><span class="text-[9px] font-bold text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200">${i.category||'未分類'}</span><span class="text-[10px] font-mono font-black text-slate-700 bg-white border border-slate-300 px-2 py-0.5 rounded-md shadow-sm tracking-wider">${i.item_code}</span></div>
                         <label class="absolute top-4 right-4 flex items-center space-x-1.5 cursor-pointer bg-white/80 p-1.5 rounded-lg border border-slate-200 shadow-sm z-10"><input type="checkbox" class="w-4 h-4 accent-amber-500" onchange="togglePurchase('${i.id}', this)" ${inCart}><span class="text-[10px] font-black text-slate-600">採購</span></label>
                     </div>
-                    <div class="mb-3 pr-16"><h4 class="font-black text-base text-slate-800 leading-tight mb-1">${i.item_name}</h4><p class="text-[10px] text-slate-500 font-bold truncate">規格: ${i.specification || '無'} <span class="mx-1 text-slate-300">|</span> 週期: ${i.lead_time_days}天</p></div>
+                    <div class="mb-3 pr-16"><h4 class="font-black text-base text-slate-800 leading-tight mb-1">${i.item_name}</h4><p class="text-[10px] text-slate-500 font-bold truncate">規格: ${i.specification || '無'} <span class="mx-1 text-slate-300">|</span> 生產週期: ${i.lead_time_days}天</p></div>
                     <div class="absolute right-4 top-[3.2rem]">${statusBadge}</div>
-                    <div class="flex justify-between items-center bg-white/60 p-3 rounded-xl border border-slate-200/60 shadow-inner mt-1 gap-3 relative">
-                        <div class="flex-1"><label class="text-[9px] font-bold text-slate-500 block mb-1">低水位 (安全庫存)</label><div class="relative"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400">🚨</span><input type="number" min="0" class="w-full bg-white border border-slate-300 rounded-lg pl-7 pr-2 py-1.5 text-sm font-black text-slate-700 focus:border-indigo-500 outline-none transition" value="${safe}" onblur="inlineUpdateSafeStock('${i.id}', this.value, ${safe})"></div></div>
-                        <div class="flex-1"><label class="text-[9px] font-bold text-slate-500 block mb-1">現有庫存量</label><div class="relative"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400">📦</span><input type="number" min="0" class="w-full bg-white border border-slate-300 rounded-lg pl-7 pr-2 py-1.5 text-base font-black ${textCol} focus:border-indigo-500 outline-none transition shadow-sm" value="${i.current_stock}" onblur="inlineUpdateCurrentStock('${i.id}', ${i.current_stock}, this.value)"></div></div>
+                    
+                    <div class="flex justify-between items-center bg-white/60 p-2.5 rounded-xl border border-slate-200/60 shadow-inner mt-1 gap-2 relative">
+                        <div class="flex-1"><label class="text-[9px] font-bold text-slate-500 block mb-1">低水位</label><div class="relative"><span class="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">🚨</span><input type="number" min="0" class="w-full bg-white border border-slate-300 rounded-lg pl-5 pr-1 py-1.5 text-xs font-black text-slate-700 focus:border-indigo-500 outline-none transition" value="${safe}" onblur="inlineUpdateSafeStock('${i.id}', this.value, ${safe})"></div></div>
+                        <div class="flex-1"><label class="text-[9px] font-bold text-slate-500 block mb-1">盤點週期</label><div class="relative"><span class="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">📅</span><select class="w-full bg-white border border-slate-300 rounded-lg pl-5 pr-1 py-1.5 text-xs font-black text-slate-700 focus:border-indigo-500 outline-none transition select-arrow" onchange="inlineUpdateCycle('${i.id}', this.value)"><option value="7" ${i.cycle===7?'selected':''}>7天</option><option value="30" ${i.cycle===30?'selected':''}>30天</option><option value="60" ${i.cycle===60?'selected':''}>60天</option><option value="90" ${i.cycle===90?'selected':''}>90天</option></select></div></div>
+                        <div class="flex-1"><label class="text-[9px] font-bold text-slate-500 block mb-1">現有庫存</label><div class="relative"><span class="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">📦</span><input type="number" min="0" class="w-full bg-white border border-slate-300 rounded-lg pl-5 pr-1 py-1.5 text-sm font-black ${textCol} focus:border-indigo-500 outline-none transition shadow-sm" value="${i.current_stock}" onblur="inlineUpdateCurrentStock('${i.id}', ${i.current_stock}, this.value)"></div></div>
                     </div>
+
                     <div class="mt-2 pt-2 border-t border-slate-200/50 flex justify-between items-center">
                         ${chk ? `<span class="text-[9px] text-slate-500 flex items-center font-bold"><span class="mr-1">👣</span>上次: ${chk.date} (${chk.emp})</span>` : `<span class="text-[9px] text-red-500 flex items-center font-black"><span class="mr-1">⚠️</span>從未盤點過</span>`}
-                        <div class="flex items-center"><span class="text-[9px] text-slate-400 font-bold mr-1">設:${i.cycle}天</span>${overdueTag}</div>
+                        <div class="flex items-center">${overdueTag}</div>
                     </div>
                 </div>`;
             }).join('');
@@ -434,6 +437,19 @@
 
         async function inlineUpdateSafeStock(id, newValStr, oldVal) { const newVal = parseInt(newValStr) || 0; if(newVal === oldVal) return; const { error } = await window._sb.from('items').update({ safe_stock_level: newVal }).eq('id', id); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderInventoryListUI(window.inventoryData); filterInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
         async function inlineUpdateCurrentStock(id, oldQty, newValStr) { const newQty = parseInt(newValStr) || 0; if(newQty === oldQty) return; const diff = newQty - oldQty; const { error } = await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: `總表快速校正 (原:${oldQty} -> 新:${newQty})` }]); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderInventoryListUI(window.inventoryData); filterInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
+        
+        // 🌟 升級版：直接更新盤點週期
+        async function inlineUpdateCycle(id, newVal) {
+            const val = parseInt(newVal) || 30;
+            const { error } = await window._sb.from('items').update({ stocktake_cycle: val }).eq('id', id);
+            if(!error) { 
+                const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
+                await loadItems(); 
+                renderInventoryListUI(window.inventoryData); 
+                filterInventory(); 
+                setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
+            }
+        }
 
         function filterInventory() { const keyword = document.getElementById('inv-search').value.toLowerCase(); const cat = document.getElementById('inv-cat-filter').value; document.querySelectorAll('.inv-item').forEach(el => { const text = el.getAttribute('data-search').toLowerCase(); const elCat = el.getAttribute('data-cat'); el.style.display = (text.includes(keyword) && (cat === '' || elCat === cat)) ? 'flex' : 'none'; }); }
 
@@ -507,7 +523,6 @@
             
             if(item) {
                 item.current_stock = newVal;
-                // 即時更新前台的盤點紀錄，讓它不要再顯示逾期
                 window.latestChecks[id] = { rawDate: new Date().toISOString(), date: new Date().toLocaleDateString('zh-TW'), emp: window.currentUser.full_name };
             }
             
@@ -546,7 +561,7 @@
                     <p class="text-xs text-slate-500 font-bold mb-3">規格: ${i.specification || '無規格限制'}</p>
                     <div class="flex space-x-3 text-xs font-bold mt-2">
                         <div class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-100 shadow-inner flex items-center"><span class="text-[9px] mr-1">📦</span>現庫: <span class="text-base font-black ml-1">${i.current_stock}</span></div>
-                        <div class="bg-sky-50 text-sky-700 px-3 py-1.5 rounded-lg border border-sky-100 shadow-inner flex items-center">週期: <span class="text-base font-black ml-1">${i.lead_time_days}</span> <span class="text-[9px] ml-0.5 font-bold">天</span></div>
+                        <div class="bg-sky-50 text-sky-700 px-3 py-1.5 rounded-lg border border-sky-100 shadow-inner flex items-center">生產週期: <span class="text-base font-black ml-1">${i.lead_time_days}</span> <span class="text-[9px] ml-0.5 font-bold">天</span></div>
                     </div>
                     ${bomHtml}
                     
