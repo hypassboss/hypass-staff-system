@@ -7,63 +7,33 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
-        body { background: #f8fafc; font-family: 'PingFang TC', sans-serif; } 
-        input:focus, select:focus { outline: 2px solid #38bdf8; } 
-        .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.8); } 
-        .select-arrow { appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-size: 1.5em 1.5em; background-position: right 0.5rem center; background-repeat: no-repeat; padding-right: 2rem; }
-        .bg-wave { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at top right, #e0f2fe, transparent 40%), radial-gradient(circle at bottom left, #fef3c7, transparent 40%); z-index: -1; }
-    </style>
+    <style>body { background: #f8fafc; font-family: 'PingFang TC', sans-serif; } input:focus, select:focus { outline: 2px solid #38bdf8; } .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.8); } .select-arrow { appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-size: 1.5em 1.5em; background-position: right 0.5rem center; background-repeat: no-repeat; padding-right: 2rem; }</style>
 </head>
-<body class="text-slate-800 relative">
-    
-    <div class="bg-wave"></div>
-
-    <div id="sys-loading" class="flex flex-col items-center justify-center min-h-screen text-center relative z-10">
+<body class="text-slate-800">
+    <div id="sys-loading" class="flex flex-col items-center justify-center min-h-screen text-center">
         <h1 class="text-3xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-indigo-600 mb-6 animate-pulse">HYPASS</h1>
         <div class="animate-spin h-10 w-10 border-4 border-sky-600 border-t-transparent rounded-full mx-auto mb-4"></div><p class="text-sm text-slate-500 font-bold tracking-widest uppercase">安全驗證與模組載入中...</p>
     </div>
 
-    <div id="sys-pending" class="hidden flex-col items-center justify-center min-h-screen text-center p-5 relative z-10"><div class="p-8 bg-white rounded-3xl shadow-xl w-full max-w-sm"><div class="text-6xl mb-6 grayscale opacity-50">⏳</div><h2 class="text-2xl font-black text-slate-800 mb-2">帳號審核中</h2><p class="text-sm text-slate-500 font-medium">請通知主管開通權限。</p></div></div>
+    <div id="sys-pending" class="hidden flex flex-col items-center justify-center min-h-screen text-center p-5"><div class="p-8 bg-white rounded-3xl shadow-xl w-full max-w-sm"><div class="text-6xl mb-6 grayscale opacity-50">⏳</div><h2 class="text-2xl font-black text-slate-800 mb-2">帳號審核中</h2><p class="text-sm text-slate-500 font-medium">請通知主管開通權限。</p></div></div>
 
-    <div id="view-dashboard" class="hidden flex-col items-center justify-center min-h-screen p-5 relative z-10">
+    <div id="view-dashboard" class="hidden flex-col items-center justify-center min-h-screen p-5">
         <div class="w-full max-w-sm space-y-6">
             <div class="text-center mb-8">
-                <h1 class="text-5xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-indigo-500 mb-2 drop-shadow-sm">HYPASS</h1>
-                <p class="text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase">Enterprise Cloud System</p>
+                <h1 class="text-4xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-indigo-500 mb-2">HYPASS</h1>
+                <p class="text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase">Enterprise System</p>
             </div>
-            
             <div class="grid grid-cols-2 gap-4">
-                <a href="app_hr.html" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition hover:bg-slate-50 border-t-4 border-sky-400">
-                    <span class="text-5xl mb-3 drop-shadow-md">👨‍💼</span>
-                    <span class="font-black text-slate-700 text-sm tracking-widest">員工大廳</span>
-                </a>
-                
-                <a href="app_inventory.html" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition hover:bg-slate-50 border-t-4 border-emerald-400">
-                    <span class="text-5xl mb-3 drop-shadow-md">📦</span>
-                    <span class="font-black text-slate-700 text-sm tracking-widest">庫存盤點</span>
-                </a>
-                
-                <a href="app_purchase.html" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition hover:bg-slate-50 border-t-4 border-amber-400">
-                    <span class="text-5xl mb-3 drop-shadow-md">🛒</span>
-                    <span class="font-black text-slate-700 text-sm tracking-widest">採購中心</span>
-                </a>
-                
-                <a href="app_sales.html" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition hover:bg-slate-50 border-t-4 border-indigo-400">
-                    <span class="text-5xl mb-3 drop-shadow-md">💼</span>
-                    <span class="font-black text-slate-700 text-sm tracking-widest">業務管理</span>
-                </a>
-                
-                <a href="app_finance.html" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition hover:bg-slate-50 border-t-4 border-blue-400 col-span-2 relative overflow-hidden">
-                    <div class="absolute -right-4 -bottom-4 text-7xl opacity-10">💰</div>
-                    <span class="text-5xl mb-3 drop-shadow-md relative z-10">💰</span>
-                    <span class="font-black text-slate-700 text-sm tracking-widest relative z-10">財務對帳</span>
-                </a>
+                <a href="app_hr.html" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition hover:bg-slate-50 border-t-4 border-sky-400"><span class="text-5xl mb-3">👨‍💼</span><span class="font-black text-slate-700 text-sm tracking-widest">員工</span></a>
+                <a href="app_inventory.html" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition hover:bg-slate-50 border-t-4 border-emerald-400"><span class="text-5xl mb-3">📦</span><span class="font-black text-slate-700 text-sm tracking-widest">庫存</span></a>
+                <a href="app_purchase.html" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition hover:bg-slate-50 border-t-4 border-amber-400"><span class="text-5xl mb-3">🛒</span><span class="font-black text-slate-700 text-sm tracking-widest">採購</span></a>
+                <a href="app_sales.html" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition hover:bg-slate-50 border-t-4 border-indigo-400"><span class="text-5xl mb-3">💼</span><span class="font-black text-slate-700 text-sm tracking-widest">業務</span></a>
+                <a href="app_finance.html" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition hover:bg-slate-50 border-t-4 border-blue-400 col-span-2"><span class="text-5xl mb-3">💰</span><span class="font-black text-slate-700 text-sm tracking-widest">財務對帳</span></a>
             </div>
         </div>
     </div>
 
-    <div id="view-onboarding" class="hidden p-5 max-w-md mx-auto min-h-screen pt-10 relative z-10"><div class="glass-card p-6 rounded-3xl shadow-xl"><h2 class="text-xl font-black mb-6 text-center text-slate-800">👋 歡迎加入！建立員工檔案</h2>
+    <div id="view-onboarding" class="hidden p-5 max-w-md mx-auto min-h-screen pt-10"><div class="glass-card p-6 rounded-3xl shadow-xl"><h2 class="text-xl font-black mb-6 text-center text-slate-800">👋 歡迎加入！建立員工檔案</h2>
         <form id="onboarding-form" class="space-y-4">
             <div class="grid grid-cols-3 gap-3"><div class="col-span-2"><input type="text" name="full_name" placeholder="真實姓名" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner"></div><div class="col-span-1"><select name="job_title" required class="w-full p-3 bg-sky-50 text-sky-800 rounded-xl text-sm font-black border-0 shadow-inner select-arrow"><option value="" disabled selected>職位</option><option value="主管">主管</option><option value="業務">業務</option><option value="助理">助理</option></select></div></div>
             <div><input type="text" name="id_number" placeholder="身分證字號" required class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border-0 shadow-inner uppercase"></div>
@@ -83,29 +53,21 @@
         function checkForm() { document.getElementById('btn-submit').disabled = !(document.getElementById('chk1').checked && document.getElementById('chk2').checked); }
         function initAddressForm() { const countySel = document.getElementById('addr-county'); if(countySel) { let opts = '<option value="" disabled selected>選擇縣市</option>'; for(let c in window.twAddrs) opts += `<option value="${c}">${c}</option>`; countySel.innerHTML = opts; } }
         function updateDistricts() { const c = document.getElementById('addr-county').value; const distSel = document.getElementById('addr-district'); if(c && window.twAddrs[c]) { distSel.innerHTML = '<option value="" disabled selected>鄉鎮市區</option>' + window.twAddrs[c].map(d => `<option value="${d}">${d}</option>`).join(''); } }
-        
         async function boot() {
             const user = await authGuard('index');
-            
-            // 🚨 核心切換邏輯：若為正式員工，不跳轉 HR，而是顯示五大模組大廳！
             if(user === true) { 
-                document.getElementById('sys-loading').classList.add('hidden');
+                // 🚨 修正：顯示五大模組大廳，而非直接跳轉 app_hr.html
+                document.getElementById('sys-loading').classList.add('hidden'); 
                 document.getElementById('view-dashboard').classList.remove('hidden');
                 document.getElementById('view-dashboard').classList.add('flex');
             }
-            else if(user) { 
-                document.getElementById('sys-loading').classList.add('hidden'); 
-                document.getElementById('sys-pending').classList.remove('hidden'); 
-                document.getElementById('sys-pending').classList.add('flex');
-            }
+            else if(user) { document.getElementById('sys-loading').classList.add('hidden'); document.getElementById('sys-pending').classList.remove('hidden'); }
             else { 
-                document.getElementById('sys-loading').classList.add('hidden'); 
-                document.getElementById('view-onboarding').classList.remove('hidden'); 
+                document.getElementById('sys-loading').classList.add('hidden'); document.getElementById('view-onboarding').classList.remove('hidden'); 
                 const { data } = await window._sb.from('branch_locations').select('id, branch_name').eq('is_active', true); 
                 document.getElementById('reg-branch').innerHTML = data.map(b => `<option value="${b.id}">${b.branch_name}</option>`).join(''); initAddressForm();
             }
         }
-
         document.getElementById('onboarding-form').onsubmit = async (e) => {
             e.preventDefault(); document.getElementById('btn-submit').innerText = '資料加密上傳中...'; 
             const fd = new FormData(e.target); const payload = Object.fromEntries(fd.entries());
@@ -116,7 +78,6 @@
             if(error) { alert(error.message); document.getElementById('btn-submit').innerText = '數位簽署並提交審核'; } 
             else { await window._sb.functions.invoke('line-webhook', { body: { action: 'notify_signup', id: data[0].id, name: payload.full_name, role: payload.job_title }}); location.reload(); }
         };
-
         window.onload = boot;
     </script>
 </body>
