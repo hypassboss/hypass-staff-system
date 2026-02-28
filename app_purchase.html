@@ -37,10 +37,10 @@
                     
                     <div class="bg-white/20 p-4 rounded-xl border border-white/20 backdrop-blur-sm mt-4">
                         <p class="text-[10px] font-bold mb-2 tracking-widest uppercase flex items-center justify-between">
-                            <span>📦 待處理的採購需求</span>
+                            <span>📦 來自庫存的採購需求</span>
                             <span class="bg-red-500 text-white px-2 py-0.5 rounded text-[9px] font-black shadow-sm" id="draft-count">0 件</span>
                         </p>
-                        <button onclick="checkDrafts()" class="w-full bg-white text-amber-600 font-black py-3 rounded-lg text-xs shadow-sm mt-2 active:scale-95 transition">檢查並載入待處理清單</button>
+                        <button onclick="checkDrafts()" class="w-full bg-white text-amber-600 font-black py-3 rounded-lg text-xs shadow-sm mt-2 active:scale-95 transition">載入待處理清單</button>
                     </div>
                 </div>
 
@@ -123,8 +123,8 @@
     <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[100] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <a href="app_hr.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-slate-800"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></a>
         <a href="app_inventory.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></a>
-        <a href="app_sales.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-slate-800"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></a>
         <a href="app_purchase.html" class="flex-1 flex flex-col items-center py-1 transition text-amber-600"><span class="text-xl mb-1">🛒</span><span class="scale-90">採購</span></a>
+        <a href="app_sales.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-slate-800"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></a>
         <a href="app_finance.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></a>
     </nav>
 
@@ -172,7 +172,6 @@
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // 🌟 承接庫存總表的拋轉清單
         function renderPurchaseCart(draftIds) {
             openView('purchase', '🛒 產出採購清單');
             const container = document.getElementById('ui-purchase-list');
@@ -226,7 +225,6 @@
             alert('✅ 採購單已成功建檔並下載 CSV！'); localStorage.removeItem('hypass_draft_po'); document.getElementById('po-supplier').value = ''; document.getElementById('po-expected-date').value = ''; backToDash();
         }
 
-        // 🌟 採購管理大盤
         async function openPOManagement() { openView('po-management', '📋 歷史採購紀錄'); loadPOHistory(); }
 
         async function loadPOHistory() {
