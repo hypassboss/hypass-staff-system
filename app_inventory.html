@@ -15,6 +15,7 @@
         .view-panel { display: none; animation: fadeIn 0.3s ease; } .view-panel.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.8); }
+        .modal { display: none; } .modal.active { display: flex; z-index: 200; }
         .select-arrow { appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-size: 1.5em 1.5em; background-position: right 0.5rem center; background-repeat: no-repeat; padding-right: 2rem; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         @keyframes bounce-subtle { 0%, 100% { transform: translateY(-2px); } 50% { transform: translateY(2px); } }
@@ -722,25 +723,24 @@
             document.getElementById('item-search-results').innerHTML = html;
         }
 
-        // 🌟 核心防呆修復：點擊時精準抓取 ID 帶入隱藏欄位
+        // 🌟 核心修復：確保彈窗抓得到 ID
         function openFrontEdit(id) {
             const i = window.inventoryData.find(x => x.id === id); if(!i) return;
             
             document.getElementById('fe-item-id').value = i.id;
-            
             document.getElementById('fe-item-name').value = i.item_name;
             const catSel = document.getElementById('fe-item-cat');
             if(Array.from(catSel.options).some(o=>o.value===i.category)) catSel.value = i.category; else catSel.value = '未分類';
             document.getElementById('fe-item-lead').value = i.lead_time_days || 15;
             
             renderBomTable('fe-bom-table-body', i.bom_data || []);
+            
             openModal('front-item-edit-modal');
         }
 
         async function saveFrontEditItem() {
             const id = document.getElementById('fe-item-id').value;
             
-            // 🚨 強制阻擋空 ID 送出，徹底根除 UUID 報錯
             if(!id || id === "") {
                 alert('系統無法讀取料號 ID，請關閉彈窗重新嘗試。');
                 return;
