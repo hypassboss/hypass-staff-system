@@ -108,7 +108,7 @@
                                     <input type="number" id="p-yeb" oninput="calcPayroll()" class="admin-input font-black text-amber-600 bg-white border-amber-300 text-lg mt-1" placeholder="留空或輸入金額">
                                 </div>
                                 <div>
-                                    <label id="lbl-ulp-text" class="text-[11px] font-black text-emerald-700 ml-1 flex justify-between"><span>✨ 未休特休結算</span></label>
+                                    <label id="lbl-ulp-text" class="text-[11px] font-black text-emerald-700 ml-1 flex justify-between"><span>✨ 未休特休結算</span><span class="text-[9px] text-emerald-600/70 font-bold mt-0.5">自動換算</span></label>
                                     <input type="number" id="p-ulp" oninput="calcPayroll()" class="admin-input font-black text-emerald-600 bg-white border-emerald-300 text-lg mt-1" placeholder="自動換算帶入">
                                 </div>
                             </div>
@@ -337,7 +337,7 @@
             const aEmps = window.allEmps.filter(e => e.is_approved && e.employment_status === '在職');
             aEmps.sort((a, b) => { let valA = a.employee_no && a.employee_no !== '未設定' ? a.employee_no : 'Z999'; let valB = b.employee_no && b.employee_no !== '未設定' ? b.employee_no : 'Z999'; return valA.localeCompare(valB, 'zh-TW', { numeric: true }); });
             
-            // 🌟 核心：確保 empData 有正確載入 penalty_points
+            // 🌟 核心修復：把絕對計點抓入全域資料
             aEmps.forEach(e => { window.empData[e.id] = { base: e.base_salary, deps: e.dependents_count || 0, start: e.work_start_time || '09:00:00', penalty_points: e.penalty_points || 0 }; }); 
             
             const empOpts = '<option value="">請選擇發放薪資的員工...</option>' + aEmps.map(e => `<option value="${e.id}">[${e.employee_no||'未設定'}] ${e.full_name}</option>`).join('');
@@ -407,7 +407,6 @@
 
         function renderAdminInventory() {
             let htmlM = '', htmlD = '';
-            
             const cats = [...new Set(window.adminInvData.map(i => i.category || '未分類'))];
             document.getElementById('admin-inv-cat-filter').innerHTML = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
 
@@ -418,7 +417,7 @@
                     let isLow = i.current_stock <= safe;
                     let isWarn = !isLow && i.current_stock <= (safe * 1.5);
                     
-                    let badge = '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold border border-emerald-200 shadow-sm">標準水位</span>';
+                    let badge = '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold border border-emerald-200 shadow-sm">標準</span>';
                     let borderClass = 'border-emerald-400 bg-emerald-50/10';
                     let textCol = 'text-slate-700';
                     
@@ -427,16 +426,15 @@
                         borderClass = 'border-red-500 bg-red-50/30';
                         textCol = 'text-red-600'; 
                     } else if(isWarn) { 
-                        badge = '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-black border border-amber-300 shadow-sm">警示水位</span>'; 
+                        badge = '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-black border border-amber-300 shadow-sm">警示</span>'; 
                         borderClass = 'border-amber-400 bg-amber-50/30';
                         textCol = 'text-amber-600'; 
                     }
 
                     let catTag = `<span class="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded ml-1">${i.category || '未分類'}</span>`;
                     
-                    htmlM += `<div class="glass-panel p-4 flex justify-between items-center inv-admin-item mb-3 border-2 ${borderClass}" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><div class="flex-1 pr-2"><div class="mb-1.5"><span class="text-[10px] text-indigo-600 bg-white border border-indigo-100 px-1.5 rounded font-mono shadow-sm tracking-wider">${i.item_code}</span>${catTag}</div><h4 class="font-black text-sm text-slate-800 mt-1">${i.item_name} ${badge}</h4><p class="text-[10px] text-slate-500 mt-0.5">規格: ${i.specification||'無'} | 週期: ${i.lead_time_days}天</p></div><div class="text-right pl-3 border-l border-slate-200 flex flex-col items-end shrink-0">${badge}<div class="text-2xl font-black ${textCol} mt-1 tracking-tight">${i.current_stock}</div><button onclick="openEditItem('${i.id}')" class="text-[10px] bg-slate-800 text-white shadow-sm active:scale-95 transition px-3 py-1.5 rounded-lg mt-1.5 font-bold">修改參數</button></div></div>`;
-                    
-                    htmlD += `<tr class="hover:bg-slate-50 inv-admin-item border-l-4 ${borderClass.split(' ')[0]}" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><td class="px-6 py-4"><div class="mb-1"><span class="text-[10px] text-indigo-600 font-mono bg-white shadow-sm border border-indigo-100 px-1.5 py-0.5 rounded mr-1">${i.item_code}</span>${catTag}</div><span class="font-black text-slate-800">${i.item_name}</span><br><span class="text-[10px] text-slate-500 font-bold mt-1 inline-block">${i.specification||'無規格'}</span></td><td class="px-6 py-4 text-right"><div class="flex flex-col items-end">${badge}<span class="font-black ${textCol} text-xl mt-1 tracking-tight">${i.current_stock}</span></div></td><td class="px-6 py-4 text-right text-slate-500 font-bold">${safe}</td><td class="px-6 py-4 text-center text-slate-500 font-bold">${i.lead_time_days}</td><td class="px-6 py-4 text-center"><button onclick="openEditItem('${i.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm active:scale-95">修改參數</button></td></tr>`;
+                    htmlM += `<div class="glass-panel p-4 flex justify-between items-center inv-admin-item mb-3 border-2 ${borderClass}" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><div class="flex-1 pr-2"><div class="mb-1.5"><span class="text-[10px] text-indigo-600 bg-white border border-indigo-100 px-1.5 rounded font-mono shadow-sm tracking-wider">${i.item_code}</span>${catTag}</div><h4 class="font-black text-sm text-slate-800 mt-1">${i.item_name} ${badge}</h4><p class="text-[10px] text-slate-500 mt-0.5">規格: ${i.specification||'無'} | 週期: ${i.lead_time_days}天</p></div><div class="text-right pl-3 border-l border-slate-200"><div class="text-2xl font-black ${textCol} tracking-tight">${i.current_stock}</div><button onclick="openEditItem('${i.id}')" class="text-[10px] bg-slate-800 text-white shadow-sm active:scale-95 transition px-3 py-1.5 rounded-lg mt-1 font-bold">修改</button></div></div>`;
+                    htmlD += `<tr class="hover:bg-slate-50 inv-admin-item border-l-4 ${borderClass.split(' ')[0]}" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><td class="px-6 py-4"><div class="mb-1"><span class="text-[10px] text-indigo-600 font-mono bg-white shadow-sm border border-indigo-100 px-1.5 py-0.5 rounded mr-1">${i.item_code}</span>${catTag}</div><span class="font-black text-slate-800">${i.item_name}</span> ${badge}<br><span class="text-[10px] text-slate-400 font-bold">${i.specification||'無規格'}</span></td><td class="px-6 py-4 text-right font-black ${textCol} text-xl tracking-tight">${i.current_stock}</td><td class="px-6 py-4 text-right text-slate-500 font-bold">${safe}</td><td class="px-6 py-4 text-center text-slate-500 font-bold">${i.lead_time_days}</td><td class="px-6 py-4 text-center"><button onclick="openEditItem('${i.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm active:scale-95">修改參數</button></td></tr>`;
                 });
             }
             document.getElementById('list-inv-mobile').innerHTML = htmlM; document.getElementById('list-inv-desktop').innerHTML = htmlD;
@@ -472,7 +470,6 @@
             if(error) alert('修改失敗'); else { alert('✅ 參數更新成功！'); closeModal('item-edit-modal'); loadAdminInventory(); }
         }
 
-        // 🌟 條件式切換年終特休計算，並動態改標籤年份
         async function handleYebToggle() {
             const isChecked = document.getElementById('toggle-yeb').checked;
             const yebSec = document.getElementById('yeb-section');
@@ -487,7 +484,7 @@
             }
         }
 
-        // 🌟 核心修復：強制將計點同步為員工檔案中的絕對值
+        // 🌟 核心升級：精準同步當月與上年度計點與出勤
         async function updateAttendanceRate() { 
             const empId = document.getElementById('p-emp').value; 
             const month = document.getElementById('p-mon').value; 
@@ -496,11 +493,10 @@
             const currentYear = parseInt(month.split('-')[0]);
             const prevYear = currentYear - 1;
             
-            // 🚨 抓取老闆親手輸入的「絕對計點總數」
+            // 🚨 強制抓取員工目前的絕對計點總數
             const absolutePenalty = window.empData[empId]?.penalty_points || 0;
 
             try {
-                // 抓取當月
                 const { data: mData } = await window._sb.rpc('fn_get_payroll_calc', { p_emp_id: empId, p_month: month }); 
                 if(mData) { 
                     document.getElementById('sd-sick').innerText = mData.sick_hrs || 0; 
@@ -508,14 +504,12 @@
                     document.getElementById('sd-typ').innerText = mData.typhoon_hrs || 0; 
                     document.getElementById('sd-lat').innerText = mData.late_count || 0; 
                     document.getElementById('sd-ovt').innerText = mData.overtime_hrs || 0; 
-                    document.getElementById('sd-pnt').innerText = absolutePenalty; // 🚨 強制同步絕對值
+                    // 🚨 當月也直接顯示最新計點絕對值
+                    document.getElementById('sd-pnt').innerText = absolutePenalty; 
                     document.getElementById('p-lvd').value = mData.leave_deduct || 0; 
                 } 
                 
-                // 抓取當年
                 const { data: currYData } = await window._sb.rpc('fn_get_year_end_stats', { p_emp_id: empId, p_year: currentYear.toString() });
-                
-                // 抓取上年
                 const { data: prevYData } = await window._sb.rpc('fn_get_year_end_stats', { p_emp_id: empId, p_year: prevYear.toString() });
                 
                 const { data: lvCurr } = await window._sb.rpc('fn_get_annual_leave_by_year', { p_emp_id: empId, p_year: currentYear });
@@ -530,7 +524,8 @@
                     document.getElementById('sy-curr-sic').innerText = currYData.sick || 0; 
                     document.getElementById('sy-curr-lat').innerText = currYData.late || 0; 
                     document.getElementById('sy-curr-ovt').innerText = currYData.overtime || 0; 
-                    document.getElementById('sy-curr-pnt').innerText = absolutePenalty; // 🚨 強制同步絕對值
+                    // 🚨 當年度抓取最新計點絕對值
+                    document.getElementById('sy-curr-pnt').innerText = absolutePenalty; 
                 }
 
                 if(prevYData) {
@@ -539,16 +534,15 @@
                     document.getElementById('sy-prev-sic').innerText = prevYData.sick || 0; 
                     document.getElementById('sy-prev-lat').innerText = prevYData.late || 0; 
                     document.getElementById('sy-prev-ovt').innerText = prevYData.overtime || 0; 
-                    document.getElementById('sy-prev-pnt').innerText = 0; // 🚨 2025沒有計點，強制為 0
+                    // 🚨 2025沒有計點，強制為 0
+                    document.getElementById('sy-prev-pnt').innerText = 0; 
                 }
 
-                // 動態年份標籤
                 document.getElementById('lbl-yeb').innerText = `🎁 核定年終獎金 (${prevYear}年度)`;
                 document.getElementById('lbl-ulp-text').innerHTML = `✨ 未休特休結算 <span class="text-slate-500 font-bold ml-1">(${prevYear}年度，剩餘 ${remainHrsPrev}h)</span>`;
                 document.getElementById('lbl-eval-prev').innerText = `上年度 (${prevYear}) 核心基準`;
                 document.getElementById('lbl-eval-curr').innerText = `當年度 (${currentYear}) 參考近況`;
                 
-                // 自動換算特休 (看上年度剩餘)
                 if(document.getElementById('toggle-yeb').checked) {
                     const base = window.empData[empId]?.base || 0;
                     const hrRate = base / 240;
@@ -595,6 +589,7 @@
             document.getElementById('p-net-display').innerText = `NT$ ${net > 0 ? net : 0}`; 
         }
 
+        // 🚨 嚴格攔截防呆發送機制
         async function issuePayroll() { 
             const empId = document.getElementById('p-emp').value;
             const base = parseFloat(document.getElementById('p-base').value) || 0;
@@ -616,9 +611,14 @@
                 total_net_pay: parseFloat(document.getElementById('p-net').value) || 0 
             }; 
             
-            await window._sb.from('payroll_records').insert([p]); 
+            // 🚨 抓取錯誤並阻擋假成功
+            const { error } = await window._sb.from('payroll_records').insert([p]); 
+            if(error) {
+                alert('❌ 發送失敗，資料庫攔截！請檢查「unused_leave_pay」等欄位是否已擴充：\n' + error.message);
+                return;
+            }
+
             alert('✅ 綜合薪資發送成功！'); 
-            
             document.getElementById('hist-emp').value = empId;
             loadPayrollHistory();
         }
@@ -655,8 +655,7 @@
 
         function calcEditPayrollNet() {
             const base = parseFloat(document.getElementById('edit-pr-base').value)||0; const bonus = parseFloat(document.getElementById('edit-pr-bonus').value)||0; const yeb = parseFloat(document.getElementById('edit-pr-yeb').value)||0; const ulp = parseFloat(document.getElementById('edit-pr-ulp').value)||0; const ins = parseFloat(document.getElementById('edit-pr-ins').value)||0; const sec = parseFloat(document.getElementById('edit-pr-2nd').value)||0; const lvd = parseFloat(document.getElementById('edit-pr-lvd').value)||0;
-            const net = base + bonus + yeb + ulp - ins - sec - lvd;
-            document.getElementById('edit-pr-net').innerText = `NT$ ${net > 0 ? net : 0}`;
+            const net = base + bonus + yeb + ulp - ins - sec - lvd; document.getElementById('edit-pr-net').innerText = `NT$ ${net > 0 ? net : 0}`;
         }
 
         async function saveEditPayroll() {
@@ -671,7 +670,7 @@
         async function deletePayroll(id) {
             if(!confirm('⚠️ 確定要刪除這筆薪資單嗎？刪除後前台畫面將瞬間歸零同步。')) return;
             const { error } = await window._sb.from('payroll_records').delete().eq('id', id);
-            if(error) alert('刪除失敗:' + error.message); else { alert('✅ 薪薪單已成功刪除'); loadPayrollHistory(); }
+            if(error) alert('刪除失敗:' + error.message); else { alert('✅ 薪資單已成功刪除'); loadPayrollHistory(); }
         }
 
         // 🌟 員工檔案 Modal 排版黃金比例完美復刻
@@ -787,10 +786,6 @@
             const btn = document.getElementById('btn-save-emp'); const originText = btn.innerHTML; btn.innerHTML = '⏳ 儲存中...'; btn.disabled = true;
             let st = document.getElementById('edit-start-time').value; if(st && st.length === 5) st += ':00'; let et = document.getElementById('edit-end-time').value; if(et && et.length === 5) et += ':00';
             
-            const emp = window.allEmps.find(x => x.id === empId);
-            const newPoints = parseInt(document.getElementById('edit-penalty').value) || 0;
-            const pointsDiff = newPoints - (emp.penalty_points || 0);
-
             const p = { 
                 full_name: document.getElementById('edit-name').value, employment_status: document.getElementById('edit-status').value, 
                 employee_no: document.getElementById('edit-emp-no').value || '未設定',
@@ -803,14 +798,12 @@
                 bank_name: document.getElementById('edit-bank-name').value, bank_code: document.getElementById('edit-bank-code').value, 
                 bank_user_name: document.getElementById('edit-bank-user').value, bank_account: document.getElementById('edit-bank-account').value,
                 is_inventory_manager: document.getElementById('edit-inv-mgr').value === 'true', 
-                penalty_points: newPoints
+                penalty_points: parseInt(document.getElementById('edit-penalty').value) || 0
             };
             
             const { error } = await window._sb.from('employees').update(p).eq('id', empId);
             if (error) { alert('更新失敗: ' + error.message); btn.innerHTML = originText; btn.disabled = false; } 
             else { 
-                // 🌟 同步寫入 log，供未來追蹤
-                if(pointsDiff !== 0) { await window._sb.from('penalty_logs').insert([{ employee_id: empId, points: pointsDiff, reason: '後台絕對值手動校正' }]); }
                 btn.innerHTML = '✅ 儲存完畢'; await loadAll(); setTimeout(() => openEmpDetail(empId), 1000); 
             }
         }
