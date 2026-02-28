@@ -385,6 +385,7 @@
             renderAdminInventory();
         }
 
+        // 🌟 庫存總表三色水位與類別選單
         function renderAdminInventory() {
             let htmlM = '', htmlD = '';
             
@@ -394,11 +395,18 @@
             if(!window.adminInvData.length) { htmlM = '<p class="text-slate-400 py-4 text-center">無庫存資料</p>'; htmlD = '<tr><td colspan="5" class="text-center py-6 text-slate-400">無庫存資料</td></tr>'; }
             else {
                 window.adminInvData.forEach(i => {
-                    let isLow = i.current_stock <= (i.safe_stock_level || 0);
-                    let badge = isLow ? `<span class="text-[9px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold border border-red-200">低水位</span>` : '';
+                    let safe = i.safe_stock_level || 0;
+                    let isLow = i.current_stock <= safe;
+                    let isWarn = !isLow && i.current_stock <= (safe * 1.5);
+                    
+                    let badge = '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold border border-emerald-200">標準</span>';
+                    let textCol = 'text-slate-800';
+                    if(isLow) { badge = '<span class="text-[9px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold border border-red-200 animate-pulse">低水位</span>'; textCol = 'text-red-600'; }
+                    else if(isWarn) { badge = '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold border border-amber-200">警示</span>'; textCol = 'text-amber-600'; }
+
                     let catTag = `<span class="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded ml-1">${i.category || '未分類'}</span>`;
-                    htmlM += `<div class="glass-panel p-4 flex justify-between items-center inv-admin-item" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><div class="flex-1"><span class="text-[10px] text-indigo-600 bg-indigo-50 px-1.5 rounded font-mono">${i.item_code}</span>${catTag}<h4 class="font-black text-sm text-slate-800 mt-1">${i.item_name} ${badge}</h4><p class="text-[10px] text-slate-500 mt-0.5">規格: ${i.specification||'無'} | 週期: ${i.lead_time_days}天</p></div><div class="text-right pl-3 border-l border-slate-100"><div class="text-xl font-black ${isLow?'text-red-600':'text-slate-800'}">${i.current_stock}</div><button onclick="openEditItem('${i.id}')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded mt-1 font-bold hover:bg-slate-200">修改</button></div></div>`;
-                    htmlD += `<tr class="hover:bg-slate-50 inv-admin-item" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><td class="px-6 py-4"><div class="mb-1"><span class="text-[10px] text-indigo-600 font-mono bg-indigo-50 px-1.5 rounded mr-1">${i.item_code}</span>${catTag}</div><span class="font-black text-slate-800">${i.item_name}</span> ${badge}<br><span class="text-[10px] text-slate-400 font-bold">${i.specification||'無規格'}</span></td><td class="px-6 py-4 text-right font-black ${isLow?'text-red-600':'text-slate-800'} text-lg">${i.current_stock}</td><td class="px-6 py-4 text-right text-slate-500 font-bold">${i.safe_stock_level}</td><td class="px-6 py-4 text-center text-slate-500 font-bold">${i.lead_time_days}</td><td class="px-6 py-4 text-center"><button onclick="openEditItem('${i.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">修改參數</button></td></tr>`;
+                    htmlM += `<div class="glass-panel p-4 flex justify-between items-center inv-admin-item mb-3" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><div class="flex-1"><span class="text-[10px] text-indigo-600 bg-indigo-50 px-1.5 rounded font-mono">${i.item_code}</span>${catTag}<h4 class="font-black text-sm text-slate-800 mt-1">${i.item_name} ${badge}</h4><p class="text-[10px] text-slate-500 mt-0.5">規格: ${i.specification||'無'} | 週期: ${i.lead_time_days}天</p></div><div class="text-right pl-3 border-l border-slate-100"><div class="text-xl font-black ${textCol}">${i.current_stock}</div><button onclick="openEditItem('${i.id}')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded mt-1 font-bold hover:bg-slate-200">修改</button></div></div>`;
+                    htmlD += `<tr class="hover:bg-slate-50 inv-admin-item" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><td class="px-6 py-4"><div class="mb-1"><span class="text-[10px] text-indigo-600 font-mono bg-indigo-50 px-1.5 rounded mr-1">${i.item_code}</span>${catTag}</div><span class="font-black text-slate-800">${i.item_name}</span> ${badge}<br><span class="text-[10px] text-slate-400 font-bold">${i.specification||'無規格'}</span></td><td class="px-6 py-4 text-right font-black ${textCol} text-lg">${i.current_stock}</td><td class="px-6 py-4 text-right text-slate-500 font-bold">${safe}</td><td class="px-6 py-4 text-center text-slate-500 font-bold">${i.lead_time_days}</td><td class="px-6 py-4 text-center"><button onclick="openEditItem('${i.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">修改參數</button></td></tr>`;
                 });
             }
             document.getElementById('list-inv-mobile').innerHTML = htmlM; document.getElementById('list-inv-desktop').innerHTML = htmlD;
@@ -534,13 +542,13 @@
         }
 
         async function deletePayroll(id) {
-            if(!confirm('⚠️ 確定要刪除這筆薪資單嗎？刪除後前台將無法查詢。')) return;
+            if(!confirm('⚠️ 確定要刪除這筆薪資單嗎？刪除後前台將自動重整同步。')) return;
             const { error } = await window._sb.from('payroll_records').delete().eq('id', id);
             if(error) alert('刪除失敗:' + error.message);
             else { alert('✅ 薪資單已成功刪除'); loadPayrollHistory(); }
         }
 
-        // 🌟 員工檔案 Modal 排版大翻新 (對齊截圖黃金比例)
+        // 🌟 員工檔案 Modal 排版黃金比例重構
         function openEmpDetail(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             window.currentOffboardEmpId = empId; document.getElementById('modal-off-result').classList.add('hidden'); document.getElementById('modal-off-date').value = '';
