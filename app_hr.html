@@ -350,7 +350,7 @@
             }).join('') : '<div class="text-center text-sm text-slate-400 font-bold py-8">查無申請紀錄</div>';
         }
 
-        // 🌟 解除前台卡死防呆機制
+        // 🌟 核心防呆：解決刪除薪資單後卡死的問題
         async function loadPayrollMonths() { 
             const s = document.getElementById('payroll-month'); 
             const { data } = await window._sb.from('payroll_records').select('pay_month').eq('employee_id', window.currentUser.id).order('pay_month', {ascending: false}); 
@@ -358,13 +358,12 @@
             if(!data || !data.length) { 
                 s.innerHTML='<option value="">尚無薪資紀錄</option>'; 
                 s.disabled=true; 
-                // 清空 UI
+                // 清空 UI，避免殘留上次的數字
                 document.getElementById('p-base').innerText = `NT$ 0`; document.getElementById('p-bonus').innerText = `NT$ 0`; document.getElementById('p-yeb').innerText = `NT$ 0`; document.getElementById('p-ulp').innerText = `+ NT$ 0`; document.getElementById('p-ins').innerText = `- NT$ 0`; document.getElementById('p-2nd').innerText = `- NT$ 0`; document.getElementById('p-pen').innerText = `NT$ 0`; document.getElementById('p-lvd').innerText = `- NT$ 0`; document.getElementById('p-net').innerText = `NT$ 0`;
                 return;
             } 
             
             s.disabled=false; 
-            // 過濾掉後台手誤產生的重複月份，確保選單乾淨
             const uniqueMonths = [...new Set(data.map(item => item.pay_month))];
             s.innerHTML = uniqueMonths.map(m=>`<option value="${m}">${m} 薪資單</option>`).join(''); 
             
@@ -375,7 +374,7 @@
             const m = document.getElementById('payroll-month').value; 
             if(!m || m === '尚無薪資紀錄') return;
             
-            // 🌟 嚴格防呆：改用 limit(1) 避免後台重複發送導致前台 single() 崩潰卡死
+            // 🚨 使用 limit(1) 取代 single()，防呆避免後台誤操作產生多筆紀錄時前台崩潰
             const { data, error } = await window._sb.from('payroll_records')
                 .select('*')
                 .eq('employee_id', window.currentUser.id)
