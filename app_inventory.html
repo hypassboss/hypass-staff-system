@@ -20,12 +20,17 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         
+        /* 🚨 列印黑科技 */
         @media print {
             body * { visibility: hidden; }
             #print-zone, #print-zone * { visibility: visible; }
             #print-zone { display: flex !important; position: absolute; left: 0; top: 0; width: 100vw; height: 100vh; align-items: center; justify-content: center; flex-direction: column; background: white; z-index: 9999;}
             #app-container, nav { display: none !important; }
         }
+
+        /* 🚨 終極防禦裝甲：封殺 shared.js 產生的舊導覽列 */
+        nav { display: none !important; }
+        #core-bottom-nav { display: flex !important; }
     </style>
 </head>
 <body class="text-slate-800 relative">
@@ -212,7 +217,6 @@
                         </select>
                         <input type="text" id="item-search-input" placeholder="搜尋料號或品名..." class="w-2/3 bg-slate-50 border border-slate-300 p-3 rounded-xl text-sm font-bold outline-none focus:border-slate-500 transition shadow-inner" onkeyup="renderItemSearch()">
                     </div>
-                    
                     <div id="item-search-results" class="space-y-4 max-h-[60vh] overflow-y-auto pr-1 no-scrollbar pb-10">
                         <div class="text-center text-xs text-slate-400 py-6 italic">請輸入關鍵字搜尋料號...</div>
                     </div>
@@ -248,15 +252,15 @@
         </div>
     </div>
 
-    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[100] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <a href="app_hr.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-slate-800"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></a>
-        <a href="app_inventory.html" class="flex-1 flex flex-col items-center py-1 transition text-emerald-600"><span class="text-xl mb-1">📦</span><span class="scale-90">庫存</span></a>
-        <a href="app_purchase.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></a>
-        <a href="app_sales.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-slate-800"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></a>
-        <a href="app_finance.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></a>
+    <nav id="core-bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9999] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <div onclick="window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
+        
+        <div onclick="window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-emerald-600"><span class="text-xl mb-1">📦</span><span class="scale-90">庫存</span></div>
+        
+        <div onclick="window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></div>
+        <div onclick="window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
+        <div onclick="window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
     </nav>
-
-    <audio id="beep-sound" src="data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
 
     <script src="shared.js"></script>
     <script>
@@ -334,12 +338,12 @@
 
                 const chk = window.latestChecks[i.id]; const inCart = purchaseCart.has(i.id) ? 'checked' : '';
                 return `
-                <div class="p-4 rounded-2xl border-2 ${borderClass} flex flex-col inv-item transition-all mb-3 relative" data-search="${i.item_code} ${i.item_name}" data-cat="${i.category||'未分類'}">
+                <div class="p-4 rounded-2xl border-2 ${borderClass} flex flex-col inv-item transition-all mb-3 relative" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}">
                     <div class="flex justify-between items-start mb-2">
                         <div class="flex flex-wrap items-center gap-1.5 pr-12"><span class="text-[9px] font-bold text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200">${i.category||'未分類'}</span><span class="text-[10px] font-mono font-black text-slate-700 bg-white border border-slate-300 px-2 py-0.5 rounded-md shadow-sm tracking-wider">${i.item_code}</span></div>
                         <label class="absolute top-4 right-4 flex items-center space-x-1.5 cursor-pointer bg-white/80 p-1.5 rounded-lg border border-slate-200 shadow-sm z-10"><input type="checkbox" class="w-4 h-4 accent-amber-500" onchange="togglePurchase('${i.id}', this)" ${inCart}><span class="text-[10px] font-black text-slate-600">採購</span></label>
                     </div>
-                    <div class="mb-3 pr-16"><h4 class="font-black text-base text-slate-800 leading-tight mb-1">${i.item_name}</h4><p class="text-[10px] text-slate-500 font-bold truncate">規格: ${i.specification || '無'} | 週期: ${i.lead_time_days}天</p></div>
+                    <div class="mb-3 pr-16"><h4 class="font-black text-base text-slate-800 leading-tight mb-1">${i.item_name}</h4><p class="text-[10px] text-slate-500 font-bold truncate">規格: ${i.specification || '無'} <span class="mx-1 text-slate-300">|</span> 週期: ${i.lead_time_days}天</p></div>
                     <div class="absolute right-4 top-[3.2rem]">${statusBadge}</div>
                     <div class="flex justify-between items-center bg-white/60 p-3 rounded-xl border border-slate-200/60 shadow-inner mt-1 gap-3 relative">
                         <div class="flex-1"><label class="text-[9px] font-bold text-slate-500 block mb-1">低水位 (安全庫存)</label><div class="relative"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400">🚨</span><input type="number" min="0" class="w-full bg-white border border-slate-300 rounded-lg pl-7 pr-2 py-1.5 text-sm font-black text-slate-700 focus:border-indigo-500 outline-none transition" value="${safe}" onblur="inlineUpdateSafeStock('${i.id}', this.value, ${safe})"></div></div>
@@ -438,13 +442,17 @@
 
         function openFrontEdit(id) {
             const i = window.inventoryData.find(x => x.id === id); if(!i) return;
-            document.getElementById('fe-item-id').value = i.id; document.getElementById('fe-item-name').value = i.item_name;
-            const catSel = document.getElementById('fe-item-cat'); catSel.value = i.category || '未分類'; document.getElementById('fe-item-lead').value = i.lead_time_days || 15;
-            renderBomTable('fe-bom-table-body', i.bom_data || []); document.getElementById('front-item-edit-modal').classList.add('active');
+            document.getElementById('fe-item-id').value = i.id;
+            document.getElementById('fe-item-name').value = i.item_name;
+            const catSel = document.getElementById('fe-item-cat'); catSel.value = i.category || '未分類';
+            document.getElementById('fe-item-lead').value = i.lead_time_days || 15;
+            renderBomTable('fe-bom-table-body', i.bom_data || []);
+            document.getElementById('front-item-edit-modal').classList.add('active');
         }
 
         async function saveFrontEditItem() {
-            const id = document.getElementById('fe-item-id').value; if(!id) { alert('系統無法讀取 ID！'); return; }
+            const id = document.getElementById('fe-item-id').value; 
+            if(!id) { alert('系統無法讀取 ID！'); return; }
             const p = { item_name: document.getElementById('fe-item-name').value, category: document.getElementById('fe-item-cat').value, lead_time_days: parseInt(document.getElementById('fe-item-lead').value) || 15, bom_data: extractBomData('fe-bom-table-body') };
             const { error } = await window._sb.from('items').update(p).eq('id', id);
             if(error) alert('失敗'); else { alert('✅ 已儲存修改！'); closeModal('front-item-edit-modal'); loadItems(); }
@@ -462,6 +470,13 @@
         }
 
         window.onload = bootInventory;
+
+        // 🚨 終極強制覆寫導覽列 (攔截 shared.js 的舊設定，鎖死正確排序與跳轉)
+        const enforceNavObserver = new MutationObserver(() => {
+            const oldNav = document.querySelector('nav:not(#core-bottom-nav)');
+            if (oldNav) oldNav.remove();
+        });
+        enforceNavObserver.observe(document.body, { childList: true, subtree: true });
     </script>
 </body>
 </html>
