@@ -254,7 +254,7 @@
     </div>
 
     <div id="front-item-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
-        <div class="bg-white w-full max-w-md mx-auto rounded-[2rem] p-5 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
+        <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-5 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
             <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯基本資料與 BOM</h3>
             <input type="hidden" id="fe-item-id">
             <div class="space-y-3">
@@ -451,8 +451,7 @@
         function filterInventory() {
             const keyword = document.getElementById('inv-search').value.toLowerCase();
             const cat = document.getElementById('inv-cat-filter').value;
-            const items = document.querySelectorAll('.inv-item');
-            items.forEach(el => {
+            document.querySelectorAll('.inv-item').forEach(el => {
                 const text = el.getAttribute('data-search').toLowerCase();
                 const elCat = el.getAttribute('data-cat');
                 const matchKw = text.includes(keyword);
@@ -461,7 +460,6 @@
             });
         }
 
-        // 🌟 採購清單模組
         function togglePurchase(id, el) {
             if(el.checked) purchaseCart.add(id); else purchaseCart.delete(id);
             document.getElementById('cart-badge-dash').innerText = purchaseCart.size;
@@ -580,7 +578,6 @@
         }
         function adjustTotal(val) { document.getElementById('c-total-qty').value = Math.max(0, (parseInt(document.getElementById('c-total-qty').value) || 0) + val); }
         
-        // 🌟 核心修復：盤點寫入差額，解決無限累加崩潰問題
         async function submitCount() {
             const itemId = document.getElementById('c-item-id').value; 
             const newQty = parseInt(document.getElementById('c-total-qty').value) || 0;
@@ -602,7 +599,6 @@
             if(error) alert('紀錄失敗'); else { alert('✅ 盤點校正已成功寫入資料庫！'); openScanner(); }
         }
 
-        // 🌟 BOM 表與建檔模組
         function renderBomTable(tbodyId, existingData = []) {
             let html = '';
             for(let i=0; i<10; i++) {
@@ -624,7 +620,7 @@
             const usage = parseFloat(el.value) || 0;
             const tr = el.closest('tr');
             const totalEl = tr.querySelector('.bom-total');
-            if(usage > 0) totalEl.value = (usage * 1.1).toFixed(2); // 自動 +10% 損耗
+            if(usage > 0) totalEl.value = (usage * 1.1).toFixed(2);
             else totalEl.value = '';
         }
 
@@ -706,9 +702,9 @@
                     <div class="flex justify-between items-start mb-2">
                         <div>
                             <span class="text-[10px] font-mono font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 tracking-wider mr-1">${i.item_code}</span>
-                            <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">${i.category || '未分類'}</span>
+                            <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded ml-1">${i.category || '未分類'}</span>
                         </div>
-                        <span class="text-[10px] font-bold text-slate-500 border border-slate-200 px-1.5 rounded bg-white shadow-sm">${i.item_type}</span>
+                        <span class="text-[10px] font-bold text-slate-400 border border-slate-200 px-1.5 rounded bg-white shadow-sm">${i.item_type}</span>
                     </div>
                     <h4 class="font-black text-sm text-slate-800 leading-tight mb-1.5">${i.item_name}</h4>
                     <p class="text-[10px] text-slate-500 font-bold mb-1">規格: ${i.specification || '無'}</p>
