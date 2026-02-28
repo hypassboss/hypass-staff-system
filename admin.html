@@ -405,8 +405,10 @@
             renderAdminInventory();
         }
 
+        // 🌟 庫存總表三色水位對齊
         function renderAdminInventory() {
             let htmlM = '', htmlD = '';
+            
             const cats = [...new Set(window.adminInvData.map(i => i.category || '未分類'))];
             document.getElementById('admin-inv-cat-filter').innerHTML = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
 
@@ -471,7 +473,6 @@
             if(error) alert('修改失敗'); else { alert('✅ 參數更新成功！'); closeModal('item-edit-modal'); loadAdminInventory(); }
         }
 
-        // 🌟 條件式切換年終特休計算，並動態改標籤年份
         async function handleYebToggle() {
             const isChecked = document.getElementById('toggle-yeb').checked;
             const yebSec = document.getElementById('yeb-section');
@@ -486,7 +487,7 @@
             }
         }
 
-        // 🌟 核心修復：強制將計點同步為員工檔案中的絕對值
+        // 🌟 核心升級：精準同步當月與上年度計點與出勤
         async function updateAttendanceRate() { 
             const empId = document.getElementById('p-emp').value; 
             const month = document.getElementById('p-mon').value; 
@@ -495,11 +496,10 @@
             const currentYear = parseInt(month.split('-')[0]);
             const prevYear = currentYear - 1;
             
-            // 🚨 抓取員工目前的絕對計點總數
+            // 🚨 強制抓取員工目前的絕對計點總數
             const absolutePenalty = window.empData[empId]?.penalty_points || 0;
 
             try {
-                // 抓取當月
                 const { data: mData } = await window._sb.rpc('fn_get_payroll_calc', { p_emp_id: empId, p_month: month }); 
                 if(mData) { 
                     document.getElementById('sd-sick').innerText = mData.sick_hrs || 0; 
@@ -512,7 +512,6 @@
                     document.getElementById('p-lvd').value = mData.leave_deduct || 0; 
                 } 
                 
-                // 抓取當年與上年
                 const { data: currYData } = await window._sb.rpc('fn_get_year_end_stats', { p_emp_id: empId, p_year: currentYear.toString() });
                 const { data: prevYData } = await window._sb.rpc('fn_get_year_end_stats', { p_emp_id: empId, p_year: prevYear.toString() });
                 
@@ -542,13 +541,11 @@
                     document.getElementById('sy-prev-pnt').innerText = 0; 
                 }
 
-                // 動態年份標籤
                 document.getElementById('lbl-yeb').innerText = `🎁 核定年終獎金 (${prevYear}年度)`;
                 document.getElementById('lbl-ulp-text').innerHTML = `✨ 未休特休結算 <span class="text-slate-500 font-bold ml-1">(${prevYear}年度，剩餘 ${remainHrsPrev}h)</span>`;
                 document.getElementById('lbl-eval-prev').innerText = `上年度 (${prevYear}) 核心基準`;
                 document.getElementById('lbl-eval-curr').innerText = `當年度 (${currentYear}) 參考近況`;
                 
-                // 自動換算特休 (看上年度剩餘)
                 if(document.getElementById('toggle-yeb').checked) {
                     const base = window.empData[empId]?.base || 0;
                     const hrRate = base / 240;
@@ -595,7 +592,7 @@
             document.getElementById('p-net-display').innerText = `NT$ ${net > 0 ? net : 0}`; 
         }
 
-        // 🚨 薪資單發送防呆，確保檔名組合正確
+        // 🚨 嚴格攔截防呆發送機制
         async function issuePayroll() { 
             const empId = document.getElementById('p-emp').value;
             const base = parseFloat(document.getElementById('p-base').value) || 0;
@@ -618,6 +615,7 @@
                 total_net_pay: parseFloat(document.getElementById('p-net').value) || 0 
             }; 
             
+            // 🚨 抓取錯誤並阻擋假成功
             const { error } = await window._sb.from('payroll_records').insert([p]); 
             if(error) {
                 alert('❌ 發送失敗，資料庫攔截！請檢查「unused_leave_pay」欄位是否已擴充：\n' + error.message);
@@ -687,18 +685,18 @@
             if(error) alert('刪除失敗:' + error.message); else { alert('✅ 薪資單已成功刪除'); loadPayrollHistory(); }
         }
 
-        // 🌟 員工檔案 Modal 排版黃金比例完美復刻
+        // 🌟 員工檔案 Modal 100% 黃金比例完美復刻
         function openEmpDetail(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             window.currentOffboardEmpId = empId; document.getElementById('modal-off-result').classList.add('hidden'); document.getElementById('modal-off-date').value = '';
             document.getElementById('ui-emp-offboard-section').style.display = 'block'; const editBtn = document.getElementById('btn-edit-emp'); editBtn.onclick = () => renderEditEmpForm(empId); editBtn.style.display = 'block';
             
-            let mgrTag = e.is_inventory_manager ? `<span class="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200 leading-none">庫存盤點員</span>` : '';
-            let pntTag = e.penalty_points > 0 ? `<span class="text-[10px] font-black text-red-700 bg-red-50 px-2 py-1 rounded-md border border-red-200 leading-none">計點: ${e.penalty_points}</span>` : '';
+            let mgrTag = e.is_inventory_manager ? `<span class="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200">庫存盤點員</span>` : '';
+            let pntTag = e.penalty_points > 0 ? `<span class="text-[10px] font-black text-red-700 bg-red-50 px-2 py-1 rounded-md border border-red-200">計點: ${e.penalty_points}</span>` : '';
             
             const html = `
                 <div class="space-y-4">
-                    <div class="bg-white p-5 md:p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-5">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-5">
                         <div class="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center text-white text-3xl font-black shadow-inner shrink-0">${e.full_name.charAt(0)}</div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center flex-wrap gap-2 mb-2">
