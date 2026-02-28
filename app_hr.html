@@ -16,6 +16,10 @@
         .modal { display: none; } .modal.active { display: flex; z-index: 200; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .select-arrow { appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-size: 1.5em 1.5em; background-position: right 0.5rem center; background-repeat: no-repeat; padding-right: 2rem; }
+        
+        /* 🚨 終極防禦：封殺所有 shared.js 產生的舊導覽列，只顯示我們的核心導覽列 */
+        nav { display: none !important; }
+        #core-bottom-nav { display: flex !important; }
     </style>
 </head>
 <body class="text-slate-800">
@@ -178,6 +182,14 @@
     <div id="record-modal" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-end justify-center z-[100]"><div class="bg-[#f8fafc] w-full max-w-md rounded-t-[2rem] p-6 h-[75vh] flex flex-col shadow-2xl md:max-w-480px md:mx-auto md:relative"><div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-200"><h3 class="font-black text-xl text-slate-800">近期打卡紀錄</h3><button onclick="closeModal('record-modal')" class="bg-slate-200 px-4 py-2 rounded-full text-sm font-bold text-slate-600 hover:bg-slate-300 transition">✕ 關閉</button></div><div id="ui-records-list" class="overflow-y-auto space-y-3 flex-1 no-scrollbar pb-8 p-1">載入中...</div></div></div>
     
     <div id="doc-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-md items-center justify-center p-5 z-[100]"><div class="bg-white w-full max-w-md rounded-3xl p-6 relative flex flex-col shadow-2xl max-h-[85vh]"><h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 text-center">📜 聘僱合約與服務守則</h3><div id="doc-content" class="overflow-y-auto pr-2 flex-1 mb-4 no-scrollbar text-[11px] text-slate-700 leading-relaxed text-left"></div><div class="bg-emerald-50 border border-emerald-100 p-3 rounded-2xl text-center shadow-inner"><p class="text-[10px] text-emerald-700 font-bold mb-1">✔️ 經數位簽章認證，具備法律效力</p><p id="doc-sig" class="font-black text-emerald-900 text-xs">簽署人：--</p></div><button onclick="closeModal('doc-modal')" class="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl text-sm transition shadow-md active:scale-95">已詳閱並關閉</button></div></div>
+
+    <nav id="core-bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9999] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <div onclick="window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-sky-600"><span class="text-xl mb-1">👨‍💼</span><span class="scale-90">員工</span></div>
+        <div onclick="window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></div>
+        <div onclick="window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></div>
+        <div onclick="window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
+        <div onclick="window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
+    </nav>
 
     <script src="shared.js"></script>
     <script>
@@ -363,7 +375,7 @@
             
             s.disabled=false; 
             const uniqueMonths = [...new Set(data.map(item => item.pay_month))];
-            s.innerHTML = uniqueMonths.map(m=>`<option value="${m}">${m} 薪薪單</option>`).join(''); 
+            s.innerHTML = uniqueMonths.map(m=>`<option value="${m}">${m} 薪資單</option>`).join(''); 
             
             loadPayrollDetail(); 
         }
@@ -426,26 +438,6 @@
         }
 
         window.onload = bootHR;
-
-        // 🚨 終極強制覆寫導覽列 (攔截 shared.js 的舊設定，鎖死正確排序)
-        const enforceNavObserver = new MutationObserver(() => {
-            const oldNav = document.querySelector('nav');
-            if (oldNav && !oldNav.hasAttribute('data-new-nav')) {
-                oldNav.remove();
-                const newNav = document.createElement('nav');
-                newNav.setAttribute('data-new-nav', 'true');
-                newNav.className = "fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[100] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]";
-                newNav.innerHTML = `
-                    <a href="app_hr.html" class="flex-1 flex flex-col items-center py-1 transition text-sky-600"><span class="text-xl mb-1">👨‍💼</span><span class="scale-90">員工</span></a>
-                    <a href="app_inventory.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></a>
-                    <a href="app_purchase.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></a>
-                    <a href="app_sales.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></a>
-                    <a href="app_finance.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></a>
-                `;
-                document.body.appendChild(newNav);
-            }
-        });
-        enforceNavObserver.observe(document.body, { childList: true, subtree: true });
     </script>
 </body>
 </html>
