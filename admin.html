@@ -266,19 +266,30 @@
         </div>
     </div>
 
-    <div id="item-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-5 z-[100]">
-        <div class="bg-white w-full max-w-md rounded-3xl p-6 relative flex flex-col shadow-2xl">
-            <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 修改庫存料號</h3>
+    <div id="item-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
+        <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-5 md:p-6 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
+            <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex items-center justify-between">
+                <span><span class="mr-2">✏️</span> 修改庫存詳細資料</span>
+                <button onclick="deleteAdminItem()" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm">🗑️ 刪除此料號</button>
+            </h3>
             <input type="hidden" id="edit-item-id">
             <div class="space-y-3">
-                <div><label class="text-[10px] font-bold text-slate-500 ml-1">品名</label><input type="text" id="edit-item-name" class="admin-input font-bold bg-slate-50"></div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 ml-1">類別</label>
-                    <select id="edit-item-cat" class="admin-input bg-white font-bold select-arrow">
-                        <option value="汽車冷氣濾網">汽車冷氣濾網</option><option value="VESTA系列產品">VESTA系列產品</option><option value="卡卡吸管">卡卡吸管</option><option value="空氣瓶子">空氣瓶子</option><option value="未分類">未分類</option>
-                    </select>
-                </div>
                 <div class="grid grid-cols-2 gap-3">
+                    <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">品名</label><input type="text" id="edit-item-name" class="admin-input font-bold bg-slate-50"></div>
+                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">料號</label><input type="text" id="edit-item-code" class="admin-input font-mono font-bold bg-slate-50 uppercase"></div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 ml-1">屬性</label>
+                        <select id="edit-item-type" class="admin-input bg-white font-bold select-arrow"><option value="原料">原料</option><option value="成品">成品</option></select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 ml-1">類別</label>
+                        <select id="edit-item-cat" class="admin-input bg-white font-bold select-arrow">
+                            <option value="汽車冷氣濾網">汽車冷氣濾網</option><option value="VESTA系列產品">VESTA系列產品</option><option value="卡卡吸管">卡卡吸管</option><option value="空氣瓶子">空氣瓶子</option><option value="未分類">未分類</option>
+                        </select>
+                    </div>
+                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">每箱包裝數量</label><input type="number" id="edit-item-qty" class="admin-input font-black bg-slate-50 text-center"></div>
+                    <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">規格</label><input type="text" id="edit-item-spec" class="admin-input bg-slate-50"></div>
+                    
                     <div><label class="text-[10px] font-bold text-red-600 ml-1">安全庫存低水位(件)</label><input type="number" id="edit-item-safe" class="admin-input font-black text-red-600 bg-red-50 border-red-200"></div>
                     <div>
                         <label class="text-[10px] font-bold text-slate-500 ml-1">生產週期</label>
@@ -287,10 +298,22 @@
                         </select>
                     </div>
                 </div>
+
+                <div class="border-t border-slate-200 pt-3 mt-2">
+                    <h5 class="text-[10px] font-black text-sky-700 mb-2">⚙️ BOM 表修正 (+10%損耗)</h5>
+                    <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
+                        <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[400px]">
+                            <thead class="text-slate-500 border-b border-slate-200">
+                                <tr><th class="p-1 font-bold">原料名稱</th><th class="p-1 font-bold">用量</th><th class="p-1 font-bold">單位</th><th class="p-1 font-bold text-sky-700">總耗量</th></tr>
+                            </thead>
+                            <tbody id="admin-bom-table-body" class="divide-y divide-slate-100 bg-white rounded-lg"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
             <div class="flex space-x-3 mt-6">
                 <button onclick="closeModal('item-edit-modal')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3.5 rounded-xl transition">取消</button>
-                <button onclick="saveAdminItem()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest">儲存變更</button>
+                <button onclick="saveAdminItem()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest">💾 儲存修改</button>
             </div>
         </div>
     </div>
@@ -337,7 +360,6 @@
             const aEmps = window.allEmps.filter(e => e.is_approved && e.employment_status === '在職');
             aEmps.sort((a, b) => { let valA = a.employee_no && a.employee_no !== '未設定' ? a.employee_no : 'Z999'; let valB = b.employee_no && b.employee_no !== '未設定' ? b.employee_no : 'Z999'; return valA.localeCompare(valB, 'zh-TW', { numeric: true }); });
             
-            // 🌟 核心：確保 empData 有正確載入 penalty_points
             aEmps.forEach(e => { window.empData[e.id] = { base: e.base_salary, deps: e.dependents_count || 0, start: e.work_start_time || '09:00:00', penalty_points: e.penalty_points || 0 }; }); 
             
             const empOpts = '<option value="">請選擇發放薪資的員工...</option>' + aEmps.map(e => `<option value="${e.id}">[${e.employee_no||'未設定'}] ${e.full_name}</option>`).join('');
@@ -405,7 +427,6 @@
             renderAdminInventory();
         }
 
-        // 🌟 庫存總表三色水位對齊
         function renderAdminInventory() {
             let htmlM = '', htmlD = '';
             
@@ -455,22 +476,92 @@
             });
         }
 
+        // 🌟 庫存清單管理：開放所有詳細欄位與 BOM 編輯
         function openEditItem(id) {
             const i = window.adminInvData.find(x => x.id === id); if(!i) return;
             document.getElementById('edit-item-id').value = i.id; 
             document.getElementById('edit-item-name').value = i.item_name; 
+            document.getElementById('edit-item-code').value = i.item_code; 
+            document.getElementById('edit-item-type').value = i.item_type || '成品'; 
+            document.getElementById('edit-item-spec').value = i.specification || ''; 
+            document.getElementById('edit-item-qty').value = i.qty_per_pack || 1; 
             document.getElementById('edit-item-safe').value = i.safe_stock_level || 0; 
             document.getElementById('edit-item-lead').value = i.lead_time_days || 15;
+            
             const catSelect = document.getElementById('edit-item-cat');
             if (Array.from(catSelect.options).some(opt => opt.value === i.category)) { catSelect.value = i.category; } else { catSelect.value = '未分類'; }
+            
+            // 渲染 BOM 表
+            renderAdminBomTable('admin-bom-table-body', i.bom_data || []);
+            
             openModal('item-edit-modal');
+        }
+
+        function renderAdminBomTable(tbodyId, existingData = []) {
+            let html = '';
+            for(let i=0; i<10; i++) {
+                let r = existingData[i] || { material: '', usage: '', unit: '米平方', total_qty: '' };
+                html += `<tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0">
+                    <td class="p-1"><input type="text" class="w-24 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-sky-500 bom-mat" value="${r.material}"></td>
+                    <td class="p-1"><input type="number" step="any" class="w-16 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-black text-sky-700 outline-none focus:border-sky-500 bom-qty text-center" value="${r.usage}" oninput="calcAdminBomLoss(this)"></td>
+                    <td class="p-1"><select class="w-16 p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none select-arrow bom-unit">
+                        <option value="米平方" ${r.unit==='米平方'?'selected':''}>米平方</option><option value="米" ${r.unit==='米'?'selected':''}>米</option><option value="個" ${r.unit==='個'?'selected':''}>個</option><option value="袋" ${r.unit==='袋'?'selected':''}>袋</option><option value="條" ${r.unit==='條'?'selected':''}>條</option>
+                    </select></td>
+                    <td class="p-1"><input type="number" step="any" class="w-16 p-2 bg-slate-100 border border-transparent rounded-lg text-xs font-black text-sky-900 outline-none text-center bom-total shadow-inner" value="${r.total_qty}" readonly placeholder="自動算"></td>
+                </tr>`;
+            }
+            document.getElementById(tbodyId).innerHTML = html;
+        }
+
+        function calcAdminBomLoss(el) {
+            const usage = parseFloat(el.value) || 0;
+            const tr = el.closest('tr');
+            const totalEl = tr.querySelector('.bom-total');
+            if(usage > 0) totalEl.value = (usage * 1.1).toFixed(2);
+            else totalEl.value = '';
+        }
+
+        function extractAdminBomData(tbodyId) {
+            let bomData = [];
+            document.querySelectorAll(`#${tbodyId} tr`).forEach(tr => {
+                const mat = tr.querySelector('.bom-mat').value;
+                if(mat) {
+                    bomData.push({
+                        material: mat,
+                        usage: parseFloat(tr.querySelector('.bom-qty').value) || 0,
+                        unit: tr.querySelector('.bom-unit').value,
+                        total_qty: parseFloat(tr.querySelector('.bom-total').value) || 0
+                    });
+                }
+            });
+            return bomData;
         }
 
         async function saveAdminItem() {
             const id = document.getElementById('edit-item-id').value;
-            const p = { item_name: document.getElementById('edit-item-name').value, category: document.getElementById('edit-item-cat').value, safe_stock_level: parseInt(document.getElementById('edit-item-safe').value) || 0, lead_time_days: parseInt(document.getElementById('edit-item-lead').value) || 15 };
+            const p = { 
+                item_name: document.getElementById('edit-item-name').value, 
+                item_code: document.getElementById('edit-item-code').value.toUpperCase(),
+                item_type: document.getElementById('edit-item-type').value,
+                specification: document.getElementById('edit-item-spec').value,
+                qty_per_pack: parseInt(document.getElementById('edit-item-qty').value) || 1,
+                category: document.getElementById('edit-item-cat').value, 
+                safe_stock_level: parseInt(document.getElementById('edit-item-safe').value) || 0, 
+                lead_time_days: parseInt(document.getElementById('edit-item-lead').value) || 15,
+                bom_data: extractAdminBomData('admin-bom-table-body')
+            };
             const { error } = await window._sb.from('items').update(p).eq('id', id);
-            if(error) alert('修改失敗'); else { alert('✅ 參數更新成功！'); closeModal('item-edit-modal'); loadAdminInventory(); }
+            if(error) alert('修改失敗: ' + error.message); else { alert('✅ 料號資料與 BOM 更新成功！'); closeModal('item-edit-modal'); loadAdminInventory(); }
+        }
+
+        async function deleteAdminItem() {
+            const id = document.getElementById('edit-item-id').value;
+            if(!id) return;
+            if(confirm('⚠️ 警告：確定要刪除這個料號嗎？請確認是否已結清庫存，刪除後將無法還原！')) {
+                const { error } = await window._sb.from('items').delete().eq('id', id);
+                if(error) alert('刪除失敗: ' + error.message);
+                else { alert('✅ 料號已成功刪除！'); closeModal('item-edit-modal'); loadAdminInventory(); }
+            }
         }
 
         async function handleYebToggle() {
@@ -487,7 +578,6 @@
             }
         }
 
-        // 🌟 核心升級：精準同步當月與上年度計點與出勤
         async function updateAttendanceRate() { 
             const empId = document.getElementById('p-emp').value; 
             const month = document.getElementById('p-mon').value; 
@@ -496,7 +586,6 @@
             const currentYear = parseInt(month.split('-')[0]);
             const prevYear = currentYear - 1;
             
-            // 🚨 強制抓取員工目前的絕對計點總數
             const absolutePenalty = window.empData[empId]?.penalty_points || 0;
 
             try {
@@ -507,7 +596,6 @@
                     document.getElementById('sd-typ').innerText = mData.typhoon_hrs || 0; 
                     document.getElementById('sd-lat').innerText = mData.late_count || 0; 
                     document.getElementById('sd-ovt').innerText = mData.overtime_hrs || 0; 
-                    // 🚨 當月也直接顯示最新計點絕對值
                     document.getElementById('sd-pnt').innerText = absolutePenalty; 
                     document.getElementById('p-lvd').value = mData.leave_deduct || 0; 
                 } 
@@ -527,7 +615,6 @@
                     document.getElementById('sy-curr-sic').innerText = currYData.sick || 0; 
                     document.getElementById('sy-curr-lat').innerText = currYData.late || 0; 
                     document.getElementById('sy-curr-ovt').innerText = currYData.overtime || 0; 
-                    // 🚨 當年度抓取最新計點絕對值
                     document.getElementById('sy-curr-pnt').innerText = absolutePenalty; 
                 }
 
@@ -537,7 +624,6 @@
                     document.getElementById('sy-prev-sic').innerText = prevYData.sick || 0; 
                     document.getElementById('sy-prev-lat').innerText = prevYData.late || 0; 
                     document.getElementById('sy-prev-ovt').innerText = prevYData.overtime || 0; 
-                    // 🚨 2025沒有計點，強制為 0
                     document.getElementById('sy-prev-pnt').innerText = 0; 
                 }
 
@@ -592,7 +678,6 @@
             document.getElementById('p-net-display').innerText = `NT$ ${net > 0 ? net : 0}`; 
         }
 
-        // 🚨 嚴格攔截防呆發送機制
         async function issuePayroll() { 
             const empId = document.getElementById('p-emp').value;
             const base = parseFloat(document.getElementById('p-base').value) || 0;
@@ -615,12 +700,8 @@
                 total_net_pay: parseFloat(document.getElementById('p-net').value) || 0 
             }; 
             
-            // 🚨 抓取錯誤並阻擋假成功
             const { error } = await window._sb.from('payroll_records').insert([p]); 
-            if(error) {
-                alert('❌ 發送失敗，資料庫攔截！請檢查「unused_leave_pay」欄位是否已擴充：\n' + error.message);
-                return;
-            }
+            if(error) { alert('❌ 發送失敗！請檢查欄位：\n' + error.message); return; }
 
             alert('✅ 綜合薪資發送成功！'); 
             document.getElementById('hist-emp').value = empId;
@@ -653,15 +734,7 @@
 
         function openEditPayroll(id) {
             const r = window.currentPayrollRecords.find(x => x.id === id); if(!r) return;
-            document.getElementById('edit-pr-id').value = r.id;
-            document.getElementById('edit-pr-month').value = r.pay_month;
-            document.getElementById('edit-pr-base').value = r.base_pay;
-            document.getElementById('edit-pr-bonus').value = r.bonus;
-            document.getElementById('edit-pr-yeb').value = r.year_end_bonus;
-            document.getElementById('edit-pr-ulp').value = r.unused_leave_pay || 0;
-            document.getElementById('edit-pr-ins').value = r.insurance_deduction;
-            document.getElementById('edit-pr-2nd').value = r.second_gen_health;
-            document.getElementById('edit-pr-lvd').value = r.leave_deduction;
+            document.getElementById('edit-pr-id').value = r.id; document.getElementById('edit-pr-month').value = r.pay_month; document.getElementById('edit-pr-base').value = r.base_pay; document.getElementById('edit-pr-bonus').value = r.bonus; document.getElementById('edit-pr-yeb').value = r.year_end_bonus; document.getElementById('edit-pr-ulp').value = r.unused_leave_pay || 0; document.getElementById('edit-pr-ins').value = r.insurance_deduction; document.getElementById('edit-pr-2nd').value = r.second_gen_health; document.getElementById('edit-pr-lvd').value = r.leave_deduction;
             calcEditPayrollNet(); openModal('payroll-edit-modal');
         }
 
@@ -685,18 +758,15 @@
             if(error) alert('刪除失敗:' + error.message); else { alert('✅ 薪資單已成功刪除'); loadPayrollHistory(); }
         }
 
-        // 🌟 員工檔案 Modal 100% 黃金比例完美復刻
         function openEmpDetail(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             window.currentOffboardEmpId = empId; document.getElementById('modal-off-result').classList.add('hidden'); document.getElementById('modal-off-date').value = '';
             document.getElementById('ui-emp-offboard-section').style.display = 'block'; const editBtn = document.getElementById('btn-edit-emp'); editBtn.onclick = () => renderEditEmpForm(empId); editBtn.style.display = 'block';
-            
-            let mgrTag = e.is_inventory_manager ? `<span class="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200">庫存盤點員</span>` : '';
-            let pntTag = e.penalty_points > 0 ? `<span class="text-[10px] font-black text-red-700 bg-red-50 px-2 py-1 rounded-md border border-red-200">計點: ${e.penalty_points}</span>` : '';
-            
+            let mgrTag = e.is_inventory_manager ? `<span class="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200 leading-none">庫存盤點員</span>` : '';
+            let pntTag = e.penalty_points > 0 ? `<span class="text-[10px] font-black text-red-700 bg-red-50 px-2 py-1 rounded-md border border-red-200 leading-none">計點: ${e.penalty_points}</span>` : '';
             const html = `
                 <div class="space-y-4">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-5">
+                    <div class="bg-white p-5 md:p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-5">
                         <div class="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center text-white text-3xl font-black shadow-inner shrink-0">${e.full_name.charAt(0)}</div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center flex-wrap gap-2 mb-2">
