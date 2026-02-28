@@ -73,7 +73,7 @@
                 </div>
             </section>
 
-            <section id="pay" class="tab-content space-y-6 max-w-3xl">
+            <section id="pay" class="tab-content space-y-6 max-w-4xl">
                 <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-[1.5rem] shadow-lg text-white relative overflow-hidden"><div class="absolute -right-4 -bottom-4 text-7xl opacity-20">🏦</div><h3 class="font-black text-lg mb-1 relative z-10">銀行薪資轉帳檔 (CSV)</h3><p class="text-xs text-emerald-100 mb-4 relative z-10 font-medium">支援銀行代碼，可直接匯入網銀批次轉帳</p><div class="flex space-x-2 relative z-10"><input type="month" id="export-mon" class="admin-input bg-white/20 border-white/30 text-white placeholder-white/50 flex-1" style="color-scheme: dark;"><button onclick="exportBankCSV()" class="bg-white text-emerald-700 font-black px-5 py-3 rounded-xl shadow-md active:scale-95 transition">立即下載</button></div></div>
                 
                 <div class="glass-panel p-6 space-y-4 border-t-4 border-indigo-500">
@@ -87,9 +87,14 @@
                     <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-2 gap-3">
                         <div><label class="text-[10px] font-bold text-slate-500 ml-1">當月本薪</label><input type="number" id="p-base" oninput="calcPayroll()" class="admin-input font-black text-slate-800 bg-white"></div>
                         <div><label class="text-[10px] font-bold text-slate-500 ml-1">當月獎金津貼</label><input type="number" id="p-bonus" oninput="calcPayroll()" class="admin-input font-black text-emerald-600"></div>
+                        
                         <div class="col-span-2 border-t border-slate-200 pt-3 mt-1">
-                            <label class="text-[11px] font-black text-amber-700 ml-1 tracking-widest">🎁 評估核定之年終獎金金額</label>
+                            <label class="text-[11px] font-black text-amber-700 ml-1 tracking-widest">🎁 核定年終獎金金額 (選填)</label>
                             <input type="number" id="p-yeb" oninput="calcPayroll()" class="admin-input font-black text-amber-600 bg-white border-amber-300 text-xl shadow-inner mt-1" value="0">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-[11px] font-black text-emerald-700 ml-1 tracking-widest">✨ 未休特休結算 (以系統剩餘時數自動換算)</label>
+                            <input type="number" id="p-ulp" oninput="calcPayroll()" class="admin-input font-black text-emerald-600 bg-white border-emerald-300 text-xl shadow-inner mt-1" value="0">
                         </div>
                     </div>
                     
@@ -107,7 +112,7 @@
                     </div>
 
                     <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 shadow-sm">
-                        <h4 class="text-[10px] font-black text-amber-800 tracking-widest mb-2 flex justify-between items-center"><span>📊 當年度出勤與紀律總評估 (依上方年份)</span></h4>
+                        <h4 class="text-[10px] font-black text-amber-800 tracking-widest mb-2 flex justify-between items-center"><span>📊 當年度出勤與紀律總評估 (依上方月份之所屬年份)</span></h4>
                         <div class="grid grid-cols-3 gap-2 text-center text-[11px] font-bold text-slate-600 bg-white p-3 rounded-lg border border-amber-100 shadow-inner">
                             <div>未休特休<br><span id="sy-ann" class="text-amber-600 text-base font-black">0</span>h</div>
                             <div>事假<br><span id="sy-per" class="text-amber-600 text-base font-black">0</span>h</div>
@@ -122,6 +127,14 @@
                     <div class="p-4 bg-red-50 rounded-xl border border-red-100 grid grid-cols-2 gap-3 relative"><button onclick="calcPayroll()" class="absolute -top-3 right-3 text-[9px] bg-slate-800 text-white font-bold px-2 py-1 rounded shadow-sm">🤖 依眷屬重新計算</button><div><label class="text-[10px] font-bold text-red-800 ml-1">勞健保扣除</label><input type="number" id="p-ins" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200"></div><div><label class="text-[10px] font-bold text-red-800 ml-1">二代健保 (含年終)</label><input type="number" id="p-2nd" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200"></div></div>
                     <div class="flex justify-between items-center p-4 mt-2 bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl border border-sky-100"><span class="text-sm font-black text-slate-700">綜合結算實領</span><span class="text-4xl font-black text-sky-600 tracking-tighter" id="p-net-display">NT$ 0</span><input type="hidden" id="p-net"><input type="hidden" id="p-pen"></div>
                     <button onclick="issuePayroll()" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform mt-2 tracking-widest">🚀 正式發送綜合薪資單</button>
+                </div>
+
+                <div class="glass-panel p-6 space-y-4 border-t-4 border-slate-600">
+                    <h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">📜</span>歷史薪資單管理 (編輯與刪除)</h3>
+                    <select id="hist-emp" class="admin-input bg-slate-50 font-bold mb-4" onchange="loadPayrollHistory()"></select>
+                    <div id="ui-payroll-hist" class="space-y-3 max-h-64 overflow-y-auto pr-1 no-scrollbar">
+                        <div class="text-center text-xs text-slate-400 py-4">請先選擇員工</div>
+                    </div>
                 </div>
             </section>
 
@@ -188,6 +201,34 @@
         </main>
     </div>
 
+    <div id="payroll-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-5 z-[100]">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800">✏️ 編輯歷史薪資單</h3>
+            <input type="hidden" id="edit-pr-id">
+            <div class="space-y-3">
+                <div><label class="text-[10px] font-bold text-slate-500 ml-1">發放月份</label><input type="text" id="edit-pr-month" class="admin-input font-bold bg-slate-50" disabled></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">本薪</label><input type="number" id="edit-pr-base" class="admin-input font-black" oninput="calcEditPayrollNet()"></div>
+                    <div><label class="text-[10px] font-bold text-emerald-600 ml-1">獎金津貼</label><input type="number" id="edit-pr-bonus" class="admin-input font-black text-emerald-600 border-emerald-200" oninput="calcEditPayrollNet()"></div>
+                    <div class="col-span-2"><label class="text-[10px] font-bold text-amber-600 ml-1">年終獎金</label><input type="number" id="edit-pr-yeb" class="admin-input font-black text-amber-600 bg-amber-50 border-amber-200" oninput="calcEditPayrollNet()"></div>
+                    <div class="col-span-2"><label class="text-[10px] font-bold text-sky-600 ml-1">未休特休結算</label><input type="number" id="edit-pr-ulp" class="admin-input font-black text-sky-600 bg-sky-50 border-sky-200" oninput="calcEditPayrollNet()"></div>
+                    
+                    <div><label class="text-[10px] font-bold text-red-600 ml-1">勞健保扣除</label><input type="number" id="edit-pr-ins" class="admin-input font-black text-red-600 border-red-200" oninput="calcEditPayrollNet()"></div>
+                    <div><label class="text-[10px] font-bold text-red-600 ml-1">二代健保</label><input type="number" id="edit-pr-2nd" class="admin-input font-black text-red-600 border-red-200" oninput="calcEditPayrollNet()"></div>
+                    <div class="col-span-2"><label class="text-[10px] font-bold text-red-600 ml-1">請假扣薪</label><input type="number" id="edit-pr-lvd" class="admin-input font-black text-red-600 border-red-200" oninput="calcEditPayrollNet()"></div>
+                </div>
+                <div class="flex justify-between items-center bg-slate-100 p-4 rounded-xl mt-2 border border-slate-200">
+                    <span class="font-bold text-slate-600">重算實領總額</span>
+                    <span id="edit-pr-net" class="text-2xl font-black text-sky-600">NT$ 0</span>
+                </div>
+            </div>
+            <div class="flex space-x-3 mt-6">
+                <button onclick="closeModal('payroll-edit-modal')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3.5 rounded-xl transition">取消</button>
+                <button onclick="saveEditPayroll()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3.5 rounded-xl transition shadow-md">儲存並覆寫</button>
+            </div>
+        </div>
+    </div>
+
     <div id="item-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-5 z-[100]">
         <div class="bg-white w-full max-w-md rounded-3xl p-6 relative flex flex-col shadow-2xl">
             <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 修改庫存料號</h3>
@@ -235,7 +276,7 @@
 
     <script src="shared.js"></script>
     <script>
-        let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = []; window.adminInvData = [];
+        let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = []; window.adminInvData = []; window.currentPayrollRecords = [];
         
         function login() { if(document.getElementById('pin').value === '888888'){ document.getElementById('login-box').style.display='none'; document.getElementById('dashboard-ui').classList.remove('hidden'); document.getElementById('dashboard-ui').classList.add('flex'); document.getElementById('att-date').value = new Date().toLocaleDateString('en-CA'); const now = new Date(); document.getElementById('p-mon').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; document.getElementById('export-mon').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; loadAll(); } else { alert('密碼錯誤！請輸入 888888'); } }
         function st(id) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active')); document.querySelectorAll('.m-btn').forEach(e=>{ e.classList.remove('bg-slate-900','text-white','shadow-md','border-transparent'); e.classList.add('bg-white','text-slate-500','border-slate-200','shadow-sm'); e.querySelector('.m-text').classList.remove('font-black'); e.querySelector('.m-text').classList.add('font-bold'); }); const activeMBtn = document.getElementById('m-'+id); if(activeMBtn) { activeMBtn.classList.remove('bg-white','text-slate-500','border-slate-200','shadow-sm'); activeMBtn.classList.add('bg-slate-900','text-white','shadow-md','border-transparent'); activeMBtn.querySelector('.m-text').classList.remove('font-bold'); activeMBtn.querySelector('.m-text').classList.add('font-black'); } document.querySelectorAll('.dt-btn').forEach(e=>{ e.classList.remove('active','bg-sky-600','text-white'); e.classList.add('text-slate-400'); }); const activeDtBtn = document.getElementById('dt-'+id); if(activeDtBtn) { activeDtBtn.classList.add('active','bg-sky-600','text-white'); activeDtBtn.classList.remove('text-slate-400'); } document.getElementById(id).classList.add('active'); if(id === 'att') loadAttendance(); if(id === 'inv') loadAdminInventory(); }
@@ -255,6 +296,7 @@
             
             const empOpts = '<option value="">請選擇發放薪資的員工...</option>' + aEmps.map(e => `<option value="${e.id}">[${e.employee_no||'未設定'}] ${e.full_name}</option>`).join('');
             document.getElementById('p-emp').innerHTML = empOpts;
+            document.getElementById('hist-emp').innerHTML = '<option value="">請選擇員工查詢...</option>' + aEmps.map(e => `<option value="${e.id}">[${e.employee_no||'未設定'}] ${e.full_name}</option>`).join('');
 
             if (aEmps.length) {
                 document.getElementById('list-emps-mobile').innerHTML = aEmps.map(e => {
@@ -281,7 +323,7 @@
 
             document.getElementById('list-brs').innerHTML = window.branches.map(b => `<div class="glass-panel p-4 flex justify-between items-center shadow-sm"><div class="flex items-center"><span class="text-2xl mr-3 opacity-80">📍</span><div><p class="font-black text-sm text-slate-800">${b.branch_name} <span class="text-[9px] text-emerald-600 ml-1 font-bold bg-emerald-50 px-1 rounded border border-emerald-100">${b.radius_m}m</span></p><p class="text-[10px] text-slate-500 mt-0.5">${b.address}</p></div></div><button onclick="editBr('${b.id}')" class="text-xs bg-sky-100 text-sky-700 font-bold px-3 py-2 rounded-lg active:scale-95 shadow-sm">✏️ 修改</button></div>`).join('');
             
-            onEmpChange(); loadAdminBlt();
+            loadAdminBlt();
             if(document.getElementById('att').classList.contains('active')) loadAttendance();
         }
 
@@ -355,6 +397,86 @@
             if(error) alert('修改失敗'); else { alert('✅ 參數更新成功！'); closeModal('item-edit-modal'); loadAdminInventory(); }
         }
 
+        // 🌟 歷史薪資單管理邏輯
+        async function loadPayrollHistory() {
+            const empId = document.getElementById('hist-emp').value;
+            if(!empId) { document.getElementById('ui-payroll-hist').innerHTML = '<div class="text-center text-xs text-slate-400 py-4">請選擇員工</div>'; return; }
+            document.getElementById('ui-payroll-hist').innerHTML = '載入中...';
+            const { data } = await window._sb.from('payroll_records').select('*').eq('employee_id', empId).order('created_at', {ascending: false});
+            window.currentPayrollRecords = data || [];
+            if(!data || data.length === 0) {
+                document.getElementById('ui-payroll-hist').innerHTML = '<div class="text-center text-xs text-slate-400 py-4">無歷史薪資紀錄</div>';
+                return;
+            }
+            document.getElementById('ui-payroll-hist').innerHTML = data.map(r => `
+                <div class="bg-white p-4 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm">
+                    <div>
+                        <span class="text-[10px] font-black text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded border border-indigo-200 mr-2">${r.pay_month}</span>
+                        <span class="font-black text-slate-800 text-sm">實領: NT$ ${r.total_net_pay.toLocaleString()}</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="openEditPayroll('${r.id}')" class="text-[10px] bg-sky-100 text-sky-700 font-bold px-3 py-2 rounded-lg active:scale-95 shadow-sm">✏️</button>
+                        <button onclick="deletePayroll('${r.id}')" class="text-[10px] bg-red-100 text-red-700 font-bold px-3 py-2 rounded-lg active:scale-95 shadow-sm">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openEditPayroll(id) {
+            const r = window.currentPayrollRecords.find(x => x.id === id); if(!r) return;
+            document.getElementById('edit-pr-id').value = r.id;
+            document.getElementById('edit-pr-month').value = r.pay_month;
+            document.getElementById('edit-pr-base').value = r.base_pay;
+            document.getElementById('edit-pr-bonus').value = r.bonus;
+            document.getElementById('edit-pr-yeb').value = r.year_end_bonus;
+            document.getElementById('edit-pr-ulp').value = r.unused_leave_pay || 0;
+            document.getElementById('edit-pr-ins').value = r.insurance_deduction;
+            document.getElementById('edit-pr-2nd').value = r.second_gen_health;
+            document.getElementById('edit-pr-lvd').value = r.leave_deduction;
+            calcEditPayrollNet();
+            openModal('payroll-edit-modal');
+        }
+
+        function calcEditPayrollNet() {
+            const base = parseFloat(document.getElementById('edit-pr-base').value)||0;
+            const bonus = parseFloat(document.getElementById('edit-pr-bonus').value)||0;
+            const yeb = parseFloat(document.getElementById('edit-pr-yeb').value)||0;
+            const ulp = parseFloat(document.getElementById('edit-pr-ulp').value)||0;
+            const ins = parseFloat(document.getElementById('edit-pr-ins').value)||0;
+            const sec = parseFloat(document.getElementById('edit-pr-2nd').value)||0;
+            const lvd = parseFloat(document.getElementById('edit-pr-lvd').value)||0;
+            const net = base + bonus + yeb + ulp - ins - sec - lvd;
+            document.getElementById('edit-pr-net').innerText = `NT$ ${net > 0 ? net : 0}`;
+        }
+
+        async function saveEditPayroll() {
+            const id = document.getElementById('edit-pr-id').value;
+            const base = parseFloat(document.getElementById('edit-pr-base').value)||0;
+            const bonus = parseFloat(document.getElementById('edit-pr-bonus').value)||0;
+            const yeb = parseFloat(document.getElementById('edit-pr-yeb').value)||0;
+            const ulp = parseFloat(document.getElementById('edit-pr-ulp').value)||0;
+            const ins = parseFloat(document.getElementById('edit-pr-ins').value)||0;
+            const sec = parseFloat(document.getElementById('edit-pr-2nd').value)||0;
+            const lvd = parseFloat(document.getElementById('edit-pr-lvd').value)||0;
+            const net = base + bonus + yeb + ulp - ins - sec - lvd;
+            
+            const p = {
+                base_pay: base, bonus: bonus, year_end_bonus: yeb, unused_leave_pay: ulp,
+                insurance_deduction: ins, second_gen_health: sec, leave_deduction: lvd,
+                total_net_pay: net > 0 ? net : 0
+            };
+            const { error } = await window._sb.from('payroll_records').update(p).eq('id', id);
+            if(error) alert('修改失敗:' + error.message);
+            else { alert('✅ 薪資單修改成功！前台已同步。'); closeModal('payroll-edit-modal'); loadPayrollHistory(); }
+        }
+
+        async function deletePayroll(id) {
+            if(!confirm('⚠️ 確定要刪除這筆薪資單嗎？刪除後前台將無法查詢。')) return;
+            const { error } = await window._sb.from('payroll_records').delete().eq('id', id);
+            if(error) alert('刪除失敗:' + error.message);
+            else { alert('✅ 薪資單已成功刪除'); loadPayrollHistory(); }
+        }
+
         function openEmpDetail(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             window.currentOffboardEmpId = empId; document.getElementById('modal-off-result').classList.add('hidden'); document.getElementById('modal-off-date').value = '';
@@ -423,9 +545,6 @@
             const btn = document.getElementById('btn-save-emp'); const originText = btn.innerHTML; btn.innerHTML = '⏳ 儲存中...'; btn.disabled = true;
             let st = document.getElementById('edit-start-time').value; if(st && st.length === 5) st += ':00'; let et = document.getElementById('edit-end-time').value; if(et && et.length === 5) et += ':00';
             
-            const emp = window.allEmps.find(x => x.id === empId);
-            const newPoints = parseInt(document.getElementById('edit-penalty').value) || 0;
-
             const p = { 
                 full_name: document.getElementById('edit-name').value, employment_status: document.getElementById('edit-status').value, 
                 employee_no: document.getElementById('edit-emp-no').value || '未設定',
@@ -437,7 +556,8 @@
                 emergency_name: document.getElementById('edit-emg-name').value, emergency_phone: document.getElementById('edit-emg-phone').value, 
                 bank_name: document.getElementById('edit-bank-name').value, bank_code: document.getElementById('edit-bank-code').value, 
                 bank_user_name: document.getElementById('edit-bank-user').value, bank_account: document.getElementById('edit-bank-account').value,
-                is_inventory_manager: document.getElementById('edit-inv-mgr').value === 'true', penalty_points: newPoints
+                is_inventory_manager: document.getElementById('edit-inv-mgr').value === 'true', 
+                penalty_points: parseInt(document.getElementById('edit-penalty').value) || 0
             };
             
             const { error } = await window._sb.from('employees').update(p).eq('id', empId);
@@ -501,6 +621,7 @@
         }
 
         function onEmpChange() { const empId = document.getElementById('p-emp').value; if(!empId) return; const emp = window.empData[empId]; if(!emp) return; document.getElementById('p-base').value = emp.base; calcPayroll(); updateAttendanceRate(); }
+        
         function calcPayroll() { 
             const empId = document.getElementById('p-emp').value; 
             const emp = window.empData[empId]; 
@@ -520,28 +641,33 @@
             const base = parseFloat(document.getElementById('p-base').value) || 0;
             const bonus = parseFloat(document.getElementById('p-bonus').value) || 0;
             const yeb = parseFloat(document.getElementById('p-yeb').value) || 0;
+            const ulp = parseFloat(document.getElementById('p-ulp').value) || 0;
             const ins = parseFloat(document.getElementById('p-ins').value) || 0;
             const sec = parseFloat(document.getElementById('p-2nd').value) || 0;
             const lvd = parseFloat(document.getElementById('p-lvd').value) || 0;
             
-            const net = base + bonus + yeb - ins - sec - lvd; 
+            const net = base + bonus + yeb + ulp - ins - sec - lvd; 
             document.getElementById('p-net').value = net > 0 ? net : 0; 
             document.getElementById('p-net-display').innerText = `NT$ ${net > 0 ? net : 0}`; 
         }
 
         async function issuePayroll() { 
+            const empId = document.getElementById('p-emp').value;
             const base = parseFloat(document.getElementById('p-base').value) || 0;
             const bonus = parseFloat(document.getElementById('p-bonus').value) || 0;
             const yeb = parseFloat(document.getElementById('p-yeb').value) || 0;
+            const ulp = parseFloat(document.getElementById('p-ulp').value) || 0;
             
-            if(base === 0 && bonus === 0 && yeb === 0) { alert('請輸入薪資或獎金金額'); return; }
+            if(!empId) { alert('請選擇員工！'); return; }
+            if(base === 0 && bonus === 0 && yeb === 0 && ulp === 0) { alert('發放金額不能全部為 0！'); return; }
             
             const p = { 
-                employee_id: document.getElementById('p-emp').value, 
+                employee_id: empId, 
                 pay_month: document.getElementById('p-mon').value, 
                 base_pay: base, 
                 bonus: bonus, 
                 year_end_bonus: yeb,
+                unused_leave_pay: ulp,
                 labor_pension: parseFloat(document.getElementById('p-pen').value) || 0, 
                 insurance_deduction: parseFloat(document.getElementById('p-ins').value) || 0, 
                 second_gen_health: parseFloat(document.getElementById('p-2nd').value) || 0, 
@@ -551,6 +677,7 @@
             
             await window._sb.from('payroll_records').insert([p]); 
             alert('✅ 綜合薪資發送成功！'); 
+            loadPayrollHistory();
         }
 
         async function calculateSettlement() { const empId = window.currentOffboardEmpId; const lastDay = document.getElementById('modal-off-date').value; const type = document.getElementById('modal-off-type').value; if(!empId || !lastDay) { alert('請填寫最後工作日'); return; } const e = window.allEmps.find(x => x.id === empId); const { data: lv } = await window._sb.rpc('fn_get_annual_leave_v2', { p_emp_id: e.id }); const proRat = new Date(lastDay).getDate() / 30.0; const proSal = Math.round((proRat > 1 ? 1 : proRat) * e.base_salary); const uHrs = lv?.remain_hours || 0; const lPay = Math.round(uHrs * (e.base_salary / 240)); let sev = 0; if(type === '非自願離職(資遣)') { const ty = (new Date(lastDay).getTime() - new Date(e.onboarding_date).getTime()) / 31557600000; sev = Math.round(Math.max(0, ty) * 0.5 * e.base_salary); } const tot = proSal + lPay + sev; document.getElementById('res-base').innerText = `NT$ ${e.base_salary.toLocaleString()}`; document.getElementById('res-pro').innerText = `+ NT$ ${proSal.toLocaleString()}`; document.getElementById('res-lvh').innerText = uHrs; document.getElementById('res-lvp').innerText = `+ NT$ ${lPay.toLocaleString()}`; document.getElementById('res-sev').innerText = `+ NT$ ${sev.toLocaleString()}`; document.getElementById('res-total').innerText = `NT$ ${tot.toLocaleString()}`; document.getElementById('modal-off-result').classList.remove('hidden'); globalOffboardData = { employee_id: empId, settlement_type: type, last_working_day: lastDay, base_salary_ref: e.base_salary, prorated_salary: proSal, unused_leave_hours: uHrs, unused_leave_pay: lPay, severance_pay: sev, total_settlement: tot }; }
