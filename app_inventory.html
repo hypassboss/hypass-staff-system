@@ -20,6 +20,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         
+        /* 🚨 列印黑科技 */
         @media print {
             body * { visibility: hidden; }
             #print-zone, #print-zone * { visibility: visible; }
@@ -27,6 +28,7 @@
             #app-container, nav { display: none !important; }
         }
 
+        /* 🚨 終極防禦裝甲：封殺 shared.js 產生的舊導覽列 */
         nav { display: none !important; }
         #core-bottom-nav { display: flex !important; }
     </style>
@@ -104,7 +106,7 @@
 
                 <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-teal-500 relative overflow-hidden mt-4">
                     <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between">
-                        <span class="flex items-center"><span class="mr-1.5 text-lg">🚗</span> 汽車濾網最新狀況簡表</span>
+                        <span class="flex items-center"><span class="mr-1.5 text-lg">🚗</span> 汽車濾網最新狀況</span>
                         <span class="text-[9px] bg-teal-100 text-teal-700 px-2 py-1 rounded-md font-black border border-teal-200 shadow-sm">即時動態</span>
                     </h3>
                     <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
@@ -428,21 +430,26 @@
                 remBlock.classList.add('hidden');
             }
 
-            let filterItems = window.inventoryData.filter(i => i.category === '汽車冷氣濾網');
+            // 🌟 升級版：汽車濾網戰情表，強制置頂核心原料
+            let rawTop = window.inventoryData.filter(i => ['CST-01', 'CMB-01'].includes(i.item_code));
+            let finishedGoods = window.inventoryData.filter(i => i.item_type === '成品' && i.category === '汽車冷氣濾網');
+            let filterItems = [...rawTop, ...finishedGoods];
+            
             let filterHtml = '';
             if (filterItems.length === 0) {
-                filterHtml = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無汽車濾網資料</td></tr>';
+                filterHtml = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無資料</td></tr>';
             } else {
                 filterHtml = filterItems.map(i => {
                     let poInfo = pendingPurchases[i.item_code] || { qty: 0, eta: '--' };
                     let qtyHtml = poInfo.qty > 0 ? `<span class="font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded shadow-sm border border-amber-100">${poInfo.qty}</span>` : `<span class="text-slate-300">0</span>`;
                     let etaHtml = poInfo.qty > 0 && poInfo.eta !== '--' ? `<span class="text-amber-600 font-bold">${poInfo.eta.slice(5)}</span>` : `<span class="text-slate-300">--</span>`;
+                    let typeBadge = i.item_type === '原料' ? `<span class="text-[8px] bg-slate-100 text-slate-500 px-1 py-0.5 rounded ml-1 font-bold border border-slate-200">原料</span>` : '';
                     
                     return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0">
-                        <td class="p-2 font-mono font-black text-slate-700 truncate max-w-[100px]">${i.item_code}</td>
-                        <td class="p-2 text-right font-black text-emerald-700 text-sm tracking-tight">${i.current_stock}</td>
-                        <td class="p-2 text-right">${qtyHtml}</td>
-                        <td class="p-2 text-center text-[10px]">${etaHtml}</td>
+                        <td class="p-2.5 font-mono font-black text-slate-700 truncate max-w-[120px]">${i.item_code}${typeBadge}</td>
+                        <td class="p-2.5 text-right font-black text-emerald-700 text-sm tracking-tight">${i.current_stock}</td>
+                        <td class="p-2.5 text-right">${qtyHtml}</td>
+                        <td class="p-2.5 text-center text-[10px]">${etaHtml}</td>
                     </tr>`;
                 }).join('');
             }
