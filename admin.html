@@ -88,7 +88,7 @@
                         <div><label class="text-[10px] font-bold text-slate-500 ml-1">當月本薪</label><input type="number" id="p-base" oninput="calcPayroll()" class="admin-input font-black text-slate-800 bg-white"></div>
                         <div><label class="text-[10px] font-bold text-slate-500 ml-1">當月獎金津貼</label><input type="number" id="p-bonus" oninput="calcPayroll()" class="admin-input font-black text-emerald-600"></div>
                         <div class="col-span-2 border-t border-slate-200 pt-3 mt-1">
-                            <label class="text-[11px] font-black text-amber-700 ml-1 tracking-widest">🎁 核定年終獎金金額</label>
+                            <label class="text-[11px] font-black text-amber-700 ml-1 tracking-widest">🎁 評估核定之年終獎金金額</label>
                             <input type="number" id="p-yeb" oninput="calcPayroll()" class="admin-input font-black text-amber-600 bg-white border-amber-300 text-xl shadow-inner mt-1" value="0">
                         </div>
                     </div>
@@ -107,7 +107,7 @@
                     </div>
 
                     <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 shadow-sm">
-                        <h4 class="text-[10px] font-black text-amber-800 tracking-widest mb-2 flex justify-between items-center"><span>📊 當年度出勤總評估 (依上方年份)</span></h4>
+                        <h4 class="text-[10px] font-black text-amber-800 tracking-widest mb-2 flex justify-between items-center"><span>📊 當年度出勤與紀律總評估 (依上方年份)</span></h4>
                         <div class="grid grid-cols-3 gap-2 text-center text-[11px] font-bold text-slate-600 bg-white p-3 rounded-lg border border-amber-100 shadow-inner">
                             <div>未休特休<br><span id="sy-ann" class="text-amber-600 text-base font-black">0</span>h</div>
                             <div>事假<br><span id="sy-per" class="text-amber-600 text-base font-black">0</span>h</div>
@@ -120,9 +120,7 @@
                     </div>
                     
                     <div class="p-4 bg-red-50 rounded-xl border border-red-100 grid grid-cols-2 gap-3 relative"><button onclick="calcPayroll()" class="absolute -top-3 right-3 text-[9px] bg-slate-800 text-white font-bold px-2 py-1 rounded shadow-sm">🤖 依眷屬重新計算</button><div><label class="text-[10px] font-bold text-red-800 ml-1">勞健保扣除</label><input type="number" id="p-ins" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200"></div><div><label class="text-[10px] font-bold text-red-800 ml-1">二代健保 (含年終)</label><input type="number" id="p-2nd" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200"></div></div>
-                    
                     <div class="flex justify-between items-center p-4 mt-2 bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl border border-sky-100"><span class="text-sm font-black text-slate-700">綜合結算實領</span><span class="text-4xl font-black text-sky-600 tracking-tighter" id="p-net-display">NT$ 0</span><input type="hidden" id="p-net"><input type="hidden" id="p-pen"></div>
-                    
                     <button onclick="issuePayroll()" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform mt-2 tracking-widest">🚀 正式發送綜合薪資單</button>
                 </div>
             </section>
@@ -255,7 +253,7 @@
             aEmps.sort((a, b) => { let valA = a.employee_no && a.employee_no !== '未設定' ? a.employee_no : 'Z999'; let valB = b.employee_no && b.employee_no !== '未設定' ? b.employee_no : 'Z999'; return valA.localeCompare(valB, 'zh-TW', { numeric: true }); });
             aEmps.forEach(e => { window.empData[e.id] = { base: e.base_salary, deps: e.dependents_count || 0, start: e.work_start_time || '09:00:00' }; }); 
             
-            const empOpts = '<option value="">請選擇員工...</option>' + aEmps.map(e => `<option value="${e.id}">[${e.employee_no||'未設定'}] ${e.full_name}</option>`).join('');
+            const empOpts = '<option value="">請選擇發放薪資的員工...</option>' + aEmps.map(e => `<option value="${e.id}">[${e.employee_no||'未設定'}] ${e.full_name}</option>`).join('');
             document.getElementById('p-emp').innerHTML = empOpts;
 
             if (aEmps.length) {
@@ -283,7 +281,7 @@
 
             document.getElementById('list-brs').innerHTML = window.branches.map(b => `<div class="glass-panel p-4 flex justify-between items-center shadow-sm"><div class="flex items-center"><span class="text-2xl mr-3 opacity-80">📍</span><div><p class="font-black text-sm text-slate-800">${b.branch_name} <span class="text-[9px] text-emerald-600 ml-1 font-bold bg-emerald-50 px-1 rounded border border-emerald-100">${b.radius_m}m</span></p><p class="text-[10px] text-slate-500 mt-0.5">${b.address}</p></div></div><button onclick="editBr('${b.id}')" class="text-xs bg-sky-100 text-sky-700 font-bold px-3 py-2 rounded-lg active:scale-95 shadow-sm">✏️ 修改</button></div>`).join('');
             
-            loadAdminBlt();
+            onEmpChange(); loadAdminBlt();
             if(document.getElementById('att').classList.contains('active')) loadAttendance();
         }
 
@@ -402,7 +400,7 @@
                             <div><label class="text-[10px] font-bold text-slate-500 ml-1">身分證字號</label><input type="text" id="edit-idnum" value="${e.id_number}" class="admin-input bg-white uppercase" required></div>
                             <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">員工職位</label><select id="edit-job-title" class="admin-input bg-white font-bold"><option value="主管" ${e.job_title==='主管'?'selected':''}>主管</option><option value="業務" ${e.job_title==='業務'?'selected':''}>業務</option><option value="助理" ${e.job_title==='助理'?'selected':''}>助理</option></select></div>
                             
-                            <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-red-700 mb-2">⚙️ 權限與懲處設定</h5><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">盤點負責人</label><select id="edit-inv-mgr" class="admin-input bg-white font-bold"><option value="false" ${!e.is_inventory_manager?'selected':''}>否</option><option value="true" ${e.is_inventory_manager?'selected':''}>是 (需執行盤點)</option></select></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">計點累計次數</label><input type="number" id="edit-penalty" value="${e.penalty_points||0}" class="admin-input bg-white font-black text-red-600" required></div></div></div>
+                            <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-red-700 mb-2">⚙️ 權限與紀律設定</h5><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">盤點負責人</label><select id="edit-inv-mgr" class="admin-input bg-white font-bold"><option value="false" ${!e.is_inventory_manager?'selected':''}>否</option><option value="true" ${e.is_inventory_manager?'selected':''}>是 (需執行盤點)</option></select></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">絕對計點總數</label><input type="number" id="edit-penalty" value="${e.penalty_points||0}" class="admin-input bg-white font-black text-red-600" required></div></div></div>
 
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-blue-700 mb-2">⏰ 考勤班別設定</h5><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">上班時間</label><input type="time" id="edit-start-time" value="${(e.work_start_time||'09:00').slice(0,5)}" class="admin-input bg-white font-black text-blue-700" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">下班時間</label><input type="time" id="edit-end-time" value="${(e.work_end_time||'18:00').slice(0,5)}" class="admin-input bg-white font-black text-blue-700" required></div></div></div>
                             <div><label class="text-[10px] font-bold text-slate-500 ml-1">入職日期</label><input type="date" id="edit-onboard" value="${e.onboarding_date}" class="admin-input bg-white" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">工作打卡據點</label><select id="edit-branch" class="admin-input bg-white font-bold">${brOptions}</select></div>
@@ -427,7 +425,6 @@
             
             const emp = window.allEmps.find(x => x.id === empId);
             const newPoints = parseInt(document.getElementById('edit-penalty').value) || 0;
-            const pointsDiff = newPoints - (emp.penalty_points || 0);
 
             const p = { 
                 full_name: document.getElementById('edit-name').value, employment_status: document.getElementById('edit-status').value, 
@@ -446,7 +443,6 @@
             const { error } = await window._sb.from('employees').update(p).eq('id', empId);
             if (error) { alert('更新失敗: ' + error.message); btn.innerHTML = originText; btn.disabled = false; } 
             else { 
-                if(pointsDiff > 0) { await window._sb.from('penalty_logs').insert([{ employee_id: empId, points: pointsDiff, reason: '後台手動計點' }]); }
                 btn.innerHTML = '✅ 儲存完畢'; await loadAll(); setTimeout(() => openEmpDetail(empId), 1000); 
             }
         }
@@ -485,7 +481,7 @@
                 document.getElementById('sd-typ').innerText = data.typhoon_hrs; 
                 document.getElementById('sd-lat').innerText = data.late_count; 
                 document.getElementById('sd-ovt').innerText = data.overtime_hrs; 
-                document.getElementById('sd-pnt').innerText = data.penalty_count; 
+                document.getElementById('sd-pnt').innerText = data.total_penalty; 
                 document.getElementById('p-lvd').value = data.leave_deduct; 
             } 
             
@@ -498,7 +494,7 @@
                 document.getElementById('sy-sic').innerText = yData.sick || 0; 
                 document.getElementById('sy-lat').innerText = yData.late || 0; 
                 document.getElementById('sy-ovt').innerText = yData.overtime || 0; 
-                document.getElementById('sy-pnt').innerText = yData.penalty || 0;
+                document.getElementById('sy-pnt').innerText = yData.total_penalty || 0;
             }
             
             calcNet(); 
