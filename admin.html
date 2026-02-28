@@ -91,12 +91,7 @@
                             <div>
                                 <label class="text-[10px] font-bold text-slate-500 ml-1">當月獎金津貼</label>
                                 <select id="p-bonus" onchange="calcPayroll()" class="admin-input font-black text-emerald-600 bg-white select-arrow">
-                                    <option value="0">0</option>
-                                    <option value="1000">1,000</option>
-                                    <option value="3000">3,000</option>
-                                    <option value="5000">5,000</option>
-                                    <option value="7000">7,000</option>
-                                    <option value="10000">10,000</option>
+                                    <option value="0">0</option><option value="1000">1,000</option><option value="3000">3,000</option><option value="5000">5,000</option><option value="7000">7,000</option><option value="10000">10,000</option>
                                 </select>
                             </div>
                         </div>
@@ -408,7 +403,6 @@
             renderAdminInventory();
         }
 
-        // 🌟 庫存總表三色水位對齊
         function renderAdminInventory() {
             let htmlM = '', htmlD = '';
             
@@ -422,25 +416,25 @@
                     let isLow = i.current_stock <= safe;
                     let isWarn = !isLow && i.current_stock <= (safe * 1.5);
                     
-                    let badge = '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold border border-emerald-200">標準</span>';
-                    let textCol = 'text-slate-800';
-                    let bgCol = '';
+                    let badge = '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold border border-emerald-200 shadow-sm">標準水位</span>';
+                    let borderClass = 'border-emerald-400 bg-emerald-50/10';
+                    let textCol = 'text-slate-700';
                     
                     if(isLow) { 
                         badge = '<span class="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded font-black shadow-sm animate-pulse">⚠️ 低水位</span>'; 
+                        borderClass = 'border-red-500 bg-red-50/30';
                         textCol = 'text-red-600'; 
-                        bgCol = 'bg-red-50/30 border-red-200';
                     } else if(isWarn) { 
-                        badge = '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-black border border-amber-300">警示</span>'; 
+                        badge = '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-black border border-amber-300 shadow-sm">警示水位</span>'; 
+                        borderClass = 'border-amber-400 bg-amber-50/30';
                         textCol = 'text-amber-600'; 
-                        bgCol = 'bg-amber-50/30 border-amber-200';
                     }
 
                     let catTag = `<span class="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded ml-1">${i.category || '未分類'}</span>`;
                     
-                    htmlM += `<div class="glass-panel p-4 flex justify-between items-center inv-admin-item mb-3 ${bgCol}" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><div class="flex-1"><span class="text-[10px] text-indigo-600 bg-white border border-indigo-100 px-1.5 rounded font-mono shadow-sm tracking-wider">${i.item_code}</span>${catTag}<h4 class="font-black text-sm text-slate-800 mt-1">${i.item_name} ${badge}</h4><p class="text-[10px] text-slate-500 mt-0.5">規格: ${i.specification||'無'} | 週期: ${i.lead_time_days}天</p></div><div class="text-right pl-3 border-l border-slate-200"><div class="text-2xl font-black ${textCol} tracking-tight">${i.current_stock}</div><button onclick="openEditItem('${i.id}')" class="text-[10px] bg-slate-800 text-white shadow-sm active:scale-95 transition px-3 py-1.5 rounded-lg mt-1 font-bold">修改</button></div></div>`;
+                    htmlM += `<div class="glass-panel p-4 flex justify-between items-center inv-admin-item mb-3 border-2 ${borderClass}" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><div class="flex-1 pr-2"><div class="mb-1.5"><span class="text-[10px] text-indigo-600 bg-white border border-indigo-100 px-1.5 rounded font-mono shadow-sm tracking-wider">${i.item_code}</span>${catTag}</div><h4 class="font-black text-sm text-slate-800 mt-1">${i.item_name} ${badge}</h4><p class="text-[10px] text-slate-500 mt-0.5">規格: ${i.specification||'無'} | 週期: ${i.lead_time_days}天</p></div><div class="text-right pl-3 border-l border-slate-200 flex flex-col items-end shrink-0">${badge}<div class="text-2xl font-black ${textCol} mt-1 tracking-tight">${i.current_stock}</div><button onclick="openEditItem('${i.id}')" class="text-[10px] bg-slate-800 text-white shadow-sm active:scale-95 transition px-3 py-1.5 rounded-lg mt-1 font-bold">修改</button></div></div>`;
                     
-                    htmlD += `<tr class="hover:bg-slate-50 inv-admin-item ${bgCol}" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><td class="px-6 py-4"><div class="mb-1"><span class="text-[10px] text-indigo-600 font-mono bg-white shadow-sm border border-indigo-100 px-1.5 py-0.5 rounded mr-1">${i.item_code}</span>${catTag}</div><span class="font-black text-slate-800">${i.item_name}</span> ${badge}<br><span class="text-[10px] text-slate-400 font-bold">${i.specification||'無規格'}</span></td><td class="px-6 py-4 text-right font-black ${textCol} text-xl tracking-tight">${i.current_stock}</td><td class="px-6 py-4 text-right text-slate-500 font-bold">${safe}</td><td class="px-6 py-4 text-center text-slate-500 font-bold">${i.lead_time_days}</td><td class="px-6 py-4 text-center"><button onclick="openEditItem('${i.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm active:scale-95">修改參數</button></td></tr>`;
+                    htmlD += `<tr class="hover:bg-slate-50 inv-admin-item border-l-4 ${borderClass.split(' ')[0]}" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><td class="px-6 py-4"><div class="mb-1"><span class="text-[10px] text-indigo-600 font-mono bg-white shadow-sm border border-indigo-100 px-1.5 py-0.5 rounded mr-1">${i.item_code}</span>${catTag}</div><span class="font-black text-slate-800">${i.item_name}</span><br><span class="text-[10px] text-slate-500 font-bold mt-1 inline-block">${i.specification||'無規格'}</span></td><td class="px-6 py-4 text-right"><div class="flex flex-col items-end">${badge}<span class="font-black ${textCol} text-xl mt-1 tracking-tight">${i.current_stock}</span></div></td><td class="px-6 py-4 text-right text-slate-500 font-bold">${safe}</td><td class="px-6 py-4 text-center text-slate-500 font-bold">${i.lead_time_days}</td><td class="px-6 py-4 text-center"><button onclick="openEditItem('${i.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm active:scale-95">修改參數</button></td></tr>`;
                 });
             }
             document.getElementById('list-inv-mobile').innerHTML = htmlM; document.getElementById('list-inv-desktop').innerHTML = htmlD;
@@ -519,12 +513,16 @@
                 // 抓取上年 (核心基準)
                 const { data: prevYData } = await window._sb.rpc('fn_get_year_end_stats', { p_emp_id: empId, p_year: prevYear.toString() });
                 
-                const { data: lv } = await window._sb.rpc('fn_get_annual_leave_v2', { p_emp_id: empId });
-                let remainHrs = lv ? (lv.remain_hours || 0) : 0;
+                // 透過新版年度特休大腦，分別抓取當年度與上年度的特休餘額
+                const { data: lvCurr } = await window._sb.rpc('fn_get_annual_leave_by_year', { p_emp_id: empId, p_year: currentYear });
+                const { data: lvPrev } = await window._sb.rpc('fn_get_annual_leave_by_year', { p_emp_id: empId, p_year: prevYear });
+                
+                let remainHrsCurr = lvCurr ? (lvCurr.remain_hours || 0) : 0;
+                let remainHrsPrev = lvPrev ? (lvPrev.remain_hours || 0) : 0;
 
                 // 渲染當年
                 if(currYData) {
-                    document.getElementById('sy-curr-ann').innerText = remainHrs; 
+                    document.getElementById('sy-curr-ann').innerText = remainHrsCurr; 
                     document.getElementById('sy-curr-per').innerText = currYData.personal || 0; 
                     document.getElementById('sy-curr-sic').innerText = currYData.sick || 0; 
                     document.getElementById('sy-curr-lat').innerText = currYData.late || 0; 
@@ -534,7 +532,7 @@
 
                 // 渲染上年
                 if(prevYData) {
-                    document.getElementById('sy-prev-ann').innerText = '--'; // 特休只看當下剩餘
+                    document.getElementById('sy-prev-ann').innerText = remainHrsPrev; 
                     document.getElementById('sy-prev-per').innerText = prevYData.personal || 0; 
                     document.getElementById('sy-prev-sic').innerText = prevYData.sick || 0; 
                     document.getElementById('sy-prev-lat').innerText = prevYData.late || 0; 
@@ -542,17 +540,17 @@
                     document.getElementById('sy-prev-pnt').innerText = prevYData.total_penalty || 0;
                 }
 
-                // 更新動態標籤 (年終發放通常是對應前一年)
+                // 更新動態標籤 (年終發放與特休結算是對應上一個年度)
                 document.getElementById('lbl-yeb').innerText = `🎁 核定年終獎金 (${prevYear}年度)`;
-                document.getElementById('lbl-ulp-text').innerText = `✨ 未休特休結算 (${prevYear}年度，剩餘 ${remainHrs}h)`;
+                document.getElementById('lbl-ulp-text').innerHTML = `✨ 未休特休結算 <span class="text-slate-500 font-bold ml-1">(${prevYear}年度，剩餘 ${remainHrsPrev}h)</span>`;
                 document.getElementById('lbl-eval-prev').innerText = `上年度 (${prevYear}) 核心基準`;
                 document.getElementById('lbl-eval-curr').innerText = `當年度 (${currentYear}) 參考近況`;
                 
-                // 自動換算特休
+                // 自動換算特休 (看上年度剩餘)
                 if(document.getElementById('toggle-yeb').checked) {
                     const base = window.empData[empId]?.base || 0;
                     const hrRate = base / 240;
-                    document.getElementById('p-ulp').value = Math.round(remainHrs * hrRate);
+                    document.getElementById('p-ulp').value = Math.round(remainHrsPrev * hrRate);
                 }
 
                 calcNet(); 
@@ -714,36 +712,38 @@
             else { alert('✅ 薪資單已成功刪除'); loadPayrollHistory(); }
         }
 
-        // 🌟 員工檔案 Modal 排版黃金比例重構 (對齊截圖)
+        // 🌟 員工檔案 Modal 100% 黃金比例完美復刻
         function openEmpDetail(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             window.currentOffboardEmpId = empId; document.getElementById('modal-off-result').classList.add('hidden'); document.getElementById('modal-off-date').value = '';
             document.getElementById('ui-emp-offboard-section').style.display = 'block'; const editBtn = document.getElementById('btn-edit-emp'); editBtn.onclick = () => renderEditEmpForm(empId); editBtn.style.display = 'block';
-            let mgrTag = e.is_inventory_manager ? '<span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-200 leading-none">庫存盤點員</span>' : '';
-            let pntTag = e.penalty_points > 0 ? `<span class="text-[10px] font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-md border border-red-200 leading-none">計點: ${e.penalty_points}</span>` : '';
+            
+            let mgrTag = e.is_inventory_manager ? `<span class="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200">庫存盤點員</span>` : '';
+            let pntTag = e.penalty_points > 0 ? `<span class="text-[10px] font-black text-red-700 bg-red-50 px-2 py-1 rounded-md border border-red-200">計點: ${e.penalty_points}</span>` : '';
+            
             const html = `
                 <div class="space-y-4">
-                    <div class="bg-white p-5 md:p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-4">
-                        <div class="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center text-white text-2xl font-black shadow-inner shrink-0">${e.full_name.charAt(0)}</div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-5">
+                        <div class="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center text-white text-3xl font-black shadow-inner shrink-0">${e.full_name.charAt(0)}</div>
                         <div class="flex-1 min-w-0">
-                            <div class="flex items-center flex-wrap gap-2 mb-1.5">
-                                <h4 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight leading-none">${e.full_name}</h4>
-                                <span class="text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-md border border-sky-200 leading-none tracking-widest">${e.employment_status}</span>
-                                ${mgrTag}
-                                ${pntTag}
+                            <div class="flex items-center flex-wrap gap-2 mb-2">
+                                <h4 class="text-3xl font-black text-slate-800 tracking-tight leading-none">${e.full_name}</h4>
+                                <span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-2.5 py-1 rounded-md border border-sky-200 leading-none tracking-widest mt-1">${e.employment_status}</span>
+                                <div class="mt-1">${mgrTag}</div>
+                                <div class="mt-1">${pntTag}</div>
                             </div>
-                            <p class="text-sm text-slate-500 font-bold tracking-wider">${e.job_title||'未指派職位'}</p>
+                            <p class="text-base text-slate-500 font-bold tracking-wider">${e.job_title||'未指派職位'}</p>
                         </div>
                     </div>
 
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                         <h5 class="text-sm font-black text-blue-800 mb-4 border-l-4 border-blue-500 pl-2">🏢 基本與考勤資訊</h5>
                         <div class="grid grid-cols-2 gap-3 md:gap-4">
-                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">員工編號</p><p class="font-black text-sky-700 text-base md:text-lg leading-none mt-0.5">${e.employee_no||'未設定'}</p></div>
-                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">入職日期</p><p class="font-black text-slate-700 text-base md:text-lg leading-none mt-0.5">${e.onboarding_date}</p></div>
-                            <div class="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">工作打卡據點</p><p class="font-black text-slate-800 text-base md:text-lg leading-none mt-0.5">${e.branch_locations?.branch_name || '未綁定'}</p></div>
-                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">上班時間</p><p class="font-black text-slate-700 text-base md:text-lg leading-none mt-0.5">${(e.work_start_time||'09:00').slice(0,5)}</p></div>
-                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">下班時間</p><p class="font-black text-slate-700 text-base md:text-lg leading-none mt-0.5">${(e.work_end_time||'18:00').slice(0,5)}</p></div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">員工編號</p><p class="font-black text-sky-700 text-lg leading-none mt-0.5">${e.employee_no||'未設定'}</p></div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">入職日期</p><p class="font-black text-slate-700 text-lg leading-none mt-0.5">${e.onboarding_date}</p></div>
+                            <div class="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">工作打卡據點</p><p class="font-black text-slate-800 text-lg leading-none mt-0.5">${e.branch_locations?.branch_name || '未綁定'}</p></div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">上班時間</p><p class="font-black text-slate-700 text-lg leading-none mt-0.5">${(e.work_start_time||'09:00').slice(0,5)}</p></div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">下班時間</p><p class="font-black text-slate-700 text-lg leading-none mt-0.5">${(e.work_end_time||'18:00').slice(0,5)}</p></div>
                         </div>
                     </div>
 
@@ -804,7 +804,7 @@
                             <div><label class="text-[10px] font-bold text-slate-500 ml-1">身分證字號</label><input type="text" id="edit-idnum" value="${e.id_number}" class="admin-input bg-white uppercase" required></div>
                             <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">員工職位</label><select id="edit-job-title" class="admin-input bg-white font-bold select-arrow"><option value="主管" ${e.job_title==='主管'?'selected':''}>主管</option><option value="業務" ${e.job_title==='業務'?'selected':''}>業務</option><option value="助理" ${e.job_title==='助理'?'selected':''}>助理</option></select></div>
                             
-                            <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-red-700 mb-2">⚙️ 權限與紀律設定</h5><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">盤點負責人</label><select id="edit-inv-mgr" class="admin-input bg-white font-bold select-arrow"><option value="false" ${!e.is_inventory_manager?'selected':''}>否</option><option value="true" ${e.is_inventory_manager?'selected':''}>是 (需執行盤點)</option></select></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">絕對計點總數</label><input type="number" id="edit-penalty" value="${e.penalty_points||0}" class="admin-input bg-white font-black text-red-600" required></div></div></div>
+                            <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-red-700 mb-2">⚙️ 權限與紀律設定</h5><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">盤點負責人</label><select id="edit-inv-mgr" class="admin-input bg-white font-bold select-arrow"><option value="false" ${!e.is_inventory_manager?'selected':''}>否</option><option value="true" ${e.is_inventory_manager?'selected':''}>是 (需執行盤點)</option></select></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">修改計點絕對值</label><input type="number" id="edit-penalty" value="${e.penalty_points||0}" class="admin-input bg-white font-black text-red-600" required></div></div></div>
 
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-blue-700 mb-2">⏰ 考勤班別設定</h5><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">上班時間</label><input type="time" id="edit-start-time" value="${(e.work_start_time||'09:00').slice(0,5)}" class="admin-input bg-white font-black text-blue-700" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">下班時間</label><input type="time" id="edit-end-time" value="${(e.work_end_time||'18:00').slice(0,5)}" class="admin-input bg-white font-black text-blue-700" required></div></div></div>
                             <div><label class="text-[10px] font-bold text-slate-500 ml-1">入職日期</label><input type="date" id="edit-onboard" value="${e.onboarding_date}" class="admin-input bg-white" required></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">工作打卡據點</label><select id="edit-branch" class="admin-input bg-white font-bold select-arrow">${brOptions}</select></div>
@@ -827,6 +827,10 @@
             const btn = document.getElementById('btn-save-emp'); const originText = btn.innerHTML; btn.innerHTML = '⏳ 儲存中...'; btn.disabled = true;
             let st = document.getElementById('edit-start-time').value; if(st && st.length === 5) st += ':00'; let et = document.getElementById('edit-end-time').value; if(et && et.length === 5) et += ':00';
             
+            const emp = window.allEmps.find(x => x.id === empId);
+            const newPoints = parseInt(document.getElementById('edit-penalty').value) || 0;
+            const pointsDiff = newPoints - (emp.penalty_points || 0);
+
             const p = { 
                 full_name: document.getElementById('edit-name').value, employment_status: document.getElementById('edit-status').value, 
                 employee_no: document.getElementById('edit-emp-no').value || '未設定',
@@ -839,12 +843,14 @@
                 bank_name: document.getElementById('edit-bank-name').value, bank_code: document.getElementById('edit-bank-code').value, 
                 bank_user_name: document.getElementById('edit-bank-user').value, bank_account: document.getElementById('edit-bank-account').value,
                 is_inventory_manager: document.getElementById('edit-inv-mgr').value === 'true', 
-                penalty_points: parseInt(document.getElementById('edit-penalty').value) || 0
+                penalty_points: newPoints
             };
             
             const { error } = await window._sb.from('employees').update(p).eq('id', empId);
             if (error) { alert('更新失敗: ' + error.message); btn.innerHTML = originText; btn.disabled = false; } 
             else { 
+                // 🌟 同步將手動修改寫入 log 以供「只算當年」邏輯抓取
+                if(pointsDiff !== 0) { await window._sb.from('penalty_logs').insert([{ employee_id: empId, points: pointsDiff, reason: '後台手動校正' }]); }
                 btn.innerHTML = '✅ 儲存完畢'; await loadAll(); setTimeout(() => openEmpDetail(empId), 1000); 
             }
         }
