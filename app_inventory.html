@@ -20,7 +20,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         
-        /* 🚨 列印黑科技：隱藏所有無關元素，只顯示條碼區塊 */
         @media print {
             body * { visibility: hidden; }
             #print-zone, #print-zone * { visibility: visible; }
@@ -173,6 +172,7 @@
                             <div class="col-span-2"><input type="text" id="i-name" placeholder="品名 (必填)" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none focus:border-sky-500" required></div>
                             <div><input type="text" id="i-code" placeholder="料號 (例: TMP-001)" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 uppercase outline-none focus:border-sky-500" required></div>
                             <div><select id="i-type" class="w-full p-3 bg-white rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required><option value="原料">原料</option><option value="成品" selected>成品</option></select></div>
+                            
                             <div class="col-span-2">
                                 <select id="i-category" onchange="checkCustomCategory()" class="w-full p-3 bg-white rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required>
                                     <option value="" disabled selected>請選擇產品類別</option>
@@ -180,6 +180,7 @@
                                 </select>
                                 <input type="text" id="i-custom-category" placeholder="請輸入新類別名稱" class="hidden mt-2 w-full p-3 bg-sky-50 rounded-xl text-sm font-bold border border-sky-300 outline-none">
                             </div>
+
                             <div class="col-span-2"><input type="text" id="i-spec" placeholder="詳細規格尺寸 (選填)" class="w-full p-3 bg-slate-50 rounded-xl text-sm border border-slate-200 outline-none focus:border-sky-500"></div>
                             
                             <div class="bg-white p-2 rounded-xl border border-slate-200"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">每箱包裝數量</label><input type="number" id="i-qty" value="1" min="1" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none" required></div>
@@ -250,8 +251,8 @@
     <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[100] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <a href="app_hr.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-slate-800"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></a>
         <a href="app_inventory.html" class="flex-1 flex flex-col items-center py-1 transition text-emerald-600"><span class="text-xl mb-1">📦</span><span class="scale-90">庫存</span></a>
-        <a href="app_sales.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-slate-800"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></a>
         <a href="app_purchase.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></a>
+        <a href="app_sales.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-slate-800"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></a>
         <a href="app_finance.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></a>
     </nav>
 
@@ -367,7 +368,6 @@
             document.querySelectorAll('.inv-item').forEach(el => { const text = el.getAttribute('data-search').toLowerCase(); const elCat = el.getAttribute('data-cat'); el.style.display = (text.includes(keyword) && (cat === '' || elCat === cat)) ? 'flex' : 'none'; });
         }
 
-        // 🌟 拋轉至採購中心邏輯
         function togglePurchase(id, el) { 
             if(el.checked) purchaseCart.add(id); else purchaseCart.delete(id); 
             updateTopPurchaseBar();
@@ -382,9 +382,7 @@
 
         function sendToPurchase() {
             if(purchaseCart.size === 0) return;
-            // 將勾選清單存入 localStorage，然後跳轉至獨立採購系統
             localStorage.setItem('hypass_draft_po', JSON.stringify(Array.from(purchaseCart)));
-            alert('✅ 採購需求已發送！正為您跳轉至採購管理中心...');
             window.location.href = 'app_purchase.html';
         }
 
@@ -454,7 +452,6 @@
 
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // 🚨 隱藏式 CSS 列印黑科技 (保證不被瀏覽器阻擋)
         function printBarcodeFromId(id) { 
             const item = allItems.find(i => i.id === id); if(!item) return; 
             JsBarcode("#barcode-svg", item.item_code, { format: "CODE128", width: 2.5, height: 80, displayValue: true, fontSize: 24, fontOptions: "bold" }); 
