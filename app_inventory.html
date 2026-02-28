@@ -62,7 +62,7 @@
                 <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[2rem] p-6 text-white shadow-lg relative overflow-hidden">
                     <div class="absolute -right-4 -top-4 text-7xl opacity-20">📦</div>
                     <h2 class="text-2xl font-black mb-1">行動盤點中心</h2>
-                    <p class="text-xs font-bold text-emerald-100 mb-4 tracking-wider">支援相機掃碼與快速滑動輸入</p>
+                    <p class="text-xs font-bold text-emerald-100 mb-4 tracking-wider">支援相機掃碼與連掃模式</p>
                     
                     <div class="bg-white/20 p-4 rounded-xl border border-white/20 backdrop-blur-sm mt-4">
                         <p class="text-[10px] font-bold mb-2 tracking-widest uppercase flex items-center justify-between">
@@ -123,7 +123,7 @@
                 <div class="glass-card p-4 rounded-[2rem] shadow-sm mb-4 bg-slate-900 border-0">
                     <h3 class="text-white font-black text-center mb-3 tracking-widest text-sm">請將鏡頭對準料號條碼</h3>
                     <div id="reader" class="w-full rounded-2xl overflow-hidden bg-black min-h-[350px] shadow-inner"></div>
-                    <button onclick="stopScanner(); backToDash()" class="w-full mt-4 bg-slate-700 hover:bg-slate-600 text-white font-black py-4 rounded-xl active:scale-95 transition">結束掃描並返回</button>
+                    <button onclick="backToDash()" class="w-full mt-4 bg-slate-700 hover:bg-slate-600 text-white font-black py-4 rounded-xl active:scale-95 transition">結束掃描並返回</button>
                 </div>
             </div>
 
@@ -143,29 +143,37 @@
                         <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 shadow-inner">
                             <label class="text-[11px] font-black text-slate-500 ml-1 mb-2 block tracking-wider">📦 儲存庫 (整箱)</label>
                             <select id="c-box-count" onchange="calcTotal()" class="w-full bg-white border border-slate-300 p-3 rounded-xl text-lg font-black text-slate-800 text-center select-arrow shadow-sm outline-none">
-                                <option value="0">0 箱</option><option value="1">1 箱</option><option value="2">2 箱</option><option value="3">3 箱</option>
-                                <option value="4">4 箱</option><option value="5">5 箱</option><option value="6">6 箱</option><option value="7">7 箱</option>
-                                <option value="8">8 箱</option><option value="9">9 箱</option><option value="10">10 箱</option><option value="custom">手動輸入...</option>
+                                <option value="0" selected>0 箱</option>
+                                <option value="1">1 箱</option><option value="2">2 箱</option><option value="3">3 箱</option>
+                                <option value="4">4 箱</option><option value="5">5 箱</option><option value="6">6 箱</option>
+                                <option value="7">7 箱</option><option value="8">8 箱</option><option value="9">9 箱</option>
+                                <option value="custom">自訂輸入...</option>
                             </select>
                             <input type="number" id="c-custom-box" oninput="calcTotal()" class="hidden w-full bg-sky-50 border border-sky-300 p-3 rounded-xl text-lg font-black text-sky-800 text-center shadow-sm mt-2 outline-none" placeholder="輸入箱數">
                         </div>
                         <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 shadow-inner">
                             <label class="text-[11px] font-black text-slate-500 ml-1 mb-2 block tracking-wider">🏷️ 出貨庫 (散裝)</label>
                             <select id="c-fraction-count" onchange="calcTotal()" class="w-full bg-white border border-slate-300 p-3 rounded-xl text-lg font-black text-slate-800 text-center select-arrow shadow-sm outline-none">
-                                <option value="0">0 件</option><option value="0.25">1/4 箱</option><option value="0.5">1/2 箱</option><option value="0.75">3/4 箱</option>
+                                <option value="1">1 箱</option>
+                                <option value="0.75">3/4 箱</option>
+                                <option value="0.5">1/2 箱</option>
+                                <option value="0.25">1/4 箱</option>
+                                <option value="0" selected>0 箱</option>
                             </select>
                         </div>
                     </div>
                     <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl mb-6 text-center shadow-inner">
                         <p class="text-[10px] font-black text-emerald-700 mb-2 tracking-widest uppercase">系統自動換算總量</p>
-                        <p class="text-[9px] font-bold text-emerald-600/70 mb-3">(此料號包裝為每箱 <span id="c-pack-num" class="font-black text-emerald-800">--</span> 件)</p>
+                        <p class="text-[9px] font-bold text-emerald-600/70 mb-3">(此料號包裝為每箱 <span id="c-pack-num" class="font-black text-emerald-800 text-sm">--</span> 件)</p>
                         <div class="flex items-center justify-center space-x-4">
                             <button onclick="adjustTotal(-1)" class="w-12 h-12 bg-white rounded-full font-black text-2xl text-emerald-600 shadow-md active:scale-90 transition transform">-</button>
                             <input type="number" id="c-total-qty" class="bg-transparent text-5xl font-black text-emerald-900 w-28 text-center outline-none tracking-tighter" readonly>
                             <button onclick="adjustTotal(1)" class="w-12 h-12 bg-white rounded-full font-black text-2xl text-emerald-600 shadow-md active:scale-90 transition transform">+</button>
                         </div>
                     </div>
-                    <button onclick="submitCount()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition text-lg tracking-widest">💾 儲存並繼續盤點</button>
+                    <button id="btn-submit-count" onclick="submitCount()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition text-lg tracking-widest flex justify-center items-center">
+                        <span>💾 確認並盤點下一個</span>
+                    </button>
                 </div>
             </div>
 
@@ -217,7 +225,6 @@
                         </select>
                         <input type="text" id="item-search-input" placeholder="搜尋料號或品名..." class="w-2/3 bg-slate-50 border border-slate-300 p-3 rounded-xl text-sm font-bold outline-none focus:border-slate-500 transition shadow-inner" onkeyup="renderItemSearch()">
                     </div>
-                    
                     <div id="item-search-results" class="space-y-4 max-h-[65vh] overflow-y-auto pr-1 no-scrollbar pb-10">
                         <div class="text-center text-xs text-slate-400 py-6 italic">請輸入關鍵字搜尋料號...</div>
                     </div>
@@ -263,6 +270,8 @@
         <div onclick="window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
     </nav>
 
+    <audio id="beep-sound" src="data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
+
     <script src="shared.js"></script>
     <script>
         let html5QrcodeScanner = null; let currentItemPackQty = 1; let allItems = []; window.inventoryData = []; window.latestChecks = {}; let purchaseCart = new Set(); let isScanning = false;
@@ -284,22 +293,22 @@
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
+        // 🚨 返回時，確保安全關閉鏡頭再跳轉
         function backToDash() { 
-            if(isScanning) stopScanner();
-            document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active')); 
-            document.getElementById('view-dashboard').classList.add('active'); 
-            document.getElementById('header-title').innerText = '庫存大廳'; 
-            document.getElementById('btn-back').classList.add('hidden'); 
-            document.getElementById('top-purchase-bar').classList.add('hidden');
-            loadItems();
+            stopScanner(() => {
+                document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active')); 
+                document.getElementById('view-dashboard').classList.add('active'); 
+                document.getElementById('header-title').innerText = '庫存大廳'; 
+                document.getElementById('btn-back').classList.add('hidden'); 
+                document.getElementById('top-purchase-bar').classList.add('hidden');
+                loadItems();
+            });
         }
 
         function openSearchPrintView() {
             openView('search-print', '料號查詢編輯與標籤列印');
             const searchCatSel = document.getElementById('search-cat-filter');
-            if(Array.from(searchCatSel.options).some(o=>o.value==='汽車冷氣濾網')) {
-                searchCatSel.value = '汽車冷氣濾網';
-            }
+            if(Array.from(searchCatSel.options).some(o=>o.value==='汽車冷氣濾網')) { searchCatSel.value = '汽車冷氣濾網'; }
             renderItemSearch();
         }
 
@@ -331,11 +340,7 @@
             if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
         }
 
-        async function openInventoryList() {
-            openView('inventory-list', '即時庫存總表'); loadItems();
-            renderInventoryListUI(window.inventoryData);
-            updateTopPurchaseBar();
-        }
+        async function openInventoryList() { openView('inventory-list', '即時庫存總表'); loadItems(); renderInventoryListUI(window.inventoryData); updateTopPurchaseBar(); }
 
         function renderInventoryListUI(data) {
             const container = document.getElementById('ui-inventory-list');
@@ -383,42 +388,28 @@
             document.querySelectorAll('.inv-item').forEach(el => { const text = el.getAttribute('data-search').toLowerCase(); const elCat = el.getAttribute('data-cat'); el.style.display = (text.includes(keyword) && (cat === '' || elCat === cat)) ? 'flex' : 'none'; });
         }
 
-        function togglePurchase(id, el) { 
-            if(el.checked) purchaseCart.add(id); else purchaseCart.delete(id); 
-            updateTopPurchaseBar();
-        }
+        function togglePurchase(id, el) { if(el.checked) purchaseCart.add(id); else purchaseCart.delete(id); updateTopPurchaseBar(); }
+        function updateTopPurchaseBar() { const bar = document.getElementById('top-purchase-bar'); if(purchaseCart.size > 0 && document.getElementById('view-inventory-list').classList.contains('active')) { bar.classList.remove('hidden'); document.getElementById('top-cart-count').innerText = purchaseCart.size; } else { bar.classList.add('hidden'); } }
+        function sendToPurchase() { if(purchaseCart.size === 0) return; localStorage.setItem('hypass_draft_po', JSON.stringify(Array.from(purchaseCart))); window.location.href = 'app_purchase.html'; }
 
-        function updateTopPurchaseBar() {
-            const bar = document.getElementById('top-purchase-bar');
-            if(purchaseCart.size > 0 && document.getElementById('view-inventory-list').classList.contains('active')) {
-                bar.classList.remove('hidden'); document.getElementById('top-cart-count').innerText = purchaseCart.size;
-            } else { bar.classList.add('hidden'); }
-        }
-
-        function sendToPurchase() {
-            if(purchaseCart.size === 0) return;
-            localStorage.setItem('hypass_draft_po', JSON.stringify(Array.from(purchaseCart)));
-            window.location.href = 'app_purchase.html';
-        }
-
-        // 🚨 相機掃描防卡死與提示升級
+        // 🚨 終極防護：相機掃描防卡死與無限連掃工作流
         function openScanner() { 
             openView('scanner', '相機掃描盤點'); 
             isScanning = true; 
             setTimeout(() => { 
-                html5QrcodeScanner = new Html5Qrcode("reader"); 
+                if (!html5QrcodeScanner) { html5QrcodeScanner = new Html5Qrcode("reader"); }
+                if (html5QrcodeScanner.isScanning) return;
                 html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScanSuccess).catch((e)=>{ 
-                    alert('相機啟動失敗，請確認已給予鏡頭權限！'); 
-                    backToDash(); 
+                    alert('相機啟動失敗，請確認已給予鏡頭權限！'); backToDash(); 
                 }); 
             }, 300); 
         }
 
-        function stopScanner() { 
+        function stopScanner(callback) { 
             isScanning = false; 
-            if(html5QrcodeScanner) { 
-                try { html5QrcodeScanner.stop().then(() => html5QrcodeScanner.clear()).catch(()=>{}); } catch(e){} 
-            } 
+            if(html5QrcodeScanner && html5QrcodeScanner.isScanning) { 
+                html5QrcodeScanner.stop().then(() => { if(callback) callback(); }).catch(() => { if(callback) callback(); }); 
+            } else { if(callback) callback(); }
         }
 
         function onScanSuccess(decodedText) { 
@@ -426,18 +417,19 @@
             isScanning = false; 
             
             const beep = document.getElementById('beep-sound'); 
-            if(beep) beep.play().catch(()=>{});
-            
-            stopScanner();
+            if(beep) { beep.currentTime = 0; beep.play().catch(()=>{}); }
             
             const code = decodedText.trim().toUpperCase();
             const item = allItems.find(i => i.item_code.toUpperCase() === code || i.id === code); 
-            if(item) { 
-                setTimeout(() => openCountView(item), 150); 
-            } else { 
-                alert('❌ 系統中查無此料號條碼：' + code); 
-                backToDash(); 
-            } 
+            
+            stopScanner(() => {
+                if(item) { 
+                    openCountView(item); 
+                } else { 
+                    alert('❌ 系統中查無此料號條碼：' + code); 
+                    backToDash(); 
+                } 
+            });
         }
 
         function openCountView(item) { 
@@ -448,12 +440,42 @@
             document.getElementById('c-item-id').value = item.id; 
             currentItemPackQty = item.qty_per_pack || 1; 
             document.getElementById('c-pack-num').innerText = currentItemPackQty;
+            
+            // 每次進入重置輸入框
+            document.getElementById('c-box-count').value = '0';
+            document.getElementById('c-fraction-count').value = '0';
+            document.getElementById('c-custom-box').value = '';
+            document.getElementById('c-custom-box').classList.add('hidden');
+            document.getElementById('c-total-qty').value = '0';
+            
             calcTotal(); 
         }
 
-        function calcTotal() { let box = document.getElementById('c-box-count').value; let boxes = box === 'custom' ? parseInt(document.getElementById('c-custom-box').value) || 0 : parseInt(box); let frac = parseFloat(document.getElementById('c-fraction-count').value); document.getElementById('c-total-qty').value = Math.round((boxes + frac) * currentItemPackQty); }
+        function calcTotal() { let box = document.getElementById('c-box-count').value; if(box==='custom'){ document.getElementById('c-custom-box').classList.remove('hidden'); }else{ document.getElementById('c-custom-box').classList.add('hidden'); } let boxes = box === 'custom' ? parseInt(document.getElementById('c-custom-box').value) || 0 : parseInt(box); let frac = parseFloat(document.getElementById('c-fraction-count').value); document.getElementById('c-total-qty').value = Math.round((boxes + frac) * currentItemPackQty); }
         function adjustTotal(val) { document.getElementById('c-total-qty').value = Math.max(0, parseInt(document.getElementById('c-total-qty').value) + val); }
-        async function submitCount() { const id = document.getElementById('c-item-id').value; const newVal = parseInt(document.getElementById('c-total-qty').value); const item = window.inventoryData.find(x => x.id === id); const diff = newVal - (item?.current_stock || 0); await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: '相機掃碼校正' }]); alert('✅ 盤點成功！'); openScanner(); }
+        
+        async function submitCount() { 
+            const id = document.getElementById('c-item-id').value; 
+            const newVal = parseInt(document.getElementById('c-total-qty').value); 
+            const item = window.inventoryData.find(x => x.id === id); 
+            const diff = newVal - (item?.current_stock || 0); 
+            
+            const btn = document.getElementById('btn-submit-count');
+            btn.innerText = '💾 紀錄中...'; btn.disabled = true;
+
+            await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: '相機掃碼校正' }]); 
+            
+            // 儲存成功，給予雙重聽覺回饋
+            const beep = document.getElementById('beep-sound'); 
+            if(beep) { beep.currentTime = 0; beep.play().catch(()=>{}); }
+            
+            if(item) item.current_stock = newVal;
+            
+            btn.innerText = '💾 確認並盤點下一個'; btn.disabled = false;
+            
+            // 瞬間跳回相機，達成無限連掃工作流
+            openScanner();
+        }
         
         function renderBomTable(tbodyId, existingData = []) {
             let html = ''; for(let i=0; i<10; i++) {
@@ -539,7 +561,7 @@
 
         window.onload = bootInventory;
 
-        // 🚨 終極強制覆寫導覽列 (攔截 shared.js 的舊設定，鎖死正確排序與跳轉)
+        // 🚨 終極強制覆寫導覽列
         const enforceNavObserver = new MutationObserver(() => {
             const oldNav = document.querySelector('nav:not(#core-bottom-nav)');
             if (oldNav) oldNav.remove();
