@@ -110,18 +110,18 @@
                             <div id="yeb-section" class="hidden grid grid-cols-2 gap-3 bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-inner">
                                 <div>
                                     <label id="lbl-yeb" class="text-[11px] font-black text-amber-800 ml-1">🎁 核定年終獎金</label>
-                                    <input type="number" id="p-yeb" oninput="calcPayroll()" class="admin-input font-black text-amber-600 bg-white border-amber-300 text-lg mt-1" placeholder="輸入金額">
+                                    <input type="number" id="p-yeb" oninput="calcPayroll()" class="admin-input font-black text-amber-600 bg-white border-amber-300 text-lg mt-1" placeholder="留空或輸入金額">
                                 </div>
                                 <div>
-                                    <label class="text-[11px] font-black text-emerald-700 ml-1 flex justify-between"><span id="lbl-ulp-text">✨ 未休特休結算</span><span class="text-[9px] text-emerald-600/70 font-bold mt-0.5">自動換算</span></label>
-                                    <input type="number" id="p-ulp" oninput="calcPayroll()" class="admin-input font-black text-emerald-600 bg-white border-emerald-300 text-lg mt-1" value="0">
+                                    <label id="lbl-ulp-text" class="text-[11px] font-black text-emerald-700 ml-1 flex justify-between"><span>✨ 未休特休結算</span></label>
+                                    <input type="number" id="p-ulp" oninput="calcPayroll()" class="admin-input font-black text-emerald-600 bg-white border-emerald-300 text-lg mt-1" placeholder="系統自動換算帶入">
                                 </div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
-                        <div class="flex justify-between items-center mb-2"><h4 class="text-[10px] font-black text-indigo-800 tracking-widest">🤖 當月出勤分析 (同步連動)</h4><button onclick="updateAttendanceRate()" class="text-[9px] bg-indigo-200 text-indigo-800 px-2 py-1 rounded font-bold hover:bg-indigo-300">手動刷新</button></div>
+                        <div class="flex justify-between items-center mb-2"><h4 class="text-[10px] font-black text-indigo-800 tracking-widest">🤖 當月出勤分析 (同步連動)</h4><button onclick="updateAttendanceRate()" class="text-[9px] bg-indigo-200 text-indigo-800 px-2 py-1 rounded font-bold hover:bg-indigo-300">重新讀取</button></div>
                         <div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-600 bg-white p-2 rounded-lg border border-indigo-100 shadow-sm mb-3">
                             <div>病假<br><span id="sd-sick" class="text-indigo-600 text-sm font-black">0</span>h</div>
                             <div>事假<br><span id="sd-per" class="text-indigo-600 text-sm font-black">0</span>h</div>
@@ -133,17 +133,30 @@
                         <div class="flex space-x-3"><div class="flex-1"><label class="text-[10px] font-bold text-indigo-800 ml-1">請假扣薪總額 (系統精算)</label><input type="number" id="p-lvd" oninput="calcNet()" class="admin-input font-black text-indigo-600 border-indigo-200 bg-white" value="0"></div></div>
                     </div>
 
-                    <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 shadow-sm">
-                        <h4 class="text-[10px] font-black text-amber-800 tracking-widest mb-2 flex justify-between items-center"><span>📊 當年度出勤與紀律總評估 (同步連動)</span></h4>
-                        <div class="grid grid-cols-3 gap-2 text-center text-[11px] font-bold text-slate-600 bg-white p-3 rounded-lg border border-amber-100 shadow-inner">
-                            <div>未休特休<br><span id="sy-ann" class="text-amber-600 text-base font-black">0</span>h</div>
-                            <div>事假<br><span id="sy-per" class="text-amber-600 text-base font-black">0</span>h</div>
-                            <div>病假<br><span id="sy-sic" class="text-amber-600 text-base font-black">0</span>h</div>
-                            <div>遲到<br><span id="sy-lat" class="text-amber-600 text-base font-black">0</span>次</div>
-                            <div>加班<br><span id="sy-ovt" class="text-emerald-600 text-base font-black">0</span>h</div>
-                            <div>計點<br><span id="sy-pnt" class="text-red-600 text-base font-black">0</span>次</div>
+                    <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 shadow-sm space-y-4">
+                        <div>
+                            <h4 id="lbl-eval-prev" class="text-[10px] font-black text-amber-800 tracking-widest mb-2 border-b border-amber-200 pb-1">上年度 (核心基準)</h4>
+                            <div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-500 bg-white p-2 rounded-lg border border-amber-100 shadow-inner">
+                                <div>特休<br><span id="sy-prev-ann" class="text-amber-600 text-sm font-black">0</span>h</div>
+                                <div>事假<br><span id="sy-prev-per" class="text-amber-600 text-sm font-black">0</span>h</div>
+                                <div>病假<br><span id="sy-prev-sic" class="text-amber-600 text-sm font-black">0</span>h</div>
+                                <div>遲到<br><span id="sy-prev-lat" class="text-amber-600 text-sm font-black">0</span>次</div>
+                                <div>加班<br><span id="sy-prev-ovt" class="text-emerald-600 text-sm font-black">0</span>h</div>
+                                <div>計點<br><span id="sy-prev-pnt" class="text-red-600 text-sm font-black">0</span>次</div>
+                            </div>
                         </div>
-                        <p class="text-[9px] text-amber-700 mt-2 font-bold leading-relaxed">※ 年終發放基準：勞基法規定，上述年度之考勤與違規計點狀況可作為年終獎金與績效發放之評估依據。</p>
+                        <div>
+                            <h4 id="lbl-eval-curr" class="text-[10px] font-black text-amber-800 tracking-widest mb-2 border-b border-amber-200 pb-1">當年度 (參考近況)</h4>
+                            <div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-500 bg-white p-2 rounded-lg border border-amber-100 shadow-inner opacity-80">
+                                <div>特休<br><span id="sy-curr-ann" class="text-amber-600 text-sm font-black">0</span>h</div>
+                                <div>事假<br><span id="sy-curr-per" class="text-amber-600 text-sm font-black">0</span>h</div>
+                                <div>病假<br><span id="sy-curr-sic" class="text-amber-600 text-sm font-black">0</span>h</div>
+                                <div>遲到<br><span id="sy-curr-lat" class="text-amber-600 text-sm font-black">0</span>次</div>
+                                <div>加班<br><span id="sy-curr-ovt" class="text-emerald-600 text-sm font-black">0</span>h</div>
+                                <div>計點<br><span id="sy-curr-pnt" class="text-red-600 text-sm font-black">0</span>次</div>
+                            </div>
+                        </div>
+                        <p class="text-[9px] text-amber-700 font-bold leading-relaxed mt-2 text-center">※ 勞基法規定，上述年度之考勤與違規狀況可作為年終獎金發放之評估依據。</p>
                     </div>
                     
                     <div class="p-4 bg-red-50 rounded-xl border border-red-100 grid grid-cols-2 gap-3 relative"><button onclick="calcPayroll()" class="absolute -top-3 right-3 text-[9px] bg-slate-800 text-white font-bold px-2 py-1 rounded shadow-sm">🤖 依眷屬重新計算</button><div><label class="text-[10px] font-bold text-red-800 ml-1">勞健保扣除</label><input type="number" id="p-ins" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200 bg-white"></div><div><label class="text-[10px] font-bold text-red-800 ml-1">二代健保 (含年終)</label><input type="number" id="p-2nd" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200 bg-white"></div></div>
@@ -409,14 +422,25 @@
                     let isLow = i.current_stock <= safe;
                     let isWarn = !isLow && i.current_stock <= (safe * 1.5);
                     
-                    let badge = '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold border border-emerald-200">標準</span>';
-                    let textCol = 'text-slate-800';
-                    if(isLow) { badge = '<span class="text-[9px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold border border-red-200 animate-pulse">低水位</span>'; textCol = 'text-red-600'; }
-                    else if(isWarn) { badge = '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold border border-amber-200">警示</span>'; textCol = 'text-amber-600'; }
+                    let badge = '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold border border-emerald-200 shadow-sm">標準水位</span>';
+                    let borderClass = 'border-emerald-400 bg-emerald-50/10';
+                    let textCol = 'text-slate-700';
+                    
+                    if(isLow) { 
+                        badge = '<span class="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded font-black shadow-sm animate-pulse">⚠️ 低水位</span>'; 
+                        borderClass = 'border-red-500 bg-red-50/30';
+                        textCol = 'text-red-600'; 
+                    } else if(isWarn) { 
+                        badge = '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold border border-amber-300 shadow-sm">警示水位</span>'; 
+                        borderClass = 'border-amber-400 bg-amber-50/30';
+                        textCol = 'text-amber-600'; 
+                    }
 
                     let catTag = `<span class="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded ml-1">${i.category || '未分類'}</span>`;
-                    htmlM += `<div class="glass-panel p-4 flex justify-between items-center inv-admin-item mb-3" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><div class="flex-1"><span class="text-[10px] text-indigo-600 bg-indigo-50 px-1.5 rounded font-mono">${i.item_code}</span>${catTag}<h4 class="font-black text-sm text-slate-800 mt-1">${i.item_name} ${badge}</h4><p class="text-[10px] text-slate-500 mt-0.5">規格: ${i.specification||'無'} | 週期: ${i.lead_time_days}天</p></div><div class="text-right pl-3 border-l border-slate-100"><div class="text-xl font-black ${textCol}">${i.current_stock}</div><button onclick="openEditItem('${i.id}')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded mt-1 font-bold hover:bg-slate-200">修改</button></div></div>`;
-                    htmlD += `<tr class="hover:bg-slate-50 inv-admin-item" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><td class="px-6 py-4"><div class="mb-1"><span class="text-[10px] text-indigo-600 font-mono bg-indigo-50 px-1.5 rounded mr-1">${i.item_code}</span>${catTag}</div><span class="font-black text-slate-800">${i.item_name}</span> ${badge}<br><span class="text-[10px] text-slate-400 font-bold">${i.specification||'無規格'}</span></td><td class="px-6 py-4 text-right font-black ${textCol} text-lg">${i.current_stock}</td><td class="px-6 py-4 text-right text-slate-500 font-bold">${safe}</td><td class="px-6 py-4 text-center text-slate-500 font-bold">${i.lead_time_days}</td><td class="px-6 py-4 text-center"><button onclick="openEditItem('${i.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">修改參數</button></td></tr>`;
+                    
+                    htmlM += `<div class="glass-panel p-4 flex justify-between items-center inv-admin-item mb-3 border-2 ${borderClass}" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><div class="flex-1 pr-2"><div class="mb-1.5"><span class="text-[10px] text-indigo-600 bg-white border border-indigo-100 px-1.5 py-0.5 rounded font-mono tracking-wider">${i.item_code}</span>${catTag}</div><h4 class="font-black text-sm text-slate-800 leading-tight mb-1">${i.item_name}</h4><p class="text-[10px] text-slate-500 truncate">規格: ${i.specification||'無'} | 週期: ${i.lead_time_days}天</p></div><div class="text-right pl-3 border-l border-slate-200 flex flex-col items-end shrink-0">${badge}<div class="text-2xl font-black ${textCol} mt-1 tracking-tight">${i.current_stock}</div><button onclick="openEditItem('${i.id}')" class="text-[10px] bg-slate-800 text-white px-3 py-1.5 rounded-lg mt-1.5 font-bold hover:bg-slate-700 active:scale-95 shadow-sm transition">修改參數</button></div></div>`;
+                    
+                    htmlD += `<tr class="hover:bg-slate-50 inv-admin-item border-l-4 ${borderClass.split(' ')[0]}" data-search="${i.item_code} ${i.item_name} ${i.specification||''}" data-cat="${i.category||'未分類'}"><td class="px-6 py-4"><div class="mb-1"><span class="text-[10px] text-indigo-600 font-mono bg-indigo-50 px-1.5 py-0.5 rounded mr-1">${i.item_code}</span>${catTag}</div><span class="font-black text-slate-800">${i.item_name}</span><br><span class="text-[10px] text-slate-500 font-bold mt-1 inline-block">${i.specification||'無規格'}</span></td><td class="px-6 py-4 text-right"><div class="flex flex-col items-end">${badge}<span class="font-black ${textCol} text-xl mt-1 tracking-tight">${i.current_stock}</span></div></td><td class="px-6 py-4 text-right text-slate-500 font-bold">${safe}</td><td class="px-6 py-4 text-center text-slate-500 font-bold">${i.lead_time_days}</td><td class="px-6 py-4 text-center"><button onclick="openEditItem('${i.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm active:scale-95">修改參數</button></td></tr>`;
                 });
             }
             document.getElementById('list-inv-mobile').innerHTML = htmlM; document.getElementById('list-inv-desktop').innerHTML = htmlD;
@@ -467,46 +491,64 @@
             }
         }
 
-        // 🌟 精準同步出勤統計，確保不卡死
+        // 🌟 精準同步雙年度出勤統計
         async function updateAttendanceRate() { 
             const empId = document.getElementById('p-emp').value; 
             const month = document.getElementById('p-mon').value; 
             if(!empId || !month) return; 
 
-            const y = month.split('-')[0];
+            const currentYear = parseInt(month.split('-')[0]);
+            const prevYear = currentYear - 1;
             
             try {
                 // 抓取當月
-                const { data } = await window._sb.rpc('fn_get_payroll_calc', { p_emp_id: empId, p_month: month }); 
-                if(data) { 
-                    document.getElementById('sd-sick').innerText = data.sick_hrs || 0; 
-                    document.getElementById('sd-per').innerText = data.personal_hrs || 0; 
-                    document.getElementById('sd-typ').innerText = data.typhoon_hrs || 0; 
-                    document.getElementById('sd-lat').innerText = data.late_count || 0; 
-                    document.getElementById('sd-ovt').innerText = data.overtime_hrs || 0; 
-                    document.getElementById('sd-pnt').innerText = data.total_penalty || 0; 
-                    document.getElementById('p-lvd').value = data.leave_deduct || 0; 
+                const { data: mData } = await window._sb.rpc('fn_get_payroll_calc', { p_emp_id: empId, p_month: month }); 
+                if(mData) { 
+                    document.getElementById('sd-sick').innerText = mData.sick_hrs || 0; 
+                    document.getElementById('sd-per').innerText = mData.personal_hrs || 0; 
+                    document.getElementById('sd-typ').innerText = mData.typhoon_hrs || 0; 
+                    document.getElementById('sd-lat').innerText = mData.late_count || 0; 
+                    document.getElementById('sd-ovt').innerText = mData.overtime_hrs || 0; 
+                    document.getElementById('sd-pnt').innerText = mData.total_penalty || 0; 
+                    document.getElementById('p-lvd').value = mData.leave_deduct || 0; 
                 } 
                 
-                // 抓取當年
-                const { data: yData } = await window._sb.rpc('fn_get_year_end_stats', { p_emp_id: empId, p_year: y });
+                // 抓取當年 (參考近況)
+                const { data: currYData } = await window._sb.rpc('fn_get_year_end_stats', { p_emp_id: empId, p_year: currentYear.toString() });
+                
+                // 抓取上年 (核心基準)
+                const { data: prevYData } = await window._sb.rpc('fn_get_year_end_stats', { p_emp_id: empId, p_year: prevYear.toString() });
+                
                 const { data: lv } = await window._sb.rpc('fn_get_annual_leave_v2', { p_emp_id: empId });
                 let remainHrs = lv ? (lv.remain_hours || 0) : 0;
 
-                if(yData) {
-                    document.getElementById('sy-ann').innerText = remainHrs; 
-                    document.getElementById('sy-per').innerText = yData.personal || 0; 
-                    document.getElementById('sy-sic').innerText = yData.sick || 0; 
-                    document.getElementById('sy-lat').innerText = yData.late || 0; 
-                    document.getElementById('sy-ovt').innerText = yData.overtime || 0; 
-                    document.getElementById('sy-pnt').innerText = yData.total_penalty || 0;
+                // 渲染當年
+                if(currYData) {
+                    document.getElementById('sy-curr-ann').innerText = remainHrs; 
+                    document.getElementById('sy-curr-per').innerText = currYData.personal || 0; 
+                    document.getElementById('sy-curr-sic').innerText = currYData.sick || 0; 
+                    document.getElementById('sy-curr-lat').innerText = currYData.late || 0; 
+                    document.getElementById('sy-curr-ovt').innerText = currYData.overtime || 0; 
+                    document.getElementById('sy-curr-pnt').innerText = currYData.total_penalty || 0;
                 }
 
-                // 更新動態標籤
-                document.getElementById('lbl-yeb').innerText = `🎁 核定年終獎金 (${y}年度)`;
-                document.getElementById('lbl-ulp-text').innerText = `✨ 未休特休結算 (${y}年度，剩餘 ${remainHrs}h)`;
+                // 渲染上年
+                if(prevYData) {
+                    document.getElementById('sy-prev-ann').innerText = '--'; // 特休只看當下剩餘
+                    document.getElementById('sy-prev-per').innerText = prevYData.personal || 0; 
+                    document.getElementById('sy-prev-sic').innerText = prevYData.sick || 0; 
+                    document.getElementById('sy-prev-lat').innerText = prevYData.late || 0; 
+                    document.getElementById('sy-prev-ovt').innerText = prevYData.overtime || 0; 
+                    document.getElementById('sy-prev-pnt').innerText = prevYData.total_penalty || 0;
+                }
+
+                // 更新動態標籤 (年終發放通常是對應前一年)
+                document.getElementById('lbl-yeb').innerText = `🎁 核定年終獎金 (${prevYear}年度)`;
+                document.getElementById('lbl-ulp-text').innerText = `✨ 未休特休結算 (${prevYear}年度，剩餘 ${remainHrs}h)`;
+                document.getElementById('lbl-eval-prev').innerText = `上年度 (${prevYear}) 核心基準`;
+                document.getElementById('lbl-eval-curr').innerText = `當年度 (${currentYear}) 參考近況`;
                 
-                // 只有開啟年終模式時，才自動換算特休
+                // 自動換算特休
                 if(document.getElementById('toggle-yeb').checked) {
                     const base = window.empData[empId]?.base || 0;
                     const hrRate = base / 240;
@@ -525,10 +567,7 @@
             const emp = window.empData[empId]; 
             if(!emp) return; 
             
-            // 🌟 自動帶出核定底薪
             document.getElementById('p-base').value = emp.base; 
-            
-            // 確保有先讀到 DOM 後再去查出勤與重算
             await updateAttendanceRate(); 
         }
         
