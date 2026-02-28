@@ -17,6 +17,10 @@
         .select-arrow { appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-size: 1.5em 1.5em; background-position: right 0.5rem center; background-repeat: no-repeat; padding-right: 2rem; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        /* 🚨 終極防禦：封殺所有 shared.js 產生的舊導覽列，只顯示我們的核心導覽列 */
+        nav { display: none !important; }
+        #core-bottom-nav { display: flex !important; }
     </style>
 </head>
 <body class="text-slate-800 relative">
@@ -37,10 +41,10 @@
                     
                     <div class="bg-white/20 p-4 rounded-xl border border-white/20 backdrop-blur-sm mt-4">
                         <p class="text-[10px] font-bold mb-2 tracking-widest uppercase flex items-center justify-between">
-                            <span>📦 來自庫存的採購需求</span>
+                            <span>📦 待處理的採購需求</span>
                             <span class="bg-red-500 text-white px-2 py-0.5 rounded text-[9px] font-black shadow-sm" id="draft-count">0 件</span>
                         </p>
-                        <button onclick="checkDrafts()" class="w-full bg-white text-amber-600 font-black py-3 rounded-lg text-xs shadow-sm mt-2 active:scale-95 transition">載入待處理清單</button>
+                        <button onclick="checkDrafts()" class="w-full bg-white text-amber-600 font-black py-3 rounded-lg text-xs shadow-sm mt-2 active:scale-95 transition">檢查並載入待處理清單</button>
                     </div>
                 </div>
 
@@ -108,24 +112,26 @@
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">採購單狀態更新</label>
-                    <select id="m-po-status" class="w-full bg-white border border-slate-300 p-3 rounded-xl text-sm font-black text-slate-800 select-arrow shadow-sm outline-none focus:border-sky-500 transition">
+                    <select id="m-po-status" class="w-full bg-white border border-slate-300 p-3 rounded-xl text-sm font-black text-slate-800 select-arrow shadow-sm outline-none focus:border-amber-500 transition">
                         <option value="已建檔">待處理 (已建檔)</option><option value="已下單">⏳ 已下單採購</option><option value="已到貨">✅ 已到貨結案</option>
                     </select>
                 </div>
             </div>
             <div class="flex space-x-3 mt-6 pt-4 border-t border-slate-100">
                 <button onclick="closeModal('po-detail-modal')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl transition active:scale-95">關閉</button>
-                <button onclick="updatePOStatus()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-3.5 rounded-xl transition shadow-md active:scale-95">儲存狀態</button>
+                <button onclick="updatePOStatus()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-black py-3.5 rounded-xl transition shadow-md active:scale-95 tracking-widest">儲存狀態</button>
             </div>
         </div>
     </div>
 
-    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[100] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <a href="app_hr.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-slate-800"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></a>
-        <a href="app_inventory.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></a>
-        <a href="app_purchase.html" class="flex-1 flex flex-col items-center py-1 transition text-amber-600"><span class="text-xl mb-1">🛒</span><span class="scale-90">採購</span></a>
-        <a href="app_sales.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-slate-800"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></a>
-        <a href="app_finance.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></a>
+    <nav id="core-bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9999] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <div onclick="window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
+        <div onclick="window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></div>
+        
+        <div onclick="window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-amber-600"><span class="text-xl mb-1">🛒</span><span class="scale-90">採購</span></div>
+        
+        <div onclick="window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
+        <div onclick="window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
     </nav>
 
     <script src="shared.js"></script>
@@ -277,6 +283,13 @@
         }
 
         window.onload = bootPurchase;
+
+        // 🚨 終極強制覆寫導覽列 (攔截 shared.js 的舊設定，鎖死正確排序與跳轉)
+        const enforceNavObserver = new MutationObserver(() => {
+            const oldNav = document.querySelector('nav:not(#core-bottom-nav)');
+            if (oldNav) oldNav.remove();
+        });
+        enforceNavObserver.observe(document.body, { childList: true, subtree: true });
     </script>
 </body>
 </html>
