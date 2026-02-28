@@ -265,7 +265,7 @@
 
     <script src="shared.js"></script>
     <script>
-        let html5QrcodeScanner = null; let currentItemPackQty = 1; let allItems = []; window.inventoryData = []; window.latestChecks = {}; let purchaseCart = new Set(); 
+        let html5QrcodeScanner = null; let currentItemPackQty = 1; let allItems = []; window.inventoryData = []; window.latestChecks = {}; let purchaseCart = new Set(); let isScanning = false;
 
         async function bootInventory() {
             const isAuth = await authGuard('inv'); 
@@ -285,7 +285,7 @@
         }
 
         function backToDash() { 
-            if(html5QrcodeScanner) stopScanner();
+            if(isScanning) stopScanner();
             document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active')); 
             document.getElementById('view-dashboard').classList.add('active'); 
             document.getElementById('header-title').innerText = '庫存大廳'; 
@@ -296,7 +296,6 @@
 
         function openSearchPrintView() {
             openView('search-print', '料號查詢編輯與標籤列印');
-            // 🚨 預設選擇汽車冷氣濾網並自動搜尋
             const searchCatSel = document.getElementById('search-cat-filter');
             if(Array.from(searchCatSel.options).some(o=>o.value==='汽車冷氣濾網')) {
                 searchCatSel.value = '汽車冷氣濾網';
@@ -402,10 +401,56 @@
             window.location.href = 'app_purchase.html';
         }
 
-        function openScanner() { openView('scanner', '相機掃描盤點'); setTimeout(() => { html5QrcodeScanner = new Html5Qrcode("reader"); html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScanSuccess).catch(()=>backToDash()); }, 300); }
-        function stopScanner() { if(html5QrcodeScanner) { html5QrcodeScanner.stop().catch(()=>{}); html5QrcodeScanner.clear(); } }
-        function onScanSuccess(decodedText) { stopScanner(); const item = allItems.find(i => i.item_code.toUpperCase() === decodedText.toUpperCase() || i.id === decodedText); if(item) openCountView(item); else backToDash(); }
-        function openCountView(item) { openView('count', '輸入盤點數量'); document.getElementById('c-item-code').innerText = item.item_code; document.getElementById('c-item-name').innerText = item.item_name; document.getElementById('c-item-spec').innerText = item.specification || '無'; document.getElementById('c-item-id').value = item.id; currentItemPackQty = item.qty_per_pack || 1; calcTotal(); }
+        // 🚨 相機掃描防卡死與提示升級
+        function openScanner() { 
+            openView('scanner', '相機掃描盤點'); 
+            isScanning = true; 
+            setTimeout(() => { 
+                html5QrcodeScanner = new Html5Qrcode("reader"); 
+                html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScanSuccess).catch((e)=>{ 
+                    alert('相機啟動失敗，請確認已給予鏡頭權限！'); 
+                    backToDash(); 
+                }); 
+            }, 300); 
+        }
+
+        function stopScanner() { 
+            isScanning = false; 
+            if(html5QrcodeScanner) { 
+                try { html5QrcodeScanner.stop().then(() => html5QrcodeScanner.clear()).catch(()=>{}); } catch(e){} 
+            } 
+        }
+
+        function onScanSuccess(decodedText) { 
+            if(!isScanning) return; 
+            isScanning = false; 
+            
+            const beep = document.getElementById('beep-sound'); 
+            if(beep) beep.play().catch(()=>{});
+            
+            stopScanner();
+            
+            const code = decodedText.trim().toUpperCase();
+            const item = allItems.find(i => i.item_code.toUpperCase() === code || i.id === code); 
+            if(item) { 
+                setTimeout(() => openCountView(item), 150); 
+            } else { 
+                alert('❌ 系統中查無此料號條碼：' + code); 
+                backToDash(); 
+            } 
+        }
+
+        function openCountView(item) { 
+            openView('count', '輸入盤點數量'); 
+            document.getElementById('c-item-code').innerText = item.item_code; 
+            document.getElementById('c-item-name').innerText = item.item_name; 
+            document.getElementById('c-item-spec').innerText = item.specification || '無'; 
+            document.getElementById('c-item-id').value = item.id; 
+            currentItemPackQty = item.qty_per_pack || 1; 
+            document.getElementById('c-pack-num').innerText = currentItemPackQty;
+            calcTotal(); 
+        }
+
         function calcTotal() { let box = document.getElementById('c-box-count').value; let boxes = box === 'custom' ? parseInt(document.getElementById('c-custom-box').value) || 0 : parseInt(box); let frac = parseFloat(document.getElementById('c-fraction-count').value); document.getElementById('c-total-qty').value = Math.round((boxes + frac) * currentItemPackQty); }
         function adjustTotal(val) { document.getElementById('c-total-qty').value = Math.max(0, parseInt(document.getElementById('c-total-qty').value) + val); }
         async function submitCount() { const id = document.getElementById('c-item-id').value; const newVal = parseInt(document.getElementById('c-total-qty').value); const item = window.inventoryData.find(x => x.id === id); const diff = newVal - (item?.current_stock || 0); await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: '相機掃碼校正' }]); alert('✅ 盤點成功！'); openScanner(); }
@@ -422,7 +467,6 @@
         function extractBomData(tbodyId) { let data = []; document.querySelectorAll(`#${tbodyId} tr`).forEach(tr => { const mat = tr.querySelector('.bom-mat').value; if(mat) data.push({ material: mat, usage: parseFloat(tr.querySelector('.bom-qty').value) || 0, unit: tr.querySelector('.bom-unit').value, total_qty: parseFloat(tr.querySelector('.bom-total').value) || 0 }); }); return data; }
         async function saveItem(e) { e.preventDefault(); let cat = document.getElementById('i-category').value === 'custom' ? document.getElementById('i-custom-category').value : document.getElementById('i-category').value; const p = { item_name: document.getElementById('i-name').value, item_code: document.getElementById('i-code').value.toUpperCase(), item_type: document.getElementById('i-type').value, category: cat, specification: document.getElementById('i-spec').value, qty_per_pack: parseInt(document.getElementById('i-qty').value) || 1, safe_stock_level: 0, lead_time_days: parseInt(document.getElementById('i-lead').value) || 15, bom_data: extractBomData('bom-table-body') }; const { error } = await window._sb.from('items').insert([p]); if(!error) { alert('✅ 成功！'); e.target.reset(); renderBomTable('bom-table-body'); loadItems(); } }
         
-        // 🚨 查詢編輯中心：渲染真實條碼圖片與列印按鈕
         function renderItemSearch() {
             const kw = document.getElementById('item-search-input').value.toLowerCase(); const cat = document.getElementById('search-cat-filter').value;
             const res = window.inventoryData.filter(i => (i.item_code.toLowerCase().includes(kw) || i.item_name.toLowerCase().includes(kw)) && (cat === '' || i.category === cat));
@@ -460,13 +504,11 @@
                 </div>`;
             }).join('');
             
-            // 🚨 自動生成條碼圖片
             document.querySelectorAll('.item-barcode').forEach(svg => {
                 JsBarcode(svg, svg.getAttribute('data-value'), { format: "CODE128", width: 1.5, height: 40, displayValue: true, fontSize: 12, margin: 0 });
             });
         }
 
-        // 🚨 修正：確保只呼叫唯一的 modal 並抓取正確 ID
         function openFrontEdit(id) {
             const i = window.inventoryData.find(x => x.id === id); if(!i) return;
             document.getElementById('fe-item-id').value = i.id;
@@ -487,7 +529,6 @@
 
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // 🚨 隱藏式 CSS 列印黑科技
         function printInlineBarcode(id) { 
             const item = allItems.find(i => i.id === id); if(!item) return; 
             const printZone = document.getElementById('print-zone');
