@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hypass | 採購管理系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { background: #e2e8f0; font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; padding-bottom: 80px;}
+        #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; }
+        .view-panel { display: none; animation: fadeIn 0.3s ease; } .view-panel.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.8); }
+        .modal { display: none !important; } .modal.active { display: flex !important; z-index: 200; }
+        .select-arrow { appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-size: 1.5em 1.5em; background-position: right 0.5rem center; background-repeat: no-repeat; padding-right: 2rem; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+<body class="text-slate-800 relative">
+
+    <div id="app-container" class="max-w-md mx-auto shadow-2xl relative">
+        <header class="bg-slate-900 text-white px-5 py-4 shadow-md sticky top-0 z-50 flex items-center h-16 relative">
+            <button id="btn-back" onclick="backToDash()" class="hidden mr-3 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition">🔙 返回</button>
+            <div><h1 class="text-xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-200" id="header-title">採購管理中心</h1></div>
+            <div class="ml-auto text-[10px] font-bold bg-white/10 px-3 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
+        </header>
+
+        <main class="p-5 relative z-10">
+            <div id="view-dashboard" class="view-panel active space-y-5">
+                <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-[2rem] p-6 text-white shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 text-7xl opacity-20">🛒</div>
+                    <h2 class="text-2xl font-black mb-1">行動採購中心</h2>
+                    <p class="text-xs font-bold text-amber-100 mb-4 tracking-wider">自動 BOM 展開與供應鏈追蹤</p>
+                    
+                    <div class="bg-white/20 p-4 rounded-xl border border-white/20 backdrop-blur-sm mt-4">
+                        <p class="text-[10px] font-bold mb-2 tracking-widest uppercase flex items-center justify-between">
+                            <span>📦 待處理的採購需求</span>
+                            <span class="bg-red-500 text-white px-2 py-0.5 rounded text-[9px] font-black shadow-sm" id="draft-count">0 件</span>
+                        </p>
+                        <button onclick="checkDrafts()" class="w-full bg-white text-amber-600 font-black py-3 rounded-lg text-xs shadow-sm mt-2 active:scale-95 transition">檢查並載入待處理清單</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="openPOManagement()" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50 col-span-2">
+                        <span class="text-5xl mb-3 drop-shadow-md">📋</span>
+                        <span class="font-black text-slate-700 text-lg tracking-widest mb-0.5">歷史採購大盤</span>
+                        <span class="font-bold text-slate-500/70 text-xs tracking-wider">進度追蹤 / 刪除管理</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="view-purchase" class="view-panel space-y-5">
+                <div class="glass-card p-5 md:p-6 rounded-[2rem] shadow-sm border-t-4 border-amber-500">
+                    <h3 class="font-black text-slate-800 pl-1 text-xl mb-1 flex items-center"><span class="mr-2">🛒</span> 產出採購清單</h3>
+                    <p class="text-xs text-slate-500 font-bold mb-4 pl-1">請輸入欲生產/採購數量，系統將自動精算原料</p>
+                    
+                    <div id="ui-purchase-list" class="space-y-3 mb-6 border-b border-slate-200 pb-6"></div>
+
+                    <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 shadow-inner mb-6">
+                        <h4 class="font-black text-amber-900 text-sm mb-3 flex items-center justify-between"><span class="flex items-center"><span class="mr-1">⚙️</span>原料採購需求彙整</span><span class="text-[9px] bg-amber-200 text-amber-800 px-2 py-1 rounded-md">BOM 自動計算</span></h4>
+                        <div id="ui-raw-materials-summary" class="space-y-2">
+                            <p class="text-xs text-amber-700/70 font-bold text-center py-2">請於上方輸入數量以精算原料...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">選擇供應商 (選填)</label><input type="text" id="po-supplier" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-inner" placeholder="請輸入廠商名稱..."></div>
+                        <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">預計出貨到廠時間</label><input type="date" id="po-expected-date" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-inner" required></div>
+                    </div>
+
+                    <button id="btn-submit-po" onclick="submitPurchaseOrder()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition tracking-widest text-lg">📥 匯出 CSV 並建檔紀錄</button>
+                </div>
+            </div>
+
+            <div id="view-po-management" class="view-panel space-y-4">
+                <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-slate-600 relative pb-10">
+                    <h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2 text-xl">📋</span>歷史採購單管理</h3>
+                    <div id="ui-po-history-list" class="space-y-4 max-h-[70vh] overflow-y-auto no-scrollbar pr-1">
+                        <p class="text-center text-xs text-slate-400 py-6">載入中...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="po-detail-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
+        <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl max-h-[85vh] overflow-y-auto no-scrollbar">
+            <div class="border-b border-slate-100 pb-3 mb-4">
+                <h3 class="font-black text-xl text-slate-800 flex justify-between items-center">
+                    <span>採購單明細</span>
+                    <button onclick="deletePO()" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg border border-red-200 active:scale-95 shadow-sm transition">🗑️ 刪除</button>
+                </h3>
+                <p class="text-[10px] text-slate-500 font-mono mt-1" id="m-po-id">--</p>
+            </div>
+            <div class="space-y-4 flex-1">
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100"><span class="block text-[9px] font-bold text-slate-400 mb-0.5">申請人</span><span class="font-black text-slate-700" id="m-po-emp">--</span></div>
+                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100"><span class="block text-[9px] font-bold text-slate-400 mb-0.5">建立日期</span><span class="font-black text-slate-700" id="m-po-date">--</span></div>
+                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100 col-span-2"><span class="block text-[9px] font-bold text-slate-400 mb-0.5">預計到廠時間</span><span class="font-black text-amber-600 text-sm" id="m-po-eta">--</span></div>
+                </div>
+                <div>
+                    <h4 class="text-[10px] font-black text-slate-500 mb-2 border-b border-slate-200 pb-1 flex items-center justify-between"><span>📦 原料採購項目</span><button onclick="downloadPO_CSV()" class="bg-slate-800 text-white px-2 py-1 rounded text-[9px] active:scale-95">下載CSV</button></h4>
+                    <div id="m-po-materials" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar bg-slate-50 p-3 rounded-xl shadow-inner border border-slate-100"></div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">採購單狀態更新</label>
+                    <select id="m-po-status" class="w-full bg-white border border-slate-300 p-3 rounded-xl text-sm font-black text-slate-800 select-arrow shadow-sm outline-none focus:border-sky-500 transition">
+                        <option value="已建檔">待處理 (已建檔)</option><option value="已下單">⏳ 已下單採購</option><option value="已到貨">✅ 已到貨結案</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex space-x-3 mt-6 pt-4 border-t border-slate-100">
+                <button onclick="closeModal('po-detail-modal')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl transition active:scale-95">關閉</button>
+                <button onclick="updatePOStatus()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-3.5 rounded-xl transition shadow-md active:scale-95">儲存狀態</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[100] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <a href="app_hr.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-slate-800"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></a>
+        <a href="app_inventory.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></a>
+        <a href="app_sales.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-slate-800"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></a>
+        <a href="app_purchase.html" class="flex-1 flex flex-col items-center py-1 transition text-amber-600"><span class="text-xl mb-1">🛒</span><span class="scale-90">採購</span></a>
+        <a href="app_finance.html" class="flex-1 flex flex-col items-center py-1 transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></a>
+    </nav>
+
+    <script src="shared.js"></script>
+    <script>
+        window.inventoryData = []; window.currentPOs = []; let activePOId = null;
+
+        async function bootPurchase() {
+            const isAuth = await authGuard('purchase'); 
+            if(isAuth) { 
+                document.getElementById('user-badge').innerText = window.currentUser.full_name; 
+                await loadItems();
+                checkDrafts(true);
+            }
+        }
+
+        async function loadItems() {
+            const { data } = await window._sb.from('items').select('*'); 
+            window.inventoryData = data || [];
+        }
+
+        function checkDrafts(isAuto = false) {
+            let drafts = JSON.parse(localStorage.getItem('hypass_draft_po') || '[]');
+            document.getElementById('draft-count').innerText = `${drafts.length} 件`;
+            if(drafts.length > 0) { renderPurchaseCart(drafts); } 
+            else if (!isAuto) { alert('目前無待處理的庫存拋轉項目！請先去「庫存系統」勾選料號。'); }
+        }
+
+        function openView(viewId, title) {
+            document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active')); 
+            document.getElementById('view-' + viewId).classList.add('active');
+            document.getElementById('header-title').innerText = title; 
+            document.getElementById('btn-back').classList.remove('hidden'); 
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function backToDash() { 
+            document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active')); 
+            document.getElementById('view-dashboard').classList.add('active'); 
+            document.getElementById('header-title').innerText = '採購管理中心'; 
+            document.getElementById('btn-back').classList.add('hidden'); 
+            checkDrafts(true);
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        // 🌟 承接庫存總表的拋轉清單
+        function renderPurchaseCart(draftIds) {
+            openView('purchase', '🛒 產出採購清單');
+            const container = document.getElementById('ui-purchase-list');
+            let html = '';
+            draftIds.forEach(id => { 
+                const i = window.inventoryData.find(x => x.id === id); 
+                if(i) html += `<div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-center justify-between shadow-inner po-target-row mb-3" data-id="${i.id}"><div class="flex-1 pr-2"><span class="text-[10px] font-mono font-black text-slate-500 bg-slate-200 px-2 py-0.5 rounded">${i.item_code}</span><h4 class="font-black text-base text-slate-800 leading-tight mt-1.5 truncate">${i.item_name}</h4></div><div class="w-24 shrink-0"><input type="number" min="1" class="w-full p-2 border border-amber-300 rounded-lg text-base font-black text-center text-amber-900 focus:border-amber-500 po-target-qty shadow-sm" placeholder="產/購量" oninput="calculatePOBOM()"></div></div>`; 
+            });
+            container.innerHTML = html; calculatePOBOM();
+        }
+
+        function calculatePOBOM() {
+            let rawTotals = {}; let allEmpty = true;
+            document.querySelectorAll('.po-target-row').forEach(row => {
+                let id = row.getAttribute('data-id'); let qty = parseInt(row.querySelector('.po-target-qty').value) || 0;
+                let item = window.inventoryData.find(x => x.id === id);
+                if (qty > 0 && item) {
+                    allEmpty = false;
+                    if (item.bom_data && item.bom_data.length > 0) {
+                        item.bom_data.forEach(b => { let key = b.material + '_' + b.unit; if (!rawTotals[key]) rawTotals[key] = { name: b.material, unit: b.unit, qty: 0 }; rawTotals[key].qty += (parseFloat(b.total_qty) * qty); });
+                    } else { let key = item.item_name + '_箱/件'; if (!rawTotals[key]) rawTotals[key] = { name: item.item_name, unit: '箱/件', qty: 0 }; rawTotals[key].qty += qty; }
+                }
+            });
+
+            const summaryDiv = document.getElementById('ui-raw-materials-summary');
+            if(allEmpty) { summaryDiv.innerHTML = '<p class="text-xs text-amber-700/70 font-bold text-center py-2">請於上方輸入數量以精算原料...</p>'; window.currentCalculatedRawMaterials = []; return; }
+            
+            let sHtml = ''; for(let k in rawTotals) { let r = rawTotals[k]; sHtml += `<div class="flex justify-between items-center bg-white p-3 rounded-xl border border-amber-100 shadow-sm"><span class="text-xs font-bold text-slate-700">${r.name}</span><span class="text-base font-black text-amber-600">${r.qty.toFixed(2)} <span class="text-[10px] text-slate-400">${r.unit}</span></span></div>`; }
+            summaryDiv.innerHTML = sHtml; window.currentCalculatedRawMaterials = Object.values(rawTotals);
+        }
+
+        async function submitPurchaseOrder() {
+            let isValid = true; document.querySelectorAll('.po-target-qty').forEach(inp => { if((parseInt(inp.value)||0) <= 0) isValid = false; });
+            if(!isValid) { alert('請確保所有上方項目都有輸入大於 0 的數量！'); return; }
+            if(!window.currentCalculatedRawMaterials || window.currentCalculatedRawMaterials.length === 0) { alert('計算錯誤，無原料可採購！'); return; }
+            const exDate = document.getElementById('po-expected-date').value; if(!exDate) { alert('請填寫「預計出貨到廠時間」！'); return; }
+
+            let targetItems = []; document.querySelectorAll('.po-target-row').forEach(row => { let id = row.getAttribute('data-id'); let qty = parseInt(row.querySelector('.po-target-qty').value) || 0; let item = window.inventoryData.find(x => x.id === id); if(item) targetItems.push({ id: item.item_code, name: item.item_name, qty: qty }); });
+
+            const payload = { employee_id: window.currentUser.id, total_items: window.currentCalculatedRawMaterials.length, expected_date: exDate, target_items: targetItems, raw_materials: window.currentCalculatedRawMaterials, status: '已建檔' };
+            const { data: po, error: poErr } = await window._sb.from('purchase_orders').insert([payload]).select();
+            if(poErr || !po) { alert('採購單建立失敗:' + poErr.message); return; }
+            const poId = po[0].id;
+
+            let csv = "\uFEFF採購單號,建檔日期,申請人,預計到廠日,供應商,原料採購項目,建議採購總量,單位\n";
+            const dateStr = new Date().toLocaleDateString('zh-TW'); const supplier = document.getElementById('po-supplier').value || '未指定';
+            window.currentCalculatedRawMaterials.forEach(r => { csv += `="${poId.slice(0,8)}",${dateStr},${window.currentUser.full_name},${exDate},${supplier},${r.name},${r.qty.toFixed(2)},${r.unit}\n`; });
+
+            const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `HYPASS_原料採購單_${dateStr.replace(/\//g,'')}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+
+            alert('✅ 採購單已成功建檔並下載 CSV！'); localStorage.removeItem('hypass_draft_po'); document.getElementById('po-supplier').value = ''; document.getElementById('po-expected-date').value = ''; backToDash();
+        }
+
+        // 🌟 採購管理大盤
+        async function openPOManagement() { openView('po-management', '📋 歷史採購紀錄'); loadPOHistory(); }
+
+        async function loadPOHistory() {
+            const { data, error } = await window._sb.from('purchase_orders').select('*, employees(full_name)').order('created_at', {ascending: false});
+            const container = document.getElementById('ui-po-history-list');
+            if(error || !data || data.length === 0) { container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">目前無歷史採購紀錄</p>'; return; }
+            
+            window.currentPOs = data;
+            container.innerHTML = data.map(po => {
+                let badgeCol = po.status === '已到貨' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : (po.status === '已下單' ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-slate-100 text-slate-600 border-slate-200');
+                let rmText = po.raw_materials ? po.raw_materials.map(r=>r.name).join(', ') : '無明細';
+                return `
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative active:bg-slate-50 transition cursor-pointer mb-3" onclick="openPODetail('${po.id}')">
+                    <div class="flex justify-between items-center mb-3"><span class="text-[10px] font-mono font-black text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">PO-${po.id.slice(0,6)}</span><span class="text-xs font-black px-2.5 py-1 rounded-md border ${badgeCol}">${po.status}</span></div>
+                    <h4 class="font-black text-sm text-slate-800 leading-relaxed mb-2 line-clamp-2">${rmText}</h4>
+                    <div class="flex space-x-3 text-[10px] text-slate-500 font-bold border-t border-slate-100 pt-3"><div class="flex items-center"><span class="mr-1">📅</span>建檔: ${new Date(po.created_at).toLocaleDateString('zh-TW')}</div><div class="flex items-center text-amber-600"><span class="mr-1">🚚</span>預計到廠: ${po.expected_date||'未定'}</div></div>
+                </div>`;
+            }).join('');
+        }
+
+        function openPODetail(id) {
+            const po = window.currentPOs.find(x => x.id === id); if(!po) return; activePOId = po.id;
+            document.getElementById('m-po-id').innerText = `ID: ${po.id}`; document.getElementById('m-po-emp').innerText = po.employees?.full_name || '未知'; document.getElementById('m-po-date').innerText = new Date(po.created_at).toLocaleDateString('zh-TW'); document.getElementById('m-po-eta').innerText = po.expected_date || '未設定'; document.getElementById('m-po-status').value = po.status || '已建檔';
+            
+            const mList = document.getElementById('m-po-materials');
+            if(po.raw_materials && po.raw_materials.length > 0) {
+                mList.innerHTML = po.raw_materials.map(r => `<div class="flex justify-between items-center text-xs border-b border-slate-200/60 pb-1.5 mb-1.5 last:border-0 last:mb-0 last:pb-0"><span class="font-bold text-slate-700">${r.name}</span><span class="font-black text-sky-700 text-sm">${r.qty.toFixed(2)} <span class="text-[9px] font-bold text-slate-400">${r.unit}</span></span></div>`).join('');
+            } else { mList.innerHTML = '<p class="text-[10px] text-slate-400 italic">無詳細原料紀錄</p>'; }
+            openModal('po-detail-modal');
+        }
+
+        async function updatePOStatus() {
+            if(!activePOId) return; const newSt = document.getElementById('m-po-status').value;
+            const { error } = await window._sb.from('purchase_orders').update({ status: newSt }).eq('id', activePOId);
+            if(error) alert('更新失敗'); else { alert('✅ 狀態已更新'); closeModal('po-detail-modal'); loadPOHistory(); }
+        }
+
+        async function deletePO() {
+            if(!activePOId) return; if(!confirm('⚠️ 確定要刪除這筆歷史採購單嗎？')) return;
+            const { error } = await window._sb.from('purchase_orders').delete().eq('id', activePOId);
+            if(error) alert('刪除失敗'); else { alert('✅ 採購單已刪除'); closeModal('po-detail-modal'); loadPOHistory(); }
+        }
+
+        function downloadPO_CSV() {
+            const po = window.currentPOs.find(x => x.id === activePOId); if(!po) return;
+            let csv = "\uFEFF採購單號,建檔日期,預計到廠日,原料採購項目,建議採購總量,單位\n";
+            const dateStr = new Date(po.created_at).toLocaleDateString('zh-TW');
+            if(po.raw_materials) { po.raw_materials.forEach(r => { csv += `="${po.id.slice(0,8)}",${dateStr},${po.expected_date||''},${r.name},${r.qty.toFixed(2)},${r.unit}\n`; }); }
+            const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `採購單_補印_${dateStr.replace(/\//g,'')}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+
+        window.onload = bootPurchase;
+    </script>
+</body>
+</html>
