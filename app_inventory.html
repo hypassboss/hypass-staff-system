@@ -722,11 +722,10 @@
             document.getElementById('item-search-results').innerHTML = html;
         }
 
-        // 🌟 修正彈窗打開時帶入 ID 的邏輯
+        // 🌟 核心防呆修復：點擊時精準抓取 ID 帶入隱藏欄位
         function openFrontEdit(id) {
             const i = window.inventoryData.find(x => x.id === id); if(!i) return;
             
-            // 確保 ID 被正確寫入隱藏欄位
             document.getElementById('fe-item-id').value = i.id;
             
             document.getElementById('fe-item-name').value = i.item_name;
@@ -735,17 +734,15 @@
             document.getElementById('fe-item-lead').value = i.lead_time_days || 15;
             
             renderBomTable('fe-bom-table-body', i.bom_data || []);
-            
-            // 彈出視窗
             openModal('front-item-edit-modal');
         }
 
         async function saveFrontEditItem() {
             const id = document.getElementById('fe-item-id').value;
             
-            // 防呆檢測：確保 ID 存在
-            if(!id) {
-                alert('系統無法讀取該料號的 ID，請關閉彈窗後重新嘗試。');
+            // 🚨 強制阻擋空 ID 送出，徹底根除 UUID 報錯
+            if(!id || id === "") {
+                alert('系統無法讀取料號 ID，請關閉彈窗重新嘗試。');
                 return;
             }
 
