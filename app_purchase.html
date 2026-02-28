@@ -18,12 +18,22 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         
-        /* 🚨 終極防禦：封殺所有 shared.js 產生的舊導覽列，只顯示我們的核心導覽列 */
+        /* 🚨 列印 PDF 黑科技 */
+        @media print {
+            body * { visibility: hidden; }
+            #po-print-zone, #po-print-zone * { visibility: visible; }
+            #po-print-zone { display: block !important; position: absolute; left: 0; top: 0; width: 100vw; background: white; z-index: 9999; padding: 20px;}
+            #app-container, nav { display: none !important; }
+        }
+
+        /* 🚨 終極防禦裝甲：封殺 shared.js 產生的舊導覽列 */
         nav { display: none !important; }
         #core-bottom-nav { display: flex !important; }
     </style>
 </head>
 <body class="text-slate-800 relative">
+
+    <div id="po-print-zone" style="display:none; font-family: 'Microsoft JhengHei', sans-serif;"></div>
 
     <div id="app-container" class="max-w-md mx-auto shadow-2xl relative">
         <header class="bg-slate-900 text-white px-5 py-4 shadow-md sticky top-0 z-50 flex items-center h-16 relative">
@@ -37,106 +47,105 @@
                 <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-[2rem] p-6 text-white shadow-lg relative overflow-hidden">
                     <div class="absolute -right-4 -top-4 text-7xl opacity-20">🛒</div>
                     <h2 class="text-2xl font-black mb-1">行動採購中心</h2>
-                    <p class="text-xs font-bold text-amber-100 mb-4 tracking-wider">自動 BOM 展開與供應鏈追蹤</p>
+                    <p class="text-xs font-bold text-amber-100 mb-4 tracking-wider">供應鏈追蹤與 PDF 生成</p>
                     
                     <div class="bg-white/20 p-4 rounded-xl border border-white/20 backdrop-blur-sm mt-4">
                         <p class="text-[10px] font-bold mb-2 tracking-widest uppercase flex items-center justify-between">
                             <span>📦 待處理的採購需求</span>
                             <span class="bg-red-500 text-white px-2 py-0.5 rounded text-[9px] font-black shadow-sm" id="draft-count">0 件</span>
                         </p>
-                        <button onclick="checkDrafts()" class="w-full bg-white text-amber-600 font-black py-3 rounded-lg text-xs shadow-sm mt-2 active:scale-95 transition">檢查並載入待處理清單</button>
+                        <button onclick="checkDrafts()" class="w-full bg-white text-amber-600 font-black py-3 rounded-lg text-xs shadow-sm mt-2 active:scale-95 transition">檢查並載入新需求</button>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <button onclick="openPOManagement()" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50 col-span-2">
-                        <span class="text-5xl mb-3 drop-shadow-md">📋</span>
-                        <span class="font-black text-slate-700 text-lg tracking-widest mb-0.5">歷史採購大盤</span>
-                        <span class="font-bold text-slate-500/70 text-xs tracking-wider">進度追蹤 / 刪除管理</span>
+                    <button onclick="openPendingList()" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-amber-200 hover:bg-amber-50 col-span-2 bg-amber-50/50">
+                        <span class="text-4xl mb-3 drop-shadow-md">📝</span>
+                        <span class="font-black text-amber-800 tracking-wider text-lg mb-0.5">採購清單管理</span>
+                        <span class="font-bold text-amber-600/70 text-xs tracking-wider">單一原料獨立採購 / 產出 PDF</span>
+                    </button>
+                    <button onclick="openPOStatusTable()" class="glass-card p-5 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50 col-span-2">
+                        <span class="text-4xl mb-2 drop-shadow-md">📋</span>
+                        <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">採購單最新狀況表</span>
+                        <span class="font-bold text-slate-500/70 text-[10px] tracking-wider">即時狀態追蹤 (綠/黃/紅)</span>
                     </button>
                 </div>
             </div>
 
             <div id="view-purchase" class="view-panel space-y-5">
                 <div class="glass-card p-5 md:p-6 rounded-[2rem] shadow-sm border-t-4 border-amber-500">
-                    <h3 class="font-black text-slate-800 pl-1 text-xl mb-1 flex items-center"><span class="mr-2">🛒</span> 產出採購清單</h3>
-                    <p class="text-xs text-slate-500 font-bold mb-4 pl-1">請輸入欲生產/採購數量，系統將自動精算原料</p>
+                    <h3 class="font-black text-slate-800 pl-1 text-xl mb-1 flex items-center"><span class="mr-2">🛒</span> 產出採購需求</h3>
+                    <p class="text-[10px] text-slate-500 font-bold mb-4 pl-1">輸入生產數量，系統將精算原料並存入待處理清單</p>
                     
                     <div id="ui-purchase-list" class="space-y-3 mb-6 border-b border-slate-200 pb-6"></div>
 
                     <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 shadow-inner mb-6">
-                        <h4 class="font-black text-amber-900 text-sm mb-3 flex items-center justify-between"><span class="flex items-center"><span class="mr-1">⚙️</span>原料採購需求彙整</span><span class="text-[9px] bg-amber-200 text-amber-800 px-2 py-1 rounded-md">BOM 自動計算</span></h4>
+                        <h4 class="font-black text-amber-900 text-sm mb-3 flex items-center justify-between"><span class="flex items-center"><span class="mr-1">⚙️</span>原料需求總覽</span></h4>
                         <div id="ui-raw-materials-summary" class="space-y-2">
-                            <p class="text-xs text-amber-700/70 font-bold text-center py-2">請於上方輸入數量以精算原料...</p>
+                            <p class="text-xs text-amber-700/70 font-bold text-center py-2">請於上方輸入數量...</p>
                         </div>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-3 mb-4">
-                        <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">選擇供應商 (選填)</label><input type="text" id="po-supplier" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-inner" placeholder="請輸入廠商名稱..."></div>
-                        <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">預計出貨到廠時間</label><input type="date" id="po-expected-date" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-inner" required></div>
+                        <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">預計最晚到廠時間</label><input type="date" id="po-expected-date" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold shadow-inner" required></div>
                     </div>
 
-                    <button id="btn-submit-po" onclick="submitPurchaseOrder()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition tracking-widest text-lg">📥 匯出 CSV 並建檔紀錄</button>
+                    <button id="btn-submit-po" onclick="submitPurchaseOrder()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition tracking-widest text-lg">💾 儲存至採購清單</button>
                 </div>
             </div>
 
-            <div id="view-po-management" class="view-panel space-y-4">
-                <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-slate-600 relative pb-10">
-                    <h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2 text-xl">📋</span>歷史採購單管理</h3>
-                    <div id="ui-po-history-list" class="space-y-4 max-h-[70vh] overflow-y-auto no-scrollbar pr-1">
+            <div id="view-pending-list" class="view-panel space-y-4">
+                <div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-amber-600 relative pb-10">
+                    <div class="flex flex-col mb-4 border-b border-slate-100 pb-3">
+                        <h3 class="font-black text-slate-800 text-lg flex items-center mb-1"><span class="mr-2 text-xl">📝</span>採購清單管理</h3>
+                        <p class="text-[10px] text-slate-500 font-bold">勾選下方待處理原料，填寫供應商後可一鍵產出 PDF 採購單。</p>
+                    </div>
+                    
+                    <div id="ui-pending-materials" class="space-y-3 max-h-[60vh] overflow-y-auto no-scrollbar pr-1 pb-10">
+                        <p class="text-center text-xs text-slate-400 py-6">載入中...</p>
+                    </div>
+
+                    <div class="fixed bottom-[80px] left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t border-slate-200 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] z-50">
+                        <button onclick="generatePO_PDF()" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white font-black py-3.5 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-sm flex justify-center items-center">
+                            <span class="mr-2 text-lg">🖨️</span> 確認產出採購單 (PDF)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-po-status" class="view-panel space-y-4">
+                <div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-slate-700 relative pb-10">
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">📋</span>採購狀況表</h3>
+                        <div class="flex space-x-1">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></span>
+                            <span class="w-3 h-3 rounded-full bg-amber-400 shadow-sm"></span>
+                            <span class="w-3 h-3 rounded-full bg-red-500 shadow-sm animate-pulse"></span>
+                        </div>
+                    </div>
+                    
+                    <div id="ui-po-status-list" class="space-y-3 max-h-[70vh] overflow-y-auto no-scrollbar pr-1 pb-10">
                         <p class="text-center text-xs text-slate-400 py-6">載入中...</p>
                     </div>
                 </div>
             </div>
+
         </main>
     </div>
 
-    <div id="po-detail-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
-        <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl max-h-[85vh] overflow-y-auto no-scrollbar">
-            <div class="border-b border-slate-100 pb-3 mb-4">
-                <h3 class="font-black text-xl text-slate-800 flex justify-between items-center">
-                    <span>採購單明細</span>
-                    <button onclick="deletePO()" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg border border-red-200 active:scale-95 shadow-sm transition">🗑️ 刪除</button>
-                </h3>
-                <p class="text-[10px] text-slate-500 font-mono mt-1" id="m-po-id">--</p>
-            </div>
-            <div class="space-y-4 flex-1">
-                <div class="grid grid-cols-2 gap-3 text-xs">
-                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100"><span class="block text-[9px] font-bold text-slate-400 mb-0.5">申請人</span><span class="font-black text-slate-700" id="m-po-emp">--</span></div>
-                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100"><span class="block text-[9px] font-bold text-slate-400 mb-0.5">建立日期</span><span class="font-black text-slate-700" id="m-po-date">--</span></div>
-                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100 col-span-2"><span class="block text-[9px] font-bold text-slate-400 mb-0.5">預計到廠時間</span><span class="font-black text-amber-600 text-sm" id="m-po-eta">--</span></div>
-                </div>
-                <div>
-                    <h4 class="text-[10px] font-black text-slate-500 mb-2 border-b border-slate-200 pb-1 flex items-center justify-between"><span>📦 原料採購項目</span><button onclick="downloadPO_CSV()" class="bg-slate-800 text-white px-2 py-1 rounded text-[9px] active:scale-95">下載CSV</button></h4>
-                    <div id="m-po-materials" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar bg-slate-50 p-3 rounded-xl shadow-inner border border-slate-100"></div>
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">採購單狀態更新</label>
-                    <select id="m-po-status" class="w-full bg-white border border-slate-300 p-3 rounded-xl text-sm font-black text-slate-800 select-arrow shadow-sm outline-none focus:border-amber-500 transition">
-                        <option value="已建檔">待處理 (已建檔)</option><option value="已下單">⏳ 已下單採購</option><option value="已到貨">✅ 已到貨結案</option>
-                    </select>
-                </div>
-            </div>
-            <div class="flex space-x-3 mt-6 pt-4 border-t border-slate-100">
-                <button onclick="closeModal('po-detail-modal')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl transition active:scale-95">關閉</button>
-                <button onclick="updatePOStatus()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-black py-3.5 rounded-xl transition shadow-md active:scale-95 tracking-widest">儲存狀態</button>
-            </div>
-        </div>
-    </div>
-
     <nav id="core-bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9999] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <div onclick="window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
-        <div onclick="window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></div>
         
-        <div onclick="window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-amber-600"><span class="text-xl mb-1">🛒</span><span class="scale-90">採購</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-amber-600"><span class="text-xl mb-1">🛒</span><span class="scale-90">採購</span></div>
         
-        <div onclick="window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
-        <div onclick="window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
     </nav>
 
     <script src="shared.js"></script>
     <script>
-        window.inventoryData = []; window.currentPOs = []; let activePOId = null;
+        window.inventoryData = []; window.currentPOs = []; let pendingMats = [];
 
         async function bootPurchase() {
             const isAuth = await authGuard('purchase'); 
@@ -156,7 +165,7 @@
             let drafts = JSON.parse(localStorage.getItem('hypass_draft_po') || '[]');
             document.getElementById('draft-count').innerText = `${drafts.length} 件`;
             if(drafts.length > 0) { renderPurchaseCart(drafts); } 
-            else if (!isAuto) { alert('目前無待處理的庫存拋轉項目！請先去「庫存系統」勾選料號。'); }
+            else if (!isAuto) { alert('目前無來自庫存的新需求！請使用採購清單管理。'); }
         }
 
         function openView(viewId, title) {
@@ -175,11 +184,9 @@
             checkDrafts(true);
         }
 
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
+        // 🌟 生成初階採購需求單 (存入 DB 為待處理)
         function renderPurchaseCart(draftIds) {
-            openView('purchase', '🛒 產出採購清單');
+            openView('purchase', '🛒 產出採購需求');
             const container = document.getElementById('ui-purchase-list');
             let html = '';
             draftIds.forEach(id => { 
@@ -211,80 +218,196 @@
 
         async function submitPurchaseOrder() {
             let isValid = true; document.querySelectorAll('.po-target-qty').forEach(inp => { if((parseInt(inp.value)||0) <= 0) isValid = false; });
-            if(!isValid) { alert('請確保所有上方項目都有輸入大於 0 的數量！'); return; }
+            if(!isValid) { alert('請確保所有項目都有輸入大於 0 的數量！'); return; }
             if(!window.currentCalculatedRawMaterials || window.currentCalculatedRawMaterials.length === 0) { alert('計算錯誤，無原料可採購！'); return; }
-            const exDate = document.getElementById('po-expected-date').value; if(!exDate) { alert('請填寫「預計出貨到廠時間」！'); return; }
+            const exDate = document.getElementById('po-expected-date').value; if(!exDate) { alert('請填寫「預計最晚到廠時間」！'); return; }
 
             let targetItems = []; document.querySelectorAll('.po-target-row').forEach(row => { let id = row.getAttribute('data-id'); let qty = parseInt(row.querySelector('.po-target-qty').value) || 0; let item = window.inventoryData.find(x => x.id === id); if(item) targetItems.push({ id: item.item_code, name: item.item_name, qty: qty }); });
 
             const payload = { employee_id: window.currentUser.id, total_items: window.currentCalculatedRawMaterials.length, expected_date: exDate, target_items: targetItems, raw_materials: window.currentCalculatedRawMaterials, status: '已建檔' };
             const { data: po, error: poErr } = await window._sb.from('purchase_orders').insert([payload]).select();
             if(poErr || !po) { alert('採購單建立失敗:' + poErr.message); return; }
-            const poId = po[0].id;
 
-            let csv = "\uFEFF採購單號,建檔日期,申請人,預計到廠日,供應商,原料採購項目,建議採購總量,單位\n";
-            const dateStr = new Date().toLocaleDateString('zh-TW'); const supplier = document.getElementById('po-supplier').value || '未指定';
-            window.currentCalculatedRawMaterials.forEach(r => { csv += `="${poId.slice(0,8)}",${dateStr},${window.currentUser.full_name},${exDate},${supplier},${r.name},${r.qty.toFixed(2)},${r.unit}\n`; });
-
-            const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `HYPASS_原料採購單_${dateStr.replace(/\//g,'')}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
-
-            alert('✅ 採購單已成功建檔並下載 CSV！'); localStorage.removeItem('hypass_draft_po'); document.getElementById('po-supplier').value = ''; document.getElementById('po-expected-date').value = ''; backToDash();
+            alert('✅ 採購需求已精算並存入「採購清單管理」！'); 
+            localStorage.removeItem('hypass_draft_po'); 
+            document.getElementById('po-expected-date').value = ''; 
+            backToDash();
         }
 
-        async function openPOManagement() { openView('po-management', '📋 歷史採購紀錄'); loadPOHistory(); }
-
-        async function loadPOHistory() {
-            const { data, error } = await window._sb.from('purchase_orders').select('*, employees(full_name)').order('created_at', {ascending: false});
-            const container = document.getElementById('ui-po-history-list');
-            if(error || !data || data.length === 0) { container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">目前無歷史採購紀錄</p>'; return; }
+        // 🌟 全新：採購清單管理 (單一原料)
+        async function openPendingList() {
+            openView('pending-list', '📝 採購清單管理');
+            const container = document.getElementById('ui-pending-materials');
+            container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">讀取中...</p>';
             
-            window.currentPOs = data;
+            const { data, error } = await window._sb.from('purchase_orders').select('id, raw_materials, expected_date').eq('status', '已建檔');
+            if(error || !data || data.length === 0) { container.innerHTML = '<p class="text-center text-sm font-bold text-slate-400 py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">目前無待處理的原料</p>'; return; }
+
+            pendingMats = [];
+            data.forEach(po => {
+                if(po.raw_materials) {
+                    po.raw_materials.forEach((rm, idx) => {
+                        pendingMats.push({
+                            uid: `${po.id}_${idx}`,
+                            po_id: po.id,
+                            name: rm.name,
+                            qty: rm.qty,
+                            unit: rm.unit,
+                            original_date: po.expected_date
+                        });
+                    });
+                }
+            });
+
+            container.innerHTML = pendingMats.map(pm => `
+                <div class="bg-white p-4 rounded-2xl border-2 border-slate-200 shadow-sm relative pending-mat-item" data-uid="${pm.uid}">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-[9px] font-mono font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">PO-${pm.po_id.slice(0,6)}</span>
+                        <label class="flex items-center space-x-1.5 cursor-pointer bg-white p-1 rounded-md z-10"><input type="checkbox" class="w-4 h-4 accent-amber-600 print-chk"><span class="text-[10px] font-black text-slate-600">產出單據</span></label>
+                    </div>
+                    <div class="flex justify-between items-end mb-3 border-b border-slate-100 pb-3">
+                        <h4 class="font-black text-base text-slate-800 leading-tight flex-1 pr-2">${pm.name}</h4>
+                        <div class="text-right">
+                            <span class="text-[10px] text-slate-500 font-bold block mb-0.5">需求量</span>
+                            <span class="font-black text-amber-600 text-lg tracking-tight leading-none">${pm.qty.toFixed(2)} <span class="text-[10px] text-slate-400">${pm.unit}</span></span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="text-[9px] font-bold text-slate-500 ml-1 block mb-1">指定供應商</label><input type="text" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:border-amber-500 outline-none pm-sup" placeholder="輸入廠商名稱..."></div>
+                        <div><label class="text-[9px] font-bold text-slate-500 ml-1 block mb-1">需求交貨日</label><input type="date" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:border-amber-500 outline-none pm-date" value="${pm.original_date}"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 🌟 一鍵產出 PDF 列印引擎
+        function generatePO_PDF() {
+            const items = document.querySelectorAll('.pending-mat-item');
+            let selected = [];
+            
+            items.forEach(el => {
+                const isChecked = el.querySelector('.print-chk').checked;
+                if(isChecked) {
+                    const uid = el.getAttribute('data-uid');
+                    const pm = pendingMats.find(x => x.uid === uid);
+                    const sup = el.querySelector('.pm-sup').value || '未指定供應商';
+                    const date = el.querySelector('.pm-date').value || pm.original_date;
+                    selected.push({ ...pm, supplier: sup, expected_date: date });
+                }
+            });
+
+            if(selected.length === 0) { alert('請至少勾選一項原料以產出採購單！'); return; }
+
+            // 建立 A4 列印排版
+            const dateStr = new Date().toLocaleDateString('zh-TW');
+            let tableRows = selected.map((s, i) => `
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px; text-align: center;">${i+1}</td>
+                    <td style="padding: 10px; font-weight: bold;">${s.name}</td>
+                    <td style="padding: 10px; text-align: right; color: #d97706; font-weight: bold;">${s.qty.toFixed(2)}</td>
+                    <td style="padding: 10px; text-align: center; font-size: 12px;">${s.unit}</td>
+                    <td style="padding: 10px;">${s.supplier}</td>
+                    <td style="padding: 10px; text-align: center;">${s.expected_date}</td>
+                </tr>
+            `).join('');
+
+            const printHtml = `
+                <div style="max-width: 800px; margin: 0 auto; padding: 20px; color: #1e293b;">
+                    <div style="text-align: center; border-bottom: 3px solid #f59e0b; padding-bottom: 20px; margin-bottom: 30px;">
+                        <h1 style="font-size: 32px; font-weight: 900; margin: 0; color: #0f172a;">HYPASS 原料採購單</h1>
+                        <p style="font-size: 14px; color: #64748b; margin-top: 5px;">列印日期：${dateStr} | 申請人：${window.currentUser.full_name}</p>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <thead style="background: #f8fafc; border-bottom: 2px solid #cbd5e1;">
+                            <tr>
+                                <th style="padding: 12px 10px; text-align: center; width: 50px;">項次</th>
+                                <th style="padding: 12px 10px; text-align: left;">採購原料名稱</th>
+                                <th style="padding: 12px 10px; text-align: right;">需求數量</th>
+                                <th style="padding: 12px 10px; text-align: center;">單位</th>
+                                <th style="padding: 12px 10px; text-align: left;">指定供應商</th>
+                                <th style="padding: 12px 10px; text-align: center;">需求交期</th>
+                            </tr>
+                        </thead>
+                        <tbody>${tableRows}</tbody>
+                    </table>
+                    <div style="margin-top: 50px; font-size: 12px; color: #94a3b8; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 20px;">
+                        本單據由 HYPASS ERP 系統自動產出。請採購單位依據上方明細向供應商進行下單作業。
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('po-print-zone').innerHTML = printHtml;
+            setTimeout(() => { 
+                window.print(); 
+                setTimeout(() => {
+                    if(confirm('列印完成！\n是否要將系統中的這些採購單狀態更新為「已下單」？')) {
+                        // 簡化處理：將涉及到的 po_id 更新為已下單
+                        let poIds = [...new Set(selected.map(s => s.po_id))];
+                        poIds.forEach(async (id) => {
+                            await window._sb.from('purchase_orders').update({status: '已下單'}).eq('id', id);
+                        });
+                        alert('✅ 狀態已更新！');
+                        openPendingList();
+                    }
+                }, 500);
+            }, 300);
+        }
+
+        // 🌟 全新：採購單最新狀況表 (紅黃綠警示)
+        async function openPOStatusTable() {
+            openView('po-status', '📋 採購單最新狀況表');
+            const container = document.getElementById('ui-po-status-list');
+            container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">載入中...</p>';
+            
+            const { data, error } = await window._sb.from('purchase_orders').select('*, employees(full_name)').order('expected_date', {ascending: true});
+            if(error || !data || data.length === 0) { container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200">無任何採購紀錄</p>'; return; }
+            
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
             container.innerHTML = data.map(po => {
-                let badgeCol = po.status === '已到貨' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : (po.status === '已下單' ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-slate-100 text-slate-600 border-slate-200');
                 let rmText = po.raw_materials ? po.raw_materials.map(r=>r.name).join(', ') : '無明細';
+                let expDate = new Date(po.expected_date);
+                let diffTime = expDate - today;
+                let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                let statusBadge = ''; let borderClass = ''; let dateClass = 'text-slate-500';
+
+                if (po.status === '已到貨') {
+                    statusBadge = '<span class="text-[10px] font-black bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md border border-emerald-200">✅ 已到貨結案</span>';
+                    borderClass = 'border-emerald-200 bg-emerald-50/30 opacity-70';
+                } else {
+                    if (diffDays < 0) {
+                        statusBadge = '<span class="text-[10px] font-black bg-red-600 text-white px-2 py-1 rounded-md shadow-sm animate-pulse">🚨 遲交逾期</span>';
+                        borderClass = 'border-red-400 bg-red-50/50 shadow-md';
+                        dateClass = 'text-red-600 font-black';
+                    } else if (diffDays <= 3) {
+                        statusBadge = '<span class="text-[10px] font-black bg-amber-100 text-amber-700 px-2 py-1 rounded-md border border-amber-300">⚠️ 即將到期</span>';
+                        borderClass = 'border-amber-400 bg-amber-50/50';
+                        dateClass = 'text-amber-600 font-black';
+                    } else {
+                        statusBadge = '<span class="text-[10px] font-black bg-sky-100 text-sky-700 px-2 py-1 rounded-md border border-sky-200">⏳ 正常排程</span>';
+                        borderClass = 'border-slate-200';
+                    }
+                }
+
                 return `
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative active:bg-slate-50 transition cursor-pointer mb-3" onclick="openPODetail('${po.id}')">
-                    <div class="flex justify-between items-center mb-3"><span class="text-[10px] font-mono font-black text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">PO-${po.id.slice(0,6)}</span><span class="text-xs font-black px-2.5 py-1 rounded-md border ${badgeCol}">${po.status}</span></div>
-                    <h4 class="font-black text-sm text-slate-800 leading-relaxed mb-2 line-clamp-2">${rmText}</h4>
-                    <div class="flex space-x-3 text-[10px] text-slate-500 font-bold border-t border-slate-100 pt-3"><div class="flex items-center"><span class="mr-1">📅</span>建檔: ${new Date(po.created_at).toLocaleDateString('zh-TW')}</div><div class="flex items-center text-amber-600"><span class="mr-1">🚚</span>預計到廠: ${po.expected_date||'未定'}</div></div>
+                <div class="bg-white p-4 rounded-2xl border-2 ${borderClass} relative transition-all">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-[9px] font-mono font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">PO-${po.id.slice(0,6)}</span>
+                        ${statusBadge}
+                    </div>
+                    <h4 class="font-black text-sm text-slate-800 leading-relaxed mb-3 line-clamp-2">${rmText}</h4>
+                    <div class="flex justify-between items-end border-t border-slate-100 pt-3">
+                        <div class="text-[10px] text-slate-500 font-bold"><span class="mr-1">👤</span>${po.employees?.full_name||'未知'}</div>
+                        <div class="text-xs ${dateClass} flex items-center bg-white px-2 py-1 rounded-lg border border-slate-100 shadow-sm"><span class="mr-1.5">🚚</span>交期: ${po.expected_date||'未定'}</div>
+                    </div>
                 </div>`;
             }).join('');
         }
 
-        function openPODetail(id) {
-            const po = window.currentPOs.find(x => x.id === id); if(!po) return; activePOId = po.id;
-            document.getElementById('m-po-id').innerText = `ID: ${po.id}`; document.getElementById('m-po-emp').innerText = po.employees?.full_name || '未知'; document.getElementById('m-po-date').innerText = new Date(po.created_at).toLocaleDateString('zh-TW'); document.getElementById('m-po-eta').innerText = po.expected_date || '未設定'; document.getElementById('m-po-status').value = po.status || '已建檔';
-            
-            const mList = document.getElementById('m-po-materials');
-            if(po.raw_materials && po.raw_materials.length > 0) {
-                mList.innerHTML = po.raw_materials.map(r => `<div class="flex justify-between items-center text-xs border-b border-slate-200/60 pb-1.5 mb-1.5 last:border-0 last:mb-0 last:pb-0"><span class="font-bold text-slate-700">${r.name}</span><span class="font-black text-sky-700 text-sm">${r.qty.toFixed(2)} <span class="text-[9px] font-bold text-slate-400">${r.unit}</span></span></div>`).join('');
-            } else { mList.innerHTML = '<p class="text-[10px] text-slate-400 italic">無詳細原料紀錄</p>'; }
-            openModal('po-detail-modal');
-        }
-
-        async function updatePOStatus() {
-            if(!activePOId) return; const newSt = document.getElementById('m-po-status').value;
-            const { error } = await window._sb.from('purchase_orders').update({ status: newSt }).eq('id', activePOId);
-            if(error) alert('更新失敗'); else { alert('✅ 狀態已更新'); closeModal('po-detail-modal'); loadPOHistory(); }
-        }
-
-        async function deletePO() {
-            if(!activePOId) return; if(!confirm('⚠️ 確定要刪除這筆歷史採購單嗎？')) return;
-            const { error } = await window._sb.from('purchase_orders').delete().eq('id', activePOId);
-            if(error) alert('刪除失敗'); else { alert('✅ 採購單已刪除'); closeModal('po-detail-modal'); loadPOHistory(); }
-        }
-
-        function downloadPO_CSV() {
-            const po = window.currentPOs.find(x => x.id === activePOId); if(!po) return;
-            let csv = "\uFEFF採購單號,建檔日期,預計到廠日,原料採購項目,建議採購總量,單位\n";
-            const dateStr = new Date(po.created_at).toLocaleDateString('zh-TW');
-            if(po.raw_materials) { po.raw_materials.forEach(r => { csv += `="${po.id.slice(0,8)}",${dateStr},${po.expected_date||''},${r.name},${r.qty.toFixed(2)},${r.unit}\n`; }); }
-            const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `採購單_補印_${dateStr.replace(/\//g,'')}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        }
-
         window.onload = bootPurchase;
 
-        // 🚨 終極強制覆寫導覽列 (攔截 shared.js 的舊設定，鎖死正確排序與跳轉)
         const enforceNavObserver = new MutationObserver(() => {
             const oldNav = document.querySelector('nav:not(#core-bottom-nav)');
             if (oldNav) oldNav.remove();
