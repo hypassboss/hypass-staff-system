@@ -103,6 +103,29 @@
                         <span class="font-bold text-slate-500/70 text-[10px] tracking-wider">料號修改/列印標籤</span>
                     </button>
                 </div>
+
+                <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-teal-500 relative overflow-hidden mt-4">
+                    <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between">
+                        <span class="flex items-center"><span class="mr-1.5 text-lg">🚗</span> 汽車濾網最新狀況簡表</span>
+                        <span class="text-[9px] bg-teal-100 text-teal-700 px-2 py-1 rounded-md font-black border border-teal-200 shadow-sm">即時動態</span>
+                    </h3>
+                    <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
+                        <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[280px]">
+                            <thead class="text-slate-500 border-b border-slate-200">
+                                <tr>
+                                    <th class="p-2 font-bold text-left">料號</th>
+                                    <th class="p-2 font-bold text-right text-emerald-700">最新庫存</th>
+                                    <th class="p-2 font-bold text-right text-amber-600">採購量</th>
+                                    <th class="p-2 font-bold text-center">到貨日</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ui-filter-status-table" class="divide-y divide-slate-100 bg-white rounded-lg">
+                                <tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">資料計算中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
 
             <div id="view-inventory-list" class="view-panel space-y-4">
@@ -272,9 +295,7 @@
 
     <nav id="core-bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9999] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <div onclick="event.stopPropagation(); window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
-        
         <div onclick="event.stopPropagation(); window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-emerald-600"><span class="text-xl mb-1">📦</span><span class="scale-90">庫存</span></div>
-        
         <div onclick="event.stopPropagation(); window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></div>
         <div onclick="event.stopPropagation(); window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
         <div onclick="event.stopPropagation(); window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
@@ -313,16 +334,14 @@
             });
         }
 
-        // 🚨 查詢編輯中心：預設帶入「汽車冷氣濾網」
         function openSearchPrintView() {
             openView('search-print', '料號查詢編輯與標籤列印');
             const searchCatSel = document.getElementById('search-cat-filter');
-            if(Array.from(searchCatSel.options).some(o=>o.value==='汽車冷氣濾網')) { 
-                searchCatSel.value = '汽車冷氣濾網'; 
-            }
+            if(Array.from(searchCatSel.options).some(o=>o.value==='汽車冷氣濾網')) { searchCatSel.value = '汽車冷氣濾網'; }
             renderItemSearch();
         }
 
+        // 🌟 升級版：計算盤點逾期與週五大盤顯示 + 多表聯動採購資訊
         async function loadItems() {
             const { data } = await window._sb.from('items').select('*').order('created_at', {ascending: false}); allItems = data || [];
             const { data: ledgers } = await window._sb.from('inventory_ledgers').select('item_id, change_qty');
@@ -337,13 +356,30 @@
                     }
                 });
             }
+
+            // 抓取採購單資料
+            let pendingPurchases = {};
+            const { data: pos } = await window._sb.from('purchase_orders').select('target_items, expected_date').in('status', ['已建檔', '已下單']);
+            if (pos) {
+                pos.forEach(po => {
+                    if (po.target_items && Array.isArray(po.target_items)) {
+                        po.target_items.forEach(tItem => {
+                            let code = tItem.id;
+                            if (!pendingPurchases[code]) pendingPurchases[code] = { qty: 0, eta: po.expected_date };
+                            pendingPurchases[code].qty += (parseInt(tItem.qty) || 0);
+                            if (po.expected_date && (!pendingPurchases[code].eta || po.expected_date < pendingPurchases[code].eta)) {
+                                pendingPurchases[code].eta = po.expected_date;
+                            }
+                        });
+                    }
+                });
+            }
             
             let lowCount = 0; let lowStockHtml = '';
             const cats = [...new Set(allItems.map(i => i.category || '未分類'))];
             const catOptions = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
             document.getElementById('inv-cat-filter').innerHTML = catOptions;
             
-            // 讓查詢中心的過濾器也保持一致
             const searchCatFilter = document.getElementById('search-cat-filter');
             const currentSearchCat = searchCatFilter.value;
             searchCatFilter.innerHTML = catOptions;
@@ -378,6 +414,7 @@
             document.getElementById('low-stock-count').innerText = `${lowCount} 件`;
             document.getElementById('ui-dash-low-stock').innerHTML = lowStockHtml || '<p class="text-xs text-center py-4 text-emerald-100 font-bold">目前無低水位庫存 🎉</p>';
             
+            // 🚨 週五盤點提醒邏輯
             const isFriday = nowD.getDay() === 5;
             const isManager = window.currentUser && window.currentUser.is_inventory_manager;
             const remBlock = document.getElementById('friday-reminder');
@@ -395,6 +432,27 @@
                 remBlock.classList.add('hidden');
             }
 
+            // 🌟 渲染汽車濾網最新狀況簡表
+            let filterItems = window.inventoryData.filter(i => i.category === '汽車冷氣濾網');
+            let filterHtml = '';
+            if (filterItems.length === 0) {
+                filterHtml = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無汽車濾網資料</td></tr>';
+            } else {
+                filterHtml = filterItems.map(i => {
+                    let poInfo = pendingPurchases[i.item_code] || { qty: 0, eta: '--' };
+                    let qtyHtml = poInfo.qty > 0 ? `<span class="font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded shadow-sm border border-amber-100">${poInfo.qty}</span>` : `<span class="text-slate-300">0</span>`;
+                    let etaHtml = poInfo.qty > 0 && poInfo.eta !== '--' ? `<span class="text-amber-600 font-bold">${poInfo.eta.slice(5)}</span>` : `<span class="text-slate-300">--</span>`;
+                    
+                    return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0">
+                        <td class="p-2 font-mono font-black text-slate-700 truncate max-w-[100px]">${i.item_code}</td>
+                        <td class="p-2 text-right font-black text-emerald-700 text-sm tracking-tight">${i.current_stock}</td>
+                        <td class="p-2 text-right">${qtyHtml}</td>
+                        <td class="p-2 text-center text-[10px]">${etaHtml}</td>
+                    </tr>`;
+                }).join('');
+            }
+            document.getElementById('ui-filter-status-table').innerHTML = filterHtml;
+
             if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
             if(document.getElementById('view-inventory-list').classList.contains('active')) renderInventoryListUI(window.inventoryData);
         }
@@ -406,6 +464,7 @@
 
         async function openInventoryList() { openView('inventory-list', '即時庫存總表'); loadItems(); renderInventoryListUI(window.inventoryData); updateTopPurchaseBar(); }
 
+        // 🌟 升級版：總表嵌入盤點週期設定
         function renderInventoryListUI(data) {
             const container = document.getElementById('ui-inventory-list');
             if(!data || data.length === 0) { container.innerHTML = '<div class="text-center text-sm text-slate-400 font-bold py-10">無資料</div>'; return; }
@@ -551,7 +610,6 @@
         function extractBomData(tbodyId) { let data = []; document.querySelectorAll(`#${tbodyId} tr`).forEach(tr => { const mat = tr.querySelector('.bom-mat').value; if(mat) data.push({ material: mat, usage: parseFloat(tr.querySelector('.bom-qty').value) || 0, unit: tr.querySelector('.bom-unit').value, total_qty: parseFloat(tr.querySelector('.bom-total').value) || 0 }); }); return data; }
         async function saveItem(e) { e.preventDefault(); let cat = document.getElementById('i-category').value === 'custom' ? document.getElementById('i-custom-category').value : document.getElementById('i-category').value; const p = { item_name: document.getElementById('i-name').value, item_code: document.getElementById('i-code').value.toUpperCase(), item_type: document.getElementById('i-type').value, category: cat, specification: document.getElementById('i-spec').value, qty_per_pack: parseInt(document.getElementById('i-qty').value) || 1, safe_stock_level: 0, lead_time_days: parseInt(document.getElementById('i-lead').value) || 15, stocktake_cycle: parseInt(document.getElementById('i-cycle').value) || 30, bom_data: extractBomData('bom-table-body') }; const { error } = await window._sb.from('items').insert([p]); if(!error) { alert('✅ 成功！'); e.target.reset(); renderBomTable('bom-table-body'); loadItems(); } }
         
-        // 🚨 查詢編輯中心：視覺重構與真實條碼
         function renderItemSearch() {
             const kw = document.getElementById('item-search-input').value.toLowerCase(); const cat = document.getElementById('search-cat-filter').value;
             const res = window.inventoryData.filter(i => (i.item_code.toLowerCase().includes(kw) || i.item_name.toLowerCase().includes(kw)) && (cat === '' || i.category === cat));
@@ -601,7 +659,6 @@
                 </div>`;
             }).join('');
             
-            // 生成真實條碼
             document.querySelectorAll('.item-barcode').forEach(svg => {
                 JsBarcode(svg, svg.getAttribute('data-value'), { format: "CODE128", width: 2, height: 40, displayValue: true, fontSize: 14, margin: 0, background: "transparent", lineColor: "#1e293b" });
             });
