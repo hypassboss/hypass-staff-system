@@ -20,7 +20,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         
-        /* 🚨 列印黑科技 */
         @media print {
             body * { visibility: hidden; }
             #print-zone, #print-zone * { visibility: visible; }
@@ -28,7 +27,6 @@
             #app-container, nav { display: none !important; }
         }
 
-        /* 🚨 終極防禦裝甲：封殺 shared.js 產生的舊導覽列 */
         nav { display: none !important; }
         #core-bottom-nav { display: flex !important; }
     </style>
@@ -66,19 +64,25 @@
             </div>
 
             <div id="view-dashboard" class="view-panel active space-y-5">
-                <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[2rem] p-6 text-white shadow-lg relative overflow-hidden">
-                    <div class="absolute -right-4 -top-4 text-7xl opacity-20">📦</div>
-                    <h2 class="text-2xl font-black mb-1">行動盤點中心</h2>
-                    <p class="text-xs font-bold text-emerald-100 mb-4 tracking-wider">支援相機掃碼與連掃模式</p>
-                    
-                    <div class="bg-white/20 p-4 rounded-xl border border-white/20 backdrop-blur-sm mt-4">
-                        <p class="text-[10px] font-bold mb-2 tracking-widest uppercase flex items-center justify-between">
-                            <span>⚠️ 低水位庫存警示清單</span>
-                            <span class="bg-red-500 text-white px-2 py-0.5 rounded text-[9px] font-black shadow-sm" id="low-stock-count">0 件</span>
-                        </p>
-                        <div id="ui-dash-low-stock" class="max-h-48 overflow-y-auto space-y-2 no-scrollbar pr-1">
-                            <p class="text-xs text-center py-4 text-emerald-100 font-bold">載入中...</p>
-                        </div>
+                <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-teal-500 relative overflow-hidden">
+                    <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between">
+                        <span class="flex items-center"><span class="mr-1.5 text-lg">🚗</span> 汽車濾網最新狀況</span>
+                        <span class="text-[9px] bg-teal-100 text-teal-700 px-2 py-1 rounded-md font-black border border-teal-200 shadow-sm">即時動態</span>
+                    </h3>
+                    <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
+                        <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[280px]">
+                            <thead class="text-slate-500 border-b border-slate-200">
+                                <tr>
+                                    <th class="p-2 font-bold text-left">料號</th>
+                                    <th class="p-2 font-bold text-right">最新庫存</th>
+                                    <th class="p-2 font-bold text-right text-amber-600">採購量</th>
+                                    <th class="p-2 font-bold text-center">到貨日</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ui-filter-status-table" class="divide-y divide-slate-100 bg-white rounded-lg">
+                                <tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">資料計算中...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -103,29 +107,6 @@
                         <span class="font-bold text-slate-500/70 text-[10px] tracking-wider">料號修改/列印標籤</span>
                     </button>
                 </div>
-
-                <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-teal-500 relative overflow-hidden mt-4">
-                    <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between">
-                        <span class="flex items-center"><span class="mr-1.5 text-lg">🚗</span> 汽車濾網最新狀況</span>
-                        <span class="text-[9px] bg-teal-100 text-teal-700 px-2 py-1 rounded-md font-black border border-teal-200 shadow-sm">即時動態</span>
-                    </h3>
-                    <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
-                        <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[280px]">
-                            <thead class="text-slate-500 border-b border-slate-200">
-                                <tr>
-                                    <th class="p-2 font-bold text-left">料號</th>
-                                    <th class="p-2 font-bold text-right text-emerald-700">最新庫存</th>
-                                    <th class="p-2 font-bold text-right text-amber-600">採購量</th>
-                                    <th class="p-2 font-bold text-center">到貨日</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ui-filter-status-table" class="divide-y divide-slate-100 bg-white rounded-lg">
-                                <tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">資料計算中...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
             </div>
 
             <div id="view-inventory-list" class="view-panel space-y-4">
@@ -232,7 +213,7 @@
                             <div class="col-span-2 bg-white p-2.5 rounded-xl border border-sky-200 shadow-sm"><label class="text-[10px] font-black text-sky-700 ml-1 block mb-1 tracking-widest">盤點週期 (逾期提醒頻率)</label><select id="i-cycle" class="w-full p-2.5 bg-sky-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow text-sky-900" required><option value="7">7 天 (每週)</option><option value="30" selected>30 天 (每月)</option><option value="60">60 天 (雙月)</option><option value="90">90 天 (每季)</option></select></div>
 
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1">
-                                <h5 class="text-xs font-black text-slate-700 mb-3 flex items-center justify-between"><span class="flex items-center"><span class="mr-1 text-lg">⚙️</span> 產品 BOM 表設定</span><span class="text-[9px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded">最多 10 項</span></h5>
+                                <h5 class="text-xs font-black text-slate-700 mb-3 flex items-center justify-between"><span class="flex items-center"><span class="mr-1 text-lg">⚙️</span> 產品 BOM 表設定</span><span class="text-[9px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded">最多 6 項</span></h5>
                                 <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-100 p-1">
                                     <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[450px]">
                                         <thead class="text-slate-500 border-b border-slate-200">
@@ -402,7 +383,6 @@
 
                 if(current_stock <= (i.safe_stock_level || 0)) {
                     lowCount++;
-                    lowStockHtml += `<div class="bg-white/10 p-3 rounded-lg text-xs flex justify-between items-center border border-red-400/30 relative overflow-hidden"><div class="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></div><div class="pl-2"><div><span class="bg-red-500 text-white px-1.5 py-0.5 rounded text-[8px] font-bold mr-1">${i.category||'未分類'}</span><span class="text-[9px] font-mono font-bold text-emerald-100">${i.item_code}</span></div><span class="font-black text-sm block text-white mt-1">${i.item_name}</span></div><div class="text-right flex flex-col items-end"><span class="font-black text-red-400 text-2xl">${current_stock}</span></div></div>`;
                 }
                 
                 let processedItem = { ...i, current_stock: current_stock, is_overdue: isOverdue, cycle: cycle };
@@ -410,8 +390,11 @@
                 return processedItem;
             });
             
-            document.getElementById('low-stock-count').innerText = `${lowCount} 件`;
-            document.getElementById('ui-dash-low-stock').innerHTML = lowStockHtml || '<p class="text-xs text-center py-4 text-emerald-100 font-bold">目前無低水位庫存 🎉</p>';
+            // 🚨 移除行動盤點中心後，對應的低水位 UI 也一併關閉，以免報錯
+            let elLowCount = document.getElementById('low-stock-count');
+            if(elLowCount) elLowCount.innerText = `${lowCount} 件`;
+            let elLowList = document.getElementById('ui-dash-low-stock');
+            if(elLowList) elLowList.innerHTML = lowStockHtml || '<p class="text-xs text-center py-4 text-emerald-100 font-bold">目前無低水位庫存 🎉</p>';
             
             const isFriday = nowD.getDay() === 5;
             const isManager = window.currentUser && window.currentUser.is_inventory_manager;
@@ -430,7 +413,7 @@
                 remBlock.classList.add('hidden');
             }
 
-            // 🌟 升級版：汽車濾網戰情表，強制置頂核心原料
+            // 🌟 升級版：汽車濾網戰情表，強制置頂核心原料並加入顏色邏輯
             let rawTop = window.inventoryData.filter(i => ['CST-01', 'CMB-01'].includes(i.item_code));
             let finishedGoods = window.inventoryData.filter(i => i.item_type === '成品' && i.category === '汽車冷氣濾網');
             let filterItems = [...rawTop, ...finishedGoods];
@@ -445,9 +428,17 @@
                     let etaHtml = poInfo.qty > 0 && poInfo.eta !== '--' ? `<span class="text-amber-600 font-bold">${poInfo.eta.slice(5)}</span>` : `<span class="text-slate-300">--</span>`;
                     let typeBadge = i.item_type === '原料' ? `<span class="text-[8px] bg-slate-100 text-slate-500 px-1 py-0.5 rounded ml-1 font-bold border border-slate-200">原料</span>` : '';
                     
+                    // 🌟 顏色邏輯判斷
+                    let safe = i.safe_stock_level || 0;
+                    let isLow = i.current_stock <= safe;
+                    let isWarn = !isLow && i.current_stock <= (safe * 1.5);
+                    let stockClass = 'text-emerald-600'; 
+                    if(isLow) stockClass = 'text-red-600 animate-pulse';
+                    else if(isWarn) stockClass = 'text-amber-500';
+
                     return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0">
                         <td class="p-2.5 font-mono font-black text-slate-700 truncate max-w-[120px]">${i.item_code}${typeBadge}</td>
-                        <td class="p-2.5 text-right font-black text-emerald-700 text-sm tracking-tight">${i.current_stock}</td>
+                        <td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td>
                         <td class="p-2.5 text-right">${qtyHtml}</td>
                         <td class="p-2.5 text-center text-[10px]">${etaHtml}</td>
                     </tr>`;
@@ -599,11 +590,11 @@
             openScanner();
         }
         
-        // 🌟 升級版：BOM 表下拉選單自動連動原料庫
+        // 🌟 升級版：BOM 表改為 6 項
         function renderBomTable(tbodyId, existingData = []) {
             let rawItems = window.inventoryData.filter(i => i.item_type === '原料');
             let html = ''; 
-            for(let i=0; i<10; i++) {
+            for(let i=0; i<6; i++) {
                 let r = existingData[i] || { material: '', usage: '', unit: '米平方', total_qty: '' };
                 let opts = '<option value="">(請選擇原料...)</option>' + rawItems.map(rm => `<option value="${rm.item_name}" ${r.material===rm.item_name?'selected':''}>[${rm.item_code}] ${rm.item_name}</option>`).join('');
                 if(r.material && !rawItems.some(rm => rm.item_name === r.material)) opts += `<option value="${r.material}" selected>${r.material} (舊資料)</option>`;
