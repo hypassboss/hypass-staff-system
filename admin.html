@@ -288,6 +288,7 @@
             </div>
             <div class="overflow-y-auto p-5 md:p-8 space-y-6 flex-1 no-scrollbar">
                 <div id="ui-emp-full-info"></div>
+                
                 <div class="bg-white p-6 rounded-2xl border border-red-200 shadow-sm" id="ui-emp-offboard-section">
                     <h4 class="font-black text-red-700 mb-3 border-l-4 border-red-500 pl-2 text-lg">⚖️ 離職與資遣結算作業</h4>
                     <p class="text-xs text-slate-500 mb-5 bg-slate-50 p-3 rounded-xl leading-relaxed border border-slate-100">執行結算後，系統將結清所有時數與資遣費，並<strong class="text-red-600">永久停權該員工登入資格</strong>。</p>
@@ -439,7 +440,6 @@
             const yebSec = document.getElementById('yeb-section');
             if(isChecked) {
                 yebSec.classList.remove('hidden');
-                // 若已選員工，直接幫他算好特休錢
                 await autoCalcUlp();
             } else {
                 yebSec.classList.add('hidden');
@@ -540,41 +540,42 @@
             else { alert('✅ 薪資單已成功刪除'); loadPayrollHistory(); }
         }
 
-        // 🌟 員工檔案 Modal 排版大翻新
+        // 🌟 員工檔案 Modal 排版大翻新 (對齊截圖黃金比例)
         function openEmpDetail(empId) {
             const e = window.allEmps.find(x => x.id === empId); if(!e) return;
             window.currentOffboardEmpId = empId; document.getElementById('modal-off-result').classList.add('hidden'); document.getElementById('modal-off-date').value = '';
             document.getElementById('ui-emp-offboard-section').style.display = 'block'; const editBtn = document.getElementById('btn-edit-emp'); editBtn.onclick = () => renderEditEmpForm(empId); editBtn.style.display = 'block';
-            let mgrTag = e.is_inventory_manager ? '<span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md ml-1 align-middle border border-emerald-200">庫存盤點員</span>' : '';
-            let pntTag = e.penalty_points > 0 ? `<span class="text-[10px] font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-md ml-1 align-middle border border-red-200">計點: ${e.penalty_points}</span>` : '';
+            let mgrTag = e.is_inventory_manager ? '<span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-200 leading-none">庫存盤點員</span>' : '';
+            let pntTag = e.penalty_points > 0 ? `<span class="text-[10px] font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-md border border-red-200 leading-none">計點: ${e.penalty_points}</span>` : '';
             const html = `
                 <div class="space-y-4">
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-4">
+                    <div class="bg-white p-5 md:p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-4">
                         <div class="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center text-white text-2xl font-black shadow-inner shrink-0">${e.full_name.charAt(0)}</div>
-                        <div class="flex-1">
-                            <h4 class="text-2xl font-black text-slate-800 tracking-tight flex items-center flex-wrap gap-2">
-                                ${e.full_name} 
-                                <span class="text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-1 rounded-md border border-sky-200 tracking-widest">${e.employment_status}</span>
-                                ${mgrTag}${pntTag}
-                            </h4>
-                            <p class="text-sm text-slate-500 font-bold mt-1.5 tracking-wider">${e.job_title||'未指派職位'}</p>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center flex-wrap gap-2 mb-1.5">
+                                <h4 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight leading-none">${e.full_name}</h4>
+                                <span class="text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-md border border-sky-200 leading-none tracking-widest">${e.employment_status}</span>
+                                ${mgrTag}
+                                ${pntTag}
+                            </div>
+                            <p class="text-sm text-slate-500 font-bold tracking-wider">${e.job_title||'未指派職位'}</p>
                         </div>
                     </div>
 
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                         <h5 class="text-sm font-black text-blue-800 mb-4 border-l-4 border-blue-500 pl-2">🏢 基本與考勤資訊</h5>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">員工編號</p><p class="font-black text-sky-700 text-lg leading-none">${e.employee_no||'未設定'}</p></div>
-                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">入職日期</p><p class="font-black text-slate-700 text-base leading-none mt-0.5">${e.onboarding_date}</p></div>
-                            <div class="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">工作打卡據點</p><p class="font-black text-slate-800 text-base leading-none mt-0.5">${e.branch_locations?.branch_name || '未綁定'}</p></div>
-                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">上班時間</p><p class="font-black text-slate-700 text-base leading-none mt-0.5">${(e.work_start_time||'09:00').slice(0,5)}</p></div>
-                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">下班時間</p><p class="font-black text-slate-700 text-base leading-none mt-0.5">${(e.work_end_time||'18:00').slice(0,5)}</p></div>
+                        <div class="grid grid-cols-2 gap-3 md:gap-4">
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">員工編號</p><p class="font-black text-sky-700 text-base md:text-lg leading-none mt-0.5">${e.employee_no||'未設定'}</p></div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">入職日期</p><p class="font-black text-slate-700 text-base md:text-lg leading-none mt-0.5">${e.onboarding_date}</p></div>
+                            <div class="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">工作打卡據點</p><p class="font-black text-slate-800 text-base md:text-lg leading-none mt-0.5">${e.branch_locations?.branch_name || '未綁定'}</p></div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">上班時間</p><p class="font-black text-slate-700 text-base md:text-lg leading-none mt-0.5">${(e.work_start_time||'09:00').slice(0,5)}</p></div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">下班時間</p><p class="font-black text-slate-700 text-base md:text-lg leading-none mt-0.5">${(e.work_end_time||'18:00').slice(0,5)}</p></div>
                         </div>
                     </div>
 
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                         <h5 class="text-sm font-black text-slate-700 mb-4 border-l-4 border-slate-500 pl-2">📞 聯絡與通訊資料</h5>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-3 md:gap-4">
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">聯絡電話</p><p class="font-black text-slate-800 text-sm mt-0.5">${e.phone}</p></div>
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">身分證字號</p><p class="font-black text-slate-800 text-sm mt-0.5">${e.id_number}</p></div>
                             <div class="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">電子信箱</p><p class="font-black text-slate-800 text-sm mt-0.5">${e.email}</p></div>
@@ -584,7 +585,7 @@
 
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                         <h5 class="text-sm font-black text-emerald-700 mb-4 border-l-4 border-emerald-500 pl-2">💰 財務與保險設定</h5>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-3 md:gap-4">
                             <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100"><p class="text-[10px] font-bold text-emerald-600/70 mb-1.5">核定本薪</p><p class="font-black text-emerald-700 text-xl tracking-tight leading-none">NT$ ${e.base_salary.toLocaleString()}</p></div>
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1.5">眷屬加保人數</p><p class="font-black text-slate-800 text-xl tracking-tight leading-none">${e.dependents_count} <span class="text-sm font-bold text-slate-500">人</span></p></div>
                             <div class="col-span-2 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner">
@@ -607,7 +608,7 @@
                                 <p class="text-[10px] font-bold text-slate-400 mb-1">聘僱合約與 NDA 保密協定</p>
                                 <p class="text-xs font-black text-emerald-600 flex items-center mt-1"><span class="mr-1">✔️</span>已簽署生效 (${new Date(e.nda_signed_at).toLocaleDateString('zh-TW')})</p>
                             </div>
-                            <button onclick="exportContract('${e.id}')" class="bg-white text-sky-700 hover:bg-sky-50 border border-sky-200 text-xs font-black px-4 py-3 rounded-xl transition shadow-sm active:scale-95">📥 下載 PDF</button>
+                            <button onclick="exportContract('${e.id}')" class="bg-white text-sky-700 hover:bg-sky-50 border border-sky-200 text-xs font-black px-4 py-3 rounded-xl transition shadow-sm active:scale-95 whitespace-nowrap ml-2">📥 下載 PDF</button>
                         </div>
                     </div>
                 </div>
@@ -672,131 +673,6 @@
             else { 
                 btn.innerHTML = '✅ 儲存完畢'; await loadAll(); setTimeout(() => openEmpDetail(empId), 1000); 
             }
-        }
-
-        async function updateAttendanceRate() { 
-            const empId = document.getElementById('p-emp').value; 
-            const month = document.getElementById('p-mon').value; 
-            if(!empId || !month) return; 
-            
-            const { data } = await window._sb.rpc('fn_get_payroll_calc', { p_emp_id: empId, p_month: month }); 
-            if(data) { 
-                document.getElementById('sd-sick').innerText = data.sick_hrs; 
-                document.getElementById('sd-per').innerText = data.personal_hrs; 
-                document.getElementById('sd-typ').innerText = data.typhoon_hrs; 
-                document.getElementById('sd-lat').innerText = data.late_count; 
-                document.getElementById('sd-ovt').innerText = data.overtime_hrs; 
-                document.getElementById('sd-pnt').innerText = data.total_penalty; 
-                document.getElementById('p-lvd').value = data.leave_deduct; 
-            } 
-            
-            const y = month.split('-')[0];
-            const { data: yData } = await window._sb.rpc('fn_get_year_end_stats', { p_emp_id: empId, p_year: y });
-            const { data: lv } = await window._sb.rpc('fn_get_annual_leave_v2', { p_emp_id: empId });
-            if(yData) {
-                document.getElementById('sy-ann').innerText = lv?.remain_hours || 0; 
-                document.getElementById('sy-per').innerText = yData.personal || 0; 
-                document.getElementById('sy-sic').innerText = yData.sick || 0; 
-                document.getElementById('sy-lat').innerText = yData.late || 0; 
-                document.getElementById('sy-ovt').innerText = yData.overtime || 0; 
-                document.getElementById('sy-pnt').innerText = yData.total_penalty || 0;
-            }
-            
-            // 只有開啟年終模式時，才自動換算特休
-            if(document.getElementById('toggle-yeb').checked) {
-                await autoCalcUlp();
-            } else {
-                calcNet(); 
-            }
-        }
-
-        function onEmpChange() { const empId = document.getElementById('p-emp').value; if(!empId) return; const emp = window.empData[empId]; if(!emp) return; document.getElementById('p-base').value = emp.base; calcPayroll(); updateAttendanceRate(); }
-        
-        function calcPayroll() { 
-            const empId = document.getElementById('p-emp').value; 
-            const emp = window.empData[empId]; 
-            if(!emp) return; 
-            const base = parseFloat(document.getElementById('p-base').value) || 0; 
-            const bonus = parseFloat(document.getElementById('p-bonus').value) || 0; 
-            const yeb = parseFloat(document.getElementById('p-yeb').value) || 0; 
-            
-            document.getElementById('p-pen').value = Math.round(base * 0.06); 
-            document.getElementById('p-2nd').value = Math.round((bonus + yeb) * 0.0211); 
-            document.getElementById('p-ins').value = Math.round(base * 0.022) + Math.round(base * 0.0155 * (1 + emp.deps)); 
-            
-            calcNet(); 
-        }
-
-        function calcNet() { 
-            const base = parseFloat(document.getElementById('p-base').value) || 0;
-            const bonus = parseFloat(document.getElementById('p-bonus').value) || 0;
-            const yeb = parseFloat(document.getElementById('p-yeb').value) || 0;
-            const ulp = parseFloat(document.getElementById('p-ulp').value) || 0;
-            const ins = parseFloat(document.getElementById('p-ins').value) || 0;
-            const sec = parseFloat(document.getElementById('p-2nd').value) || 0;
-            const lvd = parseFloat(document.getElementById('p-lvd').value) || 0;
-            
-            const net = base + bonus + yeb + ulp - ins - sec - lvd; 
-            document.getElementById('p-net').value = net > 0 ? net : 0; 
-            document.getElementById('p-net-display').innerText = `NT$ ${net > 0 ? net : 0}`; 
-        }
-
-        async function issuePayroll() { 
-            const empId = document.getElementById('p-emp').value;
-            const base = parseFloat(document.getElementById('p-base').value) || 0;
-            const bonus = parseFloat(document.getElementById('p-bonus').value) || 0;
-            const yeb = parseFloat(document.getElementById('p-yeb').value) || 0;
-            const ulp = parseFloat(document.getElementById('p-ulp').value) || 0;
-            
-            if(!empId) { alert('請選擇員工！'); return; }
-            if(base === 0 && bonus === 0 && yeb === 0 && ulp === 0) { alert('發放金額不能全部為 0！'); return; }
-            
-            const isYeb = document.getElementById('toggle-yeb').checked;
-            const pm = document.getElementById('p-mon').value;
-            const finalMonth = isYeb ? `${pm.split('-')[0]}-13 (年終結算)` : pm;
-
-            const p = { 
-                employee_id: empId, 
-                pay_month: finalMonth, 
-                base_pay: base, 
-                bonus: bonus, 
-                year_end_bonus: yeb,
-                unused_leave_pay: ulp,
-                labor_pension: parseFloat(document.getElementById('p-pen').value) || 0, 
-                insurance_deduction: parseFloat(document.getElementById('p-ins').value) || 0, 
-                second_gen_health: parseFloat(document.getElementById('p-2nd').value) || 0, 
-                leave_deduction: parseFloat(document.getElementById('p-lvd').value) || 0, 
-                total_net_pay: parseFloat(document.getElementById('p-net').value) || 0 
-            }; 
-            
-            await window._sb.from('payroll_records').insert([p]); 
-            alert('✅ 綜合薪資發送成功！'); 
-            
-            // 同步刷新歷史薪資單區塊
-            document.getElementById('hist-emp').value = empId;
-            loadPayrollHistory();
-        }
-
-        function exportContract(empId) {
-            const e = window.allEmps.find(x => x.id === empId); if(!e) return;
-            const printWindow = window.open('', '_blank', 'width=900,height=900');
-            const startScript = "<scr" + "ipt>"; const endScript = "</scr" + "ipt>";
-            const html = `
-                <html>
-                <head><title>${e.full_name} - 數位聘僱合約</title><style>body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; padding: 40px 60px; line-height: 1.8; color: #111; max-width: 800px; margin: 0 auto; } h2 { text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 30px; letter-spacing: 2px;} .info-box { border: 1px solid #ddd; padding: 20px; background: #f9fafb; margin-bottom: 30px; border-radius: 8px; } .info-box p { margin: 8px 0; font-size: 15px; } .section-title { font-weight: bold; margin-top: 30px; margin-bottom: 10px; font-size: 1.1em; background: #eee; padding: 5px 10px; border-left: 4px solid #333;} ul { padding-left: 25px; margin-top: 0; } li { margin-bottom: 8px; text-align: justify; } .signature-box { margin-top: 50px; border-top: 2px dashed #999; padding-top: 30px; text-align: right; } .signature-box p { margin: 5px 0; font-size: 14px; } .stamp { display: inline-block; border: 3px solid #b91c1c; color: #b91c1c; padding: 10px 20px; font-weight: bold; font-size: 18px; transform: rotate(-5deg); margin-bottom: 15px; border-radius: 5px;}</style></head>
-                <body>
-                    <h2>HYPASS 企業聘僱合約與員工服務守則</h2>
-                    <div class="info-box"><p><strong>甲方（雇主）：</strong>海帕斯科技股份有限公司</p><p><strong>乙方（受僱人）：</strong>${e.full_name} <span style="color:#666; font-size:12px;">(員工編號: ${e.employee_no||'未設定'})</span></p><p><strong>身分證字號：</strong>${e.id_number}</p><p><strong>通訊地址：</strong>${e.address}</p></div>
-                    <div class="section-title">第一章：職位與工作內容</div><ul><li>職務說明：乙方同意擔任甲方所指派之職務，並協助甲方各項業務推動。</li><li>工作區域：甲方得視營運需求，指派乙方於實體據點或指定分區執行職務。</li></ul>
-                    <div class="section-title">第二章：考勤管理與打卡規範</div><ul><li>考勤依據：乙方同意以 App 之 GPS 定位打卡，作為出勤紀錄之唯一合法依據。</li><li>打卡範圍：系統自動偵測並記錄員工所在座標與據點，無距離限制。</li><li>遲到處理：每月給予 3 次遲到寬限，每次最高 10 分鐘。若超過寬限，該缺失時數將依比例不計薪。若乙方欲維持全薪，應主動申請以剩餘特休抵扣。</li><li>忘記打卡與補登：若忘記打卡，應於系統提出「補登申請」。每人每月補登上限為 3 次，超過次數將無法申請，該異常時段以曠職或事假論處。若前一日漏打下班卡，須先完成補登申請方可進行次日打卡。</li></ul>
-                    <div class="section-title">第三章：請假與休假規範</div><ul><li>請假程序：一般請假應至少提前三日於線上申請；突發狀況應第一時間告知並補單。</li><li>颱風假原則：依政府發布，遵循「放假但該日不支薪」原則，不扣特休亦不影響全勤。</li><li>加班申請：例假日出勤須於系統填寫「起訖時間」送出加班單。</li></ul>
-                    <div class="section-title">第四章：保密協定 (NDA) 與智慧財產權</div><ul><li>保密義務：乙方對甲方之客戶未公開營業秘密，負絕對保密義務。未經同意絕不洩漏。</li><li>歸還義務：離職時，應將所有隸屬公司之財產、機密資訊、設備、實體與數位檔案全數歸還，絕對不得私自拷貝或保留。</li><li>違約罰則：乙方若違反保密義務，同意無條件負擔新台幣壹佰萬元整之懲罰性違約金。</li></ul>
-                    <div class="section-title">第五章：薪資與給假計算基準 (依據勞動基準法)</div><ul><li>薪資換算：約定之本薪即為「月薪」。日薪以「月薪 / 30日」計；時薪以「月薪 / 240小時」計。</li><li>請假扣薪：事假依法扣除 100% 該時段之薪資；病假依法扣除 50% 該時段之薪資。遲到未抵扣特休者，依實際缺勤時數比例扣除。</li><li>加班費率：平日延長工時前兩小時按時薪加給 1.34 倍，後兩小時按 1.67 倍。假日出勤依法定倍率核發。</li><li>紀律與考核：員工之考勤異常與「違規計點」，將直接影響並納入「年終獎金」與「績效獎金」之發放評估基準。</li></ul>
-                    <div class="signature-box"><div class="stamp">合法數位簽章認證</div><p><strong>✔️ 乙方已詳閱並同意上述全條文</strong></p><p><strong>✔️ 乙方同意系統以 GPS 定位為考勤唯一依據</strong></p><p><strong>✔️ 乙方同意嚴守保密協定(NDA)，如有違願負擔懲罰性違約金</strong></p><br><p><strong>數位簽署人（乙方）：</strong>${e.full_name}</p><p><strong>簽署裝置授權：</strong>LINE LIFF 綁定驗證 (${e.line_id})</p><p><strong>生效時間：</strong>${new Date(e.nda_signed_at).toLocaleString('zh-TW')}</p></div>
-                    ${startScript} window.onload = function() { setTimeout(() => { window.print(); }, 500); } ${endScript}
-                </body></html>
-            `;
-            printWindow.document.write(html); printWindow.document.close();
         }
 
         async function calculateSettlement() { const empId = window.currentOffboardEmpId; const lastDay = document.getElementById('modal-off-date').value; const type = document.getElementById('modal-off-type').value; if(!empId || !lastDay) { alert('請填寫最後工作日'); return; } const e = window.allEmps.find(x => x.id === empId); const { data: lv } = await window._sb.rpc('fn_get_annual_leave_v2', { p_emp_id: e.id }); const proRat = new Date(lastDay).getDate() / 30.0; const proSal = Math.round((proRat > 1 ? 1 : proRat) * e.base_salary); const uHrs = lv?.remain_hours || 0; const lPay = Math.round(uHrs * (e.base_salary / 240)); let sev = 0; if(type === '非自願離職(資遣)') { const ty = (new Date(lastDay).getTime() - new Date(e.onboarding_date).getTime()) / 31557600000; sev = Math.round(Math.max(0, ty) * 0.5 * e.base_salary); } const tot = proSal + lPay + sev; document.getElementById('res-base').innerText = `NT$ ${e.base_salary.toLocaleString()}`; document.getElementById('res-pro').innerText = `+ NT$ ${proSal.toLocaleString()}`; document.getElementById('res-lvh').innerText = uHrs; document.getElementById('res-lvp').innerText = `+ NT$ ${lPay.toLocaleString()}`; document.getElementById('res-sev').innerText = `+ NT$ ${sev.toLocaleString()}`; document.getElementById('res-total').innerText = `NT$ ${tot.toLocaleString()}`; document.getElementById('modal-off-result').classList.remove('hidden'); globalOffboardData = { employee_id: empId, settlement_type: type, last_working_day: lastDay, base_salary_ref: e.base_salary, prorated_salary: proSal, unused_leave_hours: uHrs, unused_leave_pay: lPay, severance_pay: sev, total_settlement: tot }; }
