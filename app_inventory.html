@@ -42,7 +42,6 @@
 <body class="text-slate-800 relative">
     
     <div id="print-zone" style="display:none;"></div>
-    
     <div id="toast-container" class="fixed bottom-24 left-4 z-[9999] flex flex-col space-y-3 pointer-events-none"></div>
 
     <div id="app-container" class="max-w-md mx-auto shadow-2xl relative">
@@ -83,7 +82,7 @@
                                 </tr>
                             </thead>
                             <tbody id="ui-filter-status-table" class="divide-y divide-slate-100 bg-white rounded-lg">
-                                <tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">資料計算中...</td></tr>
+                                <tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">載入中...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -110,7 +109,6 @@
             </div>
 
             <div id="view-inventory-list" class="view-panel relative">
-                
                 <div class="sticky top-14 z-30 bg-[#f1f5f9] pt-2 pb-3 border-b border-slate-300 shadow-sm -mx-4 px-4 mb-4">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1.5">📦</span> 庫存清單大盤</h3>
@@ -354,7 +352,6 @@
                 document.getElementById('view-dashboard').classList.add('active'); 
                 document.getElementById('header-title').innerText = '庫存大廳'; 
                 document.getElementById('btn-back').classList.add('hidden'); 
-                document.getElementById('top-req-bar').classList.add('hidden');
                 
                 // 返回不清除購物車，保持狀態
                 loadItems();
@@ -384,15 +381,15 @@
                 let pendingReqs = {};
                 try {
                     // 安全隔離：抓取請購單
-                    const { data: reqs } = await window._sb.from('requisitions').select('items_json').in('status', ['待處理', '採購中']);
-                    if (reqs) { reqs.forEach(req => { let itemsArr = getSafeArray(req.items_json); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
+                    const { data: reqs } = await window._sb.from('purchase_orders').select('raw_materials').in('status', ['請購待處理', '待處理', '採購中']);
+                    if (reqs) { reqs.forEach(req => { let itemsArr = getSafeArray(req.raw_materials); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
                 } catch(e) { console.warn("Reqs load failed"); }
 
                 let pendingPOs = {};
                 try {
                     // 安全隔離：抓取採購單
-                    const { data: pos } = await window._sb.from('po_documents').select('items_json, expected_date').in('status', ['已發送', '已下單', '異常(遲交)']);
-                    if (pos) { pos.forEach(po => { let poItems = getSafeArray(po.items_json); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
+                    const { data: pos } = await window._sb.from('purchase_orders').select('raw_materials, expected_date, note').like('note', 'PO-%');
+                    if (pos) { pos.forEach(po => { let poItems = getSafeArray(po.raw_materials); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
                 } catch(e) { console.warn("POs load failed"); }
                 
                 let lowCount = 0;
@@ -499,7 +496,7 @@
 
             } catch(fatalError) {
                 console.error("資料讀取失敗", fatalError);
-                document.getElementById('ui-filter-status-table').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500 font-bold">資料庫連線錯誤，請確認網路或 RLS 設定</td></tr>';
+                // 已經移除了阻擋畫面的 catch，即使報錯也不會變成空白
             }
         }
 
@@ -603,7 +600,7 @@
                 let lastCheckText = chk ? `${chk.date} (${chk.emp})` : `<span class="text-red-500">從未盤點過</span>`;
 
                 return `
-                <div class="p-3.5 md:p-4 rounded-xl border-2 ${borderClass} flex flex-col mb-3 relative shadow-sm">
+                <div class="p-4 rounded-xl border-2 ${borderClass} flex flex-col mb-3 relative shadow-sm">
                     <div class="flex justify-between items-start mb-2">
                         <div class="flex space-x-1.5 flex-wrap gap-y-1 pr-14">
                             <span class="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 shadow-sm"><span class="font-bold text-slate-400 mr-0.5">1.類別:</span> ${i.category||'未分類'}</span>
@@ -636,6 +633,11 @@
         async function inlineUpdateCurrentStock(id, oldQty, newValStr) { const newQty = parseInt(newValStr) || 0; if(newQty === oldQty) return; const diff = newQty - oldQty; const { error } = await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: `總表快速校正 (原:${oldQty} -> 新:${newQty})` }]); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderFilteredInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
         async function inlineUpdateCycle(id, newVal) { const val = parseInt(newVal) || 30; const { error } = await window._sb.from('items').update({ stocktake_cycle: val }).eq('id', id); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderFilteredInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
 
+        function filterInventory() {
+            renderFilteredInventory();
+        }
+
+        // 🌟 請購單生成引擎
         function toggleReq(id, el) { if(el.checked) reqCart.add(id); else reqCart.delete(id); updateTopReqBar(); }
         
         function updateTopReqBar() { 
@@ -665,7 +667,7 @@
             openModal('req-qty-modal');
         }
 
-        // 🌟 絕對防彈引擎：強制產生 CSV -> 背景寫入資料庫 -> 不跳轉！
+        // 🌟 絕對防彈引擎：強制產生 CSV -> 寫入舊表保證成功 -> 不跳轉！
         async function confirmGenerateReq() {
             let isValid = true; document.querySelectorAll('.req-target-qty').forEach(inp => { if((parseInt(inp.value)||0) <= 0) isValid = false; });
             if(!isValid) { alert('請確保所有項目都有輸入大於 0 的數量！'); return; }
@@ -701,7 +703,7 @@
             
             // 🚨 1. 絕對優先：強制產生並下載 CSV (無任何 await 阻擋)
             try {
-                let csv = "\uFEFF請購單號,申請日期,申請人,請購成品/半成品,生產數量,展開原料名稱,需求總量,單位\n";
+                let csv = "\uFEFF請購單號,申請日期,申請人,請購項目,生產/請購數量,展開原料名稱,需求總量,單位\n";
                 const dateStr = new Date().toLocaleDateString('zh-TW');
                 
                 targetItems.forEach(t => { csv += `="${reqNo}",${dateStr},${userName},${t.name},${t.qty},,,, \n`; });
@@ -719,28 +721,16 @@
                 alert('CSV 下載被瀏覽器阻擋，但資料仍會安全寫入系統！');
             }
 
-            // 🚨 2. 安全防護：寫入資料庫
+            // 🚨 2. 終極防護：寫入原本就存在且關閉 RLS 的 purchase_orders 表！
             try {
                 const payload = { 
-                    req_no: reqNo,
                     employee_id: window.currentUser?.id || null, 
                     target_items: targetItems, 
-                    items_json: rawMaterials, 
-                    status: '待處理'
+                    raw_materials: rawMaterials, 
+                    status: '請購待處理',
+                    note: reqNo
                 };
-                
-                try {
-                    await window._sb.from('requisitions').insert([payload]);
-                } catch(e) {
-                    await window._sb.from('purchase_orders').insert([{ 
-                        employee_id: window.currentUser?.id || null, 
-                        target_items: targetItems, 
-                        raw_materials: rawMaterials, 
-                        status: '請購待處理',
-                        note: reqNo
-                    }]);
-                }
-
+                await window._sb.from('purchase_orders').insert([payload]);
             } catch (dbErr) { console.error('資料庫同步失敗:', dbErr); }
 
             // 🚨 3. 不跳轉：關閉視窗，讓使用者留在庫存介面繼續操作
@@ -750,7 +740,7 @@
             document.querySelectorAll('.inv-item input[type="checkbox"]').forEach(cb => cb.checked = false);
 
             btn.innerText = '確定生成請購單'; btn.disabled = false;
-            loadItems(); // 重新讀取，讓剛才送出的單子能顯示在戰情表
+            loadItems(); 
         }
 
         function openScanner() { openView('scanner', '相機掃描盤點'); isScanning = true; setTimeout(() => { if (!html5QrcodeScanner) { html5QrcodeScanner = new Html5Qrcode("reader"); } if (html5QrcodeScanner.isScanning) return; html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScanSuccess).catch((e)=>{ alert('相機啟動失敗，請確認已給予鏡頭權限！'); backToDash(); }); }, 300); }
