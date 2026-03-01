@@ -54,16 +54,6 @@
         </header>
 
         <main class="p-4 relative z-10">
-            <div id="friday-reminder" class="hidden bg-gradient-to-r from-amber-500 to-orange-500 text-white p-4 rounded-2xl shadow-lg mb-4 border-2 border-amber-300 relative overflow-hidden">
-                <div class="absolute -right-4 -bottom-4 text-7xl opacity-20 grayscale">📅</div>
-                <div class="flex items-center justify-between mb-2 border-b border-amber-300/50 pb-2 relative z-10">
-                    <div class="flex items-center space-x-3"><span class="text-2xl animate-pulse drop-shadow-md">⚠️</span><h3 class="font-black text-base tracking-wider">法定盤點日</h3></div>
-                    <span class="bg-red-600 text-white px-2.5 py-1 rounded-lg text-xs font-black shadow-inner" id="friday-overdue-count">待盤: 0 件</span>
-                </div>
-                <p class="text-[10px] font-bold text-amber-50 mb-2 relative z-10 bg-black/10 p-2 rounded-lg leading-relaxed border border-white/20 shadow-inner">📌 以下為<strong class="text-white">「尚未盤點」</strong>或<strong class="text-white">「已逾期」</strong>的清單，盤點完成後將自動移除：</p>
-                <div id="friday-overdue-list" class="max-h-48 overflow-y-auto space-y-1.5 no-scrollbar pr-1 relative z-10"></div>
-            </div>
-
             <div id="view-dashboard" class="view-panel active space-y-4">
                 
                 <div class="glass-card p-4 rounded-[2rem] shadow-sm border-t-4 border-teal-500 relative overflow-hidden">
@@ -74,37 +64,20 @@
                     <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
                         <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[280px]">
                             <thead class="text-slate-500 border-b border-slate-200">
-                                <tr>
-                                    <th class="p-2 font-bold text-left">料號</th>
-                                    <th class="p-2 font-bold text-right text-emerald-700">最新庫存</th>
-                                    <th class="p-2 font-bold text-right text-sky-600">請/採購量</th>
-                                    <th class="p-2 font-bold text-center">狀態/交期</th>
-                                </tr>
+                                <tr><th class="p-2 font-bold text-left">料號</th><th class="p-2 font-bold text-right text-emerald-700">最新庫存</th><th class="p-2 font-bold text-right text-sky-600">請/採購量</th><th class="p-2 font-bold text-center">狀態/交期</th></tr>
                             </thead>
                             <tbody id="ui-filter-status-table" class="divide-y divide-slate-100 bg-white rounded-lg">
-                                <tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">載入中...</td></tr>
+                                <tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">系統連線中...</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
-                    <button onclick="openScanner()" class="glass-card p-5 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-emerald-200 hover:bg-emerald-50 col-span-2 bg-emerald-50/50">
-                        <span class="text-4xl mb-2 drop-shadow-md">📷</span>
-                        <span class="font-black text-emerald-800 tracking-wider text-base">開啟相機掃碼盤點</span>
-                    </button>
-                    <button onclick="openInventoryList()" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-indigo-200 hover:bg-indigo-50">
-                        <span class="text-3xl mb-1.5 drop-shadow-md">📋</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">庫存清單</span>
-                    </button>
-                    <button onclick="openView('register', '新增料號與 BOM')" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-sky-200 hover:bg-sky-50">
-                        <span class="text-3xl mb-1.5 drop-shadow-md">➕</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">新增料號</span>
-                    </button>
-                    <button onclick="openSearchPrintView()" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50 col-span-2">
-                        <span class="text-3xl mb-1.5 drop-shadow-md">🖨️</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">查詢編輯中心與標籤列印</span>
-                    </button>
+                    <button onclick="openScanner()" class="glass-card p-5 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-emerald-200 hover:bg-emerald-50 col-span-2 bg-emerald-50/50"><span class="text-4xl mb-2 drop-shadow-md">📷</span><span class="font-black text-emerald-800 tracking-wider text-base">開啟相機掃碼盤點</span></button>
+                    <button onclick="openInventoryList()" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-indigo-200 hover:bg-indigo-50"><span class="text-3xl mb-1.5 drop-shadow-md">📋</span><span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">庫存清單</span></button>
+                    <button onclick="openView('register', '新增料號與 BOM')" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-sky-200 hover:bg-sky-50"><span class="text-3xl mb-1.5 drop-shadow-md">➕</span><span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">新增料號</span></button>
+                    <button onclick="openSearchPrintView()" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50 col-span-2"><span class="text-3xl mb-1.5 drop-shadow-md">🖨️</span><span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">查詢編輯中心與標籤列印</span></button>
                 </div>
             </div>
 
@@ -139,144 +112,19 @@
                 <div class="mb-4">
                     <input type="text" id="inv-search" placeholder="🔍 搜尋料號 / 品名 / 規格..." class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-500 transition shadow-sm" onkeyup="renderFilteredInventory()">
                 </div>
-
                 <div id="ui-inventory-list" class="space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar pr-1 pb-16"></div>
             </div>
 
-            <div id="view-scanner" class="view-panel">
-                <div class="glass-card p-4 rounded-[2rem] shadow-sm mb-4 bg-slate-900 border-0">
-                    <h3 class="text-white font-black text-center mb-3 tracking-widest text-sm">請將鏡頭對準料號條碼</h3>
-                    <div id="reader" class="w-full rounded-2xl overflow-hidden bg-black min-h-[350px] shadow-inner"></div>
-                    <button onclick="backToDash()" class="w-full mt-4 bg-slate-700 hover:bg-slate-600 text-white font-black py-4 rounded-xl active:scale-95 transition">結束掃描並返回</button>
-                </div>
-            </div>
-
-            <div id="view-count" class="view-panel space-y-4">
-                <div class="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-6 rounded-[2rem] shadow-lg text-center relative overflow-hidden">
-                    <div class="absolute -left-4 -bottom-4 text-7xl opacity-10">🏷️</div>
-                    <div class="text-[10px] text-sky-400 font-black tracking-widest mb-1 bg-white/10 inline-block px-3 py-1 rounded-full" id="c-item-code">料號讀取中...</div>
-                    <h3 class="text-2xl font-black mb-1 mt-2" id="c-item-name">品名讀取中...</h3>
-                    <p class="text-xs text-slate-400 font-bold" id="c-item-spec">規格讀取中...</p>
-                    <input type="hidden" id="c-item-id">
-                    <input type="hidden" id="c-qty-per-pack">
-                </div>
-
-                <div class="glass-card p-5 rounded-[2rem] shadow-sm border border-emerald-100">
-                    <h4 class="text-sm font-black text-slate-700 mb-4 flex items-center"><span class="mr-2 text-xl">✍️</span>請輸入盤點數量</h4>
-                    <div class="grid grid-cols-2 gap-3 mb-5">
-                        <div class="bg-slate-50 p-2.5 rounded-2xl border border-slate-200 shadow-inner">
-                            <label class="text-[11px] font-black text-slate-500 ml-1 mb-1.5 block tracking-wider">📦 儲存庫 (整箱)</label>
-                            <select id="c-box-count" onchange="calcTotal()" class="w-full bg-white border border-slate-300 p-2.5 rounded-xl text-base font-black text-slate-800 text-center select-arrow shadow-sm outline-none">
-                                <option value="0" selected>0 箱</option><option value="1">1 箱</option><option value="2">2 箱</option><option value="3">3 箱</option><option value="4">4 箱</option><option value="5">5 箱</option><option value="6">6 箱</option><option value="7">7 箱</option><option value="8">8 箱</option><option value="9">9 箱</option><option value="custom">自訂輸入...</option>
-                            </select>
-                            <input type="number" id="c-custom-box" oninput="calcTotal()" class="hidden w-full bg-sky-50 border border-sky-300 p-2.5 rounded-xl text-base font-black text-sky-800 text-center shadow-sm mt-2 outline-none" placeholder="輸入箱數">
-                        </div>
-                        <div class="bg-slate-50 p-2.5 rounded-2xl border border-slate-200 shadow-inner">
-                            <label class="text-[11px] font-black text-slate-500 ml-1 mb-1.5 block tracking-wider">🏷️ 出貨庫 (散裝)</label>
-                            <select id="c-fraction-count" onchange="calcTotal()" class="w-full bg-white border border-slate-300 p-2.5 rounded-xl text-base font-black text-slate-800 text-center select-arrow shadow-sm outline-none">
-                                <option value="1">1 箱</option><option value="0.75">3/4 箱</option><option value="0.5">1/2 箱</option><option value="0.25">1/4 箱</option><option value="0" selected>0 箱</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl mb-5 text-center shadow-inner">
-                        <p class="text-[10px] font-black text-emerald-700 mb-1.5 tracking-widest uppercase">系統自動換算總量</p>
-                        <p class="text-[9px] font-bold text-emerald-600/70 mb-3">(包裝為每箱 <span id="c-pack-num" class="font-black text-emerald-800 text-sm">--</span> 件)</p>
-                        <div class="flex items-center justify-center space-x-4">
-                            <button onclick="adjustTotal(-1)" class="w-10 h-10 bg-white rounded-full font-black text-xl text-emerald-600 shadow-md active:scale-90 transition transform">-</button>
-                            <input type="number" id="c-total-qty" class="bg-transparent text-5xl font-black text-emerald-900 w-24 text-center outline-none tracking-tighter" readonly>
-                            <button onclick="adjustTotal(1)" class="w-10 h-10 bg-white rounded-full font-black text-xl text-emerald-600 shadow-md active:scale-90 transition transform">+</button>
-                        </div>
-                    </div>
-                    <button id="btn-submit-count" onclick="submitCount()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition text-base tracking-widest flex justify-center items-center">
-                        <span>💾 確認並盤點下一個</span>
-                    </button>
-                </div>
-            </div>
-
+            <div id="view-scanner" class="view-panel"><div class="glass-card p-4 rounded-[2rem] shadow-sm mb-4 bg-slate-900 border-0"><h3 class="text-white font-black text-center mb-3 tracking-widest text-sm">請將鏡頭對準料號條碼</h3><div id="reader" class="w-full rounded-2xl overflow-hidden bg-black min-h-[350px] shadow-inner"></div><button onclick="backToDash()" class="w-full mt-4 bg-slate-700 hover:bg-slate-600 text-white font-black py-4 rounded-xl active:scale-95 transition">結束掃描並返回</button></div></div>
+            <div id="view-count" class="view-panel space-y-4"><div class="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-6 rounded-[2rem] shadow-lg text-center relative overflow-hidden"><div class="absolute -left-4 -bottom-4 text-7xl opacity-10">🏷️</div><div class="text-[10px] text-sky-400 font-black tracking-widest mb-1 bg-white/10 inline-block px-3 py-1 rounded-full" id="c-item-code">料號讀取中...</div><h3 class="text-2xl font-black mb-1 mt-2" id="c-item-name">品名讀取中...</h3><p class="text-xs text-slate-400 font-bold" id="c-item-spec">規格讀取中...</p><input type="hidden" id="c-item-id"><input type="hidden" id="c-qty-per-pack"></div><div class="glass-card p-5 rounded-[2rem] shadow-sm border border-emerald-100"><h4 class="text-sm font-black text-slate-700 mb-4 flex items-center"><span class="mr-2 text-xl">✍️</span>請輸入盤點數量</h4><div class="grid grid-cols-2 gap-3 mb-5"><div class="bg-slate-50 p-2.5 rounded-2xl border border-slate-200 shadow-inner"><label class="text-[11px] font-black text-slate-500 ml-1 mb-1.5 block tracking-wider">📦 儲存庫 (整箱)</label><select id="c-box-count" onchange="calcTotal()" class="w-full bg-white border border-slate-300 p-2.5 rounded-xl text-base font-black text-slate-800 text-center select-arrow shadow-sm outline-none"><option value="0" selected>0 箱</option><option value="1">1 箱</option><option value="2">2 箱</option><option value="3">3 箱</option><option value="4">4 箱</option><option value="5">5 箱</option><option value="6">6 箱</option><option value="7">7 箱</option><option value="8">8 箱</option><option value="9">9 箱</option><option value="custom">自訂輸入...</option></select><input type="number" id="c-custom-box" oninput="calcTotal()" class="hidden w-full bg-sky-50 border border-sky-300 p-2.5 rounded-xl text-base font-black text-sky-800 text-center shadow-sm mt-2 outline-none" placeholder="輸入箱數"></div><div class="bg-slate-50 p-2.5 rounded-2xl border border-slate-200 shadow-inner"><label class="text-[11px] font-black text-slate-500 ml-1 mb-1.5 block tracking-wider">🏷️ 出貨庫 (散裝)</label><select id="c-fraction-count" onchange="calcTotal()" class="w-full bg-white border border-slate-300 p-2.5 rounded-xl text-base font-black text-slate-800 text-center select-arrow shadow-sm outline-none"><option value="1">1 箱</option><option value="0.75">3/4 箱</option><option value="0.5">1/2 箱</option><option value="0.25">1/4 箱</option><option value="0" selected>0 箱</option></select></div></div><div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl mb-5 text-center shadow-inner"><p class="text-[10px] font-black text-emerald-700 mb-1.5 tracking-widest uppercase">系統自動換算總量</p><p class="text-[9px] font-bold text-emerald-600/70 mb-3">(包裝為每箱 <span id="c-pack-num" class="font-black text-emerald-800 text-sm">--</span> 件)</p><div class="flex items-center justify-center space-x-4"><button onclick="adjustTotal(-1)" class="w-10 h-10 bg-white rounded-full font-black text-xl text-emerald-600 shadow-md active:scale-90 transition transform">-</button><input type="number" id="c-total-qty" class="bg-transparent text-5xl font-black text-emerald-900 w-24 text-center outline-none tracking-tighter" readonly><button onclick="adjustTotal(1)" class="w-10 h-10 bg-white rounded-full font-black text-xl text-emerald-600 shadow-md active:scale-90 transition transform">+</button></div></div><button id="btn-submit-count" onclick="submitCount()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition text-base tracking-widest flex justify-center items-center"><span>💾 確認並盤點下一個</span></button></div></div>
             <div id="view-register" class="view-panel space-y-5">
-                <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-sky-500">
-                    <h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">➕</span> 新增料號基本資料</h3>
-                    <form onsubmit="saveItem(event)" class="space-y-4">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="col-span-2"><input type="text" id="i-name" placeholder="品名 (必填)" class="w-full p-2.5 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none focus:border-sky-500" required></div>
-                            <div><input type="text" id="i-code" placeholder="料號 (例: TMP-001)" class="w-full p-2.5 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 uppercase outline-none focus:border-sky-500" required></div>
-                            <div><select id="i-type" class="w-full p-2.5 bg-white rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required><option value="原料">原料</option><option value="成品" selected>成品</option></select></div>
-                            
-                            <div class="col-span-2">
-                                <select id="i-category" onchange="checkCustomCategory()" class="w-full p-2.5 bg-white rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required>
-                                    <option value="" disabled selected>請選擇產品類別</option>
-                                    <option value="汽車冷氣濾網">汽車冷氣濾網</option><option value="VESTA系列產品">VESTA系列產品</option><option value="卡卡吸管">卡卡吸管</option><option value="空氣瓶子">空氣瓶子</option><option value="標籤貼紙">標籤貼紙</option><option value="車用濾布">車用濾布</option><option value="custom" class="text-sky-600 font-black">➕ 新增自訂類別...</option>
-                                </select>
-                                <input type="text" id="i-custom-category" placeholder="請輸入新類別名稱" class="hidden mt-2 w-full p-2.5 bg-sky-50 rounded-xl text-sm font-bold border border-sky-300 outline-none">
-                            </div>
-
-                            <div class="col-span-2"><input type="text" id="i-spec" placeholder="詳細規格尺寸 (選填)" class="w-full p-2.5 bg-slate-50 rounded-xl text-sm border border-slate-200 outline-none focus:border-sky-500"></div>
-                            
-                            <div class="bg-white p-2 rounded-xl border border-slate-200"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">每箱包裝數量</label><input type="number" id="i-qty" value="1" min="1" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none" required></div>
-                            <div class="bg-white p-2 rounded-xl border border-slate-200"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">生產週期</label><select id="i-lead" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow" required><option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option></select></div>
-                            <div class="col-span-2 bg-white p-2.5 rounded-xl border border-sky-200 shadow-sm"><label class="text-[10px] font-black text-sky-700 ml-1 block mb-1 tracking-widest">盤點週期 (逾期提醒頻率)</label><select id="i-cycle" class="w-full p-2 bg-sky-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow text-sky-900" required><option value="7">7 天 (每週)</option><option value="30" selected>30 天 (每月)</option><option value="60">60 天 (雙月)</option><option value="90">90 天 (每季)</option></select></div>
-
-                            <div class="col-span-2 border-t border-sky-200 pt-3 mt-1">
-                                <h5 class="text-xs font-black text-slate-700 mb-3 flex items-center justify-between"><span class="flex items-center"><span class="mr-1 text-lg">⚙️</span> 產品 BOM 表設定</span><span class="text-[9px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded">最多 6 項</span></h5>
-                                <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-100 p-1">
-                                    <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[450px]">
-                                        <thead class="text-slate-500 border-b border-slate-200">
-                                            <tr><th class="p-2 font-bold w-6 text-center">項次</th><th class="p-2 font-bold">原料名稱</th><th class="p-2 font-bold">用量</th><th class="p-2 font-bold">單位</th><th class="p-2 font-bold text-sky-700">總用量(+10%損耗)</th></tr>
-                                        </thead>
-                                        <tbody id="bom-table-body" class="divide-y divide-slate-100 bg-white rounded-lg"></tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-3.5 rounded-2xl shadow-md active:scale-95 transition tracking-widest text-base mt-4">💾 儲存料號與 BOM</button>
-                    </form>
-                </div>
+                <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-sky-500"><h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">➕</span> 新增料號基本資料</h3><form onsubmit="saveItem(event)" class="space-y-4"><div class="grid grid-cols-2 gap-3"><div class="col-span-2"><input type="text" id="i-name" placeholder="品名 (必填)" class="w-full p-2.5 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none focus:border-sky-500" required></div><div><input type="text" id="i-code" placeholder="料號 (例: TMP-001)" class="w-full p-2.5 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 uppercase outline-none focus:border-sky-500" required></div><div><select id="i-type" class="w-full p-2.5 bg-white rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required><option value="原料">原料</option><option value="成品" selected>成品</option></select></div><div class="col-span-2"><select id="i-category" onchange="checkCustomCategory()" class="w-full p-2.5 bg-white rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required><option value="" disabled selected>請選擇產品類別</option><option value="汽車冷氣濾網">汽車冷氣濾網</option><option value="VESTA系列產品">VESTA系列產品</option><option value="卡卡吸管">卡卡吸管</option><option value="空氣瓶子">空氣瓶子</option><option value="標籤貼紙">標籤貼紙</option><option value="車用濾布">車用濾布</option><option value="custom" class="text-sky-600 font-black">➕ 新增自訂類別...</option></select><input type="text" id="i-custom-category" placeholder="請輸入新類別名稱" class="hidden mt-2 w-full p-2.5 bg-sky-50 rounded-xl text-sm font-bold border border-sky-300 outline-none"></div><div class="col-span-2"><input type="text" id="i-spec" placeholder="詳細規格尺寸 (選填)" class="w-full p-2.5 bg-slate-50 rounded-xl text-sm border border-slate-200 outline-none focus:border-sky-500"></div><div class="bg-white p-2 rounded-xl border border-slate-200"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">每箱包裝數量</label><input type="number" id="i-qty" value="1" min="1" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none" required></div><div class="bg-white p-2 rounded-xl border border-slate-200"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">生產週期</label><select id="i-lead" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow" required><option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option></select></div><div class="col-span-2 bg-white p-2.5 rounded-xl border border-sky-200 shadow-sm"><label class="text-[10px] font-black text-sky-700 ml-1 block mb-1 tracking-widest">盤點週期 (逾期提醒頻率)</label><select id="i-cycle" class="w-full p-2 bg-sky-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow text-sky-900" required><option value="7">7 天 (每週)</option><option value="30" selected>30 天 (每月)</option><option value="60">60 天 (雙月)</option><option value="90">90 天 (每季)</option></select></div><div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-xs font-black text-slate-700 mb-3 flex items-center justify-between"><span class="flex items-center"><span class="mr-1 text-lg">⚙️</span> 產品 BOM 表設定</span><span class="text-[9px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded">最多 6 項</span></h5><div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-100 p-1"><table class="w-full text-left text-[10px] whitespace-nowrap min-w-[450px]"><thead class="text-slate-500 border-b border-slate-200"><tr><th class="p-2 font-bold w-6 text-center">項次</th><th class="p-2 font-bold">原料名稱</th><th class="p-2 font-bold">用量</th><th class="p-2 font-bold">單位</th><th class="p-2 font-bold text-sky-700">總用量(+10%損耗)</th></tr></thead><tbody id="bom-table-body" class="divide-y divide-slate-100 bg-white rounded-lg"></tbody></table></div></div></div><button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-3.5 rounded-2xl shadow-md active:scale-95 transition tracking-widest text-base mt-4">💾 儲存料號與 BOM</button></form></div>
             </div>
-            
-            <div id="view-search-print" class="view-panel space-y-5">
-                <div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-slate-600">
-                    <h3 class="font-black text-slate-800 pl-1 text-base md:text-lg mb-4 flex items-center"><span class="mr-2">🔍</span>料號查詢編輯與標籤列印</h3>
-                    <div class="flex space-x-2 mb-4">
-                        <select id="search-cat-filter" class="w-[35%] p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold outline-none select-arrow shadow-inner" onchange="renderItemSearch()">
-                            <option value="">全部分類</option>
-                        </select>
-                        <input type="text" id="item-search-input" placeholder="搜尋料號/品名..." class="w-[65%] p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold outline-none focus:border-slate-500 transition shadow-inner" onkeyup="renderItemSearch()">
-                    </div>
-                    <div id="item-search-results" class="space-y-3 max-h-[65vh] overflow-y-auto pr-1 no-scrollbar pb-10">
-                        <div class="text-center text-xs text-slate-400 py-6 italic">請輸入關鍵字搜尋料號...</div>
-                    </div>
-                </div>
-            </div>
+            <div id="view-search-print" class="view-panel space-y-5"><div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-slate-600"><h3 class="font-black text-slate-800 pl-1 text-base md:text-lg mb-4 flex items-center"><span class="mr-2">🔍</span>料號查詢編輯與標籤列印</h3><div class="flex space-x-2 mb-4"><select id="search-cat-filter" class="w-[35%] p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold outline-none select-arrow shadow-inner" onchange="renderItemSearch()"><option value="">全部分類</option></select><input type="text" id="item-search-input" placeholder="搜尋料號/品名..." class="w-[65%] p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold outline-none focus:border-slate-500 transition shadow-inner" onkeyup="renderItemSearch()"></div><div id="item-search-results" class="space-y-3 max-h-[65vh] overflow-y-auto pr-1 no-scrollbar pb-10"><div class="text-center text-xs text-slate-400 py-6 italic">請輸入關鍵字搜尋料號...</div></div></div></div>
         </main>
     </div>
 
-    <div id="front-item-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
-        <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-5 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
-            <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯基本資料與 BOM</h3>
-            <input type="hidden" id="fe-item-id">
-            <div class="space-y-3">
-                <div><label class="text-[10px] font-bold text-slate-500 ml-1">品名</label><input type="text" id="fe-item-name" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-500 transition shadow-inner"></div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">產品類別</label><select id="fe-item-cat" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-sky-500 transition shadow-inner"></select></div>
-                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">生產週期</label><select id="fe-item-lead" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-sky-500 transition shadow-inner"><option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option></select></div>
-                    <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">盤點週期 (逾期提醒)</label><select id="fe-item-cycle" class="w-full p-2.5 bg-sky-50 border border-sky-200 rounded-xl text-sm font-black text-sky-900 select-arrow outline-none focus:border-sky-500 transition shadow-inner"><option value="7">7 天 (每週)</option><option value="30">30 天 (每月)</option><option value="60">60 天 (雙月)</option><option value="90">90 天 (一季)</option></select></div>
-                </div>
-                <div class="border-t border-slate-200 pt-3 mt-2">
-                    <h5 class="text-[10px] font-black text-sky-700 mb-2 tracking-widest">⚙️ BOM 表修正</h5>
-                    <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
-                        <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[400px]">
-                            <thead class="text-slate-500 border-b border-slate-200"><tr><th class="p-1 font-bold">項次</th><th class="p-1 font-bold">原料名稱</th><th class="p-1 font-bold">用量</th><th class="p-1 font-bold">單位</th><th class="p-1 font-bold text-sky-700">總用量(+10%損耗)</th></tr></thead>
-                            <tbody id="fe-bom-table-body" class="divide-y divide-slate-100 bg-white rounded-lg"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="flex space-x-3 mt-6">
-                <button onclick="closeModal('front-item-edit-modal')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3.5 rounded-xl transition active:scale-95">取消</button>
-                <button onclick="saveFrontEditItem()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest active:scale-95">儲存修改</button>
-            </div>
-        </div>
-    </div>
+    <div id="front-item-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]"><div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-5 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar"><h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯基本資料與 BOM</h3><input type="hidden" id="fe-item-id"><div class="space-y-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">品名</label><input type="text" id="fe-item-name" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-500 transition shadow-inner"></div><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">產品類別</label><select id="fe-item-cat" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-sky-500 transition shadow-inner"></select></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">生產週期</label><select id="fe-item-lead" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-sky-500 transition shadow-inner"><option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option></select></div><div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">盤點週期 (逾期提醒)</label><select id="fe-item-cycle" class="w-full p-2.5 bg-sky-50 border border-sky-200 rounded-xl text-sm font-black text-sky-900 select-arrow outline-none focus:border-sky-500 transition shadow-inner"><option value="7">7 天 (每週)</option><option value="30">30 天 (每月)</option><option value="60">60 天 (雙月)</option><option value="90">90 天 (一季)</option></select></div></div><div class="border-t border-slate-200 pt-3 mt-2"><h5 class="text-[10px] font-black text-sky-700 mb-2 tracking-widest">⚙️ BOM 表修正</h5><div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1"><table class="w-full text-left text-[10px] whitespace-nowrap min-w-[400px]"><thead class="text-slate-500 border-b border-slate-200"><tr><th class="p-1 font-bold">項次</th><th class="p-1 font-bold">原料名稱</th><th class="p-1 font-bold">用量</th><th class="p-1 font-bold">單位</th><th class="p-1 font-bold text-sky-700">總用量(+10%損耗)</th></tr></thead><tbody id="fe-bom-table-body" class="divide-y divide-slate-100 bg-white rounded-lg"></tbody></table></div></div></div><div class="flex space-x-3 mt-6"><button onclick="closeModal('front-item-edit-modal')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3.5 rounded-xl transition active:scale-95">取消</button><button onclick="saveFrontEditItem()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest active:scale-95">儲存修改</button></div></div></div>
 
     <div id="req-qty-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-sm items-center justify-center p-4 z-[9990]">
         <div class="bg-white w-full max-w-sm m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl">
@@ -302,19 +150,9 @@
     <script src="shared.js"></script>
     <script>
         let html5QrcodeScanner = null; let currentItemPackQty = 1; let allItems = []; window.inventoryData = []; window.latestChecks = {}; let reqCart = new Set(); let isScanning = false;
-        
-        let currentInvType = '原料'; 
-        let currentInvCat = '全部';
+        let currentInvType = '原料'; let currentInvCat = '全部';
 
-        // 🚨 絕對防彈：防止 JSON 與 Null 崩潰
-        function getSafeArray(data) { 
-            if (!data) return []; 
-            if (Array.isArray(data)) return data; 
-            try { 
-                let parsed = (typeof data === 'string') ? JSON.parse(data) : data;
-                return Array.isArray(parsed) ? parsed : [];
-            } catch(e) { return []; } 
-        }
+        function getSafeArray(data) { if (!data) return []; if (Array.isArray(data)) return data; try { let p = (typeof data === 'string') ? JSON.parse(data) : data; return Array.isArray(p) ? p : []; } catch(e) { return []; } }
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
@@ -328,7 +166,6 @@
             }
         }
 
-        // 🌟 專屬的左側浮動 Toast 通知
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -352,8 +189,6 @@
                 document.getElementById('view-dashboard').classList.add('active'); 
                 document.getElementById('header-title').innerText = '庫存大廳'; 
                 document.getElementById('btn-back').classList.add('hidden'); 
-                
-                // 返回不清除購物車，保持狀態
                 loadItems();
             });
         }
@@ -365,10 +200,11 @@
             renderItemSearch();
         }
 
+        // 🌟 防彈版載入資料
         async function loadItems() {
             try {
                 const { data, error: itemErr } = await window._sb.from('items').select('*').order('created_at', {ascending: false}); 
-                if(itemErr) throw itemErr;
+                if(itemErr) throw new Error(itemErr.message);
                 allItems = data || [];
                 
                 const { data: ledgers } = await window._sb.from('inventory_ledgers').select('item_id, change_qty');
@@ -379,29 +215,31 @@
                 if(checks) { checks.forEach(c => { if(!window.latestChecks[c.item_id]) { window.latestChecks[c.item_id] = { rawDate: c.created_at, date: new Date(c.created_at).toLocaleDateString('zh-TW'), emp: c.employees?.full_name || '未知' }; } }); }
 
                 let pendingReqs = {};
-                try {
-                    // 安全隔離：抓取請購單
-                    const { data: reqs } = await window._sb.from('purchase_orders').select('raw_materials').in('status', ['請購待處理', '待處理', '採購中']);
-                    if (reqs) { reqs.forEach(req => { let itemsArr = getSafeArray(req.raw_materials); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
-                } catch(e) { console.warn("Reqs load failed"); }
-
                 let pendingPOs = {};
+                
                 try {
-                    // 安全隔離：抓取採購單
-                    const { data: pos } = await window._sb.from('purchase_orders').select('raw_materials, expected_date, note').like('note', 'PO-%');
-                    if (pos) { pos.forEach(po => { let poItems = getSafeArray(po.raw_materials); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
-                } catch(e) { console.warn("POs load failed"); }
+                    const { data: reqs } = await window._sb.from('requisitions').select('items_json').in('status', ['待處理', '採購中']);
+                    if (reqs) { reqs.forEach(req => { let itemsArr = getSafeArray(req.items_json); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
+                } catch(e) {}
+                try {
+                    const { data: reqs2 } = await window._sb.from('purchase_orders').select('raw_materials').in('status', ['請購待處理', '待處理', '採購中']);
+                    if (reqs2) { reqs2.forEach(req => { let itemsArr = getSafeArray(req.raw_materials); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
+                } catch(e) {}
+
+                try {
+                    const { data: pos } = await window._sb.from('po_documents').select('items_json, expected_date').in('status', ['已發送', '已下單', '異常(遲交)']);
+                    if (pos) { pos.forEach(po => { let poItems = getSafeArray(po.items_json); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
+                } catch(e) {}
+                try {
+                    const { data: pos2 } = await window._sb.from('purchase_orders').select('raw_materials, expected_date').like('note', 'PO-%');
+                    if (pos2) { pos2.forEach(po => { let poItems = getSafeArray(po.raw_materials); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
+                } catch(e) {}
                 
                 let lowCount = 0;
                 const cats = [...new Set(allItems.map(i => i.category || '未分類'))];
                 const catOptions = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
                 document.getElementById('inv-cat-filter').innerHTML = catOptions;
-                
-                const searchCatFilter = document.getElementById('search-cat-filter');
-                const currentSearchCat = searchCatFilter.value;
-                searchCatFilter.innerHTML = catOptions;
-                if(currentSearchCat) searchCatFilter.value = currentSearchCat;
-
+                document.getElementById('search-cat-filter').innerHTML = catOptions;
                 document.getElementById('fe-item-cat').innerHTML = catOptions;
 
                 const nowD = new Date();
@@ -469,7 +307,6 @@
                             let poInfo = pendingPOs[i.item_name];
                             if(poInfo && poInfo.qty > 0) {
                                 qtyHtml = `<span class="font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded shadow-sm border border-amber-100">${poInfo.qty.toFixed(0)}</span>`;
-                                // 🚨 防彈設計：過濾 null 或 無效日期
                                 let dateStr = (poInfo.eta && poInfo.eta !== '未定' && poInfo.eta !== null) ? String(poInfo.eta).slice(5) : '未定';
                                 etaHtml = dateStr !== '未定' ? `<span class="text-amber-600 font-bold">${dateStr}</span>` : `<span class="text-slate-400 font-bold">未定</span>`;
                             }
@@ -490,13 +327,11 @@
                 document.getElementById('ui-filter-status-table').innerHTML = filterHtml;
 
                 if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
-                
-                // 🚨 強制呼叫渲染清單，確保不變白
                 if(document.getElementById('view-inventory-list').classList.contains('active')) renderFilteredInventory();
 
             } catch(fatalError) {
                 console.error("資料讀取失敗", fatalError);
-                // 已經移除了阻擋畫面的 catch，即使報錯也不會變成空白
+                document.getElementById('ui-filter-status-table').innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500 font-bold">錯誤: ${fatalError.message || '連線失敗'}</td></tr>`;
             }
         }
 
@@ -531,7 +366,6 @@
                 document.getElementById('sub-tabs-raw').classList.add('hidden');
                 document.getElementById('sub-tabs-fin').classList.remove('hidden');
             }
-            
             updateSubTabUI();
             renderFilteredInventory();
         }
@@ -563,7 +397,6 @@
             let keyword = (document.getElementById('inv-search')?.value || '').toLowerCase();
             let filtered = window.inventoryData.filter(i => {
                 let matchType = i.item_type === currentInvType;
-                
                 let matchCat = false;
                 if (currentInvCat === '全部') { matchCat = true; }
                 else if (currentInvCat === '其他') {
@@ -572,11 +405,7 @@
                 } else {
                     matchCat = i.category === currentInvCat;
                 }
-
-                let matchSearch = i.item_code.toLowerCase().includes(keyword) || 
-                                  i.item_name.toLowerCase().includes(keyword) || 
-                                  (i.specification && i.specification.toLowerCase().includes(keyword));
-
+                let matchSearch = i.item_code.toLowerCase().includes(keyword) || i.item_name.toLowerCase().includes(keyword) || (i.specification && i.specification.toLowerCase().includes(keyword));
                 return matchType && matchCat && matchSearch;
             });
             renderInventoryListUI(filtered);
@@ -596,7 +425,6 @@
                 else if (isWarn) { borderClass = 'border-amber-400 bg-amber-50/20'; stockColor = 'text-amber-500'; }
 
                 const chk = window.latestChecks[i.id]; const inCart = reqCart.has(i.id) ? 'checked' : '';
-                
                 let lastCheckText = chk ? `${chk.date} (${chk.emp})` : `<span class="text-red-500">從未盤點過</span>`;
 
                 return `
@@ -633,16 +461,12 @@
         async function inlineUpdateCurrentStock(id, oldQty, newValStr) { const newQty = parseInt(newValStr) || 0; if(newQty === oldQty) return; const diff = newQty - oldQty; const { error } = await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: `總表快速校正 (原:${oldQty} -> 新:${newQty})` }]); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderFilteredInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
         async function inlineUpdateCycle(id, newVal) { const val = parseInt(newVal) || 30; const { error } = await window._sb.from('items').update({ stocktake_cycle: val }).eq('id', id); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderFilteredInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
 
-        function filterInventory() {
-            renderFilteredInventory();
-        }
+        function filterInventory() { renderFilteredInventory(); }
 
         // 🌟 請購單生成引擎
         function toggleReq(id, el) { if(el.checked) reqCart.add(id); else reqCart.delete(id); updateTopReqBar(); }
-        
         function updateTopReqBar() { 
             const countBadge = document.getElementById('list-req-count');
-
             if(countBadge) {
                 countBadge.innerText = reqCart.size;
                 if(reqCart.size > 0) {
@@ -667,7 +491,6 @@
             openModal('req-qty-modal');
         }
 
-        // 🌟 絕對防彈引擎：強制產生 CSV -> 寫入舊表保證成功 -> 不跳轉！
         async function confirmGenerateReq() {
             let isValid = true; document.querySelectorAll('.req-target-qty').forEach(inp => { if((parseInt(inp.value)||0) <= 0) isValid = false; });
             if(!isValid) { alert('請確保所有項目都有輸入大於 0 的數量！'); return; }
@@ -684,7 +507,6 @@
                 if(item && qty > 0) { 
                     targetItems.push({ id: item.item_code, name: item.item_name, qty: qty }); 
                     let safeBom = getSafeArray(item.bom_data);
-                    // 成品展開 BOM，原料直接請購
                     if (item.item_type === '成品' && safeBom.length > 0) {
                         safeBom.forEach(b => { let key = b.material + '_' + b.unit; if (!rawTotals[key]) rawTotals[key] = { id: item.item_code, name: b.material, unit: b.unit, qty: 0 }; rawTotals[key].qty += (parseFloat(b.total_qty) * qty); });
                     } else { 
@@ -714,26 +536,24 @@
                 link.download = `HYPASS_請購單_${reqNo}.csv`; 
                 document.body.appendChild(link); link.click(); document.body.removeChild(link);
                 
-                // 顯示左側成功浮動通知
                 showSysToast(`已生成請購單編號 ${reqNo}.csv`);
             } catch(csvErr) { 
                 console.error('CSV生成失敗:', csvErr); 
                 alert('CSV 下載被瀏覽器阻擋，但資料仍會安全寫入系統！');
             }
 
-            // 🚨 2. 終極防護：寫入原本就存在且關閉 RLS 的 purchase_orders 表！
+            // 🚨 2. 安全防護：寫入資料庫
             try {
-                const payload = { 
-                    employee_id: window.currentUser?.id || null, 
-                    target_items: targetItems, 
-                    raw_materials: rawMaterials, 
-                    status: '請購待處理',
-                    note: reqNo
-                };
-                await window._sb.from('purchase_orders').insert([payload]);
+                const payload = { req_no: reqNo, employee_id: window.currentUser?.id || null, target_items: targetItems, items_json: rawMaterials, status: '待處理' };
+                try {
+                    const { error } = await window._sb.from('requisitions').insert([payload]);
+                    if(error) throw error;
+                } catch(e) {
+                    await window._sb.from('purchase_orders').insert([{ employee_id: window.currentUser?.id || null, target_items: targetItems, raw_materials: rawMaterials, status: '請購待處理', note: reqNo }]);
+                }
             } catch (dbErr) { console.error('資料庫同步失敗:', dbErr); }
 
-            // 🚨 3. 不跳轉：關閉視窗，讓使用者留在庫存介面繼續操作
+            // 🚨 3. 關閉視窗不跳轉
             closeModal('req-qty-modal');
             reqCart.clear();
             updateTopReqBar();
@@ -822,7 +642,7 @@
 
         function openFrontEdit(id) { const i = window.inventoryData.find(x => x.id === id); if(!i) return; document.getElementById('fe-item-id').value = i.id; document.getElementById('fe-item-name').value = i.item_name; const catSel = document.getElementById('fe-item-cat'); catSel.value = i.category || '未分類'; document.getElementById('fe-item-lead').value = i.lead_time_days || 15; document.getElementById('fe-item-cycle').value = i.stocktake_cycle || 30; renderBomTable('fe-bom-table-body', i.bom_data || []); document.getElementById('front-item-edit-modal').classList.add('active'); }
         async function saveFrontEditItem() { const id = document.getElementById('fe-item-id').value; if(!id) { alert('系統無法讀取 ID！'); return; } const p = { item_name: document.getElementById('fe-item-name').value, category: document.getElementById('fe-item-cat').value, lead_time_days: parseInt(document.getElementById('fe-item-lead').value) || 15, stocktake_cycle: parseInt(document.getElementById('fe-item-cycle').value) || 30, bom_data: extractBomData('fe-bom-table-body') }; const { error } = await window._sb.from('items').update(p).eq('id', id); if(error) alert('失敗'); else { alert('✅ 已儲存修改！'); closeModal('front-item-edit-modal'); loadItems(); } }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        
         function printInlineBarcode(id) { const item = allItems.find(i => i.id === id); if(!item) return; const printZone = document.getElementById('print-zone'); printZone.innerHTML = `<div style="text-align:center; font-family:sans-serif; margin-bottom:10px;"><h2 style="margin:0 0 5px 0; font-size:24px;">${item.item_name}</h2><p style="margin:0 0 15px 0; font-size:16px; color:#555;">${item.specification || ''}</p><svg id="print-barcode-svg"></svg></div>`; JsBarcode("#print-barcode-svg", item.item_code, { format: "CODE128", width: 2.5, height: 80, displayValue: true, fontSize: 24, fontOptions: "bold", margin: 10 }); setTimeout(() => { window.print(); }, 150); }
 
         window.onload = bootInventory;
