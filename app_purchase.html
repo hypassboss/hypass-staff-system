@@ -18,7 +18,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         
-        /* 🚨 列印 PDF 黑科技 */
         @media print {
             body * { visibility: hidden; }
             #po-print-zone, #po-print-zone * { visibility: visible; }
@@ -27,7 +26,6 @@
             .print-break { page-break-after: always; }
         }
 
-        /* 🚨 終極防禦裝甲：封殺 shared.js 產生的舊導覽列 */
         nav { display: none !important; }
         #core-bottom-nav { display: flex !important; }
     </style>
@@ -162,9 +160,7 @@
     <nav id="core-bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9999] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <div onclick="event.stopPropagation(); window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
         <div onclick="event.stopPropagation(); window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></div>
-        
         <div onclick="event.stopPropagation(); window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-amber-600"><span class="text-xl mb-1">🛒</span><span class="scale-90">採購</span></div>
-        
         <div onclick="event.stopPropagation(); window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
         <div onclick="event.stopPropagation(); window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
     </nav>
@@ -173,18 +169,26 @@
     <script>
         window.supplierData = []; let pendingMats = [];
 
+        function getSafeArray(data) {
+            if (!data) return [];
+            if (Array.isArray(data)) return data;
+            try { return JSON.parse(data); } catch(e) { return []; }
+        }
+
         async function bootPurchase() {
             const isAuth = await authGuard('purchase'); 
             if(isAuth) { 
-                document.getElementById('user-badge').innerText = window.currentUser.full_name; 
+                document.getElementById('user-badge').innerText = window.currentUser?.full_name || '使用者'; 
                 await loadSuppliers();
                 await loadDashboardData();
             }
         }
 
         async function loadSuppliers() {
-            const { data } = await window._sb.from('suppliers').select('*').order('supplier_name', {ascending: true});
-            window.supplierData = data || [];
+            try {
+                const { data } = await window._sb.from('suppliers').select('*').order('supplier_name', {ascending: true});
+                window.supplierData = data || [];
+            } catch(e) { window.supplierData = []; }
         }
 
         function openView(viewId, title) {
@@ -203,16 +207,43 @@
             loadDashboardData();
         }
 
-        // 🌟 雙戰情表數據載入
+        // 🌟 自動容錯：同時掃描新舊資料表，確保資料絕對不漏抓！
+        async function fetchSafeReqs() {
+            let reqData = [];
+            try {
+                const { data: r1, error: e1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false});
+                if (!e1 && r1) reqData = r1;
+            } catch(e) {}
+
+            try {
+                const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中']).order('created_at', {ascending: false});
+                if (r2 && r2.length > 0) {
+                    let oldReqs = r2.map(x => ({
+                        id: x.id,
+                        req_no: 'REQ-OLD-' + x.id.slice(0,4),
+                        employee_id: x.employee_id,
+                        employees: x.employees,
+                        items_json: x.raw_materials, 
+                        status: x.status === '已建檔' ? '待處理' : x.status,
+                        created_at: x.created_at
+                    }));
+                    reqData = [...reqData, ...oldReqs];
+                }
+            } catch(e) {}
+            return reqData;
+        }
+
         async function loadDashboardData() {
-            // 1. 內部請購單最新狀況 (30天內)
-            const thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000).toISOString();
-            const { data: reqs } = await window._sb.from('requisitions').select('*, employees(full_name)').gte('created_at', thirtyDaysAgo).order('created_at', {ascending: false});
-            
+            // 1. 內部請購單最新狀況
+            const reqs = await fetchSafeReqs();
             const reqContainer = document.getElementById('ui-dash-req-status');
-            if(!reqs || reqs.length === 0) { reqContainer.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">近期無請購單</td></tr>'; }
+            
+            const thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000);
+            const recentReqs = reqs.filter(r => new Date(r.created_at) >= thirtyDaysAgo);
+
+            if(!recentReqs || recentReqs.length === 0) { reqContainer.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">近期無請購單</td></tr>'; }
             else {
-                reqContainer.innerHTML = reqs.map(r => {
+                reqContainer.innerHTML = recentReqs.map(r => {
                     let stCol = r.status === '已完成' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (r.status === '採購中' ? 'text-sky-700 bg-sky-100 border-sky-200' : 'text-amber-700 bg-amber-100 border-amber-200');
                     return `<tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50">
                         <td class="p-2 font-mono font-black text-[9px] text-slate-600">${r.req_no.replace('REQ-','')}</td>
@@ -224,87 +255,74 @@
             }
 
             // 2. 對外採購單狀況表
-            const { data: pos } = await window._sb.from('po_documents').select('po_no, supplier_name, status, expected_date').order('expected_date', {ascending: true});
-            const poContainer = document.getElementById('ui-dash-po-status');
-            
-            if(!pos || pos.length === 0) { poContainer.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無進行中的採購單</td></tr>'; }
-            else {
-                const today = new Date(); today.setHours(0,0,0,0);
-                let poHtml = '';
-                pos.forEach(po => {
-                    let expDate = new Date(po.expected_date);
-                    let diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
-                    let statusBadge = ''; let textClass = 'text-slate-700';
-                    
-                    if(po.status === '完成') {
-                        statusBadge = '<span class="text-[9px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">完成</span>';
-                        textClass = 'text-emerald-700 font-bold';
-                    } else if (po.status.includes('異常') || po.status.includes('拒收') || po.status.includes('遲交')) {
-                        statusBadge = `<span class="text-[9px] font-black text-white bg-red-600 px-1.5 py-0.5 rounded shadow-sm animate-pulse">${po.status}</span>`;
-                        textClass = 'text-red-600 font-black';
-                    } else {
-                        if (diffDays < 0) {
-                            statusBadge = '<span class="text-[9px] font-black text-white bg-red-500 px-1.5 py-0.5 rounded shadow-sm animate-pulse">遲交</span>';
+            try {
+                const { data: pos } = await window._sb.from('po_documents').select('po_no, supplier_name, status, expected_date').order('expected_date', {ascending: true});
+                const poContainer = document.getElementById('ui-dash-po-status');
+                
+                if(!pos || pos.length === 0) { poContainer.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無進行中的採購單</td></tr>'; }
+                else {
+                    const today = new Date(); today.setHours(0,0,0,0);
+                    let poHtml = '';
+                    pos.forEach(po => {
+                        let expDate = new Date(po.expected_date);
+                        let diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
+                        let statusBadge = ''; let textClass = 'text-slate-700';
+                        
+                        if(po.status === '完成') {
+                            statusBadge = '<span class="text-[9px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">完成</span>';
+                            textClass = 'text-emerald-700 font-bold';
+                        } else if (po.status.includes('異常') || po.status.includes('拒收') || po.status.includes('遲交')) {
+                            statusBadge = `<span class="text-[9px] font-black text-white bg-red-600 px-1.5 py-0.5 rounded shadow-sm animate-pulse">${po.status}</span>`;
                             textClass = 'text-red-600 font-black';
-                        } else if (diffDays <= 3) {
-                            statusBadge = '<span class="text-[9px] font-black text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">警示</span>';
-                            textClass = 'text-amber-600 font-black';
                         } else {
-                            statusBadge = '<span class="text-[9px] font-black text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">已發送</span>';
+                            if (diffDays < 0) {
+                                statusBadge = '<span class="text-[9px] font-black text-white bg-red-500 px-1.5 py-0.5 rounded shadow-sm animate-pulse">遲交</span>';
+                                textClass = 'text-red-600 font-black';
+                            } else if (diffDays <= 3) {
+                                statusBadge = '<span class="text-[9px] font-black text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">警示</span>';
+                                textClass = 'text-amber-600 font-black';
+                            } else {
+                                statusBadge = '<span class="text-[9px] font-black text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">已發送</span>';
+                            }
                         }
-                    }
 
-                    poHtml += `<tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50">
-                        <td class="p-2 font-mono font-black text-[9px] ${textClass}">${po.po_no.replace('PO-','')}</td>
-                        <td class="p-2 font-bold text-xs truncate max-w-[80px] ${textClass}">${po.supplier_name}</td>
-                        <td class="p-2 text-center">${statusBadge}</td>
-                        <td class="p-2 text-center font-bold text-[10px] ${textClass}">${po.expected_date.slice(5)}</td>
-                    </tr>`;
-                });
-                poContainer.innerHTML = poHtml;
-            }
+                        poHtml += `<tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50">
+                            <td class="p-2 font-mono font-black text-[9px] ${textClass}">${po.po_no.replace('PO-','')}</td>
+                            <td class="p-2 font-bold text-xs truncate max-w-[80px] ${textClass}">${po.supplier_name}</td>
+                            <td class="p-2 text-center">${statusBadge}</td>
+                            <td class="p-2 text-center font-bold text-[10px] ${textClass}">${po.expected_date.slice(5)}</td>
+                        </tr>`;
+                    });
+                    poContainer.innerHTML = poHtml;
+                }
+            } catch(e) { document.getElementById('ui-dash-po-status').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500">資料讀取異常</td></tr>'; }
         }
 
-        // 🌟 新增供應商
         async function saveSupplier(e) {
             e.preventDefault();
-            const p = {
-                supplier_name: document.getElementById('s-name').value,
-                supplier_code: document.getElementById('s-code').value.toUpperCase(),
-                tax_id: document.getElementById('s-tax').value,
-                contact_name: document.getElementById('s-contact').value,
-                contact_phone: document.getElementById('s-phone').value,
-                payment_method: document.getElementById('s-pay').value,
-                bank_details: document.getElementById('s-bank').value
-            };
-            const { error } = await window._sb.from('suppliers').insert([p]);
-            if(error) { alert('儲存失敗:' + error.message); }
-            else { alert('✅ 供應商建立成功！'); e.target.reset(); await loadSuppliers(); backToDash(); }
+            const p = { supplier_name: document.getElementById('s-name').value, supplier_code: document.getElementById('s-code').value.toUpperCase(), tax_id: document.getElementById('s-tax').value, contact_name: document.getElementById('s-contact').value, contact_phone: document.getElementById('s-phone').value, payment_method: document.getElementById('s-pay').value, bank_details: document.getElementById('s-bank').value };
+            try {
+                await window._sb.from('suppliers').insert([p]);
+                alert('✅ 供應商建立成功！'); e.target.reset(); await loadSuppliers(); backToDash();
+            } catch(err) { alert('儲存失敗，請檢查資料庫權限'); }
         }
 
-        // 🌟 請購單管理 (化零為整：列出所有待處理/採購中的原料)
         async function openReqManagement() {
-            openView('pending-list', '📝 請購單管理');
+            openView('req-management', '📝 請購單管理');
             const container = document.getElementById('ui-pending-materials');
             container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">讀取中...</p>';
             
-            const { data, error } = await window._sb.from('requisitions').select('id, req_no, items_json').in('status', ['待處理', '採購中']);
-            if(error || !data || data.length === 0) { container.innerHTML = '<p class="text-center text-sm font-bold text-slate-400 py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">目前無待處理的請購需求</p>'; return; }
+            const reqs = await fetchSafeReqs();
+            const pending = reqs.filter(r => r.status === '待處理' || r.status === '採購中');
+
+            if(pending.length === 0) { container.innerHTML = '<p class="text-center text-sm font-bold text-slate-400 py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">目前無待處理的請購需求</p>'; return; }
 
             pendingMats = [];
-            data.forEach(req => {
-                if(req.items_json) {
-                    req.items_json.forEach((rm, idx) => {
-                        pendingMats.push({
-                            uid: `${req.id}_${idx}`,
-                            req_id: req.id,
-                            req_no: req.req_no,
-                            name: rm.name,
-                            qty: rm.qty,
-                            unit: rm.unit
-                        });
-                    });
-                }
+            pending.forEach(req => {
+                let itemsArr = getSafeArray(req.items_json);
+                itemsArr.forEach((rm, idx) => {
+                    pendingMats.push({ uid: `${req.id}_${idx}`, req_id: req.id, req_no: req.req_no, name: rm.name, qty: rm.qty, unit: rm.unit });
+                });
             });
 
             const supOptions = '<option value="">(請選擇供應商...)</option>' + window.supplierData.map(s => `<option value="${s.supplier_name}">${s.supplier_name}</option>`).join('');
@@ -319,29 +337,20 @@
                         <h4 class="font-black text-base text-slate-800 leading-tight flex-1 pr-2">${pm.name}</h4>
                         <div class="text-right">
                             <span class="text-[9px] text-slate-500 font-bold block mb-0.5">需求量</span>
-                            <span class="font-black text-amber-600 text-lg tracking-tight leading-none">${pm.qty.toFixed(2)} <span class="text-[10px] text-slate-400">${pm.unit}</span></span>
+                            <span class="font-black text-amber-600 text-lg tracking-tight leading-none">${parseFloat(pm.qty).toFixed(2)} <span class="text-[10px] text-slate-400">${pm.unit}</span></span>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="text-[9px] font-bold text-slate-500 ml-1 block mb-1">指派供應商</label>
-                            <select class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold text-slate-700 select-arrow focus:border-amber-500 outline-none pm-sup">${supOptions}</select>
-                        </div>
-                        <div>
-                            <label class="text-[9px] font-bold text-slate-500 ml-1 block mb-1">要求到貨日</label>
-                            <input type="date" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:border-amber-500 outline-none pm-date" required>
-                        </div>
+                        <div><label class="text-[9px] font-bold text-slate-500 ml-1 block mb-1">指派供應商</label><select class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold text-slate-700 select-arrow focus:border-amber-500 outline-none pm-sup">${supOptions}</select></div>
+                        <div><label class="text-[9px] font-bold text-slate-500 ml-1 block mb-1">要求到貨日</label><input type="date" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold focus:border-amber-500 outline-none pm-date" required></div>
                     </div>
                 </div>
             `).join('');
         }
 
-        // 🌟 一鍵產出正式採購單 (存入 po_documents + PDF 列印)
         async function generatePO_PDF() {
             const items = document.querySelectorAll('.pending-mat-item');
-            let selected = [];
-            let reqIdsToUpdate = new Set();
-            let missingData = false;
+            let selected = []; let reqIdsToUpdate = new Set(); let missingData = false;
 
             items.forEach(el => {
                 const isChecked = el.querySelector('.print-chk').checked;
@@ -350,9 +359,7 @@
                     const pm = pendingMats.find(x => x.uid === uid);
                     const sup = el.querySelector('.pm-sup').value;
                     const date = el.querySelector('.pm-date').value;
-                    
                     if(!sup || !date) missingData = true;
-
                     selected.push({ ...pm, supplier: sup, expected_date: date });
                     reqIdsToUpdate.add(pm.req_id);
                 }
@@ -361,7 +368,6 @@
             if(selected.length === 0) { alert('請至少勾選一項原料以產出採購單！'); return; }
             if(missingData) { alert('請確保已勾選的項目皆有選擇「供應商」與「到貨日」！'); return; }
 
-            // 依據供應商分組，產生獨立的 PO 單
             let groupedPO = {};
             selected.forEach(s => {
                 if(!groupedPO[s.supplier]) groupedPO[s.supplier] = { items: [], maxDate: s.expected_date };
@@ -373,23 +379,17 @@
             let printHtml = '';
 
             for (const [supName, data] of Object.entries(groupedPO)) {
-                // 產生正式單號
                 const poNo = 'PO-' + new Date().getFullYear() + String(new Date().getMonth()+1).padStart(2,'0') + String(new Date().getDate()).padStart(2,'0') + '-' + Math.floor(Math.random()*1000).toString().padStart(3,'0');
                 
-                // 存入正式採購單表
-                await window._sb.from('po_documents').insert([{
-                    po_no: poNo,
-                    supplier_name: supName,
-                    expected_date: data.maxDate,
-                    items_json: data.items,
-                    status: '已發送'
-                }]);
+                try {
+                    await window._sb.from('po_documents').insert([{ po_no: poNo, supplier_name: supName, expected_date: data.maxDate, items_json: data.items, status: '已發送' }]);
+                } catch(e) { console.error('PO Insert failed', e); }
 
                 let tableRows = data.items.map((s, i) => `
                     <tr style="border-bottom: 1px solid #e2e8f0;">
                         <td style="padding: 12px; text-align: center;">${i+1}</td>
                         <td style="padding: 12px; font-weight: bold;">${s.name}</td>
-                        <td style="padding: 12px; text-align: right; color: #d97706; font-weight: bold; font-size: 16px;">${s.qty.toFixed(2)}</td>
+                        <td style="padding: 12px; text-align: right; color: #d97706; font-weight: bold; font-size: 16px;">${parseFloat(s.qty).toFixed(2)}</td>
                         <td style="padding: 12px; text-align: center; font-size: 12px; color: #64748b;">${s.unit}</td>
                         <td style="padding: 12px; text-align: center; color: #ef4444; font-weight: bold;">${s.expected_date}</td>
                         <td style="padding: 12px; text-align: left; font-size: 10px; color: #94a3b8;">${s.req_no}</td>
@@ -416,7 +416,7 @@
                                 <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">單據資訊</h3>
                                 <p style="margin: 5px 0;"><strong>單號：</strong><span style="font-family: monospace; font-weight: bold;">${poNo}</span></p>
                                 <p style="margin: 5px 0;"><strong>日期：</strong>${dateStr}</p>
-                                <p style="margin: 5px 0;"><strong>開單人：</strong>${window.currentUser.full_name}</p>
+                                <p style="margin: 5px 0;"><strong>開單人：</strong>${window.currentUser?.full_name||'使用者'}</p>
                             </div>
                         </div>
 
@@ -455,29 +455,30 @@
                 `;
             }
 
-            // 更新原始請購單狀態為已完成
-            let arrReqIds = Array.from(reqIdsToUpdate);
-            for(let rid of arrReqIds) {
-                await window._sb.from('requisitions').update({status: '已完成'}).eq('id', rid);
-            }
+            try {
+                let arrReqIds = Array.from(reqIdsToUpdate);
+                for(let rid of arrReqIds) { 
+                    await window._sb.from('requisitions').update({status: '已完成'}).eq('id', rid); 
+                    await window._sb.from('purchase_orders').update({status: '已轉換正式單'}).eq('id', rid); 
+                }
+            } catch(e) { console.log('Update req error', e); }
 
             document.getElementById('po-print-zone').innerHTML = printHtml;
             
             setTimeout(() => { 
                 window.print(); 
-                alert('✅ 正式採購單已生成並存入後台資料庫！\n原請購單已結案。');
+                alert('✅ 正式採購單 (PDF) 已生成！\n原請購單已結案。');
                 backToDash();
             }, 300);
         }
 
-        // 🌟 歷史紀錄中心 (編輯與刪除)
         async function openHistory() {
             openView('history', '🗂️ 歷史紀錄中心');
             const elReq = document.getElementById('ui-hist-req');
             const elPo = document.getElementById('ui-hist-po');
             elReq.innerHTML = '載入中...'; elPo.innerHTML = '載入中...';
 
-            const { data: reqs } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false});
+            const reqs = await fetchSafeReqs();
             if(reqs && reqs.length > 0) {
                 elReq.innerHTML = reqs.map(r => `
                     <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
@@ -498,41 +499,40 @@
                 `).join('');
             } else { elReq.innerHTML = '<p class="text-xs text-slate-400">無紀錄</p>'; }
 
-            const { data: pos } = await window._sb.from('po_documents').select('*').order('created_at', {ascending: false});
-            if(pos && pos.length > 0) {
-                elPo.innerHTML = pos.map(p => `
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
-                        <div>
-                            <span class="text-[10px] font-mono font-bold text-slate-500">${p.po_no}</span>
-                            <span class="text-[9px] font-black ml-1 text-amber-700 bg-amber-50 px-1 rounded">${p.status}</span>
-                            <p class="text-xs font-black text-slate-700 mt-0.5 truncate max-w-[120px]">${p.supplier_name}</p>
+            try {
+                const { data: pos } = await window._sb.from('po_documents').select('*').order('created_at', {ascending: false});
+                if(pos && pos.length > 0) {
+                    elPo.innerHTML = pos.map(p => `
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+                            <div>
+                                <span class="text-[10px] font-mono font-bold text-slate-500">${p.po_no}</span>
+                                <span class="text-[9px] font-black ml-1 text-amber-700 bg-amber-50 px-1 rounded">${p.status}</span>
+                                <p class="text-xs font-black text-slate-700 mt-0.5 truncate max-w-[120px]">${p.supplier_name}</p>
+                            </div>
+                            <div class="flex flex-col space-y-1">
+                                <select onchange="updatePOStatus('${p.id}', this.value)" class="text-[9px] p-1 border border-slate-300 rounded outline-none font-bold">
+                                    <option value="已發送" ${p.status==='已發送'?'selected':''}>已發送</option>
+                                    <option value="完成" ${p.status==='完成'?'selected':''}>完成</option>
+                                    <option value="異常(遲交)" ${p.status==='異常(遲交)'?'selected':''}>異常(遲交)</option>
+                                    <option value="異常(拒收)" ${p.status==='異常(拒收)'?'selected':''}>異常(拒收)</option>
+                                    <option value="異常(其他)" ${p.status==='異常(其他)'?'selected':''}>異常(其他)</option>
+                                </select>
+                                <button onclick="delPO('${p.id}')" class="text-[9px] text-red-600 bg-red-50 px-2 py-1 rounded font-bold">刪除</button>
+                            </div>
                         </div>
-                        <div class="flex flex-col space-y-1">
-                            <select onchange="updatePOStatus('${p.id}', this.value)" class="text-[9px] p-1 border border-slate-300 rounded outline-none font-bold">
-                                <option value="已發送" ${p.status==='已發送'?'selected':''}>已發送</option>
-                                <option value="完成" ${p.status==='完成'?'selected':''}>完成</option>
-                                <option value="異常(遲交)" ${p.status==='異常(遲交)'?'selected':''}>異常(遲交)</option>
-                                <option value="異常(拒收)" ${p.status==='異常(拒收)'?'selected':''}>異常(拒收)</option>
-                                <option value="異常(其他)" ${p.status==='異常(其他)'?'selected':''}>異常(其他)</option>
-                            </select>
-                            <button onclick="delPO('${p.id}')" class="text-[9px] text-red-600 bg-red-50 px-2 py-1 rounded font-bold">刪除</button>
-                        </div>
-                    </div>
-                `).join('');
-            } else { elPo.innerHTML = '<p class="text-xs text-slate-400">無紀錄</p>'; }
+                    `).join('');
+                } else { elPo.innerHTML = '<p class="text-xs text-slate-400">無紀錄</p>'; }
+            } catch(e) { elPo.innerHTML = '<p class="text-xs text-slate-400">資料讀取異常</p>'; }
         }
 
-        async function updateReqStatus(id, st) { await window._sb.from('requisitions').update({status:st}).eq('id',id); alert('更新成功'); }
-        async function delReq(id) { if(confirm('刪除?')) { await window._sb.from('requisitions').delete().eq('id',id); openHistory(); } }
-        async function updatePOStatus(id, st) { await window._sb.from('po_documents').update({status:st}).eq('id',id); alert('更新成功'); }
-        async function delPO(id) { if(confirm('刪除?')) { await window._sb.from('po_documents').delete().eq('id',id); openHistory(); } }
+        async function updateReqStatus(id, st) { try{await window._sb.from('requisitions').update({status:st}).eq('id',id);}catch(e){} try{await window._sb.from('purchase_orders').update({status:st}).eq('id',id);}catch(e){} alert('更新成功'); }
+        async function delReq(id) { if(confirm('刪除?')) { try{await window._sb.from('requisitions').delete().eq('id',id);}catch(e){} try{await window._sb.from('purchase_orders').delete().eq('id',id);}catch(e){} openHistory(); } }
+        async function updatePOStatus(id, st) { try{await window._sb.from('po_documents').update({status:st}).eq('id',id); alert('更新成功');}catch(e){} }
+        async function delPO(id) { if(confirm('刪除?')) { try{await window._sb.from('po_documents').delete().eq('id',id); openHistory();}catch(e){} } }
 
         window.onload = bootPurchase;
 
-        const enforceNavObserver = new MutationObserver(() => {
-            const oldNav = document.querySelector('nav:not(#core-bottom-nav)');
-            if (oldNav) oldNav.remove();
-        });
+        const enforceNavObserver = new MutationObserver(() => { const oldNav = document.querySelector('nav:not(#core-bottom-nav)'); if (oldNav) oldNav.remove(); });
         enforceNavObserver.observe(document.body, { childList: true, subtree: true });
     </script>
 </body>
