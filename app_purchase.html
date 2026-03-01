@@ -169,11 +169,7 @@
     <script>
         window.supplierData = []; let pendingMats = [];
 
-        function getSafeArray(data) {
-            if (!data) return [];
-            if (Array.isArray(data)) return data;
-            try { return JSON.parse(data); } catch(e) { return []; }
-        }
+        function getSafeArray(data) { if (!data) return []; if (Array.isArray(data)) return data; try { return JSON.parse(data); } catch(e) { return []; } }
 
         async function safeUpdate(table, payload, id) {
             try { await window._sb.from(table).update(payload).eq('id', id); } catch(e) { console.error(`Update ${table} failed`, e); }
@@ -214,26 +210,14 @@
             loadDashboardData();
         }
 
-        // 🌟 自動容錯：雙軌掃描舊表 purchase_orders 的資料
         async function fetchSafeReqs() {
             let reqData = [];
+            try { const { data: r1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false}); if (r1) reqData = r1; } catch(e) {}
             try {
-                const { data: r1, error: e1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false});
-                if (!e1 && r1) reqData = r1;
-            } catch(e) {}
-
-            try {
-                const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中', '請購待處理']).order('created_at', {ascending: false});
+                const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中', '請購待處理', '已完成']).order('created_at', {ascending: false});
                 if (r2 && r2.length > 0) {
                     let oldReqs = r2.filter(x => x.note && x.note.startsWith('REQ-')).map(x => ({
-                        id: x.id,
-                        req_no: x.note,
-                        employee_id: x.employee_id,
-                        employees: x.employees,
-                        items_json: x.raw_materials, 
-                        status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status,
-                        created_at: x.created_at,
-                        is_legacy: true
+                        id: x.id, req_no: x.note, employee_id: x.employee_id, employees: x.employees, items_json: x.raw_materials, status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status, created_at: x.created_at, is_legacy: true
                     }));
                     reqData = [...reqData, ...oldReqs];
                 }
@@ -243,22 +227,15 @@
 
         async function fetchSafePOs() {
             let poData = [];
+            try { const { data: p1 } = await window._sb.from('po_documents').select('*').order('created_at', {ascending: false}); if (p1) poData = p1; } catch(e) {}
             try {
-                const { data: pos } = await window._sb.from('po_documents').select('po_no, supplier_name, status, expected_date').order('expected_date', {ascending: true});
+                const { data: pos } = await window._sb.from('purchase_orders').select('*, employees(full_name)').like('note', 'PO-%').order('created_at', {ascending: false});
                 if (pos && pos.length > 0) {
-                    poData = pos.map(x => {
+                    let oldPos = pos.map(x => {
                         let parts = x.note.split('|||');
-                        return {
-                            id: x.id,
-                            po_no: parts[0] || 'PO-UNKNOWN',
-                            supplier_name: parts[1] || '未指定供應商',
-                            status: x.status,
-                            expected_date: x.expected_date || '未定',
-                            items_json: x.raw_materials,
-                            created_at: x.created_at,
-                            is_legacy: true
-                        };
+                        return { id: x.id, po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', status: x.status, expected_date: x.expected_date || '未定', items_json: x.raw_materials, created_at: x.created_at, is_legacy: true };
                     });
+                    poData = [...poData, ...oldPos];
                 }
             } catch(e) { console.error('Fetch POs Error:', e); }
             return poData;
@@ -267,7 +244,6 @@
         async function loadDashboardData() {
             const reqs = await fetchSafeReqs();
             const reqContainer = document.getElementById('ui-dash-req-status');
-            
             const thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000);
             const recentReqs = reqs.filter(r => new Date(r.created_at) >= thirtyDaysAgo);
 
@@ -296,7 +272,7 @@
                     let diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
                     let statusBadge = ''; let textClass = 'text-slate-700';
                     
-                    if(po.status === '完成' || po.status === 'PO完成') {
+                    if(po.status === '完成' || po.status === 'PO完成' || po.status === '已到貨') {
                         statusBadge = '<span class="text-[9px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">完成</span>';
                         textClass = 'text-emerald-700 font-bold';
                     } else if (po.status.includes('異常') || po.status.includes('拒收') || po.status.includes('遲交')) {
@@ -314,7 +290,7 @@
                         }
                     }
 
-                    let dateText = (po.expected_date && po.expected_date !== '未定') ? po.expected_date.slice(5) : '未定';
+                    let dateText = (po.expected_date && po.expected_date !== '未定' && po.expected_date !== null) ? String(po.expected_date).slice(5) : '未定';
 
                     poHtml += `<tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50">
                         <td class="p-2 font-mono font-black text-[9px] ${textClass}">${po.po_no.replace('PO-','')}</td>
@@ -519,7 +495,7 @@
                         </div>
                         <div class="flex flex-col space-y-1">
                             <select onchange="updateReqStatus('${r.id}', this.value, ${r.is_legacy?true:false})" class="text-[9px] p-1 border border-slate-300 rounded outline-none font-bold">
-                                <option value="請購待處理" ${r.status==='待處理'?'selected':''}>待處理</option>
+                                <option value="待處理" ${r.status==='待處理'?'selected':''}>待處理</option>
                                 <option value="採購中" ${r.status==='採購中'?'selected':''}>採購中</option>
                                 <option value="已完成" ${r.status==='已完成'?'selected':''}>已完成</option>
                             </select>
@@ -540,10 +516,11 @@
                         </div>
                         <div class="flex flex-col space-y-1">
                             <select onchange="updatePOStatus('${p.id}', this.value, ${p.is_legacy?true:false})" class="text-[9px] p-1 border border-slate-300 rounded outline-none font-bold">
-                                <option value="PO已發送" ${p.status==='PO已發送'?'selected':''}>已發送</option>
-                                <option value="PO完成" ${p.status==='PO完成'?'selected':''}>完成</option>
-                                <option value="PO異常(遲交)" ${p.status==='PO異常(遲交)'?'selected':''}>異常(遲交)</option>
-                                <option value="PO異常(拒收)" ${p.status==='PO異常(拒收)'?'selected':''}>異常(拒收)</option>
+                                <option value="已發送" ${p.status==='已發送'?'selected':''}>已發送</option>
+                                <option value="完成" ${p.status==='完成'?'selected':''}>完成</option>
+                                <option value="異常(遲交)" ${p.status==='異常(遲交)'?'selected':''}>異常(遲交)</option>
+                                <option value="異常(拒收)" ${p.status==='異常(拒收)'?'selected':''}>異常(拒收)</option>
+                                <option value="異常(其他)" ${p.status==='異常(其他)'?'selected':''}>異常(其他)</option>
                             </select>
                             <button onclick="delPO('${p.id}', ${p.is_legacy?true:false})" class="text-[9px] text-red-600 bg-red-50 px-2 py-1 rounded font-bold">刪除</button>
                         </div>
@@ -553,9 +530,9 @@
         }
 
         async function updateReqStatus(id, st, isLegacy) { if(isLegacy) await safeUpdate('purchase_orders', {status:st}, id); else await safeUpdate('requisitions', {status:st}, id); alert('更新成功'); }
-        async function delReq(id, isLegacy) { if(confirm('刪除?')) { if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('requisitions', id); openHistory(); } }
+        async function delReq(id, isLegacy) { if(confirm('確定刪除這筆請購單?')) { if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('requisitions', id); openHistory(); } }
         async function updatePOStatus(id, st, isLegacy) { if(isLegacy) await safeUpdate('purchase_orders', {status:'PO'+st}, id); else await safeUpdate('po_documents', {status:st}, id); alert('更新成功'); }
-        async function delPO(id, isLegacy) { if(confirm('刪除?')) { if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('po_documents', id); openHistory(); } }
+        async function delPO(id, isLegacy) { if(confirm('確定刪除這筆採購單?')) { if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('po_documents', id); openHistory(); } }
 
         window.onload = bootPurchase;
 
