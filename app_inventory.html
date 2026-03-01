@@ -94,12 +94,10 @@
                         <span class="text-4xl mb-2 drop-shadow-md">📷</span>
                         <span class="font-black text-emerald-800 tracking-wider text-base">開啟相機掃碼盤點</span>
                     </button>
-                    
                     <button onclick="openInventoryList()" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-indigo-200 hover:bg-indigo-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">📋</span>
                         <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">庫存清單</span>
                     </button>
-                    
                     <button onclick="openInvReqHistory()" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-amber-200 hover:bg-amber-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">📜</span>
                         <span class="font-black text-amber-800 text-xs tracking-widest mb-0.5">請購單紀錄</span>
@@ -109,7 +107,6 @@
                         <span class="text-3xl mb-1.5 drop-shadow-md">➕</span>
                         <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">新增料號</span>
                     </button>
-                    
                     <button onclick="openSearchPrintView()" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">🖨️</span>
                         <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">查詢與標籤</span>
@@ -148,6 +145,7 @@
                 <div class="mb-4">
                     <input type="text" id="inv-search" placeholder="🔍 搜尋料號 / 品名 / 規格..." class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-500 transition shadow-sm" onkeyup="renderFilteredInventory()">
                 </div>
+
                 <div id="ui-inventory-list" class="space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar pr-1 pb-16"></div>
             </div>
 
@@ -217,7 +215,9 @@
     <script src="shared.js"></script>
     <script>
         let html5QrcodeScanner = null; let currentItemPackQty = 1; let allItems = []; window.inventoryData = []; window.latestChecks = {}; let reqCart = new Set(); let isScanning = false;
-        let currentInvType = '原料'; let currentInvCat = '全部';
+        
+        let currentInvType = '原料'; 
+        let currentInvCat = '全部';
 
         // 🚨 絕對防彈：防止 JSON 與 Null 崩潰
         function getSafeArray(data) { 
@@ -281,16 +281,22 @@
         // 🌟 獨立防彈資料庫讀取引擎
         async function fetchSafeReqsForInv() {
             let reqData = [];
-            try { const { data: r1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false}); if (r1) reqData = r1; } catch(e) {}
+            try { 
+                const { data: r1, error: e1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false}); 
+                if (!e1 && r1) reqData = r1; 
+            } catch(e) {}
             try {
-                const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中', '請購待處理', '已完成', '取消']).order('created_at', {ascending: false});
-                if (r2 && r2.length > 0) {
+                const { data: r2, error: e2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中', '請購待處理', '已完成', '取消']).order('created_at', {ascending: false});
+                if (!e2 && r2 && r2.length > 0) {
                     let oldReqs = r2.filter(x => x.note && x.note.startsWith('REQ-')).map(x => ({
                         id: x.id, req_no: x.note, employee_id: x.employee_id, employees: x.employees, items_json: x.raw_materials, status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status, created_at: x.created_at, is_legacy: true
                     }));
                     reqData = [...reqData, ...oldReqs];
                 }
             } catch(e) {}
+            
+            // Sort merged array by created_at descending
+            reqData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             return reqData;
         }
 
@@ -337,28 +343,41 @@
             const isLegacy = document.getElementById('inv-req-edit-islegacy').value === 'true';
             
             try {
-                if(isLegacy) { await window._sb.from('purchase_orders').update({ status: st }).eq('id', id); } 
-                else { await window._sb.from('requisitions').update({ status: st }).eq('id', id); }
+                if(isLegacy) { 
+                    const { error } = await window._sb.from('purchase_orders').update({ status: st }).eq('id', id); 
+                    if(error) throw error;
+                } else { 
+                    const { error } = await window._sb.from('requisitions').update({ status: st }).eq('id', id); 
+                    if(error) throw error;
+                }
                 alert('✅ 狀態已更新，並同步至後台與採購中心！'); 
                 closeModal('inv-req-edit-modal'); 
                 openInvReqHistory(); 
-            } catch(e) { alert('更新失敗'); }
+            } catch(e) { alert('更新失敗: ' + e.message); }
         }
 
         async function delInvReq(id, isLegacy) { 
             if(confirm('⚠️ 確定要刪除這筆請購單嗎？\n此動作會同步刪除後台與採購中心的紀錄。')){ 
                 try {
-                    if(isLegacy) await window._sb.from('purchase_orders').delete().eq('id', id);
-                    else await window._sb.from('requisitions').delete().eq('id', id);
+                    if(isLegacy) {
+                        const { error } = await window._sb.from('purchase_orders').delete().eq('id', id);
+                        if(error) throw error;
+                    } else {
+                        const { error } = await window._sb.from('requisitions').delete().eq('id', id);
+                        if(error) throw error;
+                    }
                     openInvReqHistory(); 
-                } catch(e) { alert('刪除失敗'); }
+                } catch(e) { alert('刪除失敗: ' + e.message); }
             } 
         }
 
         async function loadItems() {
             try {
                 const { data, error: itemErr } = await window._sb.from('items').select('*').order('created_at', {ascending: false}); 
-                if(itemErr) throw new Error(itemErr.message);
+                if(itemErr) {
+                    document.getElementById('ui-filter-status-table').innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500 font-bold">讀取失敗，請確認已執行 SQL 解除 RLS</td></tr>`;
+                    return;
+                }
                 allItems = data || [];
                 
                 const { data: ledgers } = await window._sb.from('inventory_ledgers').select('item_id, change_qty');
@@ -370,22 +389,24 @@
 
                 let pendingReqs = {};
                 try {
-                    const { data: reqs } = await window._sb.from('requisitions').select('items_json').in('status', ['待處理', '採購中']);
-                    if (reqs) { reqs.forEach(req => { let itemsArr = getSafeArray(req.items_json); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
+                    const { data: reqs, error: reqErr } = await window._sb.from('requisitions').select('items_json').in('status', ['待處理', '採購中']);
+                    if (!reqErr && reqs) { reqs.forEach(req => { let itemsArr = getSafeArray(req.items_json); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
                 } catch(e) {}
+                
                 try {
-                    const { data: reqs2 } = await window._sb.from('purchase_orders').select('raw_materials').in('status', ['請購待處理', '待處理', '採購中']);
-                    if (reqs2) { reqs2.forEach(req => { let itemsArr = getSafeArray(req.raw_materials); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
+                    const { data: reqs2, error: reqErr2 } = await window._sb.from('purchase_orders').select('raw_materials').in('status', ['請購待處理', '待處理', '採購中']);
+                    if (!reqErr2 && reqs2) { reqs2.forEach(req => { let itemsArr = getSafeArray(req.raw_materials); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
                 } catch(e) {}
 
                 let pendingPOs = {};
                 try {
-                    const { data: pos } = await window._sb.from('po_documents').select('items_json, expected_date').in('status', ['已發送', '已下單', '異常(遲交)']);
-                    if (pos) { pos.forEach(po => { let poItems = getSafeArray(po.items_json); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
+                    const { data: pos, error: posErr } = await window._sb.from('po_documents').select('items_json, expected_date').in('status', ['已發送', '已下單', '異常(遲交)']);
+                    if (!posErr && pos) { pos.forEach(po => { let poItems = getSafeArray(po.items_json); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
                 } catch(e) {}
+                
                 try {
-                    const { data: pos2 } = await window._sb.from('purchase_orders').select('raw_materials, expected_date').like('note', 'PO-%');
-                    if (pos2) { pos2.forEach(po => { let poItems = getSafeArray(po.raw_materials); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
+                    const { data: pos2, error: posErr2 } = await window._sb.from('purchase_orders').select('raw_materials, expected_date').like('note', 'PO-%');
+                    if (!posErr2 && pos2) { pos2.forEach(po => { let poItems = getSafeArray(po.raw_materials); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
                 } catch(e) {}
                 
                 let lowCount = 0;
@@ -482,14 +503,17 @@
                         </tr>`;
                     }).join('');
                 }
-                const uiFilterStatusTable = document.getElementById('ui-filter-status-table');
-                if (uiFilterStatusTable) uiFilterStatusTable.innerHTML = filterHtml;
+                document.getElementById('ui-filter-status-table').innerHTML = filterHtml;
 
                 if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
                 if(document.getElementById('view-inventory-list').classList.contains('active')) renderFilteredInventory();
 
             } catch(fatalError) {
                 console.error("資料讀取失敗", fatalError);
+                const tableEl = document.getElementById('ui-filter-status-table');
+                if (tableEl) {
+                    tableEl.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500 font-bold">讀取失敗: ${fatalError.message}</td></tr>`;
+                }
             }
         }
 
@@ -556,14 +580,20 @@
             let keyword = (document.getElementById('inv-search')?.value || '').toLowerCase();
             let filtered = window.inventoryData.filter(i => {
                 let matchType = i.item_type === currentInvType;
+                
                 let matchCat = false;
                 if (currentInvCat === '全部') { matchCat = true; }
                 else if (currentInvCat === '其他') {
                     if (currentInvType === '原料') matchCat = !['標籤貼紙', '車用濾布'].includes(i.category);
                     if (currentInvType === '成品') matchCat = !['汽車冷氣濾網', 'VESTA系列產品'].includes(i.category);
-                } else { matchCat = i.category === currentInvCat; }
+                } else {
+                    matchCat = i.category === currentInvCat;
+                }
 
-                let matchSearch = i.item_code.toLowerCase().includes(keyword) || i.item_name.toLowerCase().includes(keyword) || (i.specification && i.specification.toLowerCase().includes(keyword));
+                let matchSearch = i.item_code.toLowerCase().includes(keyword) || 
+                                  i.item_name.toLowerCase().includes(keyword) || 
+                                  (i.specification && i.specification.toLowerCase().includes(keyword));
+
                 return matchType && matchCat && matchSearch;
             });
             renderInventoryListUI(filtered);
@@ -571,7 +601,6 @@
 
         function renderInventoryListUI(data) {
             const container = document.getElementById('ui-inventory-list');
-            if(!container) return; 
             if(!data || data.length === 0) { container.innerHTML = '<div class="text-center text-sm text-slate-400 font-bold py-10">無資料</div>'; return; }
             
             container.innerHTML = data.map(i => {
@@ -584,6 +613,7 @@
                 else if (isWarn) { borderClass = 'border-amber-400 bg-amber-50/20'; stockColor = 'text-amber-500'; }
 
                 const chk = window.latestChecks[i.id]; const inCart = reqCart.has(i.id) ? 'checked' : '';
+                
                 let lastCheckText = chk ? `${chk.date} (${chk.emp})` : `<span class="text-red-500">從未盤點過</span>`;
 
                 return `
@@ -616,6 +646,14 @@
             }).join('');
         }
 
+        async function inlineUpdateSafeStock(id, newValStr, oldVal) { const newVal = parseInt(newValStr) || 0; if(newVal === oldVal) return; const { error } = await window._sb.from('items').update({ safe_stock_level: newVal }).eq('id', id); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderFilteredInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
+        async function inlineUpdateCurrentStock(id, oldQty, newValStr) { const newQty = parseInt(newValStr) || 0; if(newQty === oldQty) return; const diff = newQty - oldQty; const { error } = await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: `總表快速校正 (原:${oldQty} -> 新:${newQty})` }]); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderFilteredInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
+        async function inlineUpdateCycle(id, newVal) { const val = parseInt(newVal) || 30; const { error } = await window._sb.from('items').update({ stocktake_cycle: val }).eq('id', id); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderFilteredInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
+
+        function filterInventory() {
+            renderFilteredInventory();
+        }
+
         function toggleReq(id, el) { if(el.checked) reqCart.add(id); else reqCart.delete(id); updateTopReqBar(); }
         
         function updateTopReqBar() { 
@@ -644,6 +682,7 @@
             openModal('req-qty-modal');
         }
 
+        // 🌟 防彈寫入引擎：攔截錯誤，成功啟動備援
         async function confirmGenerateReq() {
             let isValid = true; document.querySelectorAll('.req-target-qty').forEach(inp => { if((parseInt(inp.value)||0) <= 0) isValid = false; });
             if(!isValid) { alert('請確保所有項目都有輸入大於 0 的數量！'); return; }
@@ -689,13 +728,30 @@
                 document.body.appendChild(link); link.click(); document.body.removeChild(link);
                 
                 showSysToast(`已生成請購單編號 ${reqNo}.csv`);
-            } catch(csvErr) { console.error('CSV:', csvErr); }
+            } catch(csvErr) { 
+                console.error('CSV生成失敗:', csvErr); 
+                alert('CSV 下載被瀏覽器阻擋，但資料仍會安全寫入系統！');
+            }
 
+            // 🚨 強制攔截 Supabase 錯誤，成功觸發備援機制
             try {
                 const payload = { req_no: reqNo, employee_id: window.currentUser?.id || null, target_items: targetItems, items_json: rawMaterials, status: '待處理' };
-                try { await window._sb.from('requisitions').insert([payload]); } 
-                catch (e) { await window._sb.from('purchase_orders').insert([{ employee_id: window.currentUser?.id || null, target_items: targetItems, raw_materials: rawMaterials, status: '請購待處理', note: reqNo }]); }
-            } catch (dbErr) {}
+                const { error: reqErr } = await window._sb.from('requisitions').insert([payload]);
+                
+                if(reqErr) {
+                    console.warn("寫入 requisitions 失敗，啟動備援機制...", reqErr);
+                    const { error: poErr } = await window._sb.from('purchase_orders').insert([{ 
+                        employee_id: window.currentUser?.id || null, 
+                        target_items: targetItems, 
+                        raw_materials: rawMaterials, 
+                        status: '請購待處理', 
+                        note: reqNo 
+                    }]);
+                    if (poErr) {
+                        alert("⚠️ 資料庫寫入完全失敗，請確認已執行 SQL 解除 RLS 防火牆！");
+                    }
+                }
+            } catch (dbErr) { console.error('資料庫同步崩潰:', dbErr); }
 
             closeModal('req-qty-modal');
             reqCart.clear();
@@ -785,7 +841,7 @@
 
         function openFrontEdit(id) { const i = window.inventoryData.find(x => x.id === id); if(!i) return; document.getElementById('fe-item-id').value = i.id; document.getElementById('fe-item-name').value = i.item_name; const catSel = document.getElementById('fe-item-cat'); catSel.value = i.category || '未分類'; document.getElementById('fe-item-lead').value = i.lead_time_days || 15; document.getElementById('fe-item-cycle').value = i.stocktake_cycle || 30; renderBomTable('fe-bom-table-body', i.bom_data || []); document.getElementById('front-item-edit-modal').classList.add('active'); }
         async function saveFrontEditItem() { const id = document.getElementById('fe-item-id').value; if(!id) { alert('系統無法讀取 ID！'); return; } const p = { item_name: document.getElementById('fe-item-name').value, category: document.getElementById('fe-item-cat').value, lead_time_days: parseInt(document.getElementById('fe-item-lead').value) || 15, stocktake_cycle: parseInt(document.getElementById('fe-item-cycle').value) || 30, bom_data: extractBomData('fe-bom-table-body') }; const { error } = await window._sb.from('items').update(p).eq('id', id); if(error) alert('失敗'); else { alert('✅ 已儲存修改！'); closeModal('front-item-edit-modal'); loadItems(); } }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        
         function printInlineBarcode(id) { const item = allItems.find(i => i.id === id); if(!item) return; const printZone = document.getElementById('print-zone'); printZone.innerHTML = `<div style="text-align:center; font-family:sans-serif; margin-bottom:10px;"><h2 style="margin:0 0 5px 0; font-size:24px;">${item.item_name}</h2><p style="margin:0 0 15px 0; font-size:16px; color:#555;">${item.specification || ''}</p><svg id="print-barcode-svg"></svg></div>`; JsBarcode("#print-barcode-svg", item.item_code, { format: "CODE128", width: 2.5, height: 80, displayValue: true, fontSize: 24, fontOptions: "bold", margin: 10 }); setTimeout(() => { window.print(); }, 150); }
 
         window.onload = bootInventory;
