@@ -180,7 +180,7 @@
                 <div>
                     <label class="text-[10px] font-bold text-slate-500 ml-1">採購單狀態</label>
                     <select id="admin-po-edit-status" class="admin-input font-bold bg-slate-50 select-arrow outline-none focus:border-amber-500" onchange="togglePoException()">
-                        <option value="PO已發送">已發送</option><option value="PO完成">✅ 完成</option><option value="PO異常(遲交)">🚨 異常 (遲交)</option><option value="PO異常(拒收)">❌ 異常 (拒收)</option><option value="PO異常(其他)">⚠️ 異常 (其他)</option>
+                        <option value="已發送">已發送</option><option value="完成">✅ 完成</option><option value="異常(遲交)">🚨 異常 (遲交)</option><option value="異常(拒收)">❌ 異常 (拒收)</option><option value="異常(其他)">⚠️ 異常 (其他)</option>
                     </select>
                 </div>
                 <div id="admin-po-exception-box" class="hidden">
@@ -201,7 +201,7 @@
                 <div>
                     <label class="text-[10px] font-bold text-slate-500 ml-1">請購單狀態</label>
                     <select id="admin-req-edit-status" class="admin-input font-bold bg-sky-50 select-arrow outline-none focus:border-sky-500 text-sky-900">
-                        <option value="請購待處理">待處理</option><option value="採購中">採購中</option><option value="已完成">✅ 已完成</option>
+                        <option value="待處理">待處理</option><option value="採購中">採購中</option><option value="已完成">✅ 已完成</option>
                     </select>
                 </div>
             </div>
@@ -230,7 +230,10 @@
         function getSafeArray(data) {
             if (!data) return [];
             if (Array.isArray(data)) return data;
-            try { return JSON.parse(data); } catch(e) { return []; }
+            try { 
+                let parsed = (typeof data === 'string') ? JSON.parse(data) : data;
+                return Array.isArray(parsed) ? parsed : [];
+            } catch(e) { return []; }
         }
 
         // 🌟 絕對防彈引擎：強制容錯寫入更新
@@ -304,114 +307,139 @@
             loadAdminBlt();
         }
 
-        // 🌟 絕對防彈：後台同步讀取舊表備援資料，保證不當機
-        async function loadAdminPurchase() {
-            const elDocs = document.getElementById('list-admin-po-docs');
-            const elDrafts = document.getElementById('list-admin-po-drafts');
-            elDocs.innerHTML = '載入中...'; elDrafts.innerHTML = '載入中...';
-            
-            // 1. 載入正式 PO 單 (PDF 檔)
+        // 🌟 自動容錯：雙軌掃描舊表 purchase_orders 的資料
+        async function fetchSafeReqs() {
+            let reqData = [];
             try {
-                const { data: docs } = await window._sb.from('po_documents').select('*').order('created_at', {ascending: false});
-                if(!docs || docs.length === 0) {
-                    throw new Error('No docs');
-                } else {
-                    window.adminPoData = docs;
-                    elDocs.innerHTML = docs.map(d => {
-                        let statusCol = d.status === '完成' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (d.status.includes('異常') ? 'text-red-700 bg-red-100 border-red-200' : 'text-slate-700 bg-slate-100 border-slate-200');
-                        let safeItems = getSafeArray(d.items_json);
-                        let expText = d.exception_reason ? `<div class="text-[10px] bg-red-50 text-red-600 p-1.5 rounded-lg border border-red-100 mt-1 font-bold"><span class="mr-1">🚨</span>異常原因: ${d.exception_reason}</div>` : '';
-                        
-                        return `
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 mb-3 shadow-sm flex flex-col md:flex-row justify-between md:items-center">
-                            <div class="mb-3 md:mb-0">
-                                <div class="flex items-center mb-1">
-                                    <span class="font-mono font-black text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 mr-2">${d.po_no}</span>
-                                    <span class="text-[10px] font-black px-2 py-0.5 rounded border ${statusCol}">${d.status}</span>
-                                </div>
-                                <h4 class="font-black text-base text-slate-800">${d.supplier_name} <span class="text-xs text-slate-500 font-bold ml-1">(${safeItems.length}項原料)</span></h4>
-                                <div class="text-[10px] text-slate-500 mt-1 flex items-center">
-                                    <span class="mr-1">📅</span>建檔: ${new Date(d.created_at).toLocaleDateString()} <span class="mx-2">|</span> <span class="text-red-600 font-bold">🚚 預計到貨: ${d.expected_date||'未定'}</span>
-                                </div>
-                                ${expText}
-                            </div>
-                            <div class="flex items-center space-x-2 md:flex-col md:space-x-0 md:space-y-2 md:items-end">
-                                <button onclick="downloadAdminPO_PDF('${d.id}')" class="flex-1 md:w-32 bg-slate-800 hover:bg-slate-700 text-white text-xs px-4 py-2 rounded-lg font-black shadow-sm transition active:scale-95 flex justify-center items-center"><span class="mr-1">📥</span> 補印 PDF</button>
-                                <div class="flex space-x-2 w-full md:w-auto">
-                                    <button onclick="openAdminEditPO('${d.id}')" class="flex-1 text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-3 py-2 rounded-lg font-bold shadow-sm active:scale-95 transition">✏️ 狀態編輯</button>
-                                    <button onclick="delAdminPODoc('${d.id}')" class="text-xs bg-white border border-red-200 text-red-600 px-3 py-2 rounded-lg font-bold shadow-sm active:scale-95 transition hover:bg-red-50">🗑️</button>
-                                </div>
-                            </div>
-                        </div>`;
-                    }).join('');
+                const { data: r1, error: e1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false});
+                if (!e1 && r1) reqData = r1;
+            } catch(e) {}
+
+            try {
+                const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中', '請購待處理']).order('created_at', {ascending: false});
+                if (r2 && r2.length > 0) {
+                    let oldReqs = r2.filter(x => x.note && x.note.startsWith('REQ-')).map(x => ({
+                        id: x.id,
+                        req_no: x.note,
+                        employee_id: x.employee_id,
+                        employees: x.employees,
+                        items_json: x.raw_materials, 
+                        status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status,
+                        created_at: x.created_at,
+                        is_legacy: true
+                    }));
+                    reqData = [...reqData, ...oldReqs];
                 }
-            } catch(e) { 
-                // 容錯：若 po_documents 未建立，改從 purchase_orders 抓取
-                try {
-                    const { data: pos } = await window._sb.from('purchase_orders').select('*, employees(full_name)').like('note', 'PO-%').order('created_at', {ascending: false});
-                    if (pos && pos.length > 0) {
-                        window.adminPoData = pos.map(x => { let parts = (x.note||'').split('|||'); return { id: x.id, po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', status: x.status, expected_date: x.expected_date || '未定', items_json: x.raw_materials, created_at: x.created_at, is_legacy: true }; });
-                        elDocs.innerHTML = window.adminPoData.map(d => {
-                            let statusCol = d.status === 'PO完成' || d.status === '完成' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (d.status.includes('異常') ? 'text-red-700 bg-red-100 border-red-200' : 'text-slate-700 bg-slate-100 border-slate-200');
-                            let safeItems = getSafeArray(d.items_json);
-                            let dateText = (d.expected_date && d.expected_date !== '未定' && d.expected_date !== null) ? String(d.expected_date).slice(5) : '未定';
-                            return `
-                            <div class="bg-white p-4 rounded-xl border border-slate-200 mb-3 shadow-sm flex flex-col md:flex-row justify-between md:items-center">
-                                <div class="mb-3 md:mb-0">
-                                    <div class="flex items-center mb-1">
-                                        <span class="font-mono font-black text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 mr-2">${d.po_no}</span>
-                                        <span class="text-[10px] font-black px-2 py-0.5 rounded border ${statusCol}">${d.status.replace('PO','')}</span>
-                                    </div>
-                                    <h4 class="font-black text-base text-slate-800">${d.supplier_name} <span class="text-xs text-slate-500 font-bold ml-1">(${safeItems.length}項原料)</span></h4>
-                                    <div class="text-[10px] text-slate-500 mt-1 flex items-center">
-                                        <span class="mr-1">📅</span>建檔: ${new Date(d.created_at).toLocaleDateString()} <span class="mx-2">|</span> <span class="text-red-600 font-bold">🚚 預計到貨: ${dateText}</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-2 md:flex-col md:space-x-0 md:space-y-2 md:items-end">
-                                    <button onclick="downloadAdminPO_PDF('${d.id}', true)" class="flex-1 md:w-32 bg-slate-800 hover:bg-slate-700 text-white text-xs px-4 py-2 rounded-lg font-black shadow-sm transition active:scale-95 flex justify-center items-center"><span class="mr-1">📥</span> 補印 PDF</button>
-                                    <div class="flex space-x-2 w-full md:w-auto">
-                                        <button onclick="openAdminEditPO('${d.id}')" class="flex-1 text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-3 py-2 rounded-lg font-bold shadow-sm active:scale-95 transition">✏️ 狀態編輯</button>
-                                        <button onclick="delAdminPODoc('${d.id}', true)" class="text-xs bg-white border border-red-200 text-red-600 px-3 py-2 rounded-lg font-bold shadow-sm active:scale-95 transition hover:bg-red-50">🗑️</button>
-                                    </div>
-                                </div>
-                            </div>`;
-                        }).join('');
-                    } else { elDocs.innerHTML = '<p class="text-center text-slate-400 font-bold py-6">目前無正式採購單</p>'; }
-                } catch(e2) { elDocs.innerHTML = '<p class="text-center text-slate-400 font-bold py-6">目前無正式採購單</p>'; }
+            } catch(e) { console.error('Fetch Reqs Error:', e); }
+            return reqData;
+        }
+
+        async function fetchSafePOs() {
+            let poData = [];
+            try {
+                const { data: pos } = await window._sb.from('po_documents').select('po_no, supplier_name, status, expected_date, items_json, created_at').order('expected_date', {ascending: true});
+                if (pos && pos.length > 0) {
+                    poData = pos.map(x => {
+                        return {
+                            id: x.id,
+                            po_no: x.po_no,
+                            supplier_name: x.supplier_name,
+                            status: x.status,
+                            expected_date: x.expected_date,
+                            items_json: x.items_json,
+                            created_at: x.created_at,
+                            is_legacy: false
+                        };
+                    });
+                }
+            } catch(e) { console.error('Fetch POs Error:', e); }
+
+            try {
+                const { data: oldPos } = await window._sb.from('purchase_orders').select('*, employees(full_name)').like('note', 'PO-%').order('created_at', {ascending: false});
+                if (oldPos && oldPos.length > 0) {
+                    let legacyPos = oldPos.map(x => {
+                        let parts = x.note.split('|||');
+                        return {
+                            id: x.id,
+                            po_no: parts[0] || 'PO-UNKNOWN',
+                            supplier_name: parts[1] || '未指定供應商',
+                            status: x.status,
+                            expected_date: x.expected_date || '未定',
+                            items_json: x.raw_materials,
+                            created_at: x.created_at,
+                            is_legacy: true
+                        };
+                    });
+                    poData = [...poData, ...legacyPos];
+                }
+            } catch(e) { console.error('Fetch Legacy POs Error:', e); }
+
+            return poData;
+        }
+
+        async function loadDashboardData() {
+            const reqs = await fetchSafeReqs();
+            const reqContainer = document.getElementById('ui-dash-req-status');
+            
+            const thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000);
+            const recentReqs = reqs.filter(r => new Date(r.created_at) >= thirtyDaysAgo);
+
+            if(!recentReqs || recentReqs.length === 0) { reqContainer.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">近期無請購單</td></tr>'; }
+            else {
+                reqContainer.innerHTML = recentReqs.map(r => {
+                    let stCol = r.status === '已完成' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (r.status === '採購中' ? 'text-sky-700 bg-sky-100 border-sky-200' : 'text-amber-700 bg-amber-100 border-amber-200');
+                    return `<tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50">
+                        <td class="p-2 font-mono font-black text-[9px] text-slate-600">${r.req_no.replace('REQ-','')}</td>
+                        <td class="p-2 font-bold text-xs truncate max-w-[60px] text-slate-700">${r.employees?.full_name||'未知'}</td>
+                        <td class="p-2 text-center"><span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${stCol}">${r.status}</span></td>
+                        <td class="p-2 text-right font-bold text-[9px] text-slate-500">${new Date(r.created_at).toLocaleDateString('zh-TW').slice(5)}</td>
+                    </tr>`;
+                }).join('');
             }
 
-            try {
-                let reqData = [];
-                try { 
-                    const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['請購待處理', '待處理', '採購中', '已完成']).order('created_at', {ascending: false}); 
-                    if(r2 && r2.length > 0) { 
-                        let validReqs = r2.filter(x => x.note && (x.note.startsWith('REQ-') || x.status === '請購待處理')); 
-                        reqData = validReqs.map(x => ({ id: x.id, req_no: x.note || ('REQ-OLD-'+x.id.slice(0,4)), employee_id: x.employee_id, employees: x.employees, items_json: x.raw_materials, target_items: x.target_items, status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status, created_at: x.created_at, is_legacy: true })); 
-                    } 
-                } catch(e){}
+            const pos = await fetchSafePOs();
+            const poContainer = document.getElementById('ui-dash-po-status');
+            
+            if(!pos || pos.length === 0) { poContainer.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無進行中的採購單</td></tr>'; }
+            else {
+                const today = new Date(); today.setHours(0,0,0,0);
+                let poHtml = '';
+                pos.forEach(po => {
+                    // 🚨 防彈日期解析：防止 Null 導致 Slice 崩潰
+                    let expDate = new Date(po.expected_date);
+                    let diffDays = isNaN(expDate.getTime()) ? 999 : Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
+                    let statusBadge = ''; let textClass = 'text-slate-700';
+                    
+                    if(po.status === '完成' || po.status === 'PO完成' || po.status === '已到貨') {
+                        statusBadge = '<span class="text-[9px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">完成</span>';
+                        textClass = 'text-emerald-700 font-bold';
+                    } else if (po.status.includes('異常') || po.status.includes('拒收') || po.status.includes('遲交')) {
+                        statusBadge = `<span class="text-[9px] font-black text-white bg-red-600 px-1.5 py-0.5 rounded shadow-sm animate-pulse">${po.status.replace('PO','')}</span>`;
+                        textClass = 'text-red-600 font-black';
+                    } else {
+                        if (diffDays < 0) {
+                            statusBadge = '<span class="text-[9px] font-black text-white bg-red-500 px-1.5 py-0.5 rounded shadow-sm animate-pulse">遲交</span>';
+                            textClass = 'text-red-600 font-black';
+                        } else if (diffDays <= 3) {
+                            statusBadge = '<span class="text-[9px] font-black text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">警示</span>';
+                            textClass = 'text-amber-600 font-black';
+                        } else {
+                            statusBadge = '<span class="text-[9px] font-black text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">已發送</span>';
+                        }
+                    }
 
-                if(reqData.length === 0) {
-                    elDrafts.innerHTML = '<p class="text-center text-slate-400 font-bold py-4">無請購單紀錄</p>';
-                } else {
-                    window.adminReqData = reqData;
-                    elDrafts.innerHTML = reqData.map(r => {
-                        let stBadge = r.status === '已完成' ? '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200 ml-2">已完成</span>' : (r.status === '採購中' ? '<span class="text-[9px] bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded border border-sky-200 ml-2">採購中</span>' : '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200 ml-2">待處理</span>');
-                        let safeReqItems = getSafeArray(r.items_json);
-                        return `
-                        <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm">
-                            <div>
-                                <span class="text-[10px] font-mono font-bold text-slate-400">${r.req_no}</span> ${stBadge}
-                                <div class="text-xs font-black text-slate-700 mt-0.5">${r.employees?.full_name||'未知'} 請購了 ${safeReqItems.length} 項原料</div>
-                            </div>
-                            <div class="flex space-x-1.5">
-                                <button onclick="downloadReqCSV('${r.id}', ${r.is_legacy?true:false})" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-white px-2 py-1.5 rounded-lg shadow-sm font-bold transition">📥 CSV</button>
-                                <button onclick="openAdminEditReq('${r.id}')" class="text-[9px] bg-sky-50 text-sky-700 px-2 py-1.5 rounded-lg font-bold border border-sky-200">✏️</button>
-                                <button onclick="delAdminReq('${r.id}', ${r.is_legacy?true:false})" class="text-[9px] bg-red-50 text-red-600 px-2 py-1.5 rounded-lg font-bold border border-red-200">🗑️</button>
-                            </div>
-                        </div>`;
-                    }).join('');
-                }
-            } catch(e) { elDrafts.innerHTML = '<p class="text-center text-red-400 font-bold py-4">資料讀取異常</p>'; }
+                    // 🚨 防彈設計：確保不會對 Null 執行 Slice
+                    let dateText = (po.expected_date && po.expected_date !== '未定' && po.expected_date !== null) ? String(po.expected_date).slice(5) : '未定';
+
+                    poHtml += `<tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50">
+                        <td class="p-2 font-mono font-black text-[9px] ${textClass}">${po.po_no.replace('PO-','')}</td>
+                        <td class="p-2 font-bold text-xs truncate max-w-[80px] ${textClass}">${po.supplier_name}</td>
+                        <td class="p-2 text-center">${statusBadge}</td>
+                        <td class="p-2 text-center font-bold text-[10px] ${textClass}">${dateText}</td>
+                    </tr>`;
+                });
+                poContainer.innerHTML = poHtml;
+            }
         }
 
         // 🌟 容錯：防彈顯示庫存
@@ -428,8 +456,8 @@
                 renderAdminInventory();
             } catch (err) {
                 console.error(err);
-                document.getElementById('list-inv-mobile').innerHTML = `<p class="text-center text-red-500 py-4 font-bold">資料讀取失敗，請確認已關閉 RLS 防火牆。</p>`;
-                document.getElementById('list-inv-desktop').innerHTML = `<tr><td colspan="5" class="text-center py-6 text-red-500 font-bold">資料讀取失敗，請確認已關閉 RLS 防火牆。</td></tr>`;
+                document.getElementById('list-inv-mobile').innerHTML = `<p class="text-center text-red-500 py-4 font-bold">資料庫權限錯誤，請先執行 RLS 解除 SQL。</p>`;
+                document.getElementById('list-inv-desktop').innerHTML = `<tr><td colspan="5" class="text-center py-6 text-red-500 font-bold">資料庫權限錯誤，請先執行 RLS 解除 SQL。</td></tr>`;
             }
         }
 
@@ -494,4 +522,180 @@
 
         async function saveAdminItem() {
             const id = document.getElementById('edit-item-id').value;
-            let bom
+            let bomData = [];
+            document.querySelectorAll('#admin-bom-table-body tr').forEach(tr => {
+                const mat = tr.querySelector('.bom-mat').value;
+                if(mat) bomData.push({ material: mat, usage: parseFloat(tr.querySelector('.bom-qty').value)||0, unit: tr.querySelector('.bom-unit').value, total_qty: parseFloat(tr.querySelector('.bom-total').value)||0 });
+            });
+            const p = { item_name: document.getElementById('edit-item-name').value, item_code: document.getElementById('edit-item-code').value.toUpperCase(), item_type: document.getElementById('edit-item-type').value, specification: document.getElementById('edit-item-spec').value, qty_per_pack: parseInt(document.getElementById('edit-item-qty').value) || 1, category: document.getElementById('edit-item-cat').value, safe_stock_level: parseInt(document.getElementById('edit-item-safe').value) || 0, lead_time_days: parseInt(document.getElementById('edit-item-lead').value) || 15, stocktake_cycle: parseInt(document.getElementById('edit-item-cycle').value) || 30, bom_data: bomData };
+            const { error } = await window._sb.from('items').update(p).eq('id', id);
+            if(error) alert('修改失敗'); else { alert('✅ 更新成功！'); closeModal('item-edit-modal'); loadAdminInventory(); }
+        }
+
+        async function deleteAdminItem() {
+            const id = document.getElementById('edit-item-id').value;
+            if(!confirm('⚠️ 警告：確定要刪除這個料號嗎？')) return;
+            const { error } = await window._sb.from('items').delete().eq('id', id);
+            if(error) alert('刪除失敗: ' + error.message); else { alert('✅ 成功刪除！'); closeModal('item-edit-modal'); loadAdminInventory(); }
+        }
+
+        function openAdminEditPO(id) {
+            const p = window.adminPoData.find(x => x.id === id); if(!p) return;
+            document.getElementById('admin-po-edit-id').value = p.id;
+            document.getElementById('admin-po-edit-status').value = p.status;
+            document.getElementById('admin-po-edit-reason').value = p.exception_reason || '';
+            togglePoException();
+            openModal('admin-edit-po-modal');
+        }
+
+        function togglePoException() {
+            const st = document.getElementById('admin-po-edit-status').value;
+            const box = document.getElementById('admin-po-exception-box');
+            if(st.includes('異常')) box.classList.remove('hidden');
+            else { box.classList.add('hidden'); document.getElementById('admin-po-edit-reason').value = ''; }
+        }
+
+        async function saveAdminPOEdit() {
+            const id = document.getElementById('admin-po-edit-id').value;
+            const st = document.getElementById('admin-po-edit-status').value;
+            const res = document.getElementById('admin-po-edit-reason').value;
+            if(st.includes('異常') && !res) { alert('請填寫異常說明！'); return; }
+            await safeUpdate('po_documents', { status: st, exception_reason: res }, id);
+            alert('✅ 更新成功'); closeModal('admin-edit-po-modal'); loadAdminPurchase(); 
+        }
+        
+        async function delAdminPODoc(id) { if(confirm('⚠️ 確定刪除這筆正式採購單嗎？')){ await safeDelete('po_documents', id); loadAdminPurchase(); } }
+
+        function openAdminEditReq(id) {
+            const r = window.adminReqData.find(x => x.id === id); if(!r) return;
+            document.getElementById('admin-req-edit-id').value = r.id;
+            document.getElementById('admin-req-edit-islegacy').value = r.is_legacy ? 'true' : 'false';
+            document.getElementById('admin-req-edit-status').value = r.status;
+            openModal('admin-edit-req-modal');
+        }
+
+        async function saveAdminReqEdit() {
+            const id = document.getElementById('admin-req-edit-id').value;
+            const st = document.getElementById('admin-req-edit-status').value;
+            const isLegacy = document.getElementById('admin-req-edit-islegacy').value === 'true';
+            
+            if(isLegacy) { await safeUpdate('purchase_orders', { status: st }, id); } 
+            else { await safeUpdate('requisitions', { status: st }, id); }
+
+            alert('✅ 更新成功'); closeModal('admin-edit-req-modal'); loadAdminPurchase(); 
+        }
+
+        async function downloadAdminPO_PDF(id) {
+            const { data } = await window._sb.from('po_documents').select('*').eq('id', id).single();
+            if(!data) return;
+
+            const supInfo = window.supplierData.find(x => x.supplier_name === data.supplier_name) || {};
+            const dateStr = new Date(data.created_at).toLocaleDateString('zh-TW');
+            let safeItems = getSafeArray(data.items_json);
+
+            let tableRows = safeItems.map((s, i) => `
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 12px; text-align: center;">${i+1}</td>
+                    <td style="padding: 12px; font-weight: bold;">${s.name}</td>
+                    <td style="padding: 12px; text-align: right; color: #d97706; font-weight: bold; font-size: 16px;">${parseFloat(s.qty).toFixed(2)}</td>
+                    <td style="padding: 12px; text-align: center; font-size: 12px; color: #64748b;">${s.unit}</td>
+                    <td style="padding: 12px; text-align: center; color: #ef4444; font-weight: bold;">${data.expected_date}</td>
+                </tr>
+            `).join('');
+
+            const printHtml = `
+                <div style="max-width: 800px; margin: 0 auto; padding: 40px; color: #1e293b; font-family: sans-serif;">
+                    <div style="text-align: center; border-bottom: 4px solid #0f172a; padding-bottom: 20px; margin-bottom: 30px;">
+                        <h1 style="font-size: 36px; font-weight: 900; margin: 0; letter-spacing: 2px;">HYPASS 採購單 (補印)</h1>
+                        <p style="font-size: 14px; color: #64748b; margin-top: 10px; font-weight: bold; letter-spacing: 1px;">PURCHASE ORDER</p>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 14px;">
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; width: 45%;">
+                            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">供應商資訊</h3>
+                            <p style="margin: 5px 0;"><strong>名稱：</strong>${data.supplier_name}</p>
+                            <p style="margin: 5px 0;"><strong>統編：</strong>${supInfo.tax_id||'--'}</p>
+                            <p style="margin: 5px 0;"><strong>聯絡人：</strong>${supInfo.contact_name||'--'} / ${supInfo.contact_phone||'--'}</p>
+                        </div>
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; width: 45%;">
+                            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">單據資訊</h3>
+                            <p style="margin: 5px 0;"><strong>單號：</strong><span style="font-family: monospace; font-weight: bold;">${data.po_no}</span></p>
+                            <p style="margin: 5px 0;"><strong>建檔日：</strong>${dateStr}</p>
+                        </div>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 30px;">
+                        <thead style="background: #1e293b; color: white;"><tr><th style="padding: 12px; text-align: center; width: 50px;">項次</th><th style="padding: 12px; text-align: left;">採購品名/規格</th><th style="padding: 12px; text-align: right;">數量</th><th style="padding: 12px; text-align: center;">單位</th><th style="padding: 12px; text-align: center;">指定到貨日</th></tr></thead>
+                        <tbody>${tableRows}</tbody>
+                    </table>
+                    <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 15px; border-radius: 8px; font-size: 12px; color: #92400e; margin-bottom: 40px;"><strong>備註說明：</strong><br>1. 煩請於指定到貨日前完成交貨，若有延遲請提前告知。<br>2. 請於出貨單/發票上註明本採購單號：${data.po_no}。<br>3. 約定付款方式：${supInfo.payment_method||'依原合約'}。</div>
+                    <div style="display: flex; justify-content: space-between; border-top: 2px solid #1e293b; padding-top: 20px;"><div style="text-align: center; width: 200px;"><p style="margin-bottom: 40px; color: #64748b;">採購主管簽核</p><div style="border-bottom: 1px solid #94a3b8;"></div></div><div style="text-align: center; width: 200px;"><p style="margin-bottom: 40px; color: #64748b;">供應商確認簽回</p><div style="border-bottom: 1px solid #94a3b8;"></div></div></div>
+                </div>
+            `;
+            document.getElementById('admin-print-zone').innerHTML = printHtml;
+            setTimeout(() => { window.print(); }, 150);
+        }
+
+        async function loadAdminFinance() {
+            const el = document.getElementById('list-admin-fin');
+            el.innerHTML = '載入中...';
+            const { data } = await window._sb.from('finance_records').select('*, employees(full_name)').order('payment_date', {ascending: true});
+            if(!data || !data.length) { el.innerHTML = '<p class="text-center text-slate-400 font-bold py-6">目前無對帳紀錄</p>'; return; }
+            
+            el.innerHTML = data.map(r => {
+                let badgeCol = r.status === '已入帳' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : (r.status==='異常'?'text-red-600 bg-red-50 border-red-200':'text-amber-700 bg-amber-50 border-amber-200');
+                return `
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 mb-4 shadow-sm flex flex-col md:flex-row justify-between md:items-center">
+                    <div class="mb-3 md:mb-0">
+                        <div class="text-sm font-black text-slate-800 flex items-center mb-1">
+                            <span class="truncate max-w-[200px]">${r.client_name}</span> 
+                            <span class="text-[10px] font-black border px-2 py-0.5 rounded-md ml-2 ${badgeCol}">${r.status}</span>
+                        </div>
+                        <div class="text-2xl font-black text-blue-700 tracking-tight my-1.5">NT$ ${r.invoice_amount.toLocaleString()}</div>
+                        <div class="text-[10px] text-slate-500 font-bold">業務: ${r.employees?.full_name||'未知'} <span class="mx-1">|</span> 預計: ${r.payment_date} <span class="mx-1">|</span> ${r.payment_method}</div>
+                    </div>
+                    <div class="flex items-center space-x-3 md:flex-col md:space-x-0 md:items-end">
+                        <select onchange="updateAdminFinStatus('${r.id}', this.value)" class="flex-1 md:w-32 md:mb-2 text-xs border border-slate-300 p-2 rounded-lg font-black text-slate-700 outline-none focus:border-blue-500 bg-slate-50">
+                            <option value="待核帳" ${r.status==='待核帳'?'selected':''}>⏳ 待核帳</option>
+                            <option value="已入帳" ${r.status==='已入帳'?'selected':''}>✅ 已入帳結案</option>
+                            <option value="異常" ${r.status==='異常'?'selected':''}>⚠️ 異常/退票</option>
+                        </select>
+                        <button onclick="delAdminFin('${r.id}')" class="text-xs bg-white border border-red-200 text-red-600 px-4 py-2 rounded-lg font-bold shadow-sm active:scale-95">刪除紀錄</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        async function updateAdminFinStatus(id, st) { await safeUpdate('finance_records', {status:st}, id); alert('✅ 核帳狀態已更新！'); }
+        async function delAdminFin(id) { if(confirm('⚠️ 確定刪除這筆對帳單嗎？')){ await safeDelete('finance_records', id); loadAdminFinance(); } }
+
+        async function loadAttendance() {
+            const d = document.getElementById('att-date').value; if(!d) return; 
+            document.getElementById('list-attendance-mobile').innerHTML = '載入中...';
+            document.getElementById('list-attendance-desktop').innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400 font-bold">載入中...</td></tr>';
+            const sT = new Date(d); sT.setHours(0,0,0,0); const eT = new Date(d); eT.setHours(23,59,59,999);
+            const { data: logs } = await window._sb.from('attendance_logs').select('*, employees(id, full_name, work_start_time, work_end_time, employee_no), branch_locations(branch_name)').gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString()).order('punch_time', {ascending: true});
+            const empLogs = {}; 
+            const activeEmps = window.allEmps.filter(e => e.employment_status === '在職');
+            activeEmps.forEach(e => { empLogs[e.id] = { name: e.full_name, eno: e.employee_no, start: e.work_start_time || '09:00:00', end: e.work_end_time || '18:00:00', in: null, out: null }; });
+            if(logs) { logs.forEach(l => { const eid = l.employees?.id; if(!eid || !empLogs[eid]) return; const tStr = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'}); const isRet = l.note && l.note.includes('[補登核准]'); const bName = isRet ? '補登(免定位)' : (l.branch_locations?.branch_name || '外勤定位'); if(l.punch_type === 'IN' && !empLogs[eid].in) empLogs[eid].in = { time: tStr, branch: bName, retro: isRet }; if(l.punch_type === 'OUT') empLogs[eid].out = { time: tStr, branch: bName, retro: isRet }; }); }
+            let htmlM = '', htmlD = '';
+            Object.values(empLogs).forEach(e => {
+                let inStatus = '<span class="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded font-bold ml-2">未打卡</span>';
+                if(e.in) { if(e.in.retro) inStatus = '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold ml-2">補登</span>'; else if(e.in.time > e.start.slice(0,5)) inStatus = '<span class="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold ml-2">遲到</span>'; else inStatus = '<span class="text-[9px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold ml-2">正常</span>'; }
+                let outStatus = '<span class="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded font-bold ml-2">未打卡</span>';
+                if(e.out) { if(e.out.retro) outStatus = '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold ml-2">補登</span>'; else if(e.out.time < e.end.slice(0,5)) outStatus = '<span class="text-[9px] bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded font-bold ml-2">早退</span>'; else outStatus = '<span class="text-[9px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold ml-2">正常</span>'; }
+                htmlM += `<div class="glass-panel p-4 shadow-sm border-l-4 ${e.in&&e.out?'border-emerald-400':'border-slate-200'}"><div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-3"><span class="font-black text-slate-800 text-sm flex items-center">${e.name}</span></div><div class="grid grid-cols-2 gap-3 text-xs"><div class="bg-white p-2.5 rounded-xl border border-slate-100"><div class="font-bold text-slate-500 mb-1 flex justify-between">上班 ${inStatus}</div><div class="font-black ${e.in?'text-slate-800':'text-slate-300'} text-lg">${e.in?e.in.time:'--:--'}</div></div><div class="bg-white p-2.5 rounded-xl border border-slate-100"><div class="font-bold text-slate-500 mb-1 flex justify-between">下班 ${outStatus}</div><div class="font-black ${e.out?'text-slate-800':'text-slate-300'} text-lg">${e.out?e.out.time:'--:--'}</div></div></div></div>`;
+                htmlD += `<tr class="hover:bg-slate-50"><td class="px-6 py-4 font-black text-slate-800">${e.name}</td><td class="px-6 py-4 text-xs font-mono text-slate-500">${e.start.slice(0,5)} ~ ${e.end.slice(0,5)}</td><td class="px-6 py-4"><span class="font-black ${e.in?'text-slate-800':'text-slate-300'} text-base mr-2">${e.in?e.in.time:'--:--'}</span>${inStatus}</td><td class="px-6 py-4"><span class="font-black ${e.out?'text-slate-800':'text-slate-300'} text-base mr-2">${e.out?e.out.time:'--:--'}</span>${outStatus}</td></tr>`;
+            });
+            document.getElementById('list-attendance-mobile').innerHTML = htmlM; document.getElementById('list-attendance-desktop').innerHTML = htmlD;
+        }
+
+        window.onload = function() {
+            if(localStorage.getItem('admin_logged')==='true') {
+                document.getElementById('login-box').style.display='none'; 
+                document.getElementById('dashboard-ui').classList.remove('hidden'); 
+                document.getElementById('dashboard-ui').classList.add('flex');
+                loadAll();
+            }
+        }
+    </script>
+</body>
+</html>
