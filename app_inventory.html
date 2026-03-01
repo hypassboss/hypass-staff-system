@@ -32,9 +32,6 @@
         
         @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         .toast-msg { animation: slideInLeft 0.4s ease-out forwards; }
-
-        .tab-btn { transition: all 0.2s ease; }
-        .tab-btn.active { background-color: #1e293b; color: white; border-color: #1e293b; }
         .subcat-btn { transition: all 0.2s ease; }
         .subcat-btn.active { background-color: #0ea5e9; color: white; border-color: #0ea5e9; }
     </style>
@@ -42,7 +39,6 @@
 <body class="text-slate-800 relative">
     
     <div id="print-zone" style="display:none;"></div>
-    
     <div id="toast-container" class="fixed bottom-24 left-4 z-[9999] flex flex-col space-y-3 pointer-events-none"></div>
 
     <div id="app-container" class="max-w-md mx-auto shadow-2xl relative">
@@ -102,7 +98,6 @@
                         <span class="text-3xl mb-1.5 drop-shadow-md">📜</span>
                         <span class="font-black text-amber-800 text-xs tracking-widest mb-0.5">請購單紀錄</span>
                     </button>
-
                     <button onclick="openView('register', '新增料號與 BOM')" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-sky-200 hover:bg-sky-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">➕</span>
                         <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">新增料號</span>
@@ -123,9 +118,11 @@
                         </button>
                     </div>
 
-                    <div class="flex space-x-2 mb-2">
-                        <button onclick="switchInvType('原料')" id="tab-raw" class="tab-btn active flex-1 py-2.5 rounded-xl font-black text-xs border border-slate-300 bg-slate-800 text-white shadow-sm">🏭 原料</button>
-                        <button onclick="switchInvType('成品')" id="tab-fin" class="tab-btn flex-1 py-2.5 rounded-xl font-black text-xs border border-slate-300 bg-white text-slate-600 shadow-sm">📦 成品</button>
+                    <div class="mb-3">
+                        <select id="inv-type-filter" onchange="switchInvType(this.value)" class="w-full p-3.5 bg-slate-800 text-white rounded-2xl text-sm font-black outline-none select-arrow shadow-md tracking-widest text-center border-2 border-slate-700">
+                            <option value="原料">🏭 原料庫存管理</option>
+                            <option value="成品">📦 成品庫存管理</option>
+                        </select>
                     </div>
 
                     <div id="sub-tabs-raw" class="flex space-x-2 overflow-x-auto no-scrollbar pb-1">
@@ -219,7 +216,7 @@
         let currentInvType = '原料'; 
         let currentInvCat = '全部';
 
-        // 🚨 絕對防彈引擎：保證資料不會因為格式錯誤當機
+        // 🚨 絕對防彈：防止 JSON 與 Null 崩潰
         function getSafeArray(data) { 
             if (!data) return []; 
             if (Array.isArray(data)) return data; 
@@ -241,6 +238,7 @@
             }
         }
 
+        // 🌟 專屬的左側浮動 Toast 通知
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -265,6 +263,7 @@
                 document.getElementById('header-title').innerText = '庫存大廳'; 
                 document.getElementById('btn-back').classList.add('hidden'); 
                 
+                // 返回不清除購物車，保持狀態
                 loadItems();
             });
         }
@@ -276,7 +275,7 @@
             renderItemSearch();
         }
 
-        // 🌟 獨立隔離防彈讀取引擎：就算某個資料表被鎖，其他照樣能讀，絕對不變白！
+        // 🌟 獨立防彈資料庫讀取引擎
         async function fetchSafeReqsForInv() {
             let reqData = [];
             try { const { data: r1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false}); if (r1) reqData = r1; } catch(e) {}
@@ -289,6 +288,8 @@
                     reqData = [...reqData, ...oldReqs];
                 }
             } catch(e) {}
+            
+            // Sort merged array by created_at descending
             reqData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             return reqData;
         }
@@ -336,79 +337,83 @@
             const isLegacy = document.getElementById('inv-req-edit-islegacy').value === 'true';
             
             try {
-                if(isLegacy) { await window._sb.from('purchase_orders').update({ status: st }).eq('id', id); } 
-                else { await window._sb.from('requisitions').update({ status: st }).eq('id', id); }
+                if(isLegacy) { 
+                    const { error } = await window._sb.from('purchase_orders').update({ status: st }).eq('id', id); 
+                    if(error) throw error;
+                } else { 
+                    const { error } = await window._sb.from('requisitions').update({ status: st }).eq('id', id); 
+                    if(error) throw error;
+                }
                 alert('✅ 狀態已更新，並同步至後台與採購中心！'); 
                 closeModal('inv-req-edit-modal'); 
                 openInvReqHistory(); 
-            } catch(e) { alert('更新失敗'); }
+            } catch(e) { alert('更新失敗: ' + e.message); }
         }
 
         async function delInvReq(id, isLegacy) { 
             if(confirm('⚠️ 確定要刪除這筆請購單嗎？\n此動作會同步刪除後台與採購中心的紀錄。')){ 
                 try {
-                    if(isLegacy) await window._sb.from('purchase_orders').delete().eq('id', id);
-                    else await window._sb.from('requisitions').delete().eq('id', id);
+                    if(isLegacy) {
+                        const { error } = await window._sb.from('purchase_orders').delete().eq('id', id);
+                        if(error) throw error;
+                    } else {
+                        const { error } = await window._sb.from('requisitions').delete().eq('id', id);
+                        if(error) throw error;
+                    }
                     openInvReqHistory(); 
-                } catch(e) { alert('刪除失敗'); }
+                } catch(e) { alert('刪除失敗: ' + e.message); }
             } 
         }
 
-        // 🚨 所有資料讀取皆為獨立 try...catch，避免單一錯誤導致全版空白
         async function loadItems() {
             try {
                 const { data, error: itemErr } = await window._sb.from('items').select('*').order('created_at', {ascending: false}); 
-                if(itemErr) throw new Error(itemErr.message);
+                if(itemErr) {
+                    document.getElementById('ui-filter-status-table').innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500 font-bold">讀取失敗，請確認已執行 SQL 解除 RLS</td></tr>`;
+                    return;
+                }
                 allItems = data || [];
-            } catch(e) { console.error('Items failed', e); allItems = []; }
-            
-            let stockMap = {}; 
-            try {
+                
                 const { data: ledgers } = await window._sb.from('inventory_ledgers').select('item_id, change_qty');
-                if(ledgers) ledgers.forEach(l => { if(!stockMap[l.item_id]) stockMap[l.item_id] = 0; stockMap[l.item_id] += l.change_qty; });
-            } catch(e) {}
-
-            window.latestChecks = {}; 
-            try {
+                let stockMap = {}; if(ledgers) ledgers.forEach(l => { if(!stockMap[l.item_id]) stockMap[l.item_id] = 0; stockMap[l.item_id] += l.change_qty; });
+                
                 const { data: checks } = await window._sb.from('inventory_ledgers').select('item_id, created_at, employees(full_name)').eq('action_type', '盤點').order('created_at', {ascending: false});
+                window.latestChecks = {}; 
                 if(checks) { checks.forEach(c => { if(!window.latestChecks[c.item_id]) { window.latestChecks[c.item_id] = { rawDate: c.created_at, date: new Date(c.created_at).toLocaleDateString('zh-TW'), emp: c.employees?.full_name || '未知' }; } }); }
-            } catch(e) {}
 
-            let pendingReqs = {};
-            try {
-                const { data: reqs } = await window._sb.from('requisitions').select('items_json').in('status', ['待處理', '採購中']);
-                if (reqs) { reqs.forEach(req => { let itemsArr = getSafeArray(req.items_json); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
-            } catch(e) {}
-            try {
-                const { data: reqs2 } = await window._sb.from('purchase_orders').select('raw_materials').in('status', ['請購待處理', '待處理', '採購中']);
-                if (reqs2) { reqs2.forEach(req => { let itemsArr = getSafeArray(req.raw_materials); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
-            } catch(e) {}
+                let pendingReqs = {};
+                try {
+                    const { data: reqs, error: reqErr } = await window._sb.from('requisitions').select('items_json').in('status', ['待處理', '採購中']);
+                    if (!reqErr && reqs) { reqs.forEach(req => { let itemsArr = getSafeArray(req.items_json); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
+                } catch(e) {}
+                
+                try {
+                    const { data: reqs2, error: reqErr2 } = await window._sb.from('purchase_orders').select('raw_materials').in('status', ['請購待處理', '待處理', '採購中']);
+                    if (!reqErr2 && reqs2) { reqs2.forEach(req => { let itemsArr = getSafeArray(req.raw_materials); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
+                } catch(e) {}
 
-            let pendingPOs = {};
-            try {
-                const { data: pos } = await window._sb.from('po_documents').select('items_json, expected_date').in('status', ['已發送', '已下單', '異常(遲交)']);
-                if (pos) { pos.forEach(po => { let poItems = getSafeArray(po.items_json); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
-            } catch(e) {}
-            try {
-                const { data: pos2 } = await window._sb.from('purchase_orders').select('raw_materials, expected_date').like('note', 'PO-%');
-                if (pos2) { pos2.forEach(po => { let poItems = getSafeArray(po.raw_materials); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
-            } catch(e) {}
-            
-            // 安全渲染 UI
-            try {
+                let pendingPOs = {};
+                try {
+                    const { data: pos, error: posErr } = await window._sb.from('po_documents').select('items_json, expected_date').in('status', ['已發送', '已下單', '異常(遲交)']);
+                    if (!posErr && pos) { pos.forEach(po => { let poItems = getSafeArray(po.items_json); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
+                } catch(e) {}
+                
+                try {
+                    const { data: pos2, error: posErr2 } = await window._sb.from('purchase_orders').select('raw_materials, expected_date').like('note', 'PO-%');
+                    if (!posErr2 && pos2) { pos2.forEach(po => { let poItems = getSafeArray(po.raw_materials); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
+                } catch(e) {}
+                
                 let lowCount = 0;
                 const cats = [...new Set(allItems.map(i => i.category || '未分類'))];
                 const catOptions = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+                document.getElementById('inv-cat-filter').innerHTML = catOptions;
                 
-                const filterIds = ['inv-cat-filter', 'search-cat-filter', 'fe-item-cat'];
-                filterIds.forEach(id => {
-                    let el = document.getElementById(id);
-                    if(el) {
-                        let curVal = el.value;
-                        el.innerHTML = catOptions;
-                        if(curVal) el.value = curVal;
-                    }
-                });
+                const searchCatFilter = document.getElementById('search-cat-filter');
+                const currentSearchCat = searchCatFilter.value;
+                searchCatFilter.innerHTML = catOptions;
+                if(currentSearchCat) searchCatFilter.value = currentSearchCat;
+
+                document.getElementById('fe-item-cat').innerHTML = catOptions;
 
                 const nowD = new Date();
                 let overdueItems = [];
@@ -477,6 +482,7 @@
                             let poInfo = pendingPOs[i.item_name];
                             if(poInfo && poInfo.qty > 0) {
                                 qtyHtml = `<span class="font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded shadow-sm border border-amber-100">${poInfo.qty.toFixed(0)}</span>`;
+                                // 🚨 防彈設計：過濾 null 或 無效日期
                                 let dateStr = (poInfo.eta && poInfo.eta !== '未定' && poInfo.eta !== null) ? String(poInfo.eta).slice(5) : '未定';
                                 etaHtml = dateStr !== '未定' ? `<span class="text-amber-600 font-bold">${dateStr}</span>` : `<span class="text-slate-400 font-bold">未定</span>`;
                             }
@@ -498,10 +504,16 @@
                 if (uiFilterStatusTable) uiFilterStatusTable.innerHTML = filterHtml;
 
                 if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
+                
+                // 🚨 強制呼叫渲染清單，確保不變白
                 if(document.getElementById('view-inventory-list').classList.contains('active')) renderFilteredInventory();
 
-            } catch(uiError) {
-                console.error("UI 渲染失敗", uiError);
+            } catch(fatalError) {
+                console.error("資料讀取失敗", fatalError);
+                const tableEl = document.getElementById('ui-filter-status-table');
+                if (tableEl) {
+                    tableEl.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500 font-bold">讀取失敗: ${fatalError.message}</td></tr>`;
+                }
             }
         }
 
@@ -514,20 +526,29 @@
             updateTopReqBar(); 
         }
 
+        // 🌟 升級版：支援下拉選單切換
         function switchInvType(type) {
             currentInvType = type;
             currentInvCat = '全部';
-            document.getElementById('tab-raw').classList.toggle('active', type === '原料');
-            document.getElementById('tab-raw').classList.toggle('bg-slate-800', type === '原料');
-            document.getElementById('tab-raw').classList.toggle('text-white', type === '原料');
-            document.getElementById('tab-raw').classList.toggle('bg-white', type !== '原料');
-            document.getElementById('tab-raw').classList.toggle('text-slate-600', type !== '原料');
+            
+            // Handle the visual tabs if they still exist (kept for backward compatibility, but dropdown is primary)
+            const tabRaw = document.getElementById('tab-raw');
+            if(tabRaw) {
+                tabRaw.classList.toggle('active', type === '原料');
+                tabRaw.classList.toggle('bg-slate-800', type === '原料');
+                tabRaw.classList.toggle('text-white', type === '原料');
+                tabRaw.classList.toggle('bg-white', type !== '原料');
+                tabRaw.classList.toggle('text-slate-600', type !== '原料');
+            }
 
-            document.getElementById('tab-fin').classList.toggle('active', type === '成品');
-            document.getElementById('tab-fin').classList.toggle('bg-slate-800', type === '成品');
-            document.getElementById('tab-fin').classList.toggle('text-white', type === '成品');
-            document.getElementById('tab-fin').classList.toggle('bg-white', type !== '成品');
-            document.getElementById('tab-fin').classList.toggle('text-slate-600', type !== '成品');
+            const tabFin = document.getElementById('tab-fin');
+            if(tabFin) {
+                tabFin.classList.toggle('active', type === '成品');
+                tabFin.classList.toggle('bg-slate-800', type === '成品');
+                tabFin.classList.toggle('text-white', type === '成品');
+                tabFin.classList.toggle('bg-white', type !== '成品');
+                tabFin.classList.toggle('text-slate-600', type !== '成品');
+            }
 
             if(type === '原料') {
                 document.getElementById('sub-tabs-raw').classList.remove('hidden');
@@ -582,6 +603,7 @@
             renderInventoryListUI(filtered);
         }
 
+        // 🌟 完美黃金比例卡片，無編號
         function renderInventoryListUI(data) {
             const container = document.getElementById('ui-inventory-list');
             if(!container) return; 
@@ -603,8 +625,8 @@
                 <div class="p-4 rounded-xl border-2 ${borderClass} flex flex-col mb-3 relative shadow-sm">
                     <div class="flex justify-between items-start mb-2">
                         <div class="flex space-x-1.5 flex-wrap gap-y-1 pr-14">
-                            <span class="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 shadow-sm"><span class="font-bold text-slate-400 mr-0.5">1.類別:</span> ${i.category||'未分類'}</span>
-                            <span class="text-[9px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-100 shadow-sm"><span class="font-bold text-indigo-400 mr-0.5">3.倉別:</span> ${i.item_type}</span>
+                            <span class="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 shadow-sm"><span class="font-bold text-slate-400 mr-0.5">類別:</span> ${i.category||'未分類'}</span>
+                            <span class="text-[9px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-100 shadow-sm"><span class="font-bold text-indigo-400 mr-0.5">倉別:</span> ${i.item_type}</span>
                         </div>
                         <label class="absolute top-3 right-3 flex items-center space-x-1 cursor-pointer bg-sky-600 px-2.5 py-1.5 rounded-lg shadow-md z-10 hover:bg-sky-700 transition">
                             <input type="checkbox" class="w-3.5 h-3.5 accent-white" onchange="toggleReq('${i.id}', this)" ${inCart}>
@@ -612,18 +634,18 @@
                         </label>
                     </div>
                     
-                    <h4 class="font-black text-base text-slate-800 mb-1 leading-tight"><span class="text-[11px] text-slate-400 mr-1 font-bold">2.品名:</span>${i.item_name}</h4>
-                    <p class="text-[11px] text-slate-500 font-bold mb-4 truncate"><span class="text-[9px] text-slate-400 mr-1">4.規格:</span>${i.specification || '無'}</p>
+                    <h4 class="font-black text-base text-slate-800 mb-1 leading-tight"><span class="text-[11px] text-slate-400 mr-1 font-bold">品名:</span>${i.item_name}</h4>
+                    <p class="text-[11px] text-slate-500 font-bold mb-4 truncate"><span class="text-[9px] text-slate-400 mr-1">規格:</span>${i.specification || '無'}</p>
                     
                     <div class="grid grid-cols-2 gap-3 text-[11px] bg-slate-50 p-3 rounded-xl mb-3 border border-slate-100 shadow-inner">
-                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">5.生產週期:</span> <span class="font-black text-slate-700">${i.lead_time_days}天</span></div>
-                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">6.盤點週期:</span> <span class="font-black text-slate-700">${i.stocktake_cycle}天</span></div>
-                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">7.低水警示:</span> <span class="font-black text-red-500">${safe}</span></div>
-                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">8.現有庫存:</span> <span class="font-black text-xl tracking-tight ${stockColor}">${i.current_stock}</span></div>
+                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">生產週期:</span> <span class="font-black text-slate-700">${i.lead_time_days}天</span></div>
+                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">盤點週期:</span> <span class="font-black text-slate-700">${i.stocktake_cycle}天</span></div>
+                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">低水警示:</span> <span class="font-black text-red-500">${safe}</span></div>
+                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">現有庫存:</span> <span class="font-black text-xl tracking-tight ${stockColor}">${i.current_stock}</span></div>
                     </div>
 
                     <div class="text-[10px] text-slate-500 font-bold border-t border-slate-100 pt-2 flex items-center">
-                        <span class="mr-1 tracking-wider">9.最新盤點:</span> ${lastCheckText}
+                        <span class="mr-1 tracking-wider">最新盤點:</span> ${lastCheckText}
                     </div>
                 </div>`;
             }).join('');
@@ -695,7 +717,6 @@
             const reqNo = 'REQ-' + new Date().getFullYear() + String(new Date().getMonth()+1).padStart(2,'0') + String(new Date().getDate()).padStart(2,'0') + '-' + Math.floor(Math.random()*1000).toString().padStart(3,'0');
             const userName = window.currentUser?.full_name || '系統使用者';
             
-            // 🚨 強制下載 CSV
             try {
                 let csv = "\uFEFF請購單號,申請日期,申請人,請購項目,生產/請購數量,展開原料名稱,需求總量,單位\n";
                 const dateStr = new Date().toLocaleDateString('zh-TW');
@@ -713,7 +734,6 @@
                 console.error('CSV生成失敗:', csvErr); 
             }
 
-            // 🚨 強制寫入資料庫，如果新表不存在，自動寫入舊表
             try {
                 const payload = { req_no: reqNo, employee_id: window.currentUser?.id || null, target_items: targetItems, items_json: rawMaterials, status: '待處理' };
                 try {
