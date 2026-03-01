@@ -139,7 +139,7 @@
             <div id="view-history" class="view-panel space-y-4">
                 <div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-slate-700 relative pb-10">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">🗂️</span>請/採購紀錄中心</h3>
+                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">🗂️</span>請購單、採購單記錄中心</h3>
                     </div>
                     
                     <div class="mb-6">
@@ -148,7 +148,7 @@
                     </div>
 
                     <div>
-                        <h4 class="text-[11px] font-black text-amber-700 border-b border-amber-200 pb-1 mb-3">📤 對外採購單紀錄 (可編輯/刪除)</h4>
+                        <h4 class="text-[11px] font-black text-amber-700 border-b border-amber-200 pb-1 mb-3">📤 對外採購單紀錄 (可編輯/預覽/刪除)</h4>
                         <div id="ui-hist-po" class="space-y-3 max-h-64 overflow-y-auto no-scrollbar pr-1"></div>
                     </div>
                 </div>
@@ -169,23 +169,10 @@
     <script>
         window.supplierData = []; let pendingMats = [];
 
-        // 🚨 絕對防彈：防止 JSON 崩潰
-        function getSafeArray(data) { 
-            if (!data) return []; 
-            if (Array.isArray(data)) return data; 
-            try { 
-                let parsed = (typeof data === 'string') ? JSON.parse(data) : data;
-                return Array.isArray(parsed) ? parsed : [];
-            } catch(e) { return []; } 
-        }
+        function getSafeArray(data) { if (!data) return []; if (Array.isArray(data)) return data; try { let p = (typeof data === 'string') ? JSON.parse(data) : data; return Array.isArray(p) ? p : []; } catch(e) { return []; } }
 
-        // 🚨 絕對防彈：寫入隔離
-        async function safeUpdate(table, payload, id) {
-            try { await window._sb.from(table).update(payload).eq('id', id); } catch(e) { console.error(`Update ${table} failed`, e); }
-        }
-        async function safeDelete(table, id) {
-            try { await window._sb.from(table).delete().eq('id', id); } catch(e) { console.error(`Delete ${table} failed`, e); }
-        }
+        async function safeUpdate(table, payload, id) { try { await window._sb.from(table).update(payload).eq('id', id); } catch(e) {} }
+        async function safeDelete(table, id) { try { await window._sb.from(table).delete().eq('id', id); } catch(e) {} }
 
         async function bootPurchase() {
             const isAuth = await authGuard('purchase'); 
@@ -219,14 +206,9 @@
             loadDashboardData();
         }
 
-        // 🌟 自動容錯：雙軌掃描舊表 purchase_orders 與新表 requisitions
         async function fetchSafeReqs() {
             let reqData = [];
-            try { 
-                const { data: r1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false}); 
-                if (r1) reqData = r1; 
-            } catch(e) {}
-
+            try { const { data: r1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false}); if (r1) reqData = r1; } catch(e) {}
             try {
                 const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中', '請購待處理', '已完成', '取消']).order('created_at', {ascending: false});
                 if (r2 && r2.length > 0) {
@@ -236,18 +218,13 @@
                     reqData = [...reqData, ...oldReqs];
                 }
             } catch(e) {}
-
             reqData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             return reqData;
         }
 
         async function fetchSafePOs() {
             let poData = [];
-            try { 
-                const { data: p1 } = await window._sb.from('po_documents').select('*').order('created_at', {ascending: false}); 
-                if (p1) poData = p1.map(x => ({ ...x, is_legacy: false })); 
-            } catch(e) {}
-
+            try { const { data: p1 } = await window._sb.from('po_documents').select('*').order('created_at', {ascending: false}); if (p1) poData = p1.map(x => ({ ...x, is_legacy: false })); } catch(e) {}
             try {
                 const { data: pos } = await window._sb.from('purchase_orders').select('*, employees(full_name)').like('note', 'PO-%').order('created_at', {ascending: false});
                 if (pos && pos.length > 0) {
@@ -258,7 +235,6 @@
                     poData = [...poData, ...oldPos];
                 }
             } catch(e) {}
-            
             poData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             return poData;
         }
@@ -267,7 +243,6 @@
             try {
                 const reqs = await fetchSafeReqs();
                 const reqContainer = document.getElementById('ui-dash-req-status');
-                
                 const thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000);
                 const recentReqs = reqs.filter(r => new Date(r.created_at) >= thirtyDaysAgo);
 
@@ -292,7 +267,6 @@
                     const today = new Date(); today.setHours(0,0,0,0);
                     let poHtml = '';
                     pos.forEach(po => {
-                        // 🚨 防彈日期解析：防止 Null 導致 Slice 崩潰
                         let expDate = new Date(po.expected_date);
                         let diffDays = isNaN(expDate.getTime()) ? 999 : Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
                         let statusBadge = ''; let textClass = 'text-slate-700';
@@ -315,7 +289,6 @@
                             }
                         }
 
-                        // 防彈：確保不會對 Null 執行 Slice
                         let dateText = (po.expected_date && po.expected_date !== '未定' && po.expected_date !== null) ? String(po.expected_date).slice(5) : '未定';
 
                         poHtml += `<tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50">
@@ -327,13 +300,7 @@
                     });
                     poContainer.innerHTML = poHtml;
                 }
-            } catch(e) { document.getElementById('ui-dash-req-status').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500 font-bold">請先至 Supabase 執行 SQL 解除權限</td></tr>'; }
-        }
-
-        async function saveSupplier(e) {
-            e.preventDefault();
-            const p = { supplier_name: document.getElementById('s-name').value, supplier_code: document.getElementById('s-code').value.toUpperCase(), tax_id: document.getElementById('s-tax').value, contact_name: document.getElementById('s-contact').value, contact_phone: document.getElementById('s-phone').value, payment_method: document.getElementById('s-pay').value, bank_details: document.getElementById('s-bank').value };
-            try { await window._sb.from('suppliers').insert([p]); alert('✅ 供應商建立成功！'); e.target.reset(); await loadSuppliers(); backToDash(); } catch(err) { alert('儲存失敗'); }
+            } catch(e) {}
         }
 
         async function openReqManagement() {
@@ -497,10 +464,15 @@
                 }
             } catch(e) { console.log('Update req error', e); }
 
+            // 🚨 自動跳出預覽畫面 (列印對話框)
             document.getElementById('po-print-zone').innerHTML = printHtml;
-            setTimeout(() => { window.print(); alert('✅ 正式採購單 (PDF) 已生成！\n原請購單已結案。'); backToDash(); }, 300);
+            setTimeout(() => { 
+                window.print(); 
+                backToDash(); 
+            }, 300);
         }
 
+        // 🌟 記錄中心，新增檢視 PDF 功能
         async function openHistory() {
             openView('history', '🗂️ 請/採購紀錄中心');
             const elReq = document.getElementById('ui-hist-req');
@@ -510,53 +482,144 @@
             const reqs = await fetchSafeReqs();
             if(reqs && reqs.length > 0) {
                 elReq.innerHTML = reqs.map(r => `
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
-                        <div>
-                            <span class="text-[10px] font-mono font-bold text-slate-500">${r.req_no}</span>
-                            <span class="text-[9px] font-black ml-1 text-sky-700 bg-sky-50 px-1 rounded">${r.status}</span>
-                            <p class="text-xs font-black text-slate-700 mt-0.5">${r.employees?.full_name||'未知'} 的需求</p>
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center mb-3">
+                        <div class="flex-1 pr-2">
+                            <span class="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 mr-1">${r.req_no.replace('REQ-','')}</span>
+                            <span class="text-[9px] font-black text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-100">${r.status}</span>
+                            <p class="text-xs font-black text-slate-800 mt-1">${r.employees?.full_name||'未知'}</p>
                         </div>
-                        <div class="flex flex-col space-y-1">
-                            <select onchange="updateReqStatus('${r.id}', this.value, ${r.is_legacy?true:false})" class="text-[9px] p-1 border border-slate-300 rounded outline-none font-bold">
+                        <div class="flex flex-col space-y-1.5 w-24">
+                            <select onchange="updateReqStatus('${r.id}', this.value, ${r.is_legacy?true:false})" class="w-full text-[10px] p-1.5 border border-slate-300 rounded-lg outline-none font-bold bg-slate-50 focus:border-amber-500">
                                 <option value="待處理" ${r.status==='待處理'?'selected':''}>待處理</option>
                                 <option value="採購中" ${r.status==='採購中'?'selected':''}>採購中</option>
                                 <option value="已完成" ${r.status==='已完成'?'selected':''}>已完成</option>
-                                <option value="取消" ${r.status==='取消'?'selected':''}>取消</option>
+                                <option value="取消" ${r.status==='取消'?'selected':''}>取消作廢</option>
                             </select>
-                            <button onclick="delReq('${r.id}', ${r.is_legacy?true:false})" class="text-[9px] text-red-600 bg-red-50 px-2 py-1 rounded font-bold">刪除</button>
+                            <button onclick="delReq('${r.id}', ${r.is_legacy?true:false})" class="w-full text-[10px] text-red-600 bg-white border border-red-200 py-1.5 rounded-lg font-bold shadow-sm active:scale-95 transition">🗑️ 刪除</button>
                         </div>
                     </div>
                 `).join('');
-            } else { elReq.innerHTML = '<p class="text-xs text-slate-400">無紀錄</p>'; }
+            } else { elReq.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center">無紀錄</p>'; }
 
             const pos = await fetchSafePOs();
             if(pos && pos.length > 0) {
                 elPo.innerHTML = pos.map(p => `
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
-                        <div>
-                            <span class="text-[10px] font-mono font-bold text-slate-500">${p.po_no}</span>
-                            <span class="text-[9px] font-black ml-1 text-amber-700 bg-amber-50 px-1 rounded">${p.status.replace('PO','')}</span>
-                            <p class="text-xs font-black text-slate-700 mt-0.5 truncate max-w-[120px]">${p.supplier_name}</p>
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center mb-3">
+                        <div class="flex-1 pr-2">
+                            <span class="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 mr-1">${p.po_no.replace('PO-','')}</span>
+                            <span class="text-[9px] font-black text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">${p.status.replace('PO','')}</span>
+                            <p class="text-xs font-black text-slate-800 mt-1 truncate">${p.supplier_name}</p>
                         </div>
-                        <div class="flex flex-col space-y-1">
-                            <select onchange="updatePOStatus('${p.id}', this.value, ${p.is_legacy?true:false})" class="text-[9px] p-1 border border-slate-300 rounded outline-none font-bold">
+                        <div class="flex flex-col space-y-1.5 w-24">
+                            <button onclick="downloadAdminPO_PDF('${p.id}', ${p.is_legacy?true:false})" class="w-full text-[10px] bg-slate-800 text-white py-1.5 rounded-lg font-bold shadow-sm active:scale-95 transition">📄 檢視PDF</button>
+                            <select onchange="updatePOStatus('${p.id}', this.value, ${p.is_legacy?true:false})" class="w-full text-[10px] p-1.5 border border-slate-300 rounded-lg outline-none font-bold bg-slate-50 focus:border-amber-500">
                                 <option value="已發送" ${p.status==='已發送'?'selected':''}>已發送</option>
                                 <option value="完成" ${p.status==='完成'?'selected':''}>完成</option>
                                 <option value="異常(遲交)" ${p.status==='異常(遲交)'?'selected':''}>異常(遲交)</option>
                                 <option value="異常(拒收)" ${p.status==='異常(拒收)'?'selected':''}>異常(拒收)</option>
-                                <option value="取消" ${p.status==='取消'?'selected':''}>取消</option>
                             </select>
-                            <button onclick="delPO('${p.id}', ${p.is_legacy?true:false})" class="text-[9px] text-red-600 bg-red-50 px-2 py-1 rounded font-bold">刪除</button>
+                            <button onclick="delPO('${p.id}', ${p.is_legacy?true:false})" class="w-full text-[10px] text-red-600 bg-white border border-red-200 py-1.5 rounded-lg font-bold shadow-sm active:scale-95 transition">🗑️ 刪除</button>
                         </div>
                     </div>
                 `).join('');
-            } else { elPo.innerHTML = '<p class="text-xs text-slate-400">無紀錄</p>'; }
+            } else { elPo.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center">無紀錄</p>'; }
         }
 
-        async function updateReqStatus(id, st, isLegacy) { if(isLegacy) await safeUpdate('purchase_orders', {status:st}, id); else await safeUpdate('requisitions', {status:st}, id); alert('更新成功'); loadDashboardData(); }
-        async function delReq(id, isLegacy) { if(confirm('確定刪除這筆請購單?')) { if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('requisitions', id); openHistory(); loadDashboardData(); } }
-        async function updatePOStatus(id, st, isLegacy) { if(isLegacy) await safeUpdate('purchase_orders', {status:'PO'+st}, id); else await safeUpdate('po_documents', {status:st}, id); alert('更新成功'); loadDashboardData(); }
-        async function delPO(id, isLegacy) { if(confirm('確定刪除這筆採購單?')) { if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('po_documents', id); openHistory(); loadDashboardData(); } }
+        async function updateReqStatus(id, st, isLegacy) { try{if(isLegacy) await safeUpdate('purchase_orders', {status:st}, id); else await safeUpdate('requisitions', {status:st}, id); alert('✅ 狀態已更新'); loadDashboardData();}catch(e){} }
+        async function delReq(id, isLegacy) { if(confirm('⚠️ 確定刪除這筆請購單?')) { try{if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('requisitions', id); openHistory(); loadDashboardData();}catch(e){} } }
+        async function updatePOStatus(id, st, isLegacy) { try{if(isLegacy) await safeUpdate('purchase_orders', {status:'PO'+st}, id); else await safeUpdate('po_documents', {status:st}, id); alert('✅ 狀態已更新'); loadDashboardData();}catch(e){} }
+        async function delPO(id, isLegacy) { if(confirm('⚠️ 確定刪除這筆採購單?')) { try{if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('po_documents', id); openHistory(); loadDashboardData();}catch(e){} } }
+
+        // 🌟 檢視/補印歷史 PDF
+        async function downloadAdminPO_PDF(id, isLegacy) {
+            let poData = null;
+            try { 
+                if (isLegacy) { 
+                    const { data } = await window._sb.from('purchase_orders').select('*').eq('id', id).single(); 
+                    if(data) {
+                        let parts = (data.note||'').split('|||');
+                        poData = { po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', expected_date: data.expected_date, items_json: data.raw_materials, created_at: data.created_at };
+                    }
+                }
+                else { 
+                    const { data } = await window._sb.from('po_documents').select('*').eq('id', id).single(); 
+                    poData = data; 
+                }
+            } catch(e){}
+
+            if(!poData) { alert('載入 PDF 資料失敗'); return; }
+
+            const supInfo = window.supplierData.find(x => x.supplier_name === poData.supplier_name) || {};
+            const dateStr = new Date(poData.created_at).toLocaleDateString('zh-TW');
+            let safeItems = getSafeArray(poData.items_json);
+
+            let tableRows = safeItems.map((s, i) => `
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 12px; text-align: center;">${i+1}</td>
+                    <td style="padding: 12px; font-weight: bold;">${s.name}</td>
+                    <td style="padding: 12px; text-align: right; color: #d97706; font-weight: bold; font-size: 16px;">${parseFloat(s.qty).toFixed(2)}</td>
+                    <td style="padding: 12px; text-align: center; font-size: 12px; color: #64748b;">${s.unit}</td>
+                    <td style="padding: 12px; text-align: center; color: #ef4444; font-weight: bold;">${s.expected_date || poData.expected_date || '未定'}</td>
+                </tr>
+            `).join('');
+
+            const printHtml = `
+                <div class="print-break" style="max-width: 800px; margin: 0 auto; padding: 40px; color: #1e293b; font-family: sans-serif;">
+                    <div style="text-align: center; border-bottom: 4px solid #0f172a; padding-bottom: 20px; margin-bottom: 30px;">
+                        <h1 style="font-size: 36px; font-weight: 900; margin: 0; letter-spacing: 2px;">HYPASS 採購單</h1>
+                        <p style="font-size: 14px; color: #64748b; margin-top: 10px; font-weight: bold; letter-spacing: 1px;">PURCHASE ORDER</p>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 14px;">
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; width: 45%;">
+                            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">供應商資訊</h3>
+                            <p style="margin: 5px 0;"><strong>名稱：</strong>${poData.supplier_name}</p>
+                            <p style="margin: 5px 0;"><strong>統編：</strong>${supInfo.tax_id||'--'}</p>
+                            <p style="margin: 5px 0;"><strong>聯絡人：</strong>${supInfo.contact_name||'--'} / ${supInfo.contact_phone||'--'}</p>
+                        </div>
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; width: 45%;">
+                            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">單據資訊</h3>
+                            <p style="margin: 5px 0;"><strong>單號：</strong><span style="font-family: monospace; font-weight: bold;">${poData.po_no}</span></p>
+                            <p style="margin: 5px 0;"><strong>日期：</strong>${dateStr}</p>
+                        </div>
+                    </div>
+
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 30px;">
+                        <thead style="background: #1e293b; color: white;">
+                            <tr>
+                                <th style="padding: 12px; text-align: center; width: 50px;">項次</th>
+                                <th style="padding: 12px; text-align: left;">採購品名/規格</th>
+                                <th style="padding: 12px; text-align: right;">數量</th>
+                                <th style="padding: 12px; text-align: center;">單位</th>
+                                <th style="padding: 12px; text-align: center;">指定到貨日</th>
+                            </tr>
+                        </thead>
+                        <tbody>${tableRows}</tbody>
+                    </table>
+
+                    <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 15px; border-radius: 8px; font-size: 12px; color: #92400e; margin-bottom: 40px;">
+                        <strong>備註說明：</strong><br>
+                        1. 煩請於指定到貨日前完成交貨，若有延遲請提前告知。<br>
+                        2. 請於出貨單/發票上註明本採購單號：${poData.po_no}。<br>
+                        3. 約定付款方式：${supInfo.payment_method||'依原合約'}。
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; border-top: 2px solid #1e293b; padding-top: 20px;">
+                        <div style="text-align: center; width: 200px;">
+                            <p style="margin-bottom: 40px; color: #64748b;">採購主管簽核</p>
+                            <div style="border-bottom: 1px solid #94a3b8;"></div>
+                        </div>
+                        <div style="text-align: center; width: 200px;">
+                            <p style="margin-bottom: 40px; color: #64748b;">供應商確認簽回</p>
+                            <div style="border-bottom: 1px solid #94a3b8;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('po-print-zone').innerHTML = printHtml;
+            setTimeout(() => { window.print(); }, 150);
+        }
 
         window.onload = bootPurchase;
 
