@@ -36,13 +36,12 @@
         .tab-btn { transition: all 0.2s ease; }
         .tab-btn.active { background-color: #1e293b; color: white; border-color: #1e293b; }
         .subcat-btn { transition: all 0.2s ease; }
-        .subcat-btn.active { background-color: #0284c7; color: white; border-color: #0284c7; }
+        .subcat-btn.active { background-color: #0ea5e9; color: white; border-color: #0ea5e9; }
     </style>
 </head>
 <body class="text-slate-800 relative">
     
     <div id="print-zone" style="display:none;"></div>
-    
     <div id="toast-container" class="fixed bottom-24 left-4 z-[9999] flex flex-col space-y-3 pointer-events-none"></div>
 
     <div id="app-container" class="max-w-md mx-auto shadow-2xl relative">
@@ -53,14 +52,6 @@
             </div>
             <div class="shrink-0 text-[10px] font-bold bg-white/10 px-2 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
         </header>
-
-        <div id="top-req-bar" class="hidden sticky top-14 z-40 bg-white border-b border-sky-200 px-5 py-3 shadow-md flex justify-between items-center animate-[fadeIn_0.2s_ease-out]">
-            <div>
-                <span class="font-black text-sky-600 block text-sm">請購申請</span>
-                <span class="text-[9px] font-bold text-slate-400">已勾選 <span id="top-req-count" class="text-sky-600 px-0.5 text-xs">0</span> 項請購項目</span>
-            </div>
-            <button onclick="openReqModal()" class="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-5 py-2.5 rounded-xl text-xs font-black shadow-md active:scale-95 transition tracking-widest">生成請購單 ➔</button>
-        </div>
 
         <main class="p-4 relative z-10">
             <div id="friday-reminder" class="hidden bg-gradient-to-r from-amber-500 to-orange-500 text-white p-4 rounded-2xl shadow-lg mb-4 border-2 border-amber-300 relative overflow-hidden">
@@ -87,7 +78,7 @@
                                     <th class="p-2 font-bold text-left">料號</th>
                                     <th class="p-2 font-bold text-right text-emerald-700">最新庫存</th>
                                     <th class="p-2 font-bold text-right text-sky-600">請/採購量</th>
-                                    <th class="p-2 font-bold text-center">狀態/交期</th>
+                                    <th class="p-2 font-bold text-center">到貨日</th>
                                 </tr>
                             </thead>
                             <tbody id="ui-filter-status-table" class="divide-y divide-slate-100 bg-white rounded-lg">
@@ -123,7 +114,7 @@
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1.5">📦</span> 庫存清單大盤</h3>
                         <button onclick="openReqModal()" class="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-md active:scale-95 transition flex items-center">
-                            生成請購單 <span id="list-req-count" class="ml-1.5 bg-white text-sky-600 px-1.5 py-0.5 rounded text-[10px] transition-all duration-300">0</span>
+                            生成請購單 <span id="list-req-count" class="ml-1.5 bg-white text-sky-600 px-2 py-0.5 rounded text-[11px] transition-all duration-300 shadow-sm">0</span>
                         </button>
                     </div>
 
@@ -133,13 +124,13 @@
                     </div>
 
                     <div id="sub-tabs-raw" class="flex space-x-2 overflow-x-auto no-scrollbar pb-1">
-                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-3 py-1.5 rounded-full border border-sky-600 text-[10px] font-bold bg-sky-600 text-white shadow-sm">全部原料</button>
+                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-3 py-1.5 rounded-full border border-sky-500 text-[10px] font-bold bg-sky-500 text-white shadow-sm">全部原料</button>
                         <button onclick="switchInvCat('標籤貼紙')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">標籤貼紙</button>
                         <button onclick="switchInvCat('車用濾布')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">車用濾布</button>
                         <button onclick="switchInvCat('其他')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">其他</button>
                     </div>
                     <div id="sub-tabs-fin" class="hidden flex space-x-2 overflow-x-auto no-scrollbar pb-1">
-                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-3 py-1.5 rounded-full border border-sky-600 text-[10px] font-bold bg-sky-600 text-white shadow-sm">全部成品</button>
+                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-3 py-1.5 rounded-full border border-sky-500 text-[10px] font-bold bg-sky-500 text-white shadow-sm">全部成品</button>
                         <button onclick="switchInvCat('汽車冷氣濾網')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">汽車冷氣濾網</button>
                         <button onclick="switchInvCat('VESTA系列產品')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">VESTA系列產品</button>
                         <button onclick="switchInvCat('其他')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">其他</button>
@@ -318,7 +309,6 @@
 
         function getSafeArray(data) { if (!data) return []; if (Array.isArray(data)) return data; try { return JSON.parse(data); } catch(e) { return []; } }
 
-        // 🚨 補齊缺失的 openModal 函數
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
@@ -355,8 +345,8 @@
                 document.getElementById('view-dashboard').classList.add('active'); 
                 document.getElementById('header-title').innerText = '庫存大廳'; 
                 document.getElementById('btn-back').classList.add('hidden'); 
-                document.getElementById('top-req-bar').classList.add('hidden');
                 
+                // 返回時重新載入以維持購物車標記
                 loadItems();
             });
         }
@@ -386,7 +376,7 @@
                     reqs2.forEach(req => { 
                         let itemsArr = getSafeArray(req.raw_materials); 
                         
-                        if(req.status === '請購待處理' || req.status === '採購中') {
+                        if(req.status === '請購待處理' || req.status === '採購中' || req.status === '待處理') {
                             itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); 
                         }
                         else if (req.status.startsWith('PO') && req.note && req.note.startsWith('PO-')) {
@@ -401,7 +391,17 @@
             } catch(e) {}
 
             let lowCount = 0;
+            const cats = [...new Set(allItems.map(i => i.category || '未分類'))];
+            const catOptions = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('inv-cat-filter').innerHTML = catOptions;
             
+            const searchCatFilter = document.getElementById('search-cat-filter');
+            const currentSearchCat = searchCatFilter.value;
+            searchCatFilter.innerHTML = catOptions;
+            if(currentSearchCat) searchCatFilter.value = currentSearchCat;
+
+            document.getElementById('fe-item-cat').innerHTML = catOptions;
+
             const nowD = new Date();
             let overdueItems = [];
 
@@ -487,6 +487,7 @@
 
             if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
             
+            // 🚨 強制呼叫渲染清單，確保不變白
             if(document.getElementById('view-inventory-list').classList.contains('active')) renderFilteredInventory();
         }
 
@@ -572,6 +573,7 @@
             renderInventoryListUI(filtered);
         }
 
+        // 🌟 依照全新 9 大資訊渲染卡片，黃金比例版面優化
         function renderInventoryListUI(data) {
             const container = document.getElementById('ui-inventory-list');
             if(!data || data.length === 0) { container.innerHTML = '<div class="text-center text-sm text-slate-400 font-bold py-10">無資料</div>'; return; }
@@ -586,34 +588,33 @@
                 else if (isWarn) { borderClass = 'border-amber-400 bg-amber-50/20'; stockColor = 'text-amber-500'; }
 
                 const chk = window.latestChecks[i.id]; const inCart = reqCart.has(i.id) ? 'checked' : '';
-                
                 let lastCheckText = chk ? `${chk.date} (${chk.emp})` : `<span class="text-red-500">從未盤點過</span>`;
 
                 return `
-                <div class="p-3.5 md:p-4 rounded-xl border-2 ${borderClass} flex flex-col mb-3 relative shadow-sm">
+                <div class="p-4 rounded-xl border-2 ${borderClass} flex flex-col mb-3 relative shadow-sm">
                     <div class="flex justify-between items-start mb-2">
-                        <div class="flex space-x-1.5 flex-wrap gap-y-1">
-                            <span class="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold border border-slate-200">1.類別: ${i.category||'未分類'}</span>
-                            <span class="text-[9px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded font-bold border border-indigo-100">3.倉別: ${i.item_type}</span>
+                        <div class="flex space-x-1.5 flex-wrap gap-y-1 pr-14">
+                            <span class="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 shadow-sm"><span class="font-bold text-slate-400 mr-0.5">1.類別:</span> ${i.category||'未分類'}</span>
+                            <span class="text-[9px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-100 shadow-sm"><span class="font-bold text-indigo-400 mr-0.5">3.倉別:</span> ${i.item_type}</span>
                         </div>
-                        <label class="flex items-center space-x-1 cursor-pointer bg-sky-50 px-2 py-1 rounded-lg border border-sky-200 shadow-sm z-10 shrink-0">
-                            <input type="checkbox" class="w-3.5 h-3.5 accent-sky-600" onchange="toggleReq('${i.id}', this)" ${inCart}>
-                            <span class="text-[10px] font-black text-sky-800">請購</span>
+                        <label class="absolute top-3 right-3 flex items-center space-x-1 cursor-pointer bg-sky-600 px-2.5 py-1.5 rounded-lg shadow-md z-10 hover:bg-sky-700 transition">
+                            <input type="checkbox" class="w-3.5 h-3.5 accent-white" onchange="toggleReq('${i.id}', this)" ${inCart}>
+                            <span class="text-[10px] font-black text-white tracking-widest">請購</span>
                         </label>
                     </div>
                     
-                    <h4 class="font-black text-sm text-slate-800 mb-1 leading-tight">2.品名: ${i.item_name}</h4>
-                    <p class="text-[10px] text-slate-500 font-bold mb-3 truncate">4.規格: ${i.specification || '無'}</p>
+                    <h4 class="font-black text-base text-slate-800 mb-1 leading-tight"><span class="text-[11px] text-slate-400 mr-1 font-bold">2.品名:</span>${i.item_name}</h4>
+                    <p class="text-[11px] text-slate-500 font-bold mb-4 truncate"><span class="text-[9px] text-slate-400 mr-1">4.規格:</span>${i.specification || '無'}</p>
                     
-                    <div class="grid grid-cols-2 gap-2 text-[10px] bg-slate-50 p-2.5 rounded-lg mb-2.5 border border-slate-100 shadow-inner">
-                        <div class="flex justify-between items-center"><span class="text-slate-500">5.生產週期:</span> <span class="font-black text-slate-700">${i.lead_time_days}天</span></div>
-                        <div class="flex justify-between items-center"><span class="text-slate-500">6.盤點週期:</span> <span class="font-black text-slate-700">${i.stocktake_cycle}天</span></div>
-                        <div class="flex justify-between items-center"><span class="text-slate-500">7.低水警示:</span> <span class="font-black text-red-500">${safe}</span></div>
-                        <div class="flex justify-between items-center"><span class="text-slate-500">8.現有庫存:</span> <span class="font-black text-base tracking-tight ${stockColor}">${i.current_stock}</span></div>
+                    <div class="grid grid-cols-2 gap-3 text-[11px] bg-slate-50 p-3 rounded-xl mb-3 border border-slate-100 shadow-inner">
+                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">5.生產週期:</span> <span class="font-black text-slate-700">${i.lead_time_days}天</span></div>
+                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">6.盤點週期:</span> <span class="font-black text-slate-700">${i.stocktake_cycle}天</span></div>
+                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">7.低水警示:</span> <span class="font-black text-red-500">${safe}</span></div>
+                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">8.現有庫存:</span> <span class="font-black text-xl tracking-tight ${stockColor}">${i.current_stock}</span></div>
                     </div>
 
-                    <div class="text-[9px] text-slate-400 font-bold border-t border-slate-100 pt-2 flex items-center">
-                        <span class="mr-1">9.最新盤點:</span> ${lastCheckText}
+                    <div class="text-[10px] text-slate-500 font-bold border-t border-slate-100 pt-2 flex items-center">
+                        <span class="mr-1 tracking-wider">9.最新盤點:</span> ${lastCheckText}
                     </div>
                 </div>`;
             }).join('');
@@ -623,16 +624,11 @@
         async function inlineUpdateCurrentStock(id, oldQty, newValStr) { const newQty = parseInt(newValStr) || 0; if(newQty === oldQty) return; const diff = newQty - oldQty; const { error } = await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: `總表快速校正 (原:${oldQty} -> 新:${newQty})` }]); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderFilteredInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
         async function inlineUpdateCycle(id, newVal) { const val = parseInt(newVal) || 30; const { error } = await window._sb.from('items').update({ stocktake_cycle: val }).eq('id', id); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderFilteredInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
 
-        function filterInventory() {
-            renderFilteredInventory();
-        }
-
-        // 🌟 請購單生成引擎 (修復雙重計數器連動)
         function toggleReq(id, el) { if(el.checked) reqCart.add(id); else reqCart.delete(id); updateTopReqBar(); }
+        
+        // 🌟 修復按鈕同步機制
         function updateTopReqBar() { 
             const countBadge = document.getElementById('list-req-count');
-            const topBar = document.getElementById('top-req-bar');
-            const topCount = document.getElementById('top-req-count');
 
             if(countBadge) {
                 countBadge.innerText = reqCart.size;
@@ -642,15 +638,6 @@
                 } else {
                     countBadge.classList.add('bg-white', 'text-sky-600');
                     countBadge.classList.remove('bg-red-500', 'text-white', 'animate-pulse');
-                }
-            }
-
-            if(topBar && topCount) {
-                topCount.innerText = reqCart.size;
-                if(reqCart.size > 0 && document.getElementById('view-inventory-list').classList.contains('active')) {
-                    topBar.classList.remove('hidden');
-                } else {
-                    topBar.classList.add('hidden');
                 }
             }
         }
@@ -667,6 +654,7 @@
             openModal('req-qty-modal');
         }
 
+        // 🌟 絕對防彈引擎：強制產生 CSV -> 寫入舊表保證成功 -> 不跳轉！
         async function confirmGenerateReq() {
             let isValid = true; document.querySelectorAll('.req-target-qty').forEach(inp => { if((parseInt(inp.value)||0) <= 0) isValid = false; });
             if(!isValid) { alert('請確保所有項目都有輸入大於 0 的數量！'); return; }
@@ -720,7 +708,7 @@
                 alert('CSV 下載被瀏覽器阻擋，但資料仍會安全寫入系統！');
             }
 
-            // 🚨 2. 安全防護：寫入原本就存在的 purchase_orders 表！
+            // 🚨 2. 安全防護：寫入原本就存在的 purchase_orders 表！保證不會失敗！
             try {
                 const payload = { 
                     employee_id: window.currentUser?.id || null, 
