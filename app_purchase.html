@@ -218,18 +218,24 @@
         async function fetchSafeReqs() {
             let reqData = [];
             try {
-                const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['請購待處理', '採購中', '已完成', '待處理', '已建檔']).order('created_at', {ascending: false});
+                const { data: r1, error: e1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false});
+                if (!e1 && r1) reqData = r1;
+            } catch(e) {}
+
+            try {
+                const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中', '請購待處理']).order('created_at', {ascending: false});
                 if (r2 && r2.length > 0) {
-                    let validReqs = r2.filter(x => x.note && x.note.startsWith('REQ-'));
-                    reqData = validReqs.map(x => ({
+                    let oldReqs = r2.filter(x => x.note && x.note.startsWith('REQ-')).map(x => ({
                         id: x.id,
                         req_no: x.note,
                         employee_id: x.employee_id,
                         employees: x.employees,
                         items_json: x.raw_materials, 
                         status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status,
-                        created_at: x.created_at
+                        created_at: x.created_at,
+                        is_legacy: true
                     }));
+                    reqData = [...reqData, ...oldReqs];
                 }
             } catch(e) { console.error('Fetch Reqs Error:', e); }
             return reqData;
@@ -238,7 +244,7 @@
         async function fetchSafePOs() {
             let poData = [];
             try {
-                const { data: pos } = await window._sb.from('purchase_orders').select('*, employees(full_name)').like('note', 'PO-%').order('created_at', {ascending: false});
+                const { data: pos } = await window._sb.from('po_documents').select('po_no, supplier_name, status, expected_date').order('expected_date', {ascending: true});
                 if (pos && pos.length > 0) {
                     poData = pos.map(x => {
                         let parts = x.note.split('|||');
@@ -249,7 +255,8 @@
                             status: x.status,
                             expected_date: x.expected_date || '未定',
                             items_json: x.raw_materials,
-                            created_at: x.created_at
+                            created_at: x.created_at,
+                            is_legacy: true
                         };
                     });
                 }
@@ -289,7 +296,7 @@
                     let diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
                     let statusBadge = ''; let textClass = 'text-slate-700';
                     
-                    if(po.status === 'PO完成' || po.status === '已完成' || po.status === '完成') {
+                    if(po.status === '完成' || po.status === 'PO完成') {
                         statusBadge = '<span class="text-[9px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">完成</span>';
                         textClass = 'text-emerald-700 font-bold';
                     } else if (po.status.includes('異常') || po.status.includes('拒收') || po.status.includes('遲交')) {
@@ -307,11 +314,13 @@
                         }
                     }
 
+                    let dateText = (po.expected_date && po.expected_date !== '未定') ? po.expected_date.slice(5) : '未定';
+
                     poHtml += `<tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50">
                         <td class="p-2 font-mono font-black text-[9px] ${textClass}">${po.po_no.replace('PO-','')}</td>
                         <td class="p-2 font-bold text-xs truncate max-w-[80px] ${textClass}">${po.supplier_name}</td>
                         <td class="p-2 text-center">${statusBadge}</td>
-                        <td class="p-2 text-center font-bold text-[10px] ${textClass}">${po.expected_date.slice(5)}</td>
+                        <td class="p-2 text-center font-bold text-[10px] ${textClass}">${dateText}</td>
                     </tr>`;
                 });
                 poContainer.innerHTML = poHtml;
@@ -321,10 +330,7 @@
         async function saveSupplier(e) {
             e.preventDefault();
             const p = { supplier_name: document.getElementById('s-name').value, supplier_code: document.getElementById('s-code').value.toUpperCase(), tax_id: document.getElementById('s-tax').value, contact_name: document.getElementById('s-contact').value, contact_phone: document.getElementById('s-phone').value, payment_method: document.getElementById('s-pay').value, bank_details: document.getElementById('s-bank').value };
-            try {
-                await window._sb.from('suppliers').insert([p]);
-                alert('✅ 供應商建立成功！'); e.target.reset(); await loadSuppliers(); backToDash();
-            } catch(err) { alert('儲存失敗，請檢查資料庫權限'); }
+            try { await window._sb.from('suppliers').insert([p]); alert('✅ 供應商建立成功！'); e.target.reset(); await loadSuppliers(); backToDash(); } catch(err) { alert('儲存失敗'); }
         }
 
         async function openReqManagement() {
@@ -333,7 +339,7 @@
             container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">讀取中...</p>';
             
             const reqs = await fetchSafeReqs();
-            const pending = reqs.filter(r => r.status === '待處理' || r.status === '請購待處理' || r.status === '採購中');
+            const pending = reqs.filter(r => r.status === '待處理' || r.status === '採購中');
 
             if(pending.length === 0) { container.innerHTML = '<p class="text-center text-sm font-bold text-slate-400 py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">目前無待處理的請購需求</p>'; return; }
 
@@ -341,7 +347,7 @@
             pending.forEach(req => {
                 let itemsArr = getSafeArray(req.items_json);
                 itemsArr.forEach((rm, idx) => {
-                    pendingMats.push({ uid: `${req.id}_${idx}`, req_id: req.id, req_no: req.req_no, name: rm.name, qty: rm.qty, unit: rm.unit });
+                    pendingMats.push({ uid: `${req.id}_${idx}`, req_id: req.id, req_no: req.req_no, name: rm.name, qty: rm.qty, unit: rm.unit, is_legacy: req.is_legacy });
                 });
             });
 
@@ -370,7 +376,7 @@
 
         async function generatePO_PDF() {
             const items = document.querySelectorAll('.pending-mat-item');
-            let selected = []; let reqIdsToUpdate = new Set(); let missingData = false;
+            let selected = []; let reqIdsToUpdate = []; let missingData = false;
 
             items.forEach(el => {
                 const isChecked = el.querySelector('.print-chk').checked;
@@ -381,7 +387,7 @@
                     const date = el.querySelector('.pm-date').value;
                     if(!sup || !date) missingData = true;
                     selected.push({ ...pm, supplier: sup, expected_date: date });
-                    reqIdsToUpdate.add(pm.req_id);
+                    reqIdsToUpdate.push({ id: pm.req_id, is_legacy: pm.is_legacy });
                 }
             });
 
@@ -402,14 +408,10 @@
                 const poNo = 'PO-' + new Date().getFullYear() + String(new Date().getMonth()+1).padStart(2,'0') + String(new Date().getDate()).padStart(2,'0') + '-' + Math.floor(Math.random()*1000).toString().padStart(3,'0');
                 
                 try {
-                    await window._sb.from('purchase_orders').insert([{ 
-                        employee_id: window.currentUser?.id || null,
-                        status: 'PO已發送', 
-                        note: poNo + '|||' + supName, 
-                        raw_materials: data.items, 
-                        expected_date: data.maxDate 
-                    }]);
-                } catch(e) { console.error('PO Insert failed', e); }
+                    await window._sb.from('po_documents').insert([{ po_no: poNo, supplier_name: supName, expected_date: data.maxDate, items_json: data.items, status: '已發送' }]);
+                } catch(e) { 
+                    await window._sb.from('purchase_orders').insert([{ employee_id: window.currentUser?.id || null, status: 'PO已發送', note: poNo + '|||' + supName, raw_materials: data.items, expected_date: data.maxDate }]);
+                }
 
                 let tableRows = data.items.map((s, i) => `
                     <tr style="border-bottom: 1px solid #e2e8f0;">
@@ -482,9 +484,12 @@
             }
 
             try {
-                let arrReqIds = Array.from(reqIdsToUpdate);
-                for(let rid of arrReqIds) { 
-                    await window._sb.from('purchase_orders').update({status: '已完成'}).eq('id', rid); 
+                let uniqueReqs = [];
+                reqIdsToUpdate.forEach(r => { if(!uniqueReqs.some(x=>x.id===r.id)) uniqueReqs.push(r); });
+
+                for(let req of uniqueReqs) { 
+                    if(req.is_legacy) await safeUpdate('purchase_orders', {status: '已完成'}, req.id);
+                    else await safeUpdate('requisitions', {status: '已完成'}, req.id);
                 }
             } catch(e) { console.log('Update req error', e); }
 
@@ -497,7 +502,6 @@
             }, 300);
         }
 
-        // 🌟 記錄中心：前台編輯與刪除引擎
         async function openHistory() {
             openView('history', '🗂️ 請購單、採購單記錄中心');
             const elReq = document.getElementById('ui-hist-req');
@@ -514,12 +518,12 @@
                             <p class="text-xs font-black text-slate-700 mt-0.5">${r.employees?.full_name||'未知'} 的需求</p>
                         </div>
                         <div class="flex flex-col space-y-1">
-                            <select onchange="updateReqStatus('${r.id}', this.value)" class="text-[9px] p-1 border border-slate-300 rounded outline-none font-bold">
+                            <select onchange="updateReqStatus('${r.id}', this.value, ${r.is_legacy?true:false})" class="text-[9px] p-1 border border-slate-300 rounded outline-none font-bold">
                                 <option value="請購待處理" ${r.status==='待處理'?'selected':''}>待處理</option>
                                 <option value="採購中" ${r.status==='採購中'?'selected':''}>採購中</option>
                                 <option value="已完成" ${r.status==='已完成'?'selected':''}>已完成</option>
                             </select>
-                            <button onclick="delReq('${r.id}')" class="text-[9px] text-red-600 bg-red-50 px-2 py-1 rounded font-bold">刪除</button>
+                            <button onclick="delReq('${r.id}', ${r.is_legacy?true:false})" class="text-[9px] text-red-600 bg-red-50 px-2 py-1 rounded font-bold">刪除</button>
                         </div>
                     </div>
                 `).join('');
@@ -535,31 +539,27 @@
                             <p class="text-xs font-black text-slate-700 mt-0.5 truncate max-w-[120px]">${p.supplier_name}</p>
                         </div>
                         <div class="flex flex-col space-y-1">
-                            <select onchange="updatePOStatus('${p.id}', this.value)" class="text-[9px] p-1 border border-slate-300 rounded outline-none font-bold">
+                            <select onchange="updatePOStatus('${p.id}', this.value, ${p.is_legacy?true:false})" class="text-[9px] p-1 border border-slate-300 rounded outline-none font-bold">
                                 <option value="PO已發送" ${p.status==='PO已發送'?'selected':''}>已發送</option>
                                 <option value="PO完成" ${p.status==='PO完成'?'selected':''}>完成</option>
                                 <option value="PO異常(遲交)" ${p.status==='PO異常(遲交)'?'selected':''}>異常(遲交)</option>
                                 <option value="PO異常(拒收)" ${p.status==='PO異常(拒收)'?'selected':''}>異常(拒收)</option>
-                                <option value="PO異常(其他)" ${p.status==='PO異常(其他)'?'selected':''}>異常(其他)</option>
                             </select>
-                            <button onclick="delPO('${p.id}')" class="text-[9px] text-red-600 bg-red-50 px-2 py-1 rounded font-bold">刪除</button>
+                            <button onclick="delPO('${p.id}', ${p.is_legacy?true:false})" class="text-[9px] text-red-600 bg-red-50 px-2 py-1 rounded font-bold">刪除</button>
                         </div>
                     </div>
                 `).join('');
             } else { elPo.innerHTML = '<p class="text-xs text-slate-400">無紀錄</p>'; }
         }
 
-        async function updateReqStatus(id, st) { try{await safeUpdate('purchase_orders', {status:st}, id); alert('更新成功'); loadDashboardData();}catch(e){} }
-        async function delReq(id) { if(confirm('確定刪除這筆請購單?')) { try{await safeDelete('purchase_orders', id); openHistory();}catch(e){} } }
-        async function updatePOStatus(id, st) { try{await safeUpdate('purchase_orders', {status:st}, id); alert('更新成功'); loadDashboardData();}catch(e){} }
-        async function delPO(id) { if(confirm('確定刪除這筆採購單?')) { try{await safeDelete('purchase_orders', id); openHistory();}catch(e){} } }
+        async function updateReqStatus(id, st, isLegacy) { if(isLegacy) await safeUpdate('purchase_orders', {status:st}, id); else await safeUpdate('requisitions', {status:st}, id); alert('更新成功'); }
+        async function delReq(id, isLegacy) { if(confirm('刪除?')) { if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('requisitions', id); openHistory(); } }
+        async function updatePOStatus(id, st, isLegacy) { if(isLegacy) await safeUpdate('purchase_orders', {status:'PO'+st}, id); else await safeUpdate('po_documents', {status:st}, id); alert('更新成功'); }
+        async function delPO(id, isLegacy) { if(confirm('刪除?')) { if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('po_documents', id); openHistory(); } }
 
         window.onload = bootPurchase;
 
-        const enforceNavObserver = new MutationObserver(() => {
-            const oldNav = document.querySelector('nav:not(#core-bottom-nav)');
-            if (oldNav) oldNav.remove();
-        });
+        const enforceNavObserver = new MutationObserver(() => { const oldNav = document.querySelector('nav:not(#core-bottom-nav)'); if (oldNav) oldNav.remove(); });
         enforceNavObserver.observe(document.body, { childList: true, subtree: true });
     </script>
 </body>
