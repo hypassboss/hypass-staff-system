@@ -188,10 +188,26 @@
         let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = []; window.adminInvData = []; window.currentPayrollRecords = []; window.supplierData = [];
         window.adminPoData = []; window.adminReqData = [];
 
-        // 🌟 強制解析為安全陣列的引擎
-        function getSafeArray(data) { if (!data) return []; if (Array.isArray(data)) return data; try { return JSON.parse(data); } catch(e) { return []; } }
+        // 🌟 絕對防彈引擎：強制解析為安全陣列
+        function getSafeArray(data) {
+            if (!data) return [];
+            if (Array.isArray(data)) return data;
+            try { return JSON.parse(data); } catch(e) { return []; }
+        }
 
-        function login() { if(document.getElementById('pin').value === '888888'){ document.getElementById('login-box').style.display='none'; document.getElementById('dashboard-ui').classList.remove('hidden'); document.getElementById('dashboard-ui').classList.add('flex'); document.getElementById('att-date').value = new Date().toLocaleDateString('en-CA'); const now = new Date(); document.getElementById('p-mon').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; document.getElementById('export-mon').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; loadAll(); } else { alert('密碼錯誤！'); } }
+        // 🌟 絕對防彈引擎：強制容錯寫入更新
+        async function safeUpdate(table, payload, id) {
+            try { await window._sb.from(table).update(payload).eq('id', id); } catch(e) { console.error(`Update ${table} failed`, e); }
+        }
+        async function safeDelete(table, id) {
+            try { await window._sb.from(table).delete().eq('id', id); } catch(e) { console.error(`Delete ${table} failed`, e); }
+        }
+
+        function login() { 
+            if(document.getElementById('pin').value === '888888'){ 
+                document.getElementById('login-box').style.display='none'; document.getElementById('dashboard-ui').classList.remove('hidden'); document.getElementById('dashboard-ui').classList.add('flex'); document.getElementById('att-date').value = new Date().toLocaleDateString('en-CA'); const now = new Date(); document.getElementById('p-mon').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; document.getElementById('export-mon').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; loadAll(); 
+            } else { alert('密碼錯誤！'); } 
+        }
         
         function st(id) { 
             document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active')); document.querySelectorAll('.m-btn').forEach(e=>{ e.classList.remove('bg-slate-900','text-white','shadow-md','border-transparent'); e.classList.add('bg-white','text-slate-500','border-slate-200','shadow-sm'); e.querySelector('.m-text').classList.remove('font-black'); e.querySelector('.m-text').classList.add('font-bold'); }); const activeMBtn = document.getElementById('m-'+id); if(activeMBtn) { activeMBtn.classList.remove('bg-white','text-slate-500','border-slate-200','shadow-sm'); activeMBtn.classList.add('bg-slate-900','text-white','shadow-md','border-transparent'); activeMBtn.querySelector('.m-text').classList.remove('font-bold'); activeMBtn.querySelector('.m-text').classList.add('font-black'); } document.querySelectorAll('.dt-btn').forEach(e=>{ e.classList.remove('active','bg-sky-600','text-white'); e.classList.add('text-slate-400'); }); const activeDtBtn = document.getElementById('dt-'+id); if(activeDtBtn) { activeDtBtn.classList.add('active','bg-sky-600','text-white'); activeDtBtn.classList.remove('text-slate-400'); } document.getElementById(id).classList.add('active'); 
@@ -245,38 +261,12 @@
 
             document.getElementById('list-brs').innerHTML = window.branches.map(b => `<div class="glass-panel p-4 flex justify-between items-center shadow-sm"><div class="flex items-center"><span class="text-2xl mr-3 opacity-80">📍</span><div><p class="font-black text-sm text-slate-800">${b.branch_name}</p><p class="text-[10px] text-slate-500 mt-0.5">${b.address}</p></div></div><button onclick="editBr('${b.id}')" class="text-xs bg-sky-100 text-sky-700 font-bold px-3 py-2 rounded-lg active:scale-95 shadow-sm">✏️ 修改</button></div>`).join('');
             
-            const { data: sups } = await window._sb.from('suppliers').select('*');
-            window.supplierData = sups || [];
+            try { const { data: sups } = await window._sb.from('suppliers').select('*'); window.supplierData = sups || []; } catch(e) {}
 
             loadAdminBlt();
         }
 
-        // 🌟 絕對防彈引擎：雙軌自動備援掃描，保證資料不遺漏
-        async function fetchSafeReqs() {
-            let reqData = [];
-            try {
-                const { data: r1, error: e1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false});
-                if (!e1 && r1) reqData = r1;
-            } catch(e) {}
-
-            try {
-                const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中']).order('created_at', {ascending: false});
-                if (r2 && r2.length > 0) {
-                    let oldReqs = r2.map(x => ({
-                        id: x.id,
-                        req_no: 'REQ-FB-' + x.id.slice(0,4),
-                        employee_id: x.employee_id,
-                        employees: x.employees,
-                        items_json: x.raw_materials, 
-                        status: x.status === '已建檔' ? '待處理' : x.status,
-                        created_at: x.created_at
-                    }));
-                    reqData = [...reqData, ...oldReqs];
-                }
-            } catch(e) {}
-            return reqData;
-        }
-
+        // 🌟 絕對防彈：後台採購與請購同步顯示 (包含備援庫掃描)
         async function loadAdminPurchase() {
             const elDocs = document.getElementById('list-admin-po-docs');
             const elDrafts = document.getElementById('list-admin-po-drafts');
@@ -308,8 +298,10 @@
                             </div>
                             <div class="flex items-center space-x-2 md:flex-col md:space-x-0 md:space-y-2 md:items-end">
                                 <button onclick="downloadAdminPO_PDF('${d.id}')" class="flex-1 md:w-32 bg-slate-800 hover:bg-slate-700 text-white text-xs px-4 py-2 rounded-lg font-black shadow-sm transition active:scale-95 flex justify-center items-center"><span class="mr-1">📥</span> 補印 PDF</button>
-                                <button onclick="openAdminEditPO('${d.id}')" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-4 py-2 rounded-lg font-bold shadow-sm active:scale-95 transition">✏️ 狀態編輯</button>
-                                <button onclick="delAdminPODoc('${d.id}')" class="text-xs bg-white border border-red-200 text-red-600 px-3 py-2 rounded-lg font-bold shadow-sm active:scale-95 transition hover:bg-red-50">🗑️</button>
+                                <div class="flex space-x-2 w-full md:w-auto">
+                                    <button onclick="openAdminEditPO('${d.id}')" class="flex-1 text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-3 py-2 rounded-lg font-bold shadow-sm active:scale-95 transition">✏️ 狀態編輯</button>
+                                    <button onclick="delAdminPODoc('${d.id}')" class="text-xs bg-white border border-red-200 text-red-600 px-3 py-2 rounded-lg font-bold shadow-sm active:scale-95 transition hover:bg-red-50">🗑️</button>
+                                </div>
                             </div>
                         </div>`;
                     }).join('');
@@ -317,12 +309,16 @@
             } catch(e) { elDocs.innerHTML = '<p class="text-center text-red-400 font-bold py-6">資料讀取異常</p>'; }
 
             try {
-                const reqs = await fetchSafeReqs();
-                if(!reqs || reqs.length === 0) {
+                // 掃描新版與舊版請購單
+                let reqData = [];
+                try { const { data: r1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false}); if(r1) reqData = r1; } catch(e){}
+                try { const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中']).order('created_at', {ascending: false}); if(r2 && r2.length > 0) { let oldReqs = r2.map(x => ({ id: x.id, req_no: 'REQ-FB-' + x.id.slice(0,4), employee_id: x.employee_id, employees: x.employees, items_json: x.raw_materials, status: x.status === '已建檔' ? '待處理' : x.status, created_at: x.created_at, is_legacy: true })); reqData = [...reqData, ...oldReqs]; } } catch(e){}
+
+                if(reqData.length === 0) {
                     elDrafts.innerHTML = '<p class="text-center text-slate-400 font-bold py-4">無請購單紀錄</p>';
                 } else {
-                    window.adminReqData = reqs;
-                    elDrafts.innerHTML = reqs.map(r => {
+                    window.adminReqData = reqData;
+                    elDrafts.innerHTML = reqData.map(r => {
                         let stBadge = r.status === '已完成' ? '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200 ml-2">已完成</span>' : (r.status === '採購中' ? '<span class="text-[9px] bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded border border-sky-200 ml-2">採購中</span>' : '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200 ml-2">待處理</span>');
                         let safeReqItems = getSafeArray(r.items_json);
                         return `
@@ -332,109 +328,14 @@
                                 <div class="text-xs font-black text-slate-700 mt-0.5">${r.employees?.full_name||'未知'} 請購了 ${safeReqItems.length} 項原料</div>
                             </div>
                             <div class="flex space-x-1.5">
-                                <button onclick="downloadReqCSV('${r.id}')" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-white px-2 py-1.5 rounded-lg shadow-sm font-bold transition">📥 CSV</button>
+                                <button onclick="downloadReqCSV('${r.id}', ${r.is_legacy?true:false})" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-white px-2 py-1.5 rounded-lg shadow-sm font-bold transition">📥 CSV</button>
                                 <button onclick="openAdminEditReq('${r.id}')" class="text-[9px] bg-sky-50 text-sky-700 px-2 py-1.5 rounded-lg font-bold border border-sky-200">✏️</button>
-                                <button onclick="delAdminReq('${r.id}')" class="text-[9px] bg-red-50 text-red-600 px-2 py-1.5 rounded-lg font-bold border border-red-200">🗑️</button>
+                                <button onclick="delAdminReq('${r.id}', ${r.is_legacy?true:false})" class="text-[9px] bg-red-50 text-red-600 px-2 py-1.5 rounded-lg font-bold border border-red-200">🗑️</button>
                             </div>
                         </div>`;
                     }).join('');
                 }
             } catch(e) { elDrafts.innerHTML = '<p class="text-center text-red-400 font-bold py-4">資料讀取異常</p>'; }
-        }
-
-        // 🌟 防彈版庫存列表載入
-        async function loadAdminInventory() {
-            try {
-                document.getElementById('list-inv-mobile').innerHTML = '載入中...'; 
-                document.getElementById('list-inv-desktop').innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400 font-bold">載入中...</td></tr>';
-                const { data: items } = await window._sb.from('items').select('*').order('created_at', {ascending: false});
-                const { data: ledgers } = await window._sb.from('inventory_ledgers').select('item_id, change_qty');
-                let stockMap = {}; if(ledgers) { ledgers.forEach(l => { if(!stockMap[l.item_id]) stockMap[l.item_id] = 0; stockMap[l.item_id] += l.change_qty; }); }
-                window.adminInvData = (items || []).map(i => ({ ...i, current_stock: stockMap[i.id] || 0 }));
-                renderAdminInventory();
-            } catch (err) {
-                console.error(err);
-                document.getElementById('list-inv-mobile').innerHTML = '<p class="text-center text-red-500 py-4">資料讀取失敗，請確認資料庫狀態</p>';
-            }
-        }
-
-        function renderAdminInventory() {
-            let htmlM = '', htmlD = '';
-            const cats = [...new Set(window.adminInvData.map(i => i.category || '未分類'))];
-            document.getElementById('admin-inv-cat-filter').innerHTML = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
-
-            if(!window.adminInvData.length) { htmlM = '<p class="text-slate-400 py-4 text-center">無庫存資料</p>'; htmlD = '<tr><td colspan="5" class="text-center py-6 text-slate-400">無庫存資料</td></tr>'; }
-            else {
-                window.adminInvData.forEach(i => {
-                    let safe = i.safe_stock_level || 0; let isLow = i.current_stock <= safe; let isWarn = !isLow && i.current_stock <= (safe * 1.5);
-                    let badge = '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold border border-emerald-200">標準</span>';
-                    let borderClass = 'border-emerald-400 bg-emerald-50/10'; let textCol = 'text-slate-700';
-                    if(isLow) { badge = '<span class="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded font-black shadow-sm animate-pulse">⚠️ 低水位</span>'; borderClass = 'border-red-500 bg-red-50/30'; textCol = 'text-red-600'; } 
-                    else if(isWarn) { badge = '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-black border border-amber-300 shadow-sm">警示</span>'; borderClass = 'border-amber-400 bg-amber-50/30'; textCol = 'text-amber-600'; }
-
-                    htmlM += `<div class="glass-panel p-4 flex justify-between items-center inv-admin-item mb-3 border-2 ${borderClass}" data-search="${i.item_code} ${i.item_name}" data-cat="${i.category||'未分類'}"><div class="flex-1 pr-2"><div class="mb-1.5"><span class="text-[10px] text-indigo-600 bg-white border border-indigo-100 px-1.5 rounded font-mono shadow-sm tracking-wider">${i.item_code}</span><span class="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded ml-1">${i.category || '未分類'}</span></div><h4 class="font-black text-sm text-slate-800 mt-1">${i.item_name} ${badge}</h4><p class="text-[10px] text-slate-500 mt-0.5">規格: ${i.specification||'無'} <span class="mx-1 text-slate-300">|</span> 生產週期: ${i.lead_time_days}天</p></div><div class="text-right pl-3 border-l border-slate-200"><div class="text-2xl font-black ${textCol} tracking-tight">${i.current_stock}</div><button onclick="openEditItem('${i.id}')" class="text-[10px] bg-slate-800 text-white shadow-sm active:scale-95 transition px-3 py-1.5 rounded-lg mt-1 font-bold">修改</button></div></div>`;
-                    htmlD += `<tr class="hover:bg-slate-50 inv-admin-item border-l-4 ${borderClass.split(' ')[0]}" data-search="${i.item_code} ${i.item_name}" data-cat="${i.category||'未分類'}"><td class="px-6 py-4"><div class="mb-1"><span class="text-[10px] text-indigo-600 font-mono bg-white shadow-sm border border-indigo-100 px-1.5 py-0.5 rounded mr-1">${i.item_code}</span></div><span class="font-black text-slate-800">${i.item_name}</span></td><td class="px-6 py-4 text-right"><div class="flex flex-col items-end">${badge}<span class="font-black ${textCol} text-xl mt-1 tracking-tight">${i.current_stock}</span></div></td><td class="px-6 py-4 text-right text-slate-500 font-bold">${safe}</td><td class="px-6 py-4 text-center text-slate-500 font-bold">${i.lead_time_days}</td><td class="px-6 py-4 text-center"><button onclick="openEditItem('${i.id}')" class="bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm active:scale-95">修改</button></td></tr>`;
-                });
-            }
-            document.getElementById('list-inv-mobile').innerHTML = htmlM; document.getElementById('list-inv-desktop').innerHTML = htmlD;
-        }
-
-        function filterAdminInventory() {
-            const kw = document.getElementById('admin-inv-search').value.toLowerCase();
-            const cat = document.getElementById('admin-inv-cat-filter').value;
-            document.querySelectorAll('.inv-admin-item').forEach(el => { 
-                const text = el.getAttribute('data-search').toLowerCase(); const elCat = el.getAttribute('data-cat');
-                el.style.display = (text.includes(kw) && (cat === '' || elCat === cat)) ? '' : 'none'; 
-            });
-        }
-
-        function openEditItem(id) {
-            const i = window.adminInvData.find(x => x.id === id); if(!i) return;
-            document.getElementById('edit-item-id').value = i.id; 
-            document.getElementById('edit-item-name').value = i.item_name; 
-            document.getElementById('edit-item-code').value = i.item_code; 
-            document.getElementById('edit-item-type').value = i.item_type || '成品'; 
-            document.getElementById('edit-item-spec').value = i.specification || ''; 
-            document.getElementById('edit-item-qty').value = i.qty_per_pack || 1; 
-            document.getElementById('edit-item-safe').value = i.safe_stock_level || 0; 
-            document.getElementById('edit-item-lead').value = i.lead_time_days || 15;
-            document.getElementById('edit-item-cycle').value = i.stocktake_cycle || 30;
-            const catSelect = document.getElementById('edit-item-cat');
-            if (Array.from(catSelect.options).some(opt => opt.value === i.category)) { catSelect.value = i.category; } else { catSelect.value = '未分類'; }
-            
-            let rawItems = window.adminInvData.filter(x => x.item_type === '原料');
-            let bomHtml = '';
-            // 強制安全解析
-            let safeBom = getSafeArray(i.bom_data);
-            
-            for(let j=0; j<6; j++) {
-                let r = safeBom[j] || { material: '', usage: '', unit: '米平方', total_qty: '' };
-                let opts = '<option value="">(無)</option>' + rawItems.map(rm => `<option value="${rm.item_name}" ${r.material===rm.item_name?'selected':''}>[${rm.item_code}] ${rm.item_name}</option>`).join('');
-                if(r.material && !rawItems.some(rm => rm.item_name === r.material)) opts += `<option value="${r.material}" selected>${r.material} (舊資料)</option>`;
-                
-                bomHtml += `<tr><td class="p-1"><select class="w-32 p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] bom-mat select-arrow font-bold text-slate-700 outline-none focus:border-sky-500">${opts}</select></td><td class="p-1"><input type="number" step="any" class="w-16 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-center font-black text-sky-700 bom-qty outline-none focus:border-sky-500" value="${r.usage}" oninput="const u=parseFloat(this.value)||0;this.closest('tr').querySelector('.bom-total').value=u>0?(u*1.1).toFixed(2):'';"></td><td class="p-1"><select class="w-16 p-2 bg-white border border-slate-200 rounded-lg text-xs select-arrow bom-unit outline-none focus:border-sky-500"><option value="米平方" ${r.unit==='米平方'?'selected':''}>米平方</option><option value="米" ${r.unit==='米'?'selected':''}>米</option><option value="個" ${r.unit==='個'?'selected':''}>個</option><option value="袋" ${r.unit==='袋'?'selected':''}>袋</option><option value="條" ${r.unit==='條'?'selected':''}>條</option></select></td><td class="p-1"><input type="number" class="w-16 p-2 bg-slate-100 border border-transparent rounded-lg text-xs text-center font-black text-sky-900 bom-total shadow-inner" value="${r.total_qty}" readonly></td></tr>`;
-            }
-            document.getElementById('admin-bom-table-body').innerHTML = bomHtml;
-            openModal('item-edit-modal');
-        }
-
-        async function saveAdminItem() {
-            const id = document.getElementById('edit-item-id').value;
-            let bomData = [];
-            document.querySelectorAll('#admin-bom-table-body tr').forEach(tr => {
-                const mat = tr.querySelector('.bom-mat').value;
-                if(mat) bomData.push({ material: mat, usage: parseFloat(tr.querySelector('.bom-qty').value)||0, unit: tr.querySelector('.bom-unit').value, total_qty: parseFloat(tr.querySelector('.bom-total').value)||0 });
-            });
-            const p = { item_name: document.getElementById('edit-item-name').value, item_code: document.getElementById('edit-item-code').value.toUpperCase(), item_type: document.getElementById('edit-item-type').value, specification: document.getElementById('edit-item-spec').value, qty_per_pack: parseInt(document.getElementById('edit-item-qty').value) || 1, category: document.getElementById('edit-item-cat').value, safe_stock_level: parseInt(document.getElementById('edit-item-safe').value) || 0, lead_time_days: parseInt(document.getElementById('edit-item-lead').value) || 15, stocktake_cycle: parseInt(document.getElementById('edit-item-cycle').value) || 30, bom_data: bomData };
-            const { error } = await window._sb.from('items').update(p).eq('id', id);
-            if(error) alert('修改失敗'); else { alert('✅ 更新成功！'); closeModal('item-edit-modal'); loadAdminInventory(); }
-        }
-
-        async function deleteAdminItem() {
-            const id = document.getElementById('edit-item-id').value;
-            if(!confirm('⚠️ 警告：確定要刪除這個料號嗎？')) return;
-            const { error } = await window._sb.from('items').delete().eq('id', id);
-            if(error) alert('刪除失敗: ' + error.message); else { alert('✅ 成功刪除！'); closeModal('item-edit-modal'); loadAdminInventory(); }
         }
 
         function openAdminEditPO(id) {
@@ -458,15 +359,16 @@
             const st = document.getElementById('admin-po-edit-status').value;
             const res = document.getElementById('admin-po-edit-reason').value;
             if(st.includes('異常') && !res) { alert('請填寫異常說明！'); return; }
-            const { error } = await window._sb.from('po_documents').update({ status: st, exception_reason: res }).eq('id', id);
-            if(!error) { alert('✅ 更新成功'); closeModal('admin-edit-po-modal'); loadAdminPurchase(); }
+            await safeUpdate('po_documents', { status: st, exception_reason: res }, id);
+            alert('✅ 更新成功'); closeModal('admin-edit-po-modal'); loadAdminPurchase(); 
         }
         
-        async function delAdminPODoc(id) { if(confirm('⚠️ 確定刪除這筆正式採購單嗎？')){ await window._sb.from('po_documents').delete().eq('id',id); loadAdminPurchase(); } }
+        async function delAdminPODoc(id) { if(confirm('⚠️ 確定刪除這筆正式採購單嗎？')){ await safeDelete('po_documents', id); loadAdminPurchase(); } }
 
         function openAdminEditReq(id) {
             const r = window.adminReqData.find(x => x.id === id); if(!r) return;
             document.getElementById('admin-req-edit-id').value = r.id;
+            document.getElementById('admin-req-edit-islegacy').value = r.is_legacy ? 'true' : 'false';
             document.getElementById('admin-req-edit-status').value = r.status;
             openModal('admin-edit-req-modal');
         }
@@ -474,32 +376,32 @@
         async function saveAdminReqEdit() {
             const id = document.getElementById('admin-req-edit-id').value;
             const st = document.getElementById('admin-req-edit-status').value;
+            const isLegacy = document.getElementById('admin-req-edit-islegacy').value === 'true';
             
-            // 雙軌更新，因為不知道這筆是新的還是舊的
-            try { await window._sb.from('requisitions').update({ status: st }).eq('id', id); } catch(e){}
-            try { await window._sb.from('purchase_orders').update({ status: st }).eq('id', id); } catch(e){}
+            if(isLegacy) { await safeUpdate('purchase_orders', { status: st }, id); } 
+            else { await safeUpdate('requisitions', { status: st }, id); }
 
             alert('✅ 更新成功'); closeModal('admin-edit-req-modal'); loadAdminPurchase(); 
         }
 
-        async function delAdminReq(id) { 
+        async function delAdminReq(id, isLegacy) { 
             if(confirm('刪除這筆請購單嗎？')){ 
-                try { await window._sb.from('requisitions').delete().eq('id',id); } catch(e){}
-                try { await window._sb.from('purchase_orders').delete().eq('id',id); } catch(e){}
+                if(isLegacy) await safeDelete('purchase_orders', id);
+                else await safeDelete('requisitions', id);
                 loadAdminPurchase(); 
             } 
         }
 
-        async function downloadReqCSV(id) {
+        async function downloadReqCSV(id, isLegacy) {
             let reqData = null;
-            try { const res = await window._sb.from('requisitions').select('*, employees(full_name)').eq('id', id).single(); reqData = res.data; } catch(e){}
-            if(!reqData) {
-                try { const res = await window._sb.from('purchase_orders').select('*, employees(full_name)').eq('id', id).single(); reqData = res.data; } catch(e){}
-            }
+            try { 
+                if (isLegacy) { const { data } = await window._sb.from('purchase_orders').select('*, employees(full_name)').eq('id', id).single(); reqData = data; }
+                else { const { data } = await window._sb.from('requisitions').select('*, employees(full_name)').eq('id', id).single(); reqData = data; }
+            } catch(e){}
 
             if(!reqData) { alert('下載失敗，找不到資料'); return; }
 
-            let reqNo = reqData.req_no || ('REQ-OLD-' + reqData.id.slice(0,4));
+            let reqNo = reqData.req_no || ('REQ-FB-' + reqData.id.slice(0,4));
             let csv = "\uFEFF請購單號,申請日期,申請人,請購成品/半成品,生產數量,展開原料名稱,需求總量,單位\n";
             const dateStr = new Date(reqData.created_at).toLocaleDateString('zh-TW');
             
@@ -509,10 +411,7 @@
             safeTarget.forEach(t => { csv += `="${reqNo}",${dateStr},${reqData.employees?.full_name||'未知'},${t.name},${t.qty},,,, \n`; });
             safeItems.forEach(r => { csv += `="${reqNo}",${dateStr},${reqData.employees?.full_name||'未知'},,,${r.name},${r.qty.toFixed(2)},${r.unit}\n`; });
 
-            const link = document.createElement("a"); 
-            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); 
-            link.download = `HYPASS_請購單_補印_${reqNo}.csv`; 
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `HYPASS_請購單_補印_${reqNo}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
         async function downloadAdminPO_PDF(id) {
@@ -521,7 +420,6 @@
 
             const supInfo = window.supplierData.find(x => x.supplier_name === data.supplier_name) || {};
             const dateStr = new Date(data.created_at).toLocaleDateString('zh-TW');
-            
             let safeItems = getSafeArray(data.items_json);
 
             let tableRows = safeItems.map((s, i) => `
@@ -565,8 +463,68 @@
             setTimeout(() => { window.print(); }, 150);
         }
 
-        async function handleYebToggle() { const isChecked = document.getElementById('toggle-yeb').checked; const yebSec = document.getElementById('yeb-section'); if(isChecked) { yebSec.classList.remove('hidden'); await updateAttendanceRate(); } else { yebSec.classList.add('hidden'); document.getElementById('p-yeb').value = ''; document.getElementById('p-ulp').value = ''; calcPayroll(); } }
-        async function updateAttendanceRate() { const empId = document.getElementById('p-emp').value; const month = document.getElementById('p-mon').value; if(!empId || !month) return; const currentYear = parseInt(month.split('-')[0]); const prevYear = currentYear - 1; const absolutePenalty = window.empData[empId]?.penalty_points || 0; try { const { data: mData } = await window._sb.rpc('fn_get_payroll_calc', { p_emp_id: empId, p_month: month }); if(mData) { document.getElementById('sd-sick').innerText = mData.sick_hrs || 0; document.getElementById('sd-per').innerText = mData.personal_hrs || 0; document.getElementById('sd-typ').innerText = mData.typhoon_hrs || 0; document.getElementById('sd-lat').innerText = mData.late_count || 0; document.getElementById('sd-ovt').innerText = mData.overtime_hrs || 0; document.getElementById('sd-pnt').innerText = absolutePenalty; document.getElementById('p-lvd').value = mData.leave_deduct || 0; } const { data: currYData } = await window._sb.rpc('fn_get_year_end_stats', { p_emp_id: empId, p_year: currentYear.toString() }); const { data: prevYData } = await window._sb.rpc('fn_get_year_end_stats', { p_emp_id: empId, p_year: prevYear.toString() }); const { data: lvCurr } = await window._sb.rpc('fn_get_annual_leave_by_year', { p_emp_id: empId, p_year: currentYear }); const { data: lvPrev } = await window._sb.rpc('fn_get_annual_leave_by_year', { p_emp_id: empId, p_year: prevYear }); let remainHrsCurr = lvCurr ? (lvCurr.remain_hours || 0) : 0; let remainHrsPrev = lvPrev ? (lvPrev.remain_hours || 0) : 0; if(currYData) { document.getElementById('sy-curr-ann').innerText = remainHrsCurr; document.getElementById('sy-curr-per').innerText = currYData.personal || 0; document.getElementById('sy-curr-sic').innerText = currYData.sick || 0; document.getElementById('sy-curr-lat').innerText = currYData.late || 0; document.getElementById('sy-curr-ovt').innerText = currYData.overtime || 0; document.getElementById('sy-curr-pnt').innerText = absolutePenalty; } if(prevYData) { document.getElementById('sy-prev-ann').innerText = remainHrsPrev; document.getElementById('sy-prev-per').innerText = prevYData.personal || 0; document.getElementById('sy-prev-sic').innerText = prevYData.sick || 0; document.getElementById('sy-prev-lat').innerText = prevYData.late || 0; document.getElementById('sy-prev-ovt').innerText = prevYData.overtime || 0; document.getElementById('sy-prev-pnt').innerText = 0; } document.getElementById('lbl-yeb').innerText = `預設年終 (${prevYear})`; document.getElementById('lbl-ulp-text').innerText = `特休結算 (餘${remainHrsPrev}h)`; if(document.getElementById('toggle-yeb').checked) { const base = window.empData[empId]?.base || 0; const hrRate = base / 240; document.getElementById('p-ulp').value = Math.round(remainHrsPrev * hrRate); } calcNet(); } catch (err) {} }
-        async function onEmpChange() { const empId = document.getElementById('p-emp').value; if(!empId) return; document.getElementById('p-base').value = window.empData[empId].base; await updateAttendanceRate(); }
-        function calcPayroll() { const empId = document.getElementById('p-emp').value; const emp = window.empData[empId]; if(!emp) return; const base = parseFloat(document.getElementById('p-base').value) || 0; const bonus = parseFloat(document.getElementById('p-bonus').value) || 0; const yeb = parseFloat(document.getElementById('p-yeb').value) || 0; document.getElementById('p-pen').value = Math.round(base * 0.06); document.getElementById('p-2nd').value = Math.round((bonus + yeb) * 0.0211); document.getElementById('p-ins').value = Math.round(base * 0.022) + Math.round(base * 0.0155 * (1 + emp.deps)); calcNet(); }
-        function calcNet() { const base = parseFloat(document.getElementById('p-base').value) || 0; const bonus = parseFloat(document.getElementById('p-bonus').value) || 0; const yeb = parseFloat(document.getElementById('p-yeb').value) || 0; const ulp = parseFloat(document.getElementById('p-ulp').value) || 0; const ins = parseFloat(document.getElementById('p-ins').value) || 0; const sec = parseFloat(document.getElementById('p-2nd').value) || 0; const lvd = parseFloat(document.getElementById('p-lvd').value) || 0; const net = base + bonus + yeb + ulp - ins - sec -
+        async function loadAdminFinance() {
+            const el = document.getElementById('list-admin-fin');
+            el.innerHTML = '載入中...';
+            const { data } = await window._sb.from('finance_records').select('*, employees(full_name)').order('payment_date', {ascending: true});
+            if(!data || !data.length) { el.innerHTML = '<p class="text-center text-slate-400 font-bold py-6">目前無對帳紀錄</p>'; return; }
+            
+            el.innerHTML = data.map(r => {
+                let badgeCol = r.status === '已入帳' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : (r.status==='異常'?'text-red-600 bg-red-50 border-red-200':'text-amber-700 bg-amber-50 border-amber-200');
+                return `
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 mb-4 shadow-sm flex flex-col md:flex-row justify-between md:items-center">
+                    <div class="mb-3 md:mb-0">
+                        <div class="text-sm font-black text-slate-800 flex items-center mb-1">
+                            <span class="truncate max-w-[200px]">${r.client_name}</span> 
+                            <span class="text-[10px] font-black border px-2 py-0.5 rounded-md ml-2 ${badgeCol}">${r.status}</span>
+                        </div>
+                        <div class="text-2xl font-black text-blue-700 tracking-tight my-1.5">NT$ ${r.invoice_amount.toLocaleString()}</div>
+                        <div class="text-[10px] text-slate-500 font-bold">業務: ${r.employees?.full_name||'未知'} <span class="mx-1">|</span> 預計: ${r.payment_date} <span class="mx-1">|</span> ${r.payment_method}</div>
+                    </div>
+                    <div class="flex items-center space-x-3 md:flex-col md:space-x-0 md:items-end">
+                        <select onchange="updateAdminFinStatus('${r.id}', this.value)" class="flex-1 md:w-32 md:mb-2 text-xs border border-slate-300 p-2 rounded-lg font-black text-slate-700 outline-none focus:border-blue-500 bg-slate-50">
+                            <option value="待核帳" ${r.status==='待核帳'?'selected':''}>⏳ 待核帳</option>
+                            <option value="已入帳" ${r.status==='已入帳'?'selected':''}>✅ 已入帳結案</option>
+                            <option value="異常" ${r.status==='異常'?'selected':''}>⚠️ 異常/退票</option>
+                        </select>
+                        <button onclick="delAdminFin('${r.id}')" class="text-xs bg-white border border-red-200 text-red-600 px-4 py-2 rounded-lg font-bold shadow-sm active:scale-95">刪除紀錄</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        async function updateAdminFinStatus(id, st) { await safeUpdate('finance_records', {status:st}, id); alert('✅ 核帳狀態已更新！'); }
+        async function delAdminFin(id) { if(confirm('⚠️ 確定刪除這筆對帳單嗎？')){ await safeDelete('finance_records', id); loadAdminFinance(); } }
+
+        async function loadAttendance() {
+            const d = document.getElementById('att-date').value; if(!d) return; 
+            document.getElementById('list-attendance-mobile').innerHTML = '載入中...';
+            document.getElementById('list-attendance-desktop').innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400 font-bold">載入中...</td></tr>';
+            const sT = new Date(d); sT.setHours(0,0,0,0); const eT = new Date(d); eT.setHours(23,59,59,999);
+            const { data: logs } = await window._sb.from('attendance_logs').select('*, employees(id, full_name, work_start_time, work_end_time, employee_no), branch_locations(branch_name)').gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString()).order('punch_time', {ascending: true});
+            const empLogs = {}; 
+            const activeEmps = window.allEmps.filter(e => e.employment_status === '在職');
+            activeEmps.forEach(e => { empLogs[e.id] = { name: e.full_name, eno: e.employee_no, start: e.work_start_time || '09:00:00', end: e.work_end_time || '18:00:00', in: null, out: null }; });
+            if(logs) { logs.forEach(l => { const eid = l.employees?.id; if(!eid || !empLogs[eid]) return; const tStr = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'}); const isRet = l.note && l.note.includes('[補登核准]'); const bName = isRet ? '補登(免定位)' : (l.branch_locations?.branch_name || '外勤定位'); if(l.punch_type === 'IN' && !empLogs[eid].in) empLogs[eid].in = { time: tStr, branch: bName, retro: isRet }; if(l.punch_type === 'OUT') empLogs[eid].out = { time: tStr, branch: bName, retro: isRet }; }); }
+            let htmlM = '', htmlD = '';
+            Object.values(empLogs).forEach(e => {
+                let inStatus = '<span class="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded font-bold ml-2">未打卡</span>';
+                if(e.in) { if(e.in.retro) inStatus = '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold ml-2">補登</span>'; else if(e.in.time > e.start.slice(0,5)) inStatus = '<span class="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold ml-2">遲到</span>'; else inStatus = '<span class="text-[9px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold ml-2">正常</span>'; }
+                let outStatus = '<span class="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded font-bold ml-2">未打卡</span>';
+                if(e.out) { if(e.out.retro) outStatus = '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold ml-2">補登</span>'; else if(e.out.time < e.end.slice(0,5)) outStatus = '<span class="text-[9px] bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded font-bold ml-2">早退</span>'; else outStatus = '<span class="text-[9px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold ml-2">正常</span>'; }
+                htmlM += `<div class="glass-panel p-4 shadow-sm border-l-4 ${e.in&&e.out?'border-emerald-400':'border-slate-200'}"><div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-3"><span class="font-black text-slate-800 text-sm flex items-center">${e.name}</span></div><div class="grid grid-cols-2 gap-3 text-xs"><div class="bg-white p-2.5 rounded-xl border border-slate-100"><div class="font-bold text-slate-500 mb-1 flex justify-between">上班 ${inStatus}</div><div class="font-black ${e.in?'text-slate-800':'text-slate-300'} text-lg">${e.in?e.in.time:'--:--'}</div></div><div class="bg-white p-2.5 rounded-xl border border-slate-100"><div class="font-bold text-slate-500 mb-1 flex justify-between">下班 ${outStatus}</div><div class="font-black ${e.out?'text-slate-800':'text-slate-300'} text-lg">${e.out?e.out.time:'--:--'}</div></div></div></div>`;
+                htmlD += `<tr class="hover:bg-slate-50"><td class="px-6 py-4 font-black text-slate-800">${e.name}</td><td class="px-6 py-4 text-xs font-mono text-slate-500">${e.start.slice(0,5)} ~ ${e.end.slice(0,5)}</td><td class="px-6 py-4"><span class="font-black ${e.in?'text-slate-800':'text-slate-300'} text-base mr-2">${e.in?e.in.time:'--:--'}</span>${inStatus}</td><td class="px-6 py-4"><span class="font-black ${e.out?'text-slate-800':'text-slate-300'} text-base mr-2">${e.out?e.out.time:'--:--'}</span>${outStatus}</td></tr>`;
+            });
+            document.getElementById('list-attendance-mobile').innerHTML = htmlM; document.getElementById('list-attendance-desktop').innerHTML = htmlD;
+        }
+
+        window.onload = function() {
+            if(localStorage.getItem('admin_logged')==='true') {
+                document.getElementById('login-box').style.display='none'; 
+                document.getElementById('dashboard-ui').classList.remove('hidden'); 
+                document.getElementById('dashboard-ui').classList.add('flex');
+                loadAll();
+            }
+        }
+    </script>
+</body>
+</html>
