@@ -169,7 +169,15 @@
     <script>
         window.supplierData = []; let pendingMats = [];
 
-        function getSafeArray(data) { if (!data) return []; if (Array.isArray(data)) return data; try { return JSON.parse(data); } catch(e) { return []; } }
+        // 🚨 絕對防彈：防止 JSON 與 Null 崩潰
+        function getSafeArray(data) { 
+            if (!data) return []; 
+            if (Array.isArray(data)) return data; 
+            try { 
+                let parsed = (typeof data === 'string') ? JSON.parse(data) : data;
+                return Array.isArray(parsed) ? parsed : [];
+            } catch(e) { return []; } 
+        }
 
         async function safeUpdate(table, payload, id) {
             try { await window._sb.from(table).update(payload).eq('id', id); } catch(e) { console.error(`Update ${table} failed`, e); }
@@ -221,7 +229,7 @@
                     }));
                     reqData = [...reqData, ...oldReqs];
                 }
-            } catch(e) { console.error('Fetch Reqs Error:', e); }
+            } catch(e) {}
             return reqData;
         }
 
@@ -232,74 +240,80 @@
                 const { data: pos } = await window._sb.from('purchase_orders').select('*, employees(full_name)').like('note', 'PO-%').order('created_at', {ascending: false});
                 if (pos && pos.length > 0) {
                     let oldPos = pos.map(x => {
-                        let parts = x.note.split('|||');
-                        return { id: x.id, po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', status: x.status, expected_date: x.expected_date || '未定', items_json: x.raw_materials, created_at: x.created_at, is_legacy: true };
+                        let parts = (x.note||'').split('|||');
+                        return { id: x.id, po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定', status: x.status, expected_date: x.expected_date || '未定', items_json: x.raw_materials, created_at: x.created_at, is_legacy: true };
                     });
                     poData = [...poData, ...oldPos];
                 }
-            } catch(e) { console.error('Fetch POs Error:', e); }
+            } catch(e) {}
             return poData;
         }
 
         async function loadDashboardData() {
-            const reqs = await fetchSafeReqs();
-            const reqContainer = document.getElementById('ui-dash-req-status');
-            const thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000);
-            const recentReqs = reqs.filter(r => new Date(r.created_at) >= thirtyDaysAgo);
+            try {
+                const reqs = await fetchSafeReqs();
+                const reqContainer = document.getElementById('ui-dash-req-status');
+                const thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000);
+                const recentReqs = reqs.filter(r => new Date(r.created_at) >= thirtyDaysAgo);
 
-            if(!recentReqs || recentReqs.length === 0) { reqContainer.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">近期無請購單</td></tr>'; }
-            else {
-                reqContainer.innerHTML = recentReqs.map(r => {
-                    let stCol = r.status === '已完成' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (r.status === '採購中' ? 'text-sky-700 bg-sky-100 border-sky-200' : 'text-amber-700 bg-amber-100 border-amber-200');
-                    return `<tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50">
-                        <td class="p-2 font-mono font-black text-[9px] text-slate-600">${r.req_no.replace('REQ-','')}</td>
-                        <td class="p-2 font-bold text-xs truncate max-w-[60px] text-slate-700">${r.employees?.full_name||'未知'}</td>
-                        <td class="p-2 text-center"><span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${stCol}">${r.status}</span></td>
-                        <td class="p-2 text-right font-bold text-[9px] text-slate-500">${new Date(r.created_at).toLocaleDateString('zh-TW').slice(5)}</td>
-                    </tr>`;
-                }).join('');
-            }
+                if(!recentReqs || recentReqs.length === 0) { reqContainer.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">近期無請購單</td></tr>'; }
+                else {
+                    reqContainer.innerHTML = recentReqs.map(r => {
+                        let stCol = r.status === '已完成' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (r.status === '採購中' ? 'text-sky-700 bg-sky-100 border-sky-200' : 'text-amber-700 bg-amber-100 border-amber-200');
+                        return `<tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50">
+                            <td class="p-2 font-mono font-black text-[9px] text-slate-600">${r.req_no.replace('REQ-','')}</td>
+                            <td class="p-2 font-bold text-xs truncate max-w-[60px] text-slate-700">${r.employees?.full_name||'未知'}</td>
+                            <td class="p-2 text-center"><span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${stCol}">${r.status}</span></td>
+                            <td class="p-2 text-right font-bold text-[9px] text-slate-500">${new Date(r.created_at).toLocaleDateString('zh-TW').slice(5)}</td>
+                        </tr>`;
+                    }).join('');
+                }
 
-            const pos = await fetchSafePOs();
-            const poContainer = document.getElementById('ui-dash-po-status');
-            
-            if(!pos || pos.length === 0) { poContainer.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無進行中的採購單</td></tr>'; }
-            else {
-                const today = new Date(); today.setHours(0,0,0,0);
-                let poHtml = '';
-                pos.forEach(po => {
-                    let expDate = new Date(po.expected_date);
-                    let diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
-                    let statusBadge = ''; let textClass = 'text-slate-700';
-                    
-                    if(po.status === '完成' || po.status === 'PO完成' || po.status === '已到貨') {
-                        statusBadge = '<span class="text-[9px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">完成</span>';
-                        textClass = 'text-emerald-700 font-bold';
-                    } else if (po.status.includes('異常') || po.status.includes('拒收') || po.status.includes('遲交')) {
-                        statusBadge = `<span class="text-[9px] font-black text-white bg-red-600 px-1.5 py-0.5 rounded shadow-sm animate-pulse">${po.status.replace('PO','')}</span>`;
-                        textClass = 'text-red-600 font-black';
-                    } else {
-                        if (diffDays < 0) {
-                            statusBadge = '<span class="text-[9px] font-black text-white bg-red-500 px-1.5 py-0.5 rounded shadow-sm animate-pulse">遲交</span>';
+                const pos = await fetchSafePOs();
+                const poContainer = document.getElementById('ui-dash-po-status');
+                
+                if(!pos || pos.length === 0) { poContainer.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無進行中的採購單</td></tr>'; }
+                else {
+                    const today = new Date(); today.setHours(0,0,0,0);
+                    let poHtml = '';
+                    pos.forEach(po => {
+                        // 🚨 防彈日期解析
+                        let expDate = new Date(po.expected_date);
+                        let diffDays = isNaN(expDate.getTime()) ? 999 : Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
+                        let statusBadge = ''; let textClass = 'text-slate-700';
+                        
+                        if(po.status === '完成' || po.status === 'PO完成' || po.status === '已到貨') {
+                            statusBadge = '<span class="text-[9px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">完成</span>';
+                            textClass = 'text-emerald-700 font-bold';
+                        } else if (po.status.includes('異常') || po.status.includes('拒收') || po.status.includes('遲交')) {
+                            statusBadge = `<span class="text-[9px] font-black text-white bg-red-600 px-1.5 py-0.5 rounded shadow-sm animate-pulse">${po.status.replace('PO','')}</span>`;
                             textClass = 'text-red-600 font-black';
-                        } else if (diffDays <= 3) {
-                            statusBadge = '<span class="text-[9px] font-black text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">警示</span>';
-                            textClass = 'text-amber-600 font-black';
                         } else {
-                            statusBadge = '<span class="text-[9px] font-black text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">已發送</span>';
+                            if (diffDays < 0) {
+                                statusBadge = '<span class="text-[9px] font-black text-white bg-red-500 px-1.5 py-0.5 rounded shadow-sm animate-pulse">遲交</span>';
+                                textClass = 'text-red-600 font-black';
+                            } else if (diffDays <= 3) {
+                                statusBadge = '<span class="text-[9px] font-black text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">警示</span>';
+                                textClass = 'text-amber-600 font-black';
+                            } else {
+                                statusBadge = '<span class="text-[9px] font-black text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">已發送</span>';
+                            }
                         }
-                    }
 
-                    let dateText = (po.expected_date && po.expected_date !== '未定' && po.expected_date !== null) ? String(po.expected_date).slice(5) : '未定';
+                        let dateText = (po.expected_date && po.expected_date !== '未定' && po.expected_date !== null) ? String(po.expected_date).slice(5) : '未定';
 
-                    poHtml += `<tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50">
-                        <td class="p-2 font-mono font-black text-[9px] ${textClass}">${po.po_no.replace('PO-','')}</td>
-                        <td class="p-2 font-bold text-xs truncate max-w-[80px] ${textClass}">${po.supplier_name}</td>
-                        <td class="p-2 text-center">${statusBadge}</td>
-                        <td class="p-2 text-center font-bold text-[10px] ${textClass}">${dateText}</td>
-                    </tr>`;
-                });
-                poContainer.innerHTML = poHtml;
+                        poHtml += `<tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50">
+                            <td class="p-2 font-mono font-black text-[9px] ${textClass}">${po.po_no.replace('PO-','')}</td>
+                            <td class="p-2 font-bold text-xs truncate max-w-[80px] ${textClass}">${po.supplier_name}</td>
+                            <td class="p-2 text-center">${statusBadge}</td>
+                            <td class="p-2 text-center font-bold text-[10px] ${textClass}">${dateText}</td>
+                        </tr>`;
+                    });
+                    poContainer.innerHTML = poHtml;
+                }
+            } catch(e) {
+                console.error(e);
+                document.getElementById('ui-dash-req-status').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500 font-bold">資料庫權限錯誤</td></tr>';
             }
         }
 
@@ -520,7 +534,6 @@
                                 <option value="完成" ${p.status==='完成'?'selected':''}>完成</option>
                                 <option value="異常(遲交)" ${p.status==='異常(遲交)'?'selected':''}>異常(遲交)</option>
                                 <option value="異常(拒收)" ${p.status==='異常(拒收)'?'selected':''}>異常(拒收)</option>
-                                <option value="異常(其他)" ${p.status==='異常(其他)'?'selected':''}>異常(其他)</option>
                             </select>
                             <button onclick="delPO('${p.id}', ${p.is_legacy?true:false})" class="text-[9px] text-red-600 bg-red-50 px-2 py-1 rounded font-bold">刪除</button>
                         </div>
