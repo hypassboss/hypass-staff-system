@@ -256,7 +256,7 @@
                     elDocs.innerHTML = '<p class="text-center text-slate-400 font-bold py-6">目前無正式採購單 (PDF)</p>';
                 } else {
                     elDocs.innerHTML = docs.map(d => {
-                        let statusCol = d.status === '已到貨' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-slate-700 bg-slate-100 border-slate-200';
+                        let statusCol = d.status === '完成' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (d.status.includes('異常') ? 'text-red-700 bg-red-100 border-red-200' : 'text-slate-700 bg-slate-100 border-slate-200');
                         let itemsCount = d.items_json ? d.items_json.length : 0;
                         return `
                         <div class="bg-white p-4 rounded-xl border border-slate-200 mb-3 shadow-sm flex flex-col md:flex-row justify-between md:items-center">
@@ -274,8 +274,11 @@
                                 <button onclick="downloadAdminPO_PDF('${d.id}')" class="flex-1 md:w-32 bg-slate-800 hover:bg-slate-700 text-white text-xs px-4 py-2 rounded-lg font-black shadow-sm transition active:scale-95 flex justify-center items-center"><span class="mr-1">📥</span> 補印 PDF</button>
                                 <div class="flex space-x-2">
                                     <select onchange="updateAdminPODocStatus('${d.id}', this.value)" class="text-xs border border-slate-300 p-2 rounded-lg font-black text-slate-700 outline-none focus:border-amber-500 bg-slate-50">
-                                        <option value="已下單" ${d.status==='已下單'?'selected':''}>已下單</option>
-                                        <option value="已到貨" ${d.status==='已到貨'?'selected':''}>✅已到貨結案</option>
+                                        <option value="已發送" ${d.status==='已發送'?'selected':''}>已發送</option>
+                                        <option value="完成" ${d.status==='完成'?'selected':''}>完成</option>
+                                        <option value="異常(遲交)" ${d.status==='異常(遲交)'?'selected':''}>異常(遲交)</option>
+                                        <option value="異常(拒收)" ${d.status==='異常(拒收)'?'selected':''}>異常(拒收)</option>
+                                        <option value="異常(其他)" ${d.status==='異常(其他)'?'selected':''}>異常(其他)</option>
                                     </select>
                                     <button onclick="delAdminPODoc('${d.id}')" class="text-xs bg-white border border-red-200 text-red-600 px-3 py-2 rounded-lg font-bold shadow-sm active:scale-95 transition hover:bg-red-50">🗑️</button>
                                 </div>
@@ -292,7 +295,7 @@
                     elDrafts.innerHTML = '<p class="text-center text-slate-400 font-bold py-4">無請購單紀錄</p>';
                 } else {
                     elDrafts.innerHTML = reqs.map(r => {
-                        let stBadge = r.status === '已完成' ? '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200 ml-2">已完成</span>' : '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200 ml-2">待處理</span>';
+                        let stBadge = r.status === '已完成' ? '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200 ml-2">已完成</span>' : '<span class="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200 ml-2">待處理/採購中</span>';
                         return `
                         <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm">
                             <div>
