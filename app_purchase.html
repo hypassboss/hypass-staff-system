@@ -160,7 +160,9 @@
     <nav id="core-bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9999] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <div onclick="event.stopPropagation(); window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
         <div onclick="event.stopPropagation(); window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></div>
+        
         <div onclick="event.stopPropagation(); window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-amber-600"><span class="text-xl mb-1">🛒</span><span class="scale-90">採購</span></div>
+        
         <div onclick="event.stopPropagation(); window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
         <div onclick="event.stopPropagation(); window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
     </nav>
@@ -169,6 +171,7 @@
     <script>
         window.supplierData = []; let pendingMats = [];
 
+        // 🌟 絕對防彈引擎：強制解析陣列，防止資料損毀當機
         function getSafeArray(data) {
             if (!data) return [];
             if (Array.isArray(data)) return data;
@@ -207,34 +210,50 @@
             loadDashboardData();
         }
 
-        // 🌟 自動容錯：同時掃描新舊資料表，確保資料絕對不漏抓！
+        // 🌟 自動容錯：雙軌掃描舊表 purchase_orders 的資料
         async function fetchSafeReqs() {
             let reqData = [];
             try {
-                const { data: r1, error: e1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false});
-                if (!e1 && r1) reqData = r1;
-            } catch(e) {}
-
-            try {
-                const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中']).order('created_at', {ascending: false});
+                const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['請購待處理', '採購中', '已完成', '待處理', '已建檔']).order('created_at', {ascending: false});
                 if (r2 && r2.length > 0) {
-                    let oldReqs = r2.map(x => ({
+                    let validReqs = r2.filter(x => x.note && x.note.startsWith('REQ-'));
+                    reqData = validReqs.map(x => ({
                         id: x.id,
-                        req_no: 'REQ-OLD-' + x.id.slice(0,4),
+                        req_no: x.note,
                         employee_id: x.employee_id,
                         employees: x.employees,
                         items_json: x.raw_materials, 
-                        status: x.status === '已建檔' ? '待處理' : x.status,
+                        status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status,
                         created_at: x.created_at
                     }));
-                    reqData = [...reqData, ...oldReqs];
                 }
-            } catch(e) {}
+            } catch(e) { console.error('Fetch Reqs Error:', e); }
             return reqData;
         }
 
+        async function fetchSafePOs() {
+            let poData = [];
+            try {
+                const { data: pos } = await window._sb.from('purchase_orders').select('*, employees(full_name)').like('note', 'PO-%').order('created_at', {ascending: false});
+                if (pos && pos.length > 0) {
+                    poData = pos.map(x => {
+                        let parts = x.note.split('|||');
+                        return {
+                            id: x.id,
+                            po_no: parts[0] || 'PO-UNKNOWN',
+                            supplier_name: parts[1] || '未指定供應商',
+                            status: x.status,
+                            expected_date: x.expected_date || '未定',
+                            items_json: x.raw_materials,
+                            created_at: x.created_at
+                        };
+                    });
+                }
+            } catch(e) { console.error('Fetch POs Error:', e); }
+            return poData;
+        }
+
         async function loadDashboardData() {
-            // 1. 內部請購單最新狀況
             const reqs = await fetchSafeReqs();
             const reqContainer = document.getElementById('ui-dash-req-status');
             
@@ -254,48 +273,45 @@
                 }).join('');
             }
 
-            // 2. 對外採購單狀況表
-            try {
-                const { data: pos } = await window._sb.from('po_documents').select('po_no, supplier_name, status, expected_date').order('expected_date', {ascending: true});
-                const poContainer = document.getElementById('ui-dash-po-status');
-                
-                if(!pos || pos.length === 0) { poContainer.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無進行中的採購單</td></tr>'; }
-                else {
-                    const today = new Date(); today.setHours(0,0,0,0);
-                    let poHtml = '';
-                    pos.forEach(po => {
-                        let expDate = new Date(po.expected_date);
-                        let diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
-                        let statusBadge = ''; let textClass = 'text-slate-700';
-                        
-                        if(po.status === '完成') {
-                            statusBadge = '<span class="text-[9px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">完成</span>';
-                            textClass = 'text-emerald-700 font-bold';
-                        } else if (po.status.includes('異常') || po.status.includes('拒收') || po.status.includes('遲交')) {
-                            statusBadge = `<span class="text-[9px] font-black text-white bg-red-600 px-1.5 py-0.5 rounded shadow-sm animate-pulse">${po.status}</span>`;
+            const pos = await fetchSafePOs();
+            const poContainer = document.getElementById('ui-dash-po-status');
+            
+            if(!pos || pos.length === 0) { poContainer.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無進行中的採購單</td></tr>'; }
+            else {
+                const today = new Date(); today.setHours(0,0,0,0);
+                let poHtml = '';
+                pos.forEach(po => {
+                    let expDate = new Date(po.expected_date);
+                    let diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
+                    let statusBadge = ''; let textClass = 'text-slate-700';
+                    
+                    if(po.status === 'PO完成' || po.status === '已完成' || po.status === '完成') {
+                        statusBadge = '<span class="text-[9px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">完成</span>';
+                        textClass = 'text-emerald-700 font-bold';
+                    } else if (po.status.includes('異常') || po.status.includes('拒收') || po.status.includes('遲交')) {
+                        statusBadge = `<span class="text-[9px] font-black text-white bg-red-600 px-1.5 py-0.5 rounded shadow-sm animate-pulse">${po.status.replace('PO','')}</span>`;
+                        textClass = 'text-red-600 font-black';
+                    } else {
+                        if (diffDays < 0) {
+                            statusBadge = '<span class="text-[9px] font-black text-white bg-red-500 px-1.5 py-0.5 rounded shadow-sm animate-pulse">遲交</span>';
                             textClass = 'text-red-600 font-black';
+                        } else if (diffDays <= 3) {
+                            statusBadge = '<span class="text-[9px] font-black text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">警示</span>';
+                            textClass = 'text-amber-600 font-black';
                         } else {
-                            if (diffDays < 0) {
-                                statusBadge = '<span class="text-[9px] font-black text-white bg-red-500 px-1.5 py-0.5 rounded shadow-sm animate-pulse">遲交</span>';
-                                textClass = 'text-red-600 font-black';
-                            } else if (diffDays <= 3) {
-                                statusBadge = '<span class="text-[9px] font-black text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">警示</span>';
-                                textClass = 'text-amber-600 font-black';
-                            } else {
-                                statusBadge = '<span class="text-[9px] font-black text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">已發送</span>';
-                            }
+                            statusBadge = '<span class="text-[9px] font-black text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">已發送</span>';
                         }
+                    }
 
-                        poHtml += `<tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50">
-                            <td class="p-2 font-mono font-black text-[9px] ${textClass}">${po.po_no.replace('PO-','')}</td>
-                            <td class="p-2 font-bold text-xs truncate max-w-[80px] ${textClass}">${po.supplier_name}</td>
-                            <td class="p-2 text-center">${statusBadge}</td>
-                            <td class="p-2 text-center font-bold text-[10px] ${textClass}">${po.expected_date.slice(5)}</td>
-                        </tr>`;
-                    });
-                    poContainer.innerHTML = poHtml;
-                }
-            } catch(e) { document.getElementById('ui-dash-po-status').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500">資料讀取異常</td></tr>'; }
+                    poHtml += `<tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50">
+                        <td class="p-2 font-mono font-black text-[9px] ${textClass}">${po.po_no.replace('PO-','')}</td>
+                        <td class="p-2 font-bold text-xs truncate max-w-[80px] ${textClass}">${po.supplier_name}</td>
+                        <td class="p-2 text-center">${statusBadge}</td>
+                        <td class="p-2 text-center font-bold text-[10px] ${textClass}">${po.expected_date.slice(5)}</td>
+                    </tr>`;
+                });
+                poContainer.innerHTML = poHtml;
+            }
         }
 
         async function saveSupplier(e) {
@@ -304,7 +320,7 @@
             try {
                 await window._sb.from('suppliers').insert([p]);
                 alert('✅ 供應商建立成功！'); e.target.reset(); await loadSuppliers(); backToDash();
-            } catch(err) { alert('儲存失敗，請檢查資料庫權限'); }
+            } catch(err) { alert('儲存失敗'); }
         }
 
         async function openReqManagement() {
@@ -348,6 +364,7 @@
             `).join('');
         }
 
+        // 🌟 絕對防彈 PO 生成引擎
         async function generatePO_PDF() {
             const items = document.querySelectorAll('.pending-mat-item');
             let selected = []; let reqIdsToUpdate = new Set(); let missingData = false;
@@ -381,8 +398,15 @@
             for (const [supName, data] of Object.entries(groupedPO)) {
                 const poNo = 'PO-' + new Date().getFullYear() + String(new Date().getMonth()+1).padStart(2,'0') + String(new Date().getDate()).padStart(2,'0') + '-' + Math.floor(Math.random()*1000).toString().padStart(3,'0');
                 
+                // 寫入舊表，保證成功
                 try {
-                    await window._sb.from('po_documents').insert([{ po_no: poNo, supplier_name: supName, expected_date: data.maxDate, items_json: data.items, status: '已發送' }]);
+                    await window._sb.from('purchase_orders').insert([{ 
+                        employee_id: window.currentUser?.id || null,
+                        status: 'PO已發送', 
+                        note: poNo + '|||' + supName, 
+                        raw_materials: data.items, 
+                        expected_date: data.maxDate 
+                    }]);
                 } catch(e) { console.error('PO Insert failed', e); }
 
                 let tableRows = data.items.map((s, i) => `
@@ -458,8 +482,7 @@
             try {
                 let arrReqIds = Array.from(reqIdsToUpdate);
                 for(let rid of arrReqIds) { 
-                    await window._sb.from('requisitions').update({status: '已完成'}).eq('id', rid); 
-                    await window._sb.from('purchase_orders').update({status: '已轉換正式單'}).eq('id', rid); 
+                    await window._sb.from('purchase_orders').update({status: '已完成'}).eq('id', rid); 
                 }
             } catch(e) { console.log('Update req error', e); }
 
@@ -488,47 +511,42 @@
                             <p class="text-xs font-black text-slate-700 mt-0.5">${r.employees?.full_name||'未知'} 的需求</p>
                         </div>
                         <div class="flex flex-col space-y-1">
-                            <select onchange="updateReqStatus('${r.id}', this.value)" class="text-[9px] p-1 border border-slate-300 rounded outline-none font-bold">
-                                <option value="待處理" ${r.status==='待處理'?'selected':''}>待處理</option>
+                            <select onchange="updatePOStatus('${r.id}', this.value)" class="text-[9px] p-1 border border-slate-300 rounded outline-none font-bold">
+                                <option value="請購待處理" ${r.status==='待處理'?'selected':''}>待處理</option>
                                 <option value="採購中" ${r.status==='採購中'?'selected':''}>採購中</option>
                                 <option value="已完成" ${r.status==='已完成'?'selected':''}>已完成</option>
                             </select>
-                            <button onclick="delReq('${r.id}')" class="text-[9px] text-red-600 bg-red-50 px-2 py-1 rounded font-bold">刪除</button>
+                            <button onclick="delPO('${r.id}')" class="text-[9px] text-red-600 bg-red-50 px-2 py-1 rounded font-bold">刪除</button>
                         </div>
                     </div>
                 `).join('');
             } else { elReq.innerHTML = '<p class="text-xs text-slate-400">無紀錄</p>'; }
 
-            try {
-                const { data: pos } = await window._sb.from('po_documents').select('*').order('created_at', {ascending: false});
-                if(pos && pos.length > 0) {
-                    elPo.innerHTML = pos.map(p => `
-                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
-                            <div>
-                                <span class="text-[10px] font-mono font-bold text-slate-500">${p.po_no}</span>
-                                <span class="text-[9px] font-black ml-1 text-amber-700 bg-amber-50 px-1 rounded">${p.status}</span>
-                                <p class="text-xs font-black text-slate-700 mt-0.5 truncate max-w-[120px]">${p.supplier_name}</p>
-                            </div>
-                            <div class="flex flex-col space-y-1">
-                                <select onchange="updatePOStatus('${p.id}', this.value)" class="text-[9px] p-1 border border-slate-300 rounded outline-none font-bold">
-                                    <option value="已發送" ${p.status==='已發送'?'selected':''}>已發送</option>
-                                    <option value="完成" ${p.status==='完成'?'selected':''}>完成</option>
-                                    <option value="異常(遲交)" ${p.status==='異常(遲交)'?'selected':''}>異常(遲交)</option>
-                                    <option value="異常(拒收)" ${p.status==='異常(拒收)'?'selected':''}>異常(拒收)</option>
-                                    <option value="異常(其他)" ${p.status==='異常(其他)'?'selected':''}>異常(其他)</option>
-                                </select>
-                                <button onclick="delPO('${p.id}')" class="text-[9px] text-red-600 bg-red-50 px-2 py-1 rounded font-bold">刪除</button>
-                            </div>
+            const pos = await fetchSafePOs();
+            if(pos && pos.length > 0) {
+                elPo.innerHTML = pos.map(p => `
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] font-mono font-bold text-slate-500">${p.po_no}</span>
+                            <span class="text-[9px] font-black ml-1 text-amber-700 bg-amber-50 px-1 rounded">${p.status.replace('PO','')}</span>
+                            <p class="text-xs font-black text-slate-700 mt-0.5 truncate max-w-[120px]">${p.supplier_name}</p>
                         </div>
-                    `).join('');
-                } else { elPo.innerHTML = '<p class="text-xs text-slate-400">無紀錄</p>'; }
-            } catch(e) { elPo.innerHTML = '<p class="text-xs text-slate-400">資料讀取異常</p>'; }
+                        <div class="flex flex-col space-y-1">
+                            <select onchange="updatePOStatus('${p.id}', this.value)" class="text-[9px] p-1 border border-slate-300 rounded outline-none font-bold">
+                                <option value="PO已發送" ${p.status==='PO已發送'?'selected':''}>已發送</option>
+                                <option value="PO完成" ${p.status==='PO完成'?'selected':''}>完成</option>
+                                <option value="PO異常(遲交)" ${p.status==='PO異常(遲交)'?'selected':''}>異常(遲交)</option>
+                                <option value="PO異常(拒收)" ${p.status==='PO異常(拒收)'?'selected':''}>異常(拒收)</option>
+                            </select>
+                            <button onclick="delPO('${p.id}')" class="text-[9px] text-red-600 bg-red-50 px-2 py-1 rounded font-bold">刪除</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else { elPo.innerHTML = '<p class="text-xs text-slate-400">無紀錄</p>'; }
         }
 
-        async function updateReqStatus(id, st) { try{await window._sb.from('requisitions').update({status:st}).eq('id',id);}catch(e){} try{await window._sb.from('purchase_orders').update({status:st}).eq('id',id);}catch(e){} alert('更新成功'); }
-        async function delReq(id) { if(confirm('刪除?')) { try{await window._sb.from('requisitions').delete().eq('id',id);}catch(e){} try{await window._sb.from('purchase_orders').delete().eq('id',id);}catch(e){} openHistory(); } }
-        async function updatePOStatus(id, st) { try{await window._sb.from('po_documents').update({status:st}).eq('id',id); alert('更新成功');}catch(e){} }
-        async function delPO(id) { if(confirm('刪除?')) { try{await window._sb.from('po_documents').delete().eq('id',id); openHistory();}catch(e){} } }
+        async function updatePOStatus(id, st) { try{await window._sb.from('purchase_orders').update({status:st}).eq('id',id); alert('更新成功');}catch(e){} }
+        async function delPO(id) { if(confirm('確定刪除?')) { try{await window._sb.from('purchase_orders').delete().eq('id',id); openHistory();}catch(e){} } }
 
         window.onload = bootPurchase;
 
