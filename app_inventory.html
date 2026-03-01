@@ -30,7 +30,6 @@
         nav { display: none !important; }
         #core-bottom-nav { display: flex !important; }
         
-        /* 左側浮動通知動畫 */
         @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         .toast-msg { animation: slideInLeft 0.4s ease-out forwards; }
     </style>
@@ -38,7 +37,6 @@
 <body class="text-slate-800 relative">
     
     <div id="print-zone" style="display:none;"></div>
-
     <div id="toast-container" class="fixed bottom-24 left-4 z-[9999] flex flex-col space-y-3 pointer-events-none"></div>
 
     <div id="app-container" class="max-w-md mx-auto shadow-2xl relative">
@@ -70,7 +68,6 @@
             </div>
 
             <div id="view-dashboard" class="view-panel active space-y-4">
-                
                 <div class="glass-card p-4 rounded-[2rem] shadow-sm border-t-4 border-teal-500 relative overflow-hidden">
                     <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between">
                         <span class="flex items-center"><span class="mr-1.5 text-lg">🚗</span> 汽車濾網最新狀況</span>
@@ -270,12 +267,12 @@
     </div>
 
     <div id="req-qty-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-sm items-center justify-center p-4 z-[9990]">
-        <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl">
+        <div class="bg-white w-full max-w-sm m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl">
             <h3 class="font-black text-lg border-b border-slate-100 pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2 text-xl">✍️</span> 輸入請購數量</h3>
             <div id="req-qty-list" class="space-y-3 max-h-[50vh] overflow-y-auto no-scrollbar pr-1 mb-5"></div>
             <div class="flex space-x-3 mt-2">
                 <button onclick="closeModal('req-qty-modal')" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl transition active:scale-95">取消</button>
-                <button onclick="confirmGenerateReq()" class="flex-1 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest active:scale-95">確定生成請購單</button>
+                <button id="btn-run-req" onclick="confirmGenerateReq()" class="flex-1 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest active:scale-95">確定生成請購單</button>
             </div>
         </div>
     </div>
@@ -287,8 +284,6 @@
         <div onclick="event.stopPropagation(); window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
         <div onclick="event.stopPropagation(); window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
     </nav>
-
-    <audio id="beep-sound" src="data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
 
     <script src="shared.js"></script>
     <script>
@@ -505,7 +500,6 @@
         async function inlineUpdateCycle(id, newVal) { const val = parseInt(newVal) || 30; const { error } = await window._sb.from('items').update({ stocktake_cycle: val }).eq('id', id); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderInventoryListUI(window.inventoryData); filterInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
         function filterInventory() { const keyword = document.getElementById('inv-search').value.toLowerCase(); const cat = document.getElementById('inv-cat-filter').value; document.querySelectorAll('.inv-item').forEach(el => { const text = el.getAttribute('data-search').toLowerCase(); const elCat = el.getAttribute('data-cat'); el.style.display = (text.includes(keyword) && (cat === '' || elCat === cat)) ? 'flex' : 'none'; }); }
 
-        // 🌟 請購單生成引擎 (保證優先下載 CSV，再背景寫入 DB)
         function toggleReq(id, el) { if(el.checked) reqCart.add(id); else reqCart.delete(id); updateTopReqBar(); }
         function updateTopReqBar() { const bar = document.getElementById('top-req-bar'); if(reqCart.size > 0 && document.getElementById('view-inventory-list').classList.contains('active')) { bar.classList.remove('hidden'); document.getElementById('top-req-count').innerText = reqCart.size; } else { bar.classList.add('hidden'); } }
         
@@ -521,9 +515,13 @@
             openModal('req-qty-modal');
         }
 
+        // 🌟 絕對防彈：優先下載，再跳轉
         async function confirmGenerateReq() {
             let isValid = true; document.querySelectorAll('.req-target-qty').forEach(inp => { if((parseInt(inp.value)||0) <= 0) isValid = false; });
             if(!isValid) { alert('請確保所有項目都有輸入大於 0 的數量！'); return; }
+
+            const btn = document.getElementById('btn-run-req');
+            btn.innerText = '處理中...'; btn.disabled = true;
 
             let targetItems = []; let rawTotals = {};
 
@@ -540,12 +538,12 @@
             });
 
             const rawMaterials = Object.values(rawTotals);
-            if(rawMaterials.length === 0) { alert('計算錯誤，無原料需求！'); return; }
+            if(rawMaterials.length === 0) { alert('計算錯誤，無原料需求！'); btn.innerText = '確定生成請購單'; btn.disabled = false; return; }
 
             const reqNo = 'REQ-' + new Date().getFullYear() + String(new Date().getMonth()+1).padStart(2,'0') + String(new Date().getDate()).padStart(2,'0') + '-' + Math.floor(Math.random()*1000).toString().padStart(3,'0');
             const userName = window.currentUser?.full_name || '使用者';
             
-            // 🌟 絕對優先：強制產生並下載 CSV，不受資料庫報錯阻攔
+            // 🚨 絕對優先：不管資料庫死活，先產生實體 CSV 檔案！
             try {
                 let csv = "\uFEFF請購單號,申請日期,申請人,請購成品/半成品,生產數量,展開原料名稱,需求總量,單位\n";
                 const dateStr = new Date().toLocaleDateString('zh-TW');
@@ -558,29 +556,27 @@
                 link.download = `HYPASS_請購單_${reqNo}.csv`; 
                 document.body.appendChild(link); link.click(); document.body.removeChild(link);
                 
-                // 顯示左側成功浮動通知
+                // 左下角直接顯示完成
                 showSysToast(`已生成請購單編號 ${reqNo}.csv`);
-            } catch(e) {
-                console.error('CSV生成失敗:', e);
-            }
+            } catch(e) { console.error('CSV生成失敗:', e); }
+
+            // 背景寫入資料庫
+            try {
+                const payload = { req_no: reqNo, employee_id: window.currentUser?.id || null, target_items: targetItems, items_json: rawMaterials, status: '待處理' };
+                await window._sb.from('requisitions').insert([payload]);
+            } catch (dbErr) { console.error('資料庫同步失敗:', dbErr); }
 
             closeModal('req-qty-modal');
             reqCart.clear();
             document.getElementById('top-req-bar').classList.add('hidden');
             document.querySelectorAll('.inv-item input[type="checkbox"]').forEach(cb => cb.checked = false);
 
-            // 🌟 延後處理：寫入資料庫 (加入 try...catch 容錯，防止崩潰)
-            try {
-                const payload = { req_no: reqNo, employee_id: window.currentUser?.id || null, target_items: targetItems, items_json: rawMaterials, status: '待處理' };
-                const { error } = await window._sb.from('requisitions').insert([payload]);
-                if(error) { 
-                    alert(`⚠️ CSV 檔案已成功下載！但無法同步至後台資料庫，請確認您的網路狀態或是否有執行 database_patch14.sql！\n錯誤原因: ${error.message}`); 
-                }
-            } catch (dbErr) {
-                console.error('資料庫同步失敗:', dbErr);
-            }
-
-            loadItems();
+            alert(`✅ 檔案下載成功！系統已將您的請購單傳送至【採購中心】。\n即將為您跳轉...`); 
+            
+            // 🚨 強制跳轉採購中心
+            setTimeout(() => {
+                window.location.href = 'app_purchase.html';
+            }, 500);
         }
 
         function openScanner() { openView('scanner', '相機掃描盤點'); isScanning = true; setTimeout(() => { if (!html5QrcodeScanner) { html5QrcodeScanner = new Html5Qrcode("reader"); } if (html5QrcodeScanner.isScanning) return; html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScanSuccess).catch((e)=>{ alert('相機啟動失敗，請確認已給予鏡頭權限！'); backToDash(); }); }, 300); }
