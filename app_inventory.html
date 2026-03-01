@@ -98,6 +98,7 @@
                         <span class="text-3xl mb-1.5 drop-shadow-md">📜</span>
                         <span class="font-black text-amber-800 text-xs tracking-widest mb-0.5">請購單紀錄</span>
                     </button>
+
                     <button onclick="openView('register', '新增料號與 BOM')" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-sky-200 hover:bg-sky-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">➕</span>
                         <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">新增料號</span>
@@ -112,7 +113,7 @@
             <div id="view-inventory-list" class="view-panel relative">
                 <div class="sticky top-14 z-30 bg-[#f1f5f9] pt-2 pb-3 border-b border-slate-300 shadow-sm -mx-4 px-4 mb-4">
                     <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1.5">📦</span> 庫存清單大盤</h3>
+                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1.5">📦</span> 庫存大盤 <span class="text-[10px] text-slate-400 font-bold ml-2">(低水位優先)</span></h3>
                         <button onclick="openReqModal()" class="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-md active:scale-95 transition flex items-center">
                             生成請購單 <span id="list-req-count" class="ml-1.5 bg-white text-sky-600 px-2 py-0.5 rounded text-[11px] transition-all duration-300 shadow-sm">0</span>
                         </button>
@@ -120,12 +121,13 @@
 
                     <div class="mb-3">
                         <select id="inv-type-filter" onchange="switchInvType(this.value)" class="w-full p-3.5 bg-slate-800 text-white rounded-2xl text-sm font-black outline-none select-arrow shadow-md tracking-widest text-center border-2 border-slate-700">
-                            <option value="原料">🏭 原料庫存管理</option>
-                            <option value="成品">📦 成品庫存管理</option>
+                            <option value="全部">🌍 顯示所有庫存 (原料+成品)</option>
+                            <option value="原料">🏭 僅顯示原料</option>
+                            <option value="成品">📦 僅顯示成品</option>
                         </select>
                     </div>
 
-                    <div id="sub-tabs-raw" class="flex space-x-2 overflow-x-auto no-scrollbar pb-1">
+                    <div id="sub-tabs-raw" class="hidden flex space-x-2 overflow-x-auto no-scrollbar pb-1">
                         <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-3 py-1.5 rounded-full border border-sky-500 text-[10px] font-bold bg-sky-500 text-white shadow-sm">全部原料</button>
                         <button onclick="switchInvCat('標籤貼紙')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">標籤貼紙</button>
                         <button onclick="switchInvCat('車用濾布')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">車用濾布</button>
@@ -142,6 +144,7 @@
                 <div class="mb-4">
                     <input type="text" id="inv-search" placeholder="🔍 搜尋料號 / 品名 / 規格..." class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-500 transition shadow-sm" onkeyup="renderFilteredInventory()">
                 </div>
+
                 <div id="ui-inventory-list" class="space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar pr-1 pb-16"></div>
             </div>
 
@@ -212,10 +215,9 @@
     <script>
         let html5QrcodeScanner = null; let currentItemPackQty = 1; let allItems = []; window.inventoryData = []; window.latestChecks = {}; let reqCart = new Set(); let isScanning = false;
         
-        let currentInvType = '原料'; 
+        let currentInvType = '全部'; 
         let currentInvCat = '全部';
 
-        // 🚨 絕對防彈：防止 JSON 與 Null 崩潰
         function getSafeArray(data) { 
             if (!data) return []; 
             if (Array.isArray(data)) return data; 
@@ -237,7 +239,6 @@
             }
         }
 
-        // 🌟 專屬的左側浮動 Toast 通知
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -261,8 +262,6 @@
                 document.getElementById('view-dashboard').classList.add('active'); 
                 document.getElementById('header-title').innerText = '庫存大廳'; 
                 document.getElementById('btn-back').classList.add('hidden'); 
-                
-                // 返回不清除購物車，保持狀態
                 loadItems();
             });
         }
@@ -274,7 +273,6 @@
             renderItemSearch();
         }
 
-        // 🌟 獨立防彈資料庫讀取引擎
         async function fetchSafeReqsForInv() {
             let reqData = [];
             try { 
@@ -338,13 +336,8 @@
             const isLegacy = document.getElementById('inv-req-edit-islegacy').value === 'true';
             
             try {
-                if(isLegacy) { 
-                    const { error } = await window._sb.from('purchase_orders').update({ status: st }).eq('id', id); 
-                    if(error) throw error;
-                } else { 
-                    const { error } = await window._sb.from('requisitions').update({ status: st }).eq('id', id); 
-                    if(error) throw error;
-                }
+                if(isLegacy) { await window._sb.from('purchase_orders').update({ status: st }).eq('id', id); } 
+                else { await window._sb.from('requisitions').update({ status: st }).eq('id', id); }
                 alert('✅ 狀態已更新，並同步至後台與採購中心！'); 
                 closeModal('inv-req-edit-modal'); 
                 openInvReqHistory(); 
@@ -354,13 +347,8 @@
         async function delInvReq(id, isLegacy) { 
             if(confirm('⚠️ 確定要刪除這筆請購單嗎？\n此動作會同步刪除後台與採購中心的紀錄。')){ 
                 try {
-                    if(isLegacy) {
-                        const { error } = await window._sb.from('purchase_orders').delete().eq('id', id);
-                        if(error) throw error;
-                    } else {
-                        const { error } = await window._sb.from('requisitions').delete().eq('id', id);
-                        if(error) throw error;
-                    }
+                    if(isLegacy) await window._sb.from('purchase_orders').delete().eq('id', id);
+                    else await window._sb.from('requisitions').delete().eq('id', id);
                     openInvReqHistory(); 
                 } catch(e) { alert('刪除失敗: ' + e.message); }
             } 
@@ -383,87 +371,66 @@
                 window.latestChecks = {}; 
                 if(checks) { checks.forEach(c => { if(!window.latestChecks[c.item_id]) { window.latestChecks[c.item_id] = { rawDate: c.created_at, date: new Date(c.created_at).toLocaleDateString('zh-TW'), emp: c.employees?.full_name || '未知' }; } }); }
 
-                // 🌟 核心修復：獨立追蹤 成品 (FG) 與 原料 (RAW) 的請購數量，不互相污染
+                // 🌟 核心修復：精準隔離「成品 (FG)」與「原料 (RAW)」的需求量
                 let pendingReqs_FG = {};
                 let pendingReqs_RAW = {};
                 let pendingPOs_RAW = {};
                 let pendingPOs_ETA = {};
 
-                // 讀取新表 requisitions
                 try {
-                    const { data: reqs, error: reqErr } = await window._sb.from('requisitions').select('target_items, items_json').in('status', ['待處理', '採購中']);
-                    if (!reqErr && reqs) { 
+                    const { data: reqs } = await window._sb.from('requisitions').select('target_items, items_json').in('status', ['待處理', '採購中']);
+                    if (reqs) { 
                         reqs.forEach(req => { 
-                            getSafeArray(req.target_items).forEach(t => {
-                                if(t.id) pendingReqs_FG[t.id] = (pendingReqs_FG[t.id] || 0) + (parseInt(t.qty) || 0);
-                            });
-                            getSafeArray(req.items_json).forEach(r => {
-                                if(r.name) pendingReqs_RAW[r.name] = (pendingReqs_RAW[r.name] || 0) + (parseFloat(r.qty) || 0);
-                            });
+                            getSafeArray(req.target_items).forEach(t => { if(t.id) pendingReqs_FG[t.id] = (pendingReqs_FG[t.id] || 0) + (parseInt(t.qty) || 0); });
+                            getSafeArray(req.items_json).forEach(r => { if(r.name) pendingReqs_RAW[r.name] = (pendingReqs_RAW[r.name] || 0) + (parseFloat(r.qty) || 0); });
                         }); 
                     }
                 } catch(e) {}
                 
-                // 讀取舊表 purchase_orders (請購單)
                 try {
-                    const { data: reqs2, error: reqErr2 } = await window._sb.from('purchase_orders').select('target_items, raw_materials').in('status', ['請購待處理', '待處理', '採購中']);
-                    if (!reqErr2 && reqs2) { 
+                    const { data: reqs2 } = await window._sb.from('purchase_orders').select('target_items, raw_materials').in('status', ['請購待處理', '待處理', '採購中']);
+                    if (reqs2) { 
                         reqs2.forEach(req => { 
-                            getSafeArray(req.target_items).forEach(t => {
-                                if(t.id) pendingReqs_FG[t.id] = (pendingReqs_FG[t.id] || 0) + (parseInt(t.qty) || 0);
-                            });
-                            getSafeArray(req.raw_materials).forEach(r => {
-                                if(r.name) pendingReqs_RAW[r.name] = (pendingReqs_RAW[r.name] || 0) + (parseFloat(r.qty) || 0);
-                            });
+                            getSafeArray(req.target_items).forEach(t => { if(t.id) pendingReqs_FG[t.id] = (pendingReqs_FG[t.id] || 0) + (parseInt(t.qty) || 0); });
+                            getSafeArray(req.raw_materials).forEach(r => { if(r.name) pendingReqs_RAW[r.name] = (pendingReqs_RAW[r.name] || 0) + (parseFloat(r.qty) || 0); });
                         }); 
                     }
                 } catch(e) {}
 
-                // 讀取新表 po_documents
                 try {
-                    const { data: pos, error: posErr } = await window._sb.from('po_documents').select('items_json, expected_date').in('status', ['已發送', '已下單', '異常(遲交)']);
-                    if (!posErr && pos) { 
+                    const { data: pos } = await window._sb.from('po_documents').select('items_json, expected_date').in('status', ['已發送', '已下單', '異常(遲交)']);
+                    if (pos) { 
                         pos.forEach(po => { 
                             getSafeArray(po.items_json).forEach(p => { 
                                 if(p.name) {
                                     pendingPOs_RAW[p.name] = (pendingPOs_RAW[p.name] || 0) + (parseFloat(p.qty) || 0);
-                                    if(po.expected_date && (!pendingPOs_ETA[p.name] || po.expected_date < pendingPOs_ETA[p.name])) {
-                                        pendingPOs_ETA[p.name] = po.expected_date;
-                                    }
+                                    if(po.expected_date && (!pendingPOs_ETA[p.name] || po.expected_date < pendingPOs_ETA[p.name])) { pendingPOs_ETA[p.name] = po.expected_date; }
                                 }
                             }); 
                         }); 
                     }
                 } catch(e) {}
                 
-                // 讀取舊表 purchase_orders (採購單)
                 try {
-                    const { data: pos2, error: posErr2 } = await window._sb.from('purchase_orders').select('raw_materials, expected_date').like('note', 'PO-%').in('status', ['PO已發送', '已發送', '異常(遲交)', 'PO異常(遲交)']);
-                    if (!posErr2 && pos2) { 
+                    const { data: pos2 } = await window._sb.from('purchase_orders').select('raw_materials, expected_date').like('note', 'PO-%');
+                    if (pos2) { 
                         pos2.forEach(po => { 
                             getSafeArray(po.raw_materials).forEach(p => { 
                                 if(p.name) {
                                     pendingPOs_RAW[p.name] = (pendingPOs_RAW[p.name] || 0) + (parseFloat(p.qty) || 0);
-                                    if(po.expected_date && (!pendingPOs_ETA[p.name] || po.expected_date < pendingPOs_ETA[p.name])) {
-                                        pendingPOs_ETA[p.name] = po.expected_date;
-                                    }
+                                    if(po.expected_date && (!pendingPOs_ETA[p.name] || po.expected_date < pendingPOs_ETA[p.name])) { pendingPOs_ETA[p.name] = po.expected_date; }
                                 }
                             }); 
                         }); 
                     }
                 } catch(e) {}
                 
-                // 🚨 防彈設計：拔除舊有 id 綁定，避免 innerHTML 當機
                 let lowCount = 0;
                 const cats = [...new Set(allItems.map(i => i.category || '未分類'))];
                 const catOptions = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
                 
                 const searchCatFilter = document.getElementById('search-cat-filter');
-                if(searchCatFilter) {
-                    const currentSearchCat = searchCatFilter.value;
-                    searchCatFilter.innerHTML = catOptions;
-                    if(currentSearchCat) searchCatFilter.value = currentSearchCat;
-                }
+                if(searchCatFilter) { const currentSearchCat = searchCatFilter.value; searchCatFilter.innerHTML = catOptions; if(currentSearchCat) searchCatFilter.value = currentSearchCat; }
 
                 const feItemCat = document.getElementById('fe-item-cat');
                 if(feItemCat) feItemCat.innerHTML = catOptions;
@@ -561,8 +528,6 @@
                 if (uiFilterStatusTable) uiFilterStatusTable.innerHTML = filterHtml;
 
                 if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
-                
-                // 🚨 強制呼叫渲染清單，確保不變白
                 if(document.getElementById('view-inventory-list').classList.contains('active')) renderFilteredInventory();
 
             } catch(fatalError) {
@@ -583,18 +548,21 @@
             updateTopReqBar(); 
         }
 
-        // 🌟 高級下拉選單切換邏輯
         function switchInvType(type) {
             currentInvType = type;
             currentInvCat = '全部';
             
-            if(type === '原料') {
+            if(type === '全部') {
+                document.getElementById('sub-tabs-raw').classList.add('hidden');
+                document.getElementById('sub-tabs-fin').classList.add('hidden');
+            } else if(type === '原料') {
                 document.getElementById('sub-tabs-raw').classList.remove('hidden');
                 document.getElementById('sub-tabs-fin').classList.add('hidden');
             } else {
                 document.getElementById('sub-tabs-raw').classList.add('hidden');
                 document.getElementById('sub-tabs-fin').classList.remove('hidden');
             }
+            
             updateSubTabUI();
             renderFilteredInventory();
         }
@@ -626,7 +594,7 @@
             let searchEl = document.getElementById('inv-search');
             let keyword = searchEl ? searchEl.value.toLowerCase() : '';
             let filtered = window.inventoryData.filter(i => {
-                let matchType = i.item_type === currentInvType;
+                let matchType = (currentInvType === '全部') ? true : (i.item_type === currentInvType);
                 let matchCat = false;
                 if (currentInvCat === '全部') { matchCat = true; }
                 else if (currentInvCat === '其他') {
@@ -637,10 +605,21 @@
                 let matchSearch = i.item_code.toLowerCase().includes(keyword) || i.item_name.toLowerCase().includes(keyword) || (i.specification && i.specification.toLowerCase().includes(keyword));
                 return matchType && matchCat && matchSearch;
             });
+
+            // 🌟 核心修復：低水位庫存顯示在上面 (智能排序)
+            filtered.sort((a, b) => {
+                let safeA = a.safe_stock_level || 0;
+                let safeB = b.safe_stock_level || 0;
+                let statusA = a.current_stock <= safeA ? 1 : (a.current_stock <= safeA * 1.5 ? 2 : 3);
+                let statusB = b.current_stock <= safeB ? 1 : (b.current_stock <= safeB * 1.5 ? 2 : 3);
+                
+                if (statusA !== statusB) return statusA - statusB;
+                return a.current_stock - b.current_stock;
+            });
+
             renderInventoryListUI(filtered);
         }
 
-        // 🌟 完美黃金比例卡片，無編號
         function renderInventoryListUI(data) {
             const container = document.getElementById('ui-inventory-list');
             if(!container) return; 
@@ -649,40 +628,60 @@
             container.innerHTML = data.map(i => {
                 const safe = i.safe_stock_level || 0; let isLow = i.current_stock <= safe; let isWarn = !isLow && i.current_stock <= (safe * 1.5);
                 
-                let borderClass = 'border-emerald-200 bg-white'; 
+                let borderClass = 'border-slate-200 bg-white'; 
                 let stockColor = 'text-emerald-600';
+                let statusBadge = '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-lg font-black border border-emerald-200">庫存正常</span>';
 
-                if (isLow) { borderClass = 'border-red-400 bg-red-50/30'; stockColor = 'text-red-600 animate-pulse'; }
-                else if (isWarn) { borderClass = 'border-amber-400 bg-amber-50/20'; stockColor = 'text-amber-500'; }
+                if (isLow) { 
+                    borderClass = 'border-red-400 bg-red-50/50'; 
+                    stockColor = 'text-red-600'; 
+                    statusBadge = '<span class="text-[9px] bg-red-600 text-white px-2 py-0.5 rounded-lg font-black shadow-sm animate-pulse tracking-widest">🚨 庫存過低</span>';
+                } else if (isWarn) { 
+                    borderClass = 'border-amber-400 bg-amber-50/50'; 
+                    stockColor = 'text-amber-600'; 
+                    statusBadge = '<span class="text-[9px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-lg font-black border border-amber-300">⚠️ 庫存警示</span>';
+                }
 
                 const chk = window.latestChecks[i.id]; const inCart = reqCart.has(i.id) ? 'checked' : '';
                 let lastCheckText = chk ? `${chk.date} (${chk.emp})` : `<span class="text-red-500">從未盤點過</span>`;
 
                 return `
-                <div class="p-4 rounded-xl border-2 ${borderClass} flex flex-col mb-3 relative shadow-sm">
-                    <div class="flex justify-between items-start mb-2">
-                        <div class="flex space-x-1.5 flex-wrap gap-y-1 pr-14">
-                            <span class="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 shadow-sm"><span class="font-bold text-slate-400 mr-0.5">類別:</span> ${i.category||'未分類'}</span>
-                            <span class="text-[9px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-100 shadow-sm"><span class="font-bold text-indigo-400 mr-0.5">倉別:</span> ${i.item_type}</span>
-                        </div>
-                        <label class="absolute top-3 right-3 flex items-center space-x-1 cursor-pointer bg-sky-600 px-2.5 py-1.5 rounded-lg shadow-md z-10 hover:bg-sky-700 transition">
-                            <input type="checkbox" class="w-3.5 h-3.5 accent-white" onchange="toggleReq('${i.id}', this)" ${inCart}>
-                            <span class="text-[10px] font-black text-white tracking-widest">請購</span>
-                        </label>
+                <div class="p-4 rounded-[1.5rem] border-2 ${borderClass} flex flex-col mb-4 shadow-sm transition-all relative">
+                    <label class="absolute top-4 right-4 flex items-center space-x-1 cursor-pointer bg-sky-600 px-3 py-1.5 rounded-xl shadow-md z-10 hover:bg-sky-700 transition active:scale-95">
+                        <input type="checkbox" class="w-4 h-4 accent-white" onchange="toggleReq('${i.id}', this)" ${inCart}>
+                        <span class="text-[11px] font-black text-white tracking-widest">請購</span>
+                    </label>
+
+                    <div class="flex flex-wrap items-center gap-2 mb-2 pr-20">
+                        <span class="text-[12px] font-mono font-black text-indigo-800 bg-indigo-100 px-2 py-0.5 rounded-lg border border-indigo-200 shadow-sm tracking-wider">${i.item_code}</span>
+                        <span class="text-[9px] font-black text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">${i.item_type} / ${i.category || '未分類'}</span>
+                        ${statusBadge}
                     </div>
                     
-                    <h4 class="font-black text-base text-slate-800 mb-1 leading-tight"><span class="text-[11px] text-slate-400 mr-1 font-bold">品名:</span>${i.item_name}</h4>
-                    <p class="text-[11px] text-slate-500 font-bold mb-4 truncate"><span class="text-[9px] text-slate-400 mr-1">規格:</span>${i.specification || '無'}</p>
+                    <h4 class="font-black text-lg text-slate-800 leading-tight mb-1">${i.item_name}</h4>
+                    <p class="text-[11px] text-slate-500 font-bold mb-4">規格: ${i.specification || '無'}</p>
                     
-                    <div class="grid grid-cols-2 gap-3 text-[11px] bg-slate-50 p-3 rounded-xl mb-3 border border-slate-100 shadow-inner">
-                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">生產週期:</span> <span class="font-black text-slate-700">${i.lead_time_days}天</span></div>
-                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">盤點週期:</span> <span class="font-black text-slate-700">${i.stocktake_cycle}天</span></div>
-                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">低水警示:</span> <span class="font-black text-red-500">${safe}</span></div>
-                        <div class="flex justify-between items-center"><span class="text-slate-500 font-bold tracking-wider">現有庫存:</span> <span class="font-black text-xl tracking-tight ${stockColor}">${i.current_stock}</span></div>
+                    <div class="grid grid-cols-4 gap-2 text-center bg-white/60 p-2.5 rounded-xl mb-3 border border-white/40 shadow-inner">
+                        <div class="flex flex-col justify-center">
+                            <span class="text-[9px] text-slate-500 font-bold mb-0.5">現有庫存</span>
+                            <span class="font-black text-xl tracking-tight ${stockColor}">${i.current_stock}</span>
+                        </div>
+                        <div class="flex flex-col justify-center border-l border-slate-200/50">
+                            <span class="text-[9px] text-slate-500 font-bold mb-0.5">低水位</span>
+                            <span class="font-black text-sm text-red-500 mt-1">${safe}</span>
+                        </div>
+                        <div class="flex flex-col justify-center border-l border-slate-200/50">
+                            <span class="text-[9px] text-slate-500 font-bold mb-0.5">生產週期</span>
+                            <span class="font-black text-sm text-slate-700 mt-1">${i.lead_time_days}<span class="text-[9px] font-normal ml-0.5">天</span></span>
+                        </div>
+                        <div class="flex flex-col justify-center border-l border-slate-200/50">
+                            <span class="text-[9px] text-slate-500 font-bold mb-0.5">盤點週期</span>
+                            <span class="font-black text-sm text-slate-700 mt-1">${i.stocktake_cycle}<span class="text-[9px] font-normal ml-0.5">天</span></span>
+                        </div>
                     </div>
 
-                    <div class="text-[10px] text-slate-500 font-bold border-t border-slate-100 pt-2 flex items-center">
-                        <span class="mr-1 tracking-wider">最新盤點:</span> ${lastCheckText}
+                    <div class="text-[10px] text-slate-400 font-bold border-t border-slate-200/50 pt-2.5 flex items-center">
+                        <span class="mr-1">🕒 最新盤點:</span> ${lastCheckText}
                     </div>
                 </div>`;
             }).join('');
@@ -815,12 +814,9 @@
         async function saveItem(e) { e.preventDefault(); let cat = document.getElementById('i-category').value === 'custom' ? document.getElementById('i-custom-category').value : document.getElementById('i-category').value; const p = { item_name: document.getElementById('i-name').value, item_code: document.getElementById('i-code').value.toUpperCase(), item_type: document.getElementById('i-type').value, category: cat, specification: document.getElementById('i-spec').value, qty_per_pack: parseInt(document.getElementById('i-qty').value) || 1, safe_stock_level: 0, lead_time_days: parseInt(document.getElementById('i-lead').value) || 15, stocktake_cycle: parseInt(document.getElementById('i-cycle').value) || 30, bom_data: extractBomData('bom-table-body') }; const { error } = await window._sb.from('items').insert([p]); if(!error) { alert('✅ 成功！'); e.target.reset(); await loadItems(); renderBomTable('bom-table-body'); } }
         
         function renderItemSearch() {
-            const kw = document.getElementById('item-search-input').value.toLowerCase(); 
-            const searchCatSel = document.getElementById('search-cat-filter');
-            const cat = searchCatSel ? searchCatSel.value : '';
+            const kw = document.getElementById('item-search-input').value.toLowerCase(); const cat = document.getElementById('search-cat-filter').value;
             const res = window.inventoryData.filter(i => (i.item_code.toLowerCase().includes(kw) || i.item_name.toLowerCase().includes(kw)) && (cat === '' || i.category === cat));
             const container = document.getElementById('item-search-results');
-            if(!container) return;
             if(res.length === 0) { container.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 italic">無符合結果。</div>'; return; }
 
             container.innerHTML = res.map(i => {
