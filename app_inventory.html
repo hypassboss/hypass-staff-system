@@ -42,6 +42,7 @@
 <body class="text-slate-800 relative">
     
     <div id="print-zone" style="display:none;"></div>
+    
     <div id="toast-container" class="fixed bottom-24 left-4 z-[9999] flex flex-col space-y-3 pointer-events-none"></div>
 
     <div id="app-container" class="max-w-md mx-auto shadow-2xl relative">
@@ -52,6 +53,14 @@
             </div>
             <div class="shrink-0 text-[10px] font-bold bg-white/10 px-2 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
         </header>
+
+        <div id="top-req-bar" class="hidden sticky top-14 z-40 bg-white border-b border-sky-200 px-5 py-3 shadow-md flex justify-between items-center animate-[fadeIn_0.2s_ease-out]">
+            <div>
+                <span class="font-black text-sky-600 block text-sm">請購申請</span>
+                <span class="text-[9px] font-bold text-slate-400">已勾選 <span id="top-req-count" class="text-sky-600 px-0.5 text-xs">0</span> 項請購項目</span>
+            </div>
+            <button onclick="openReqModal()" class="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-5 py-2.5 rounded-xl text-xs font-black shadow-md active:scale-95 transition tracking-widest">生成請購單 ➔</button>
+        </div>
 
         <main class="p-4 relative z-10">
             <div id="friday-reminder" class="hidden bg-gradient-to-r from-amber-500 to-orange-500 text-white p-4 rounded-2xl shadow-lg mb-4 border-2 border-amber-300 relative overflow-hidden">
@@ -78,7 +87,7 @@
                                     <th class="p-2 font-bold text-left">料號</th>
                                     <th class="p-2 font-bold text-right text-emerald-700">最新庫存</th>
                                     <th class="p-2 font-bold text-right text-sky-600">請/採購量</th>
-                                    <th class="p-2 font-bold text-center">到貨日</th>
+                                    <th class="p-2 font-bold text-center">狀態/交期</th>
                                 </tr>
                             </thead>
                             <tbody id="ui-filter-status-table" class="divide-y divide-slate-100 bg-white rounded-lg">
@@ -309,6 +318,10 @@
 
         function getSafeArray(data) { if (!data) return []; if (Array.isArray(data)) return data; try { return JSON.parse(data); } catch(e) { return []; } }
 
+        // 🚨 補齊缺失的 openModal 函數
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
         async function bootInventory() {
             const isAuth = await authGuard('inv'); 
             if(isAuth) { 
@@ -318,6 +331,7 @@
             }
         }
 
+        // 🌟 專屬的左側浮動 Toast 通知
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -343,7 +357,6 @@
                 document.getElementById('btn-back').classList.add('hidden'); 
                 document.getElementById('top-req-bar').classList.add('hidden');
                 
-                // 🚨 返回不清除購物車，保持勾選狀態
                 loadItems();
             });
         }
@@ -474,7 +487,6 @@
 
             if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
             
-            // 🚨 強制呼叫渲染清單，確保不變白
             if(document.getElementById('view-inventory-list').classList.contains('active')) renderFilteredInventory();
         }
 
@@ -611,9 +623,17 @@
         async function inlineUpdateCurrentStock(id, oldQty, newValStr) { const newQty = parseInt(newValStr) || 0; if(newQty === oldQty) return; const diff = newQty - oldQty; const { error } = await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: `總表快速校正 (原:${oldQty} -> 新:${newQty})` }]); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderFilteredInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
         async function inlineUpdateCycle(id, newVal) { const val = parseInt(newVal) || 30; const { error } = await window._sb.from('items').update({ stocktake_cycle: val }).eq('id', id); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderFilteredInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
 
+        function filterInventory() {
+            renderFilteredInventory();
+        }
+
+        // 🌟 請購單生成引擎 (修復雙重計數器連動)
         function toggleReq(id, el) { if(el.checked) reqCart.add(id); else reqCart.delete(id); updateTopReqBar(); }
         function updateTopReqBar() { 
             const countBadge = document.getElementById('list-req-count');
+            const topBar = document.getElementById('top-req-bar');
+            const topCount = document.getElementById('top-req-count');
+
             if(countBadge) {
                 countBadge.innerText = reqCart.size;
                 if(reqCart.size > 0) {
@@ -622,6 +642,15 @@
                 } else {
                     countBadge.classList.add('bg-white', 'text-sky-600');
                     countBadge.classList.remove('bg-red-500', 'text-white', 'animate-pulse');
+                }
+            }
+
+            if(topBar && topCount) {
+                topCount.innerText = reqCart.size;
+                if(reqCart.size > 0 && document.getElementById('view-inventory-list').classList.contains('active')) {
+                    topBar.classList.remove('hidden');
+                } else {
+                    topBar.classList.add('hidden');
                 }
             }
         }
@@ -654,6 +683,7 @@
                 if(item && qty > 0) { 
                     targetItems.push({ id: item.item_code, name: item.item_name, qty: qty }); 
                     let safeBom = getSafeArray(item.bom_data);
+                    // 成品展開 BOM，原料直接請購
                     if (item.item_type === '成品' && safeBom.length > 0) {
                         safeBom.forEach(b => { let key = b.material + '_' + b.unit; if (!rawTotals[key]) rawTotals[key] = { id: item.item_code, name: b.material, unit: b.unit, qty: 0 }; rawTotals[key].qty += (parseFloat(b.total_qty) * qty); });
                     } else { 
@@ -670,6 +700,7 @@
             const reqNo = 'REQ-' + new Date().getFullYear() + String(new Date().getMonth()+1).padStart(2,'0') + String(new Date().getDate()).padStart(2,'0') + '-' + Math.floor(Math.random()*1000).toString().padStart(3,'0');
             const userName = window.currentUser?.full_name || '系統使用者';
             
+            // 🚨 1. 絕對優先：強制產生並下載 CSV
             try {
                 let csv = "\uFEFF請購單號,申請日期,申請人,請購項目,生產/請購數量,展開原料名稱,需求總量,單位\n";
                 const dateStr = new Date().toLocaleDateString('zh-TW');
@@ -682,12 +713,14 @@
                 link.download = `HYPASS_請購單_${reqNo}.csv`; 
                 document.body.appendChild(link); link.click(); document.body.removeChild(link);
                 
+                // 顯示左側成功浮動通知
                 showSysToast(`已生成請購單編號 ${reqNo}.csv`);
             } catch(csvErr) { 
                 console.error('CSV生成失敗:', csvErr); 
                 alert('CSV 下載被瀏覽器阻擋，但資料仍會安全寫入系統！');
             }
 
+            // 🚨 2. 安全防護：寫入原本就存在的 purchase_orders 表！
             try {
                 const payload = { 
                     employee_id: window.currentUser?.id || null, 
@@ -696,18 +729,17 @@
                     status: '請購待處理',
                     note: reqNo
                 };
-                
                 await window._sb.from('purchase_orders').insert([payload]);
-
             } catch (dbErr) { console.error('資料庫同步失敗:', dbErr); }
 
+            // 🚨 3. 不跳轉：關閉視窗，讓使用者留在庫存介面繼續操作
             closeModal('req-qty-modal');
             reqCart.clear();
             updateTopReqBar();
             document.querySelectorAll('.inv-item input[type="checkbox"]').forEach(cb => cb.checked = false);
 
             btn.innerText = '確定生成請購單'; btn.disabled = false;
-            loadItems();
+            loadItems(); 
         }
 
         function openScanner() { openView('scanner', '相機掃描盤點'); isScanning = true; setTimeout(() => { if (!html5QrcodeScanner) { html5QrcodeScanner = new Html5Qrcode("reader"); } if (html5QrcodeScanner.isScanning) return; html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScanSuccess).catch((e)=>{ alert('相機啟動失敗，請確認已給予鏡頭權限！'); backToDash(); }); }, 300); }
