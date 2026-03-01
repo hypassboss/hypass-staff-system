@@ -33,7 +33,6 @@
         @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         .toast-msg { animation: slideInLeft 0.4s ease-out forwards; }
 
-        /* Custom UI transitions */
         .tab-btn { transition: all 0.2s ease; }
         .tab-btn.active { background-color: #1e293b; color: white; border-color: #1e293b; }
         .subcat-btn { transition: all 0.2s ease; }
@@ -80,7 +79,7 @@
                                     <th class="p-2 font-bold text-left">料號</th>
                                     <th class="p-2 font-bold text-right text-emerald-700">最新庫存</th>
                                     <th class="p-2 font-bold text-right text-sky-600">請/採購量</th>
-                                    <th class="p-2 font-bold text-center">到貨日</th>
+                                    <th class="p-2 font-bold text-center">狀態/交期</th>
                                 </tr>
                             </thead>
                             <tbody id="ui-filter-status-table" class="divide-y divide-slate-100 bg-white rounded-lg">
@@ -116,23 +115,23 @@
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1.5">📦</span> 庫存清單大盤</h3>
                         <button onclick="openReqModal()" class="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-md active:scale-95 transition flex items-center">
-                            生成請購單 <span id="top-req-count" class="ml-1.5 bg-white text-sky-600 px-1.5 py-0.5 rounded text-[10px]">0</span>
+                            生成請購單 <span id="list-req-count" class="ml-1.5 bg-white text-sky-600 px-1.5 py-0.5 rounded text-[10px] transition-all duration-300">0</span>
                         </button>
                     </div>
 
                     <div class="flex space-x-2 mb-2">
-                        <button onclick="switchInvType('原料')" id="tab-raw" class="tab-btn active flex-1 py-2.5 rounded-xl font-black text-xs border border-slate-300 bg-white text-slate-600 shadow-sm">🏭 原料</button>
+                        <button onclick="switchInvType('原料')" id="tab-raw" class="tab-btn active flex-1 py-2.5 rounded-xl font-black text-xs border border-slate-300 bg-slate-800 text-white shadow-sm">🏭 原料</button>
                         <button onclick="switchInvType('成品')" id="tab-fin" class="tab-btn flex-1 py-2.5 rounded-xl font-black text-xs border border-slate-300 bg-white text-slate-600 shadow-sm">📦 成品</button>
                     </div>
 
                     <div id="sub-tabs-raw" class="flex space-x-2 overflow-x-auto no-scrollbar pb-1">
-                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">全部原料</button>
+                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-3 py-1.5 rounded-full border border-sky-600 text-[10px] font-bold bg-sky-600 text-white shadow-sm">全部原料</button>
                         <button onclick="switchInvCat('標籤貼紙')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">標籤貼紙</button>
                         <button onclick="switchInvCat('車用濾布')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">車用濾布</button>
                         <button onclick="switchInvCat('其他')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">其他</button>
                     </div>
                     <div id="sub-tabs-fin" class="hidden flex space-x-2 overflow-x-auto no-scrollbar pb-1">
-                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">全部成品</button>
+                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-3 py-1.5 rounded-full border border-sky-600 text-[10px] font-bold bg-sky-600 text-white shadow-sm">全部成品</button>
                         <button onclick="switchInvCat('汽車冷氣濾網')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">汽車冷氣濾網</button>
                         <button onclick="switchInvCat('VESTA系列產品')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">VESTA系列產品</button>
                         <button onclick="switchInvCat('其他')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">其他</button>
@@ -305,9 +304,7 @@
     <script src="shared.js"></script>
     <script>
         let html5QrcodeScanner = null; let currentItemPackQty = 1; let allItems = []; window.inventoryData = []; window.latestChecks = {}; let reqCart = new Set(); let isScanning = false;
-        
-        let currentInvType = '原料'; 
-        let currentInvCat = '全部';
+        let currentInvType = '原料'; let currentInvCat = '全部';
 
         function getSafeArray(data) { if (!data) return []; if (Array.isArray(data)) return data; try { return JSON.parse(data); } catch(e) { return []; } }
 
@@ -368,22 +365,30 @@
 
             let pendingReqs = {};
             try {
-                const { data: reqs } = await window._sb.from('requisitions').select('items_json').in('status', ['待處理', '採購中']);
-                if (reqs) { reqs.forEach(req => { let itemsArr = getSafeArray(req.items_json); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
-            } catch(e) {}
-            try {
-                const { data: reqs2 } = await window._sb.from('purchase_orders').select('raw_materials').in('status', ['請購待處理', '待處理', '採購中', '已建檔']);
-                if (reqs2) { reqs2.forEach(req => { let itemsArr = getSafeArray(req.raw_materials); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
+                // 🌟 使用舊表來掃描請購單，保證不出錯
+                const { data: reqs } = await window._sb.from('purchase_orders').select('raw_materials').in('status', ['請購待處理', '採購中']);
+                if (reqs) { reqs.forEach(req => { let itemsArr = getSafeArray(req.raw_materials); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
             } catch(e) {}
 
             let pendingPOs = {};
             try {
-                const { data: pos } = await window._sb.from('po_documents').select('items_json, expected_date').in('status', ['已發送', '已下單', '異常(遲交)']);
-                if (pos) { pos.forEach(po => { let poItems = getSafeArray(po.items_json); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
+                // 🌟 使用舊表來掃描採購單，保證不出錯
+                const { data: pos } = await window._sb.from('purchase_orders').select('raw_materials, expected_date').like('note', 'PO-%');
+                if (pos) { pos.forEach(po => { let poItems = getSafeArray(po.raw_materials); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
             } catch(e) {}
             
-            let lowCount = 0; let lowStockHtml = '';
+            let lowCount = 0;
+            const cats = [...new Set(allItems.map(i => i.category || '未分類'))];
+            const catOptions = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('inv-cat-filter').innerHTML = catOptions;
             
+            const searchCatFilter = document.getElementById('search-cat-filter');
+            const currentSearchCat = searchCatFilter.value;
+            searchCatFilter.innerHTML = catOptions;
+            if(currentSearchCat) searchCatFilter.value = currentSearchCat;
+
+            document.getElementById('fe-item-cat').innerHTML = catOptions;
+
             const nowD = new Date();
             let overdueItems = [];
 
@@ -435,6 +440,7 @@
                 filterHtml = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無資料</td></tr>';
             } else {
                 filterHtml = filterItems.map(i => {
+                    let typeBadge = i.item_type === '原料' ? `<span class="text-[8px] bg-slate-100 text-slate-500 px-1 py-0.5 rounded ml-1 font-bold border border-slate-200">原料</span>` : '';
                     let qtyHtml = '<span class="text-slate-300">0</span>';
                     let etaHtml = '<span class="text-slate-300">--</span>';
 
@@ -457,7 +463,7 @@
                     if(isLow) stockClass = 'text-red-600 animate-pulse'; else if(isWarn) stockClass = 'text-amber-500';
 
                     return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0">
-                        <td class="p-2.5 font-mono font-black text-slate-700 truncate max-w-[120px]">${i.item_code}</td>
+                        <td class="p-2.5 font-mono font-black text-slate-700 truncate max-w-[120px]">${i.item_code}${typeBadge}</td>
                         <td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td>
                         <td class="p-2.5 text-right">${qtyHtml}</td>
                         <td class="p-2.5 text-center text-[10px]">${etaHtml}</td>
@@ -467,7 +473,7 @@
             document.getElementById('ui-filter-status-table').innerHTML = filterHtml;
 
             if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
-            if(document.getElementById('view-inventory-list').classList.contains('active')) renderInventoryListUI(window.inventoryData);
+            if(document.getElementById('view-inventory-list').classList.contains('active')) renderFilteredInventory();
         }
 
         function openCountViewFromId(id) { const item = window.inventoryData.find(x => x.id === id); if(item) openCountView(item); }
@@ -530,7 +536,6 @@
             });
         }
 
-        // 🌟 執行篩選並渲染
         function renderFilteredInventory() {
             let keyword = document.getElementById('inv-search').value.toLowerCase();
             let filtered = window.inventoryData.filter(i => {
@@ -602,17 +607,24 @@
             }).join('');
         }
 
-        function filterInventory() {
-            // Keep the old filterInventory for standard calling, redirect to new engine
-            renderFilteredInventory();
-        }
-
         // 🌟 請購單生成引擎 (保證優先下載 CSV，寫入舊表保證成功，不跳轉！)
         function toggleReq(id, el) { if(el.checked) reqCart.add(id); else reqCart.delete(id); updateTopReqBar(); }
-        function updateTopReqBar() { const bar = document.getElementById('top-req-bar'); if(reqCart.size > 0 && document.getElementById('view-inventory-list').classList.contains('active')) { bar.classList.remove('hidden'); document.getElementById('top-req-count').innerText = reqCart.size; } else { bar.classList.add('hidden'); } }
+        function updateTopReqBar() { 
+            const countBadge = document.getElementById('list-req-count');
+            if(countBadge) {
+                countBadge.innerText = reqCart.size;
+                if(reqCart.size > 0) {
+                    countBadge.classList.remove('bg-white', 'text-sky-600');
+                    countBadge.classList.add('bg-red-500', 'text-white', 'animate-pulse');
+                } else {
+                    countBadge.classList.add('bg-white', 'text-sky-600');
+                    countBadge.classList.remove('bg-red-500', 'text-white', 'animate-pulse');
+                }
+            }
+        }
         
         function openReqModal() {
-            if(reqCart.size === 0) return;
+            if(reqCart.size === 0) { alert('請先勾選要請購的項目！'); return; }
             const container = document.getElementById('req-qty-list');
             let html = '';
             reqCart.forEach(id => {
@@ -639,7 +651,6 @@
                 if(item && qty > 0) { 
                     targetItems.push({ id: item.item_code, name: item.item_name, qty: qty }); 
                     let safeBom = getSafeArray(item.bom_data);
-                    // 🌟 成品展開 BOM，原料直接請購
                     if (item.item_type === '成品' && safeBom.length > 0) {
                         safeBom.forEach(b => { let key = b.material + '_' + b.unit; if (!rawTotals[key]) rawTotals[key] = { id: item.item_code, name: b.material, unit: b.unit, qty: 0 }; rawTotals[key].qty += (parseFloat(b.total_qty) * qty); });
                     } else { 
@@ -676,7 +687,7 @@
                 alert('CSV 下載被瀏覽器阻擋，但資料仍會安全寫入系統！');
             }
 
-            // 🚨 2. 安全防護：統一寫入原本就存在的 purchase_orders 表！保證不會失敗！
+            // 🚨 2. 安全防護：寫入原本就存在的 purchase_orders 表！保證不會失敗！
             try {
                 const payload = { 
                     employee_id: window.currentUser?.id || null, 
@@ -686,23 +697,18 @@
                     note: reqNo
                 };
                 
-                // 嘗試寫入新表，失敗就無縫備援寫入舊表
-                try {
-                    await window._sb.from('requisitions').insert([{ req_no: reqNo, employee_id: window.currentUser?.id || null, target_items: targetItems, items_json: rawMaterials, status: '待處理' }]);
-                } catch (e) {
-                    await window._sb.from('purchase_orders').insert([payload]);
-                }
+                await window._sb.from('purchase_orders').insert([payload]);
 
             } catch (dbErr) { console.error('資料庫同步失敗:', dbErr); }
 
             // 🚨 3. 不跳轉：關閉視窗，讓使用者留在庫存介面繼續操作
             closeModal('req-qty-modal');
             reqCart.clear();
-            document.getElementById('top-req-bar').classList.add('hidden');
+            updateTopReqBar();
             document.querySelectorAll('.inv-item input[type="checkbox"]').forEach(cb => cb.checked = false);
 
             btn.innerText = '確定生成請購單'; btn.disabled = false;
-            loadItems(); // 重新讀取，讓剛才送出的單子能顯示在戰情表
+            loadItems();
         }
 
         function openScanner() { openView('scanner', '相機掃描盤點'); isScanning = true; setTimeout(() => { if (!html5QrcodeScanner) { html5QrcodeScanner = new Html5Qrcode("reader"); } if (html5QrcodeScanner.isScanning) return; html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScanSuccess).catch((e)=>{ alert('相機啟動失敗，請確認已給予鏡頭權限！'); backToDash(); }); }, 300); }
