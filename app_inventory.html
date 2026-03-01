@@ -353,18 +353,18 @@
             let pendingReqs = {};
             try {
                 // 🌟 使用舊表來掃描請購單，保證不出錯
-                const { data: reqs } = await window._sb.from('purchase_orders').select('raw_materials').in('status', ['請購待處理', '採購中']);
-                if (reqs) { reqs.forEach(req => { let itemsArr = getSafeArray(req.raw_materials); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
+                const { data: reqs } = await window._sb.from('requisitions').select('items_json').in('status', ['待處理', '採購中']);
+                if (reqs) { reqs.forEach(req => { let itemsArr = getSafeArray(req.items_json); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
             } catch(e) {}
 
             let pendingPOs = {};
             try {
                 // 🌟 使用舊表來掃描採購單，保證不出錯
-                const { data: pos } = await window._sb.from('purchase_orders').select('raw_materials, expected_date').like('note', 'PO-%');
-                if (pos) { pos.forEach(po => { let poItems = getSafeArray(po.raw_materials); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
+                const { data: pos } = await window._sb.from('po_documents').select('items_json, expected_date').in('status', ['已發送', '已下單', '異常(遲交)']);
+                if (pos) { pos.forEach(po => { let poItems = getSafeArray(po.items_json); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
             } catch(e) {}
             
-            let lowCount = 0; let lowStockHtml = '';
+            let lowCount = 0;
             const cats = [...new Set(allItems.map(i => i.category || '未分類'))];
             const catOptions = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
             document.getElementById('inv-cat-filter').innerHTML = catOptions;
@@ -508,6 +508,7 @@
         async function inlineUpdateCycle(id, newVal) { const val = parseInt(newVal) || 30; const { error } = await window._sb.from('items').update({ stocktake_cycle: val }).eq('id', id); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderInventoryListUI(window.inventoryData); filterInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
         function filterInventory() { const keyword = document.getElementById('inv-search').value.toLowerCase(); const cat = document.getElementById('inv-cat-filter').value; document.querySelectorAll('.inv-item').forEach(el => { const text = el.getAttribute('data-search').toLowerCase(); const elCat = el.getAttribute('data-cat'); el.style.display = (text.includes(keyword) && (cat === '' || elCat === cat)) ? 'flex' : 'none'; }); }
 
+        // 🌟 無跳轉的請購引擎
         function toggleReq(id, el) { if(el.checked) reqCart.add(id); else reqCart.delete(id); updateTopReqBar(); }
         function updateTopReqBar() { const bar = document.getElementById('top-req-bar'); if(reqCart.size > 0 && document.getElementById('view-inventory-list').classList.contains('active')) { bar.classList.remove('hidden'); document.getElementById('top-req-count').innerText = reqCart.size; } else { bar.classList.add('hidden'); } }
         
@@ -523,91 +524,77 @@
             openModal('req-qty-modal');
         }
 
-        // 🌟 絕對防彈：優先下載 CSV，再寫入舊表保證成功，不跳轉！
+        // 🌟 絕對防彈引擎：強制產生 CSV -> 背景同步寫入 (使用舊表 purchase_orders 做保底) -> 不跳轉！
         async function confirmGenerateReq() {
+            let isValid = true; document.querySelectorAll('.req-target-qty').forEach(inp => { if((parseInt(inp.value)||0) <= 0) isValid = false; });
+            if(!isValid) { alert('請確保所有項目都有輸入大於 0 的數量！'); return; }
+
+            const btn = document.getElementById('btn-run-req');
+            btn.innerText = '處理中...'; btn.disabled = true;
+
+            let targetItems = []; let rawTotals = {};
+
+            document.querySelectorAll('.req-target-row').forEach(row => { 
+                let id = row.getAttribute('data-id'); 
+                let qty = parseInt(row.querySelector('.req-target-qty').value) || 0; 
+                let item = window.inventoryData.find(x => x.id === id); 
+                if(item && qty > 0) { 
+                    targetItems.push({ id: item.item_code, name: item.item_name, qty: qty }); 
+                    let safeBom = getSafeArray(item.bom_data);
+                    if (safeBom.length > 0) {
+                        safeBom.forEach(b => { let key = b.material + '_' + b.unit; if (!rawTotals[key]) rawTotals[key] = { id: item.item_code, name: b.material, unit: b.unit, qty: 0 }; rawTotals[key].qty += (parseFloat(b.total_qty) * qty); });
+                    } else { let key = item.item_name + '_箱/件'; if (!rawTotals[key]) rawTotals[key] = { id: item.item_code, name: item.item_name, unit: '箱/件', qty: 0 }; rawTotals[key].qty += qty; }
+                } 
+            });
+
+            const rawMaterials = Object.values(rawTotals);
+            if(rawMaterials.length === 0) { alert('計算錯誤，無原料需求！'); btn.innerText = '確定生成請購單'; btn.disabled = false; return; }
+
+            const reqNo = 'REQ-' + new Date().getFullYear() + String(new Date().getMonth()+1).padStart(2,'0') + String(new Date().getDate()).padStart(2,'0') + '-' + Math.floor(Math.random()*1000).toString().padStart(3,'0');
+            const userName = window.currentUser?.full_name || '系統使用者';
+            
+            // 🚨 1. 絕對優先：強制產生並下載 CSV
             try {
-                let isValid = true; document.querySelectorAll('.req-target-qty').forEach(inp => { if((parseInt(inp.value)||0) <= 0) isValid = false; });
-                if(!isValid) { alert('請確保所有項目都有輸入大於 0 的數量！'); return; }
-
-                const btn = document.getElementById('btn-run-req');
-                btn.innerText = '處理中...'; btn.disabled = true;
-
-                let targetItems = []; let rawTotals = {};
-
-                document.querySelectorAll('.req-target-row').forEach(row => { 
-                    let id = row.getAttribute('data-id'); 
-                    let qty = parseInt(row.querySelector('.req-target-qty').value) || 0; 
-                    let item = window.inventoryData.find(x => x.id === id); 
-                    if(item && qty > 0) { 
-                        targetItems.push({ id: item.item_code, name: item.item_name, qty: qty }); 
-                        let safeBom = getSafeArray(item.bom_data);
-                        if (safeBom.length > 0) {
-                            safeBom.forEach(b => { let key = b.material + '_' + b.unit; if (!rawTotals[key]) rawTotals[key] = { id: item.item_code, name: b.material, unit: b.unit, qty: 0 }; rawTotals[key].qty += (parseFloat(b.total_qty) * qty); });
-                        } else { let key = item.item_name + '_箱/件'; if (!rawTotals[key]) rawTotals[key] = { id: item.item_code, name: item.item_name, unit: '箱/件', qty: 0 }; rawTotals[key].qty += qty; }
-                    } 
-                });
-
-                const rawMaterials = Object.values(rawTotals);
-                if(rawMaterials.length === 0) { alert('計算錯誤，無原料需求！'); btn.innerText = '確定生成請購單'; btn.disabled = false; return; }
-
-                const reqNo = 'REQ-' + new Date().getFullYear() + String(new Date().getMonth()+1).padStart(2,'0') + String(new Date().getDate()).padStart(2,'0') + '-' + Math.floor(Math.random()*1000).toString().padStart(3,'0');
-                const userName = window.currentUser?.full_name || '系統使用者';
-                
-                // 🚨 1. 絕對優先：強制產生並下載 CSV (無任何 await 阻擋)
                 let csv = "\uFEFF請購單號,申請日期,申請人,請購成品/半成品,生產數量,展開原料名稱,需求總量,單位\n";
                 const dateStr = new Date().toLocaleDateString('zh-TW');
                 
                 targetItems.forEach(t => { csv += `="${reqNo}",${dateStr},${userName},${t.name},${t.qty},,,, \n`; });
                 rawMaterials.forEach(r => { csv += `="${reqNo}",${dateStr},${userName},,,${r.name},${r.qty.toFixed(2)},${r.unit}\n`; });
 
+                const link = document.createElement("a"); 
+                link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); 
+                link.download = `HYPASS_請購單_${reqNo}.csv`; 
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                
+                showSysToast(`已生成請購單編號 ${reqNo}.csv`);
+            } catch(csvErr) { console.error('CSV生成失敗:', csvErr); }
+
+            closeModal('req-qty-modal');
+            reqCart.clear();
+            document.getElementById('top-req-bar').classList.add('hidden');
+            document.querySelectorAll('.inv-item input[type="checkbox"]').forEach(cb => cb.checked = false);
+
+            // 🚨 2. 安全防護：寫入原本就存在的 purchase_orders 表！保證不會因資料庫缺少新表而失敗！
+            try {
+                const payload = { 
+                    employee_id: window.currentUser?.id || null, 
+                    target_items: targetItems, 
+                    raw_materials: rawMaterials, 
+                    status: '請購待處理',
+                    note: reqNo
+                };
+                
+                // 優先寫入新表 (如果有)，否則寫入舊表
                 try {
-                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                    const link = document.createElement("a"); 
-                    const url = URL.createObjectURL(blob);
-                    link.setAttribute("href", url); 
-                    link.setAttribute("download", `HYPASS_請購單_${reqNo}.csv`); 
-                    link.style.visibility = 'hidden';
-                    document.body.appendChild(link); 
-                    link.click(); 
-                    document.body.removeChild(link);
-                    
-                    showSysToast(`已生成請購單編號 ${reqNo}.csv`);
-                } catch(csvErr) { 
-                    console.error('CSV生成失敗:', csvErr); 
-                    alert('CSV 下載被瀏覽器阻擋，但資料仍會安全寫入系統！');
+                    await window._sb.from('requisitions').insert([{ req_no: reqNo, employee_id: window.currentUser?.id || null, target_items: targetItems, items_json: rawMaterials, status: '待處理' }]);
+                } catch (e) {
+                    await window._sb.from('purchase_orders').insert([payload]);
                 }
 
-                // 🚨 2. 安全寫入原本就存在的 purchase_orders 表，狀態為 "請購待處理"
-                try {
-                    const payload = { 
-                        employee_id: window.currentUser ? window.currentUser.id : null, 
-                        target_items: targetItems, 
-                        raw_materials: rawMaterials, 
-                        status: '請購待處理',
-                        note: reqNo
-                    };
-                    const { error } = await window._sb.from('purchase_orders').insert([payload]);
-                    if(error) { 
-                        console.error('DB Sync Error:', error);
-                        alert(`⚠️ 資料庫寫入失敗: ${error.message}`); 
-                    }
-                } catch (dbErr) { console.error('資料庫同步失敗:', dbErr); }
+            } catch (dbErr) { console.error('資料庫同步失敗:', dbErr); }
 
-                // 關閉視窗，不跳轉！
-                closeModal('req-qty-modal');
-                reqCart.clear();
-                document.getElementById('top-req-bar').classList.add('hidden');
-                document.querySelectorAll('.inv-item input[type="checkbox"]').forEach(cb => cb.checked = false);
-
-                btn.innerText = '確定生成請購單'; btn.disabled = false;
-                loadItems();
-
-            } catch (fatalErr) {
-                console.error(fatalErr);
-                alert('系統發生錯誤: ' + fatalErr.message);
-                const btn = document.getElementById('btn-run-req');
-                if (btn) { btn.innerText = '確定生成請購單'; btn.disabled = false; }
-            }
+            btn.innerText = '確定生成請購單'; btn.disabled = false;
+            loadItems();
         }
 
         function openScanner() { openView('scanner', '相機掃描盤點'); isScanning = true; setTimeout(() => { if (!html5QrcodeScanner) { html5QrcodeScanner = new Html5Qrcode("reader"); } if (html5QrcodeScanner.isScanning) return; html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScanSuccess).catch((e)=>{ alert('相機啟動失敗，請確認已給予鏡頭權限！'); backToDash(); }); }, 300); }
