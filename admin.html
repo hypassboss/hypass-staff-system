@@ -243,7 +243,7 @@
             loadAdminBlt();
         }
 
-        // 🌟 升級版：後台採購管理中心拆分為「PDF單據管理」與「請購草稿池」
+        // 🌟 升級版：後台採購管理中心拆分為「PDF單據管理」與「請購草稿池」，並加入 CSV 下載
         async function loadAdminPurchase() {
             const elDocs = document.getElementById('list-admin-po-docs');
             const elDrafts = document.getElementById('list-admin-po-drafts');
@@ -288,7 +288,7 @@
                 }
             } catch(e) { elDocs.innerHTML = '<p class="text-center text-red-400 font-bold py-6">請先執行資料庫擴充語法 (database_patch14.sql)</p>'; }
 
-            // 2. 載入前端拋轉的請購單
+            // 2. 載入前端拋轉的請購單，並支援 CSV 下載
             try {
                 const { data: reqs } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false});
                 if(!reqs || reqs.length === 0) {
@@ -302,7 +302,10 @@
                                 <span class="text-[10px] font-mono font-bold text-slate-400">${r.req_no}</span> ${stBadge}
                                 <div class="text-xs font-black text-slate-700 mt-0.5">${r.employees?.full_name||'未知'} 請購了 ${r.items_json?r.items_json.length:0} 項原料</div>
                             </div>
-                            <button onclick="delAdminReq('${r.id}')" class="text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded border border-red-100 font-bold">刪除</button>
+                            <div class="flex space-x-2">
+                                <button onclick="downloadReqCSV('${r.id}')" class="text-[10px] bg-sky-50 hover:bg-sky-100 text-sky-700 px-2 py-1 rounded border border-sky-100 font-bold transition">下載CSV</button>
+                                <button onclick="delAdminReq('${r.id}')" class="text-[10px] bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded border border-red-100 font-bold transition">刪除</button>
+                            </div>
                         </div>`;
                     }).join('');
                 }
@@ -312,6 +315,33 @@
         async function updateAdminPODocStatus(id, st) { await window._sb.from('po_documents').update({status:st}).eq('id',id); alert('✅ 採購狀態已更新！'); }
         async function delAdminPODoc(id) { if(confirm('⚠️ 確定刪除這筆正式採購單嗎？')){ await window._sb.from('po_documents').delete().eq('id',id); loadAdminPurchase(); } }
         async function delAdminReq(id) { if(confirm('刪除這筆請購單嗎？')){ await window._sb.from('requisitions').delete().eq('id',id); loadAdminPurchase(); } }
+
+        // 🌟 新增：後台補印請購單 CSV
+        async function downloadReqCSV(id) {
+            const { data, error } = await window._sb.from('requisitions').select('*, employees(full_name)').eq('id', id).single();
+            if(error || !data) { alert('下載失敗'); return; }
+
+            let csv = "\uFEFF請購單號,申請日期,申請人,請購成品/半成品,生產數量,展開原料名稱,需求總量,單位\n";
+            const dateStr = new Date(data.created_at).toLocaleDateString('zh-TW');
+            
+            if(data.target_items) {
+                data.target_items.forEach(t => {
+                    csv += `="${data.req_no}",${dateStr},${data.employees?.full_name||'未知'},${t.name},${t.qty},,,, \n`;
+                });
+            }
+            if(data.items_json) {
+                data.items_json.forEach(r => {
+                    csv += `="${data.req_no}",${dateStr},${data.employees?.full_name||'未知'},,,${r.name},${r.qty.toFixed(2)},${r.unit}\n`;
+                });
+            }
+
+            const link = document.createElement("a"); 
+            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); 
+            link.download = `HYPASS_請購單_補印_${data.req_no}.csv`; 
+            document.body.appendChild(link); 
+            link.click(); 
+            document.body.removeChild(link);
+        }
 
         // 🌟 後台補印 PDF 引擎
         async function downloadAdminPO_PDF(id) {
