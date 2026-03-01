@@ -284,7 +284,7 @@
             loadAdminBlt();
         }
 
-        // 🌟 升級版：後台採購管理中心 (PDF與請購單紀錄 完整編輯與刪除)
+        // 🌟 升級版：後台採購管理中心拆分為「PDF單據管理」與「請購草稿池」，支援容錯讀取
         async function loadAdminPurchase() {
             const elDocs = document.getElementById('list-admin-po-docs');
             const elDrafts = document.getElementById('list-admin-po-drafts');
@@ -351,7 +351,6 @@
             } catch(e) { elDrafts.innerHTML = '<p class="text-center text-red-400 font-bold py-4">資料讀取異常</p>'; }
         }
 
-        // 🌟 後台編輯 PO
         function openAdminEditPO(id) {
             const p = window.adminPoData.find(x => x.id === id); if(!p) return;
             document.getElementById('admin-po-edit-id').value = p.id;
@@ -379,7 +378,6 @@
         
         async function delAdminPODoc(id) { if(confirm('⚠️ 確定刪除這筆正式採購單嗎？')){ await window._sb.from('po_documents').delete().eq('id',id); loadAdminPurchase(); } }
 
-        // 🌟 後台編輯 REQ
         function openAdminEditReq(id) {
             const r = window.adminReqData.find(x => x.id === id); if(!r) return;
             document.getElementById('admin-req-edit-id').value = r.id;
@@ -399,14 +397,16 @@
         async function downloadReqCSV(id) {
             const { data, error } = await window._sb.from('requisitions').select('*, employees(full_name)').eq('id', id).single();
             if(error || !data) { alert('下載失敗'); return; }
+
             let csv = "\uFEFF請購單號,申請日期,申請人,請購成品/半成品,生產數量,展開原料名稱,需求總量,單位\n";
             const dateStr = new Date(data.created_at).toLocaleDateString('zh-TW');
+            
             if(data.target_items) { data.target_items.forEach(t => { csv += `="${data.req_no}",${dateStr},${data.employees?.full_name||'未知'},${t.name},${t.qty},,,, \n`; }); }
             if(data.items_json) { data.items_json.forEach(r => { csv += `="${data.req_no}",${dateStr},${data.employees?.full_name||'未知'},,,${r.name},${r.qty.toFixed(2)},${r.unit}\n`; }); }
+
             const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `HYPASS_請購單_補印_${data.req_no}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
-        // 🌟 後台補印 PDF 引擎
         async function downloadAdminPO_PDF(id) {
             const { data } = await window._sb.from('po_documents').select('*').eq('id', id).single();
             if(!data) return;
