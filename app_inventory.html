@@ -142,7 +142,6 @@
                 <div class="mb-4">
                     <input type="text" id="inv-search" placeholder="🔍 搜尋料號 / 品名 / 規格..." class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-500 transition shadow-sm" onkeyup="renderFilteredInventory()">
                 </div>
-
                 <div id="ui-inventory-list" class="space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar pr-1 pb-16"></div>
             </div>
 
@@ -271,17 +270,20 @@
         function openSearchPrintView() {
             openView('search-print', '料號查詢編輯與標籤列印');
             const searchCatSel = document.getElementById('search-cat-filter');
-            if(Array.from(searchCatSel.options).some(o=>o.value==='汽車冷氣濾網')) { searchCatSel.value = '汽車冷氣濾網'; }
+            if(searchCatSel && Array.from(searchCatSel.options).some(o=>o.value==='汽車冷氣濾網')) { searchCatSel.value = '汽車冷氣濾網'; }
             renderItemSearch();
         }
 
         // 🌟 獨立防彈資料庫讀取引擎
         async function fetchSafeReqsForInv() {
             let reqData = [];
-            try { const { data: r1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false}); if (r1) reqData = r1; } catch(e) {}
+            try { 
+                const { data: r1, error: e1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false}); 
+                if (!e1 && r1) reqData = r1; 
+            } catch(e) {}
             try {
-                const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中', '請購待處理', '已完成', '取消']).order('created_at', {ascending: false});
-                if (r2 && r2.length > 0) {
+                const { data: r2, error: e2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中', '請購待處理', '已完成', '取消']).order('created_at', {ascending: false});
+                if (!e2 && r2 && r2.length > 0) {
                     let oldReqs = r2.filter(x => x.note && x.note.startsWith('REQ-')).map(x => ({
                         id: x.id, req_no: x.note, employee_id: x.employee_id, employees: x.employees, items_json: x.raw_materials, status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status, created_at: x.created_at, is_legacy: true
                     }));
@@ -289,7 +291,6 @@
                 }
             } catch(e) {}
             
-            // Sort merged array by created_at descending
             reqData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             return reqData;
         }
@@ -369,7 +370,8 @@
             try {
                 const { data, error: itemErr } = await window._sb.from('items').select('*').order('created_at', {ascending: false}); 
                 if(itemErr) {
-                    document.getElementById('ui-filter-status-table').innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500 font-bold">讀取失敗，請確認已執行 SQL 解除 RLS</td></tr>`;
+                    const statusTable = document.getElementById('ui-filter-status-table');
+                    if(statusTable) statusTable.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500 font-bold">讀取失敗，請確認已執行 SQL 解除 RLS</td></tr>`;
                     return;
                 }
                 allItems = data || [];
@@ -381,39 +383,90 @@
                 window.latestChecks = {}; 
                 if(checks) { checks.forEach(c => { if(!window.latestChecks[c.item_id]) { window.latestChecks[c.item_id] = { rawDate: c.created_at, date: new Date(c.created_at).toLocaleDateString('zh-TW'), emp: c.employees?.full_name || '未知' }; } }); }
 
-                let pendingReqs = {};
+                // 🌟 核心修復：獨立追蹤 成品 (FG) 與 原料 (RAW) 的請購數量，不互相污染
+                let pendingReqs_FG = {};
+                let pendingReqs_RAW = {};
+                let pendingPOs_RAW = {};
+                let pendingPOs_ETA = {};
+
+                // 讀取新表 requisitions
                 try {
-                    const { data: reqs, error: reqErr } = await window._sb.from('requisitions').select('items_json').in('status', ['待處理', '採購中']);
-                    if (!reqErr && reqs) { reqs.forEach(req => { let itemsArr = getSafeArray(req.items_json); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
+                    const { data: reqs, error: reqErr } = await window._sb.from('requisitions').select('target_items, items_json').in('status', ['待處理', '採購中']);
+                    if (!reqErr && reqs) { 
+                        reqs.forEach(req => { 
+                            getSafeArray(req.target_items).forEach(t => {
+                                if(t.id) pendingReqs_FG[t.id] = (pendingReqs_FG[t.id] || 0) + (parseInt(t.qty) || 0);
+                            });
+                            getSafeArray(req.items_json).forEach(r => {
+                                if(r.name) pendingReqs_RAW[r.name] = (pendingReqs_RAW[r.name] || 0) + (parseFloat(r.qty) || 0);
+                            });
+                        }); 
+                    }
                 } catch(e) {}
                 
+                // 讀取舊表 purchase_orders (請購單)
                 try {
-                    const { data: reqs2, error: reqErr2 } = await window._sb.from('purchase_orders').select('raw_materials').in('status', ['請購待處理', '待處理', '採購中']);
-                    if (!reqErr2 && reqs2) { reqs2.forEach(req => { let itemsArr = getSafeArray(req.raw_materials); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
+                    const { data: reqs2, error: reqErr2 } = await window._sb.from('purchase_orders').select('target_items, raw_materials').in('status', ['請購待處理', '待處理', '採購中']);
+                    if (!reqErr2 && reqs2) { 
+                        reqs2.forEach(req => { 
+                            getSafeArray(req.target_items).forEach(t => {
+                                if(t.id) pendingReqs_FG[t.id] = (pendingReqs_FG[t.id] || 0) + (parseInt(t.qty) || 0);
+                            });
+                            getSafeArray(req.raw_materials).forEach(r => {
+                                if(r.name) pendingReqs_RAW[r.name] = (pendingReqs_RAW[r.name] || 0) + (parseFloat(r.qty) || 0);
+                            });
+                        }); 
+                    }
                 } catch(e) {}
 
-                let pendingPOs = {};
+                // 讀取新表 po_documents
                 try {
                     const { data: pos, error: posErr } = await window._sb.from('po_documents').select('items_json, expected_date').in('status', ['已發送', '已下單', '異常(遲交)']);
-                    if (!posErr && pos) { pos.forEach(po => { let poItems = getSafeArray(po.items_json); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
+                    if (!posErr && pos) { 
+                        pos.forEach(po => { 
+                            getSafeArray(po.items_json).forEach(p => { 
+                                if(p.name) {
+                                    pendingPOs_RAW[p.name] = (pendingPOs_RAW[p.name] || 0) + (parseFloat(p.qty) || 0);
+                                    if(po.expected_date && (!pendingPOs_ETA[p.name] || po.expected_date < pendingPOs_ETA[p.name])) {
+                                        pendingPOs_ETA[p.name] = po.expected_date;
+                                    }
+                                }
+                            }); 
+                        }); 
+                    }
                 } catch(e) {}
                 
+                // 讀取舊表 purchase_orders (採購單)
                 try {
-                    const { data: pos2, error: posErr2 } = await window._sb.from('purchase_orders').select('raw_materials, expected_date').like('note', 'PO-%');
-                    if (!posErr2 && pos2) { pos2.forEach(po => { let poItems = getSafeArray(po.raw_materials); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
+                    const { data: pos2, error: posErr2 } = await window._sb.from('purchase_orders').select('raw_materials, expected_date').like('note', 'PO-%').in('status', ['PO已發送', '已發送', '異常(遲交)', 'PO異常(遲交)']);
+                    if (!posErr2 && pos2) { 
+                        pos2.forEach(po => { 
+                            getSafeArray(po.raw_materials).forEach(p => { 
+                                if(p.name) {
+                                    pendingPOs_RAW[p.name] = (pendingPOs_RAW[p.name] || 0) + (parseFloat(p.qty) || 0);
+                                    if(po.expected_date && (!pendingPOs_ETA[p.name] || po.expected_date < pendingPOs_ETA[p.name])) {
+                                        pendingPOs_ETA[p.name] = po.expected_date;
+                                    }
+                                }
+                            }); 
+                        }); 
+                    }
                 } catch(e) {}
                 
+                // 🚨 防彈設計：拔除舊有 id 綁定，避免 innerHTML 當機
                 let lowCount = 0;
                 const cats = [...new Set(allItems.map(i => i.category || '未分類'))];
                 const catOptions = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
-                document.getElementById('inv-cat-filter').innerHTML = catOptions;
                 
                 const searchCatFilter = document.getElementById('search-cat-filter');
-                const currentSearchCat = searchCatFilter.value;
-                searchCatFilter.innerHTML = catOptions;
-                if(currentSearchCat) searchCatFilter.value = currentSearchCat;
+                if(searchCatFilter) {
+                    const currentSearchCat = searchCatFilter.value;
+                    searchCatFilter.innerHTML = catOptions;
+                    if(currentSearchCat) searchCatFilter.value = currentSearchCat;
+                }
 
-                document.getElementById('fe-item-cat').innerHTML = catOptions;
+                const feItemCat = document.getElementById('fe-item-cat');
+                if(feItemCat) feItemCat.innerHTML = catOptions;
 
                 const nowD = new Date();
                 let overdueItems = [];
@@ -473,18 +526,22 @@
                         let etaHtml = '<span class="text-slate-300">--</span>';
 
                         if (i.item_type === '成品') {
-                            let rQty = pendingReqs[i.item_code] || 0;
+                            let rQty = pendingReqs_FG[i.item_code] || 0;
                             if(rQty > 0) {
                                 qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${rQty}</span>`;
-                                etaHtml = `<span class="text-[9px] font-black text-sky-700 bg-sky-100 px-2 py-0.5 rounded border border-sky-200">請購中</span>`;
+                                etaHtml = `<span class="text-[9px] font-black text-sky-700 bg-sky-100 px-2 py-0.5 rounded border border-sky-200">待生產</span>`;
                             }
                         } else {
-                            let poInfo = pendingPOs[i.item_name];
-                            if(poInfo && poInfo.qty > 0) {
-                                qtyHtml = `<span class="font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded shadow-sm border border-amber-100">${poInfo.qty.toFixed(0)}</span>`;
-                                // 🚨 防彈設計：過濾 null 或 無效日期
-                                let dateStr = (poInfo.eta && poInfo.eta !== '未定' && poInfo.eta !== null) ? String(poInfo.eta).slice(5) : '未定';
-                                etaHtml = dateStr !== '未定' ? `<span class="text-amber-600 font-bold">${dateStr}</span>` : `<span class="text-slate-400 font-bold">未定</span>`;
+                            let poQty = pendingPOs_RAW[i.item_name] || 0;
+                            let reqQty = pendingReqs_RAW[i.item_name] || 0;
+                            
+                            if (poQty > 0) {
+                                qtyHtml = `<span class="font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded shadow-sm border border-amber-100">${poQty.toFixed(0)}</span>`;
+                                let dStr = pendingPOs_ETA[i.item_name];
+                                etaHtml = (dStr && dStr !== '未定' && dStr !== null) ? `<span class="text-amber-600 font-bold">${String(dStr).slice(5)}</span>` : `<span class="text-slate-400 font-bold">採購中</span>`;
+                            } else if (reqQty > 0) {
+                                qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${reqQty.toFixed(0)}</span>`;
+                                etaHtml = `<span class="text-[9px] font-black text-sky-700 bg-sky-100 px-2 py-0.5 rounded border border-sky-200">請購中</span>`;
                             }
                         }
                         
@@ -526,30 +583,11 @@
             updateTopReqBar(); 
         }
 
-        // 🌟 升級版：支援下拉選單切換
+        // 🌟 高級下拉選單切換邏輯
         function switchInvType(type) {
             currentInvType = type;
             currentInvCat = '全部';
             
-            // Handle the visual tabs if they still exist (kept for backward compatibility, but dropdown is primary)
-            const tabRaw = document.getElementById('tab-raw');
-            if(tabRaw) {
-                tabRaw.classList.toggle('active', type === '原料');
-                tabRaw.classList.toggle('bg-slate-800', type === '原料');
-                tabRaw.classList.toggle('text-white', type === '原料');
-                tabRaw.classList.toggle('bg-white', type !== '原料');
-                tabRaw.classList.toggle('text-slate-600', type !== '原料');
-            }
-
-            const tabFin = document.getElementById('tab-fin');
-            if(tabFin) {
-                tabFin.classList.toggle('active', type === '成品');
-                tabFin.classList.toggle('bg-slate-800', type === '成品');
-                tabFin.classList.toggle('text-white', type === '成品');
-                tabFin.classList.toggle('bg-white', type !== '成品');
-                tabFin.classList.toggle('text-slate-600', type !== '成品');
-            }
-
             if(type === '原料') {
                 document.getElementById('sub-tabs-raw').classList.remove('hidden');
                 document.getElementById('sub-tabs-fin').classList.add('hidden');
@@ -557,7 +595,6 @@
                 document.getElementById('sub-tabs-raw').classList.add('hidden');
                 document.getElementById('sub-tabs-fin').classList.remove('hidden');
             }
-            
             updateSubTabUI();
             renderFilteredInventory();
         }
@@ -778,9 +815,12 @@
         async function saveItem(e) { e.preventDefault(); let cat = document.getElementById('i-category').value === 'custom' ? document.getElementById('i-custom-category').value : document.getElementById('i-category').value; const p = { item_name: document.getElementById('i-name').value, item_code: document.getElementById('i-code').value.toUpperCase(), item_type: document.getElementById('i-type').value, category: cat, specification: document.getElementById('i-spec').value, qty_per_pack: parseInt(document.getElementById('i-qty').value) || 1, safe_stock_level: 0, lead_time_days: parseInt(document.getElementById('i-lead').value) || 15, stocktake_cycle: parseInt(document.getElementById('i-cycle').value) || 30, bom_data: extractBomData('bom-table-body') }; const { error } = await window._sb.from('items').insert([p]); if(!error) { alert('✅ 成功！'); e.target.reset(); await loadItems(); renderBomTable('bom-table-body'); } }
         
         function renderItemSearch() {
-            const kw = document.getElementById('item-search-input').value.toLowerCase(); const cat = document.getElementById('search-cat-filter').value;
+            const kw = document.getElementById('item-search-input').value.toLowerCase(); 
+            const searchCatSel = document.getElementById('search-cat-filter');
+            const cat = searchCatSel ? searchCatSel.value : '';
             const res = window.inventoryData.filter(i => (i.item_code.toLowerCase().includes(kw) || i.item_name.toLowerCase().includes(kw)) && (cat === '' || i.category === cat));
             const container = document.getElementById('item-search-results');
+            if(!container) return;
             if(res.length === 0) { container.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 italic">無符合結果。</div>'; return; }
 
             container.innerHTML = res.map(i => {
@@ -830,8 +870,8 @@
             document.querySelectorAll('.item-barcode').forEach(svg => { JsBarcode(svg, svg.getAttribute('data-value'), { format: "CODE128", width: 2, height: 40, displayValue: true, fontSize: 14, margin: 0, background: "transparent", lineColor: "#1e293b" }); });
         }
 
-        function openFrontEdit(id) { const i = window.inventoryData.find(x => x.id === id); if(!i) return; document.getElementById('fe-item-id').value = i.id; document.getElementById('fe-item-name').value = i.item_name; const catSel = document.getElementById('fe-item-cat'); catSel.value = i.category || '未分類'; document.getElementById('fe-item-lead').value = i.lead_time_days || 15; document.getElementById('fe-item-cycle').value = i.stocktake_cycle || 30; renderBomTable('fe-bom-table-body', i.bom_data || []); document.getElementById('front-item-edit-modal').classList.add('active'); }
-        async function saveFrontEditItem() { const id = document.getElementById('fe-item-id').value; if(!id) { alert('系統無法讀取 ID！'); return; } const p = { item_name: document.getElementById('fe-item-name').value, category: document.getElementById('fe-item-cat').value, lead_time_days: parseInt(document.getElementById('fe-item-lead').value) || 15, stocktake_cycle: parseInt(document.getElementById('fe-item-cycle').value) || 30, bom_data: extractBomData('fe-bom-table-body') }; const { error } = await window._sb.from('items').update(p).eq('id', id); if(error) alert('失敗'); else { alert('✅ 已儲存修改！'); closeModal('front-item-edit-modal'); loadItems(); } }
+        function openFrontEdit(id) { const i = window.inventoryData.find(x => x.id === id); if(!i) return; document.getElementById('fe-item-id').value = i.id; document.getElementById('fe-item-name').value = i.item_name; const catSel = document.getElementById('fe-item-cat'); if(catSel) catSel.value = i.category || '未分類'; document.getElementById('fe-item-lead').value = i.lead_time_days || 15; document.getElementById('fe-item-cycle').value = i.stocktake_cycle || 30; renderBomTable('fe-bom-table-body', i.bom_data || []); document.getElementById('front-item-edit-modal').classList.add('active'); }
+        async function saveFrontEditItem() { const id = document.getElementById('fe-item-id').value; if(!id) { alert('系統無法讀取 ID！'); return; } const feItemCat = document.getElementById('fe-item-cat'); const p = { item_name: document.getElementById('fe-item-name').value, category: feItemCat ? feItemCat.value : '未分類', lead_time_days: parseInt(document.getElementById('fe-item-lead').value) || 15, stocktake_cycle: parseInt(document.getElementById('fe-item-cycle').value) || 30, bom_data: extractBomData('fe-bom-table-body') }; const { error } = await window._sb.from('items').update(p).eq('id', id); if(error) alert('失敗'); else { alert('✅ 已儲存修改！'); closeModal('front-item-edit-modal'); loadItems(); } }
         
         function printInlineBarcode(id) { const item = allItems.find(i => i.id === id); if(!item) return; const printZone = document.getElementById('print-zone'); printZone.innerHTML = `<div style="text-align:center; font-family:sans-serif; margin-bottom:10px;"><h2 style="margin:0 0 5px 0; font-size:24px;">${item.item_name}</h2><p style="margin:0 0 15px 0; font-size:16px; color:#555;">${item.specification || ''}</p><svg id="print-barcode-svg"></svg></div>`; JsBarcode("#print-barcode-svg", item.item_code, { format: "CODE128", width: 2.5, height: 80, displayValue: true, fontSize: 24, fontOptions: "bold", margin: 10 }); setTimeout(() => { window.print(); }, 150); }
 
