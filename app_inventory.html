@@ -36,12 +36,13 @@
         .tab-btn { transition: all 0.2s ease; }
         .tab-btn.active { background-color: #1e293b; color: white; border-color: #1e293b; }
         .subcat-btn { transition: all 0.2s ease; }
-        .subcat-btn.active { background-color: #0ea5e9; color: white; border-color: #0ea5e9; }
+        .subcat-btn.active { background-color: #0284c7; color: white; border-color: #0284c7; }
     </style>
 </head>
 <body class="text-slate-800 relative">
     
     <div id="print-zone" style="display:none;"></div>
+    
     <div id="toast-container" class="fixed bottom-24 left-4 z-[9999] flex flex-col space-y-3 pointer-events-none"></div>
 
     <div id="app-container" class="max-w-md mx-auto shadow-2xl relative">
@@ -124,13 +125,13 @@
                     </div>
 
                     <div id="sub-tabs-raw" class="flex space-x-2 overflow-x-auto no-scrollbar pb-1">
-                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-3 py-1.5 rounded-full border border-sky-500 text-[10px] font-bold bg-sky-500 text-white shadow-sm">全部原料</button>
+                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-3 py-1.5 rounded-full border border-sky-600 text-[10px] font-bold bg-sky-600 text-white shadow-sm">全部原料</button>
                         <button onclick="switchInvCat('標籤貼紙')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">標籤貼紙</button>
                         <button onclick="switchInvCat('車用濾布')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">車用濾布</button>
                         <button onclick="switchInvCat('其他')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">其他</button>
                     </div>
                     <div id="sub-tabs-fin" class="hidden flex space-x-2 overflow-x-auto no-scrollbar pb-1">
-                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-3 py-1.5 rounded-full border border-sky-500 text-[10px] font-bold bg-sky-500 text-white shadow-sm">全部成品</button>
+                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-3 py-1.5 rounded-full border border-sky-600 text-[10px] font-bold bg-sky-600 text-white shadow-sm">全部成品</button>
                         <button onclick="switchInvCat('汽車冷氣濾網')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">汽車冷氣濾網</button>
                         <button onclick="switchInvCat('VESTA系列產品')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">VESTA系列產品</button>
                         <button onclick="switchInvCat('其他')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">其他</button>
@@ -307,6 +308,7 @@
         let currentInvType = '原料'; 
         let currentInvCat = '全部';
 
+        // 🚨 絕對防彈：防止 JSON 崩潰
         function getSafeArray(data) { if (!data) return []; if (Array.isArray(data)) return data; try { return JSON.parse(data); } catch(e) { return []; } }
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
@@ -321,7 +323,6 @@
             }
         }
 
-        // 🌟 專屬的左側浮動 Toast 通知
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -346,7 +347,7 @@
                 document.getElementById('header-title').innerText = '庫存大廳'; 
                 document.getElementById('btn-back').classList.add('hidden'); 
                 
-                // 返回時重新載入以維持購物車標記
+                // 🚨 返回不清除購物車，保持勾選狀態
                 loadItems();
             });
         }
@@ -359,136 +360,135 @@
         }
 
         async function loadItems() {
-            const { data } = await window._sb.from('items').select('*').order('created_at', {ascending: false}); allItems = data || [];
-            const { data: ledgers } = await window._sb.from('inventory_ledgers').select('item_id, change_qty');
-            let stockMap = {}; if(ledgers) ledgers.forEach(l => { if(!stockMap[l.item_id]) stockMap[l.item_id] = 0; stockMap[l.item_id] += l.change_qty; });
-            
-            const { data: checks } = await window._sb.from('inventory_ledgers').select('item_id, created_at, employees(full_name)').eq('action_type', '盤點').order('created_at', {ascending: false});
-            window.latestChecks = {}; 
-            if(checks) { checks.forEach(c => { if(!window.latestChecks[c.item_id]) { window.latestChecks[c.item_id] = { rawDate: c.created_at, date: new Date(c.created_at).toLocaleDateString('zh-TW'), emp: c.employees?.full_name || '未知' }; } }); }
-
-            let pendingReqs = {};
-            let pendingPOs = {};
-            
             try {
-                const { data: reqs2 } = await window._sb.from('purchase_orders').select('raw_materials, status, expected_date, note');
-                if (reqs2) { 
-                    reqs2.forEach(req => { 
-                        let itemsArr = getSafeArray(req.raw_materials); 
-                        
-                        if(req.status === '請購待處理' || req.status === '採購中' || req.status === '待處理') {
-                            itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); 
-                        }
-                        else if (req.status.startsWith('PO') && req.note && req.note.startsWith('PO-')) {
-                            itemsArr.forEach(pItem => { 
-                                let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: req.expected_date }; 
-                                pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); 
-                                if (req.expected_date && (!pendingPOs[name].eta || req.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = req.expected_date; } 
-                            }); 
-                        }
-                    }); 
-                }
-            } catch(e) {}
-
-            let lowCount = 0;
-            const cats = [...new Set(allItems.map(i => i.category || '未分類'))];
-            const catOptions = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
-            document.getElementById('inv-cat-filter').innerHTML = catOptions;
-            
-            const searchCatFilter = document.getElementById('search-cat-filter');
-            const currentSearchCat = searchCatFilter.value;
-            searchCatFilter.innerHTML = catOptions;
-            if(currentSearchCat) searchCatFilter.value = currentSearchCat;
-
-            document.getElementById('fe-item-cat').innerHTML = catOptions;
-
-            const nowD = new Date();
-            let overdueItems = [];
-
-            window.inventoryData = allItems.map(i => {
-                let current_stock = stockMap[i.id] || 0;
-                let cycle = i.stocktake_cycle || 30;
-                let isOverdue = true;
-                let chk = window.latestChecks[i.id];
+                const { data, error: itemErr } = await window._sb.from('items').select('*').order('created_at', {ascending: false}); 
+                if(itemErr) throw itemErr;
+                allItems = data || [];
                 
-                if(chk && chk.rawDate) { let diffDays = (nowD - new Date(chk.rawDate)) / (1000 * 60 * 60 * 24); isOverdue = diffDays >= cycle; }
-                if(current_stock <= (i.safe_stock_level || 0)) { lowCount++; }
+                const { data: ledgers } = await window._sb.from('inventory_ledgers').select('item_id, change_qty');
+                let stockMap = {}; if(ledgers) ledgers.forEach(l => { if(!stockMap[l.item_id]) stockMap[l.item_id] = 0; stockMap[l.item_id] += l.change_qty; });
                 
-                let safeBom = getSafeArray(i.bom_data);
-                let processedItem = { ...i, current_stock: current_stock, is_overdue: isOverdue, cycle: cycle, bom_data: safeBom };
-                if (isOverdue) overdueItems.push(processedItem);
-                return processedItem;
-            });
-            
-            const isFriday = nowD.getDay() === 5;
-            const isManager = window.currentUser && window.currentUser.is_inventory_manager;
-            const remBlock = document.getElementById('friday-reminder');
-            
-            if (isFriday && isManager) {
-                remBlock.classList.remove('hidden');
-                document.getElementById('friday-overdue-count').innerText = `待盤: ${overdueItems.length} 件`;
-                if (overdueItems.length > 0) {
-                    let odHtml = overdueItems.map(i => `<div class="bg-white/20 p-2.5 rounded-xl border border-white/20 text-xs flex justify-between items-center shadow-inner"><div class="flex-1 truncate pr-2"><span class="font-mono font-black text-amber-200 mr-1 bg-black/20 px-1.5 py-0.5 rounded">${i.item_code}</span><span class="font-black text-white truncate inline-block ml-1">${i.item_name}</span></div><button onclick="openCountViewFromId('${i.id}')" class="bg-white text-red-700 px-3 py-1.5 rounded-lg text-xs font-black shadow-md shrink-0 active:scale-95 transition">盤點 ➔</button></div>`).join('');
-                    document.getElementById('friday-overdue-list').innerHTML = odHtml;
-                } else {
-                    document.getElementById('friday-overdue-list').innerHTML = '<p class="text-xs text-center py-4 bg-white/10 rounded-xl text-amber-50 font-bold border border-white/10">🎉 太棒了！本週無逾期未盤點項目！</p>';
-                }
-            } else { remBlock.classList.add('hidden'); }
+                const { data: checks } = await window._sb.from('inventory_ledgers').select('item_id, created_at, employees(full_name)').eq('action_type', '盤點').order('created_at', {ascending: false});
+                window.latestChecks = {}; 
+                if(checks) { checks.forEach(c => { if(!window.latestChecks[c.item_id]) { window.latestChecks[c.item_id] = { rawDate: c.created_at, date: new Date(c.created_at).toLocaleDateString('zh-TW'), emp: c.employees?.full_name || '未知' }; } }); }
 
-            let rawTop = window.inventoryData.filter(i => ['CST-01', 'CMB-01'].includes(i.item_code));
-            let finishedGoods = window.inventoryData.filter(i => i.item_type === '成品' && i.category === '汽車冷氣濾網');
-            
-            finishedGoods.sort((a, b) => {
-                let safeA = a.safe_stock_level || 0; let safeB = b.safe_stock_level || 0;
-                let pA = a.current_stock <= safeA ? 1 : (a.current_stock <= safeA * 1.5 ? 2 : 3);
-                let pB = b.current_stock <= safeB ? 1 : (b.current_stock <= safeB * 1.5 ? 2 : 3);
-                if(pA !== pB) return pA - pB;
-                return a.current_stock - b.current_stock;
-            });
+                let pendingReqs = {};
+                let pendingPOs = {};
+                
+                try {
+                    const { data: reqs } = await window._sb.from('requisitions').select('items_json').in('status', ['待處理', '採購中']);
+                    if (reqs) { reqs.forEach(req => { let itemsArr = getSafeArray(req.items_json); itemsArr.forEach(tItem => { let code = tItem.id; if (!pendingReqs[code]) pendingReqs[code] = 0; pendingReqs[code] += (parseInt(tItem.qty) || 0); }); }); }
+                } catch(e) {}
 
-            let filterItems = [...rawTop, ...finishedGoods];
-            
-            let filterHtml = '';
-            if (filterItems.length === 0) {
-                filterHtml = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無資料</td></tr>';
-            } else {
-                filterHtml = filterItems.map(i => {
-                    let typeBadge = i.item_type === '原料' ? `<span class="text-[8px] bg-slate-100 text-slate-500 px-1 py-0.5 rounded ml-1 font-bold border border-slate-200">原料</span>` : '';
-                    let qtyHtml = '<span class="text-slate-300">0</span>';
-                    let etaHtml = '<span class="text-slate-300">--</span>';
+                try {
+                    const { data: pos } = await window._sb.from('po_documents').select('items_json, expected_date').in('status', ['已發送', '已下單', '異常(遲交)']);
+                    if (pos) { pos.forEach(po => { let poItems = getSafeArray(po.items_json); poItems.forEach(pItem => { let name = pItem.name; if (!pendingPOs[name]) pendingPOs[name] = { qty: 0, eta: po.expected_date }; pendingPOs[name].qty += (parseFloat(pItem.qty) || 0); if (po.expected_date && (!pendingPOs[name].eta || po.expected_date < pendingPOs[name].eta)) { pendingPOs[name].eta = po.expected_date; } }); }); }
+                } catch(e) {}
+                
+                let lowCount = 0;
+                const cats = [...new Set(allItems.map(i => i.category || '未分類'))];
+                const catOptions = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+                document.getElementById('inv-cat-filter').innerHTML = catOptions;
+                
+                const searchCatFilter = document.getElementById('search-cat-filter');
+                const currentSearchCat = searchCatFilter.value;
+                searchCatFilter.innerHTML = catOptions;
+                if(currentSearchCat) searchCatFilter.value = currentSearchCat;
 
-                    if (i.item_type === '成品') {
-                        let rQty = pendingReqs[i.item_code] || 0;
-                        if(rQty > 0) {
-                            qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${rQty}</span>`;
-                            etaHtml = `<span class="text-[9px] font-black text-sky-700 bg-sky-100 px-2 py-0.5 rounded border border-sky-200">請購中</span>`;
-                        }
-                    } else {
-                        let poInfo = pendingPOs[i.item_name];
-                        if(poInfo && poInfo.qty > 0) {
-                            qtyHtml = `<span class="font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded shadow-sm border border-amber-100">${poInfo.qty.toFixed(0)}</span>`;
-                            etaHtml = poInfo.eta !== '--' ? `<span class="text-amber-600 font-bold">${poInfo.eta.slice(5)}</span>` : `<span class="text-slate-300">--</span>`;
-                        }
-                    }
+                document.getElementById('fe-item-cat').innerHTML = catOptions;
+
+                const nowD = new Date();
+                let overdueItems = [];
+
+                window.inventoryData = allItems.map(i => {
+                    let current_stock = stockMap[i.id] || 0;
+                    let cycle = i.stocktake_cycle || 30;
+                    let isOverdue = true;
+                    let chk = window.latestChecks[i.id];
                     
-                    let safe = i.safe_stock_level || 0; let isLow = i.current_stock <= safe; let isWarn = !isLow && i.current_stock <= (safe * 1.5);
-                    let stockClass = 'text-emerald-600'; 
-                    if(isLow) stockClass = 'text-red-600 animate-pulse'; else if(isWarn) stockClass = 'text-amber-500';
+                    if(chk && chk.rawDate) { let diffDays = (nowD - new Date(chk.rawDate)) / (1000 * 60 * 60 * 24); isOverdue = diffDays >= cycle; }
+                    if(current_stock <= (i.safe_stock_level || 0)) { lowCount++; }
+                    
+                    let safeBom = getSafeArray(i.bom_data);
+                    let processedItem = { ...i, current_stock: current_stock, is_overdue: isOverdue, cycle: cycle, bom_data: safeBom };
+                    if (isOverdue) overdueItems.push(processedItem);
+                    return processedItem;
+                });
+                
+                const isFriday = nowD.getDay() === 5;
+                const isManager = window.currentUser && window.currentUser.is_inventory_manager;
+                const remBlock = document.getElementById('friday-reminder');
+                
+                if (isFriday && isManager) {
+                    remBlock.classList.remove('hidden');
+                    document.getElementById('friday-overdue-count').innerText = `待盤: ${overdueItems.length} 件`;
+                    if (overdueItems.length > 0) {
+                        let odHtml = overdueItems.map(i => `<div class="bg-white/20 p-2.5 rounded-xl border border-white/20 text-xs flex justify-between items-center shadow-inner"><div class="flex-1 truncate pr-2"><span class="font-mono font-black text-amber-200 mr-1 bg-black/20 px-1.5 py-0.5 rounded">${i.item_code}</span><span class="font-black text-white truncate inline-block ml-1">${i.item_name}</span></div><button onclick="openCountViewFromId('${i.id}')" class="bg-white text-red-700 px-3 py-1.5 rounded-lg text-xs font-black shadow-md shrink-0 active:scale-95 transition">盤點 ➔</button></div>`).join('');
+                        document.getElementById('friday-overdue-list').innerHTML = odHtml;
+                    } else {
+                        document.getElementById('friday-overdue-list').innerHTML = '<p class="text-xs text-center py-4 bg-white/10 rounded-xl text-amber-50 font-bold border border-white/10">🎉 太棒了！本週無逾期未盤點項目！</p>';
+                    }
+                } else { remBlock.classList.add('hidden'); }
 
-                    return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0">
-                        <td class="p-2.5 font-mono font-black text-slate-700 truncate max-w-[120px]">${i.item_code}${typeBadge}</td>
-                        <td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td>
-                        <td class="p-2.5 text-right">${qtyHtml}</td>
-                        <td class="p-2.5 text-center text-[10px]">${etaHtml}</td>
-                    </tr>`;
-                }).join('');
+                let rawTop = window.inventoryData.filter(i => ['CST-01', 'CMB-01'].includes(i.item_code));
+                let finishedGoods = window.inventoryData.filter(i => i.item_type === '成品' && i.category === '汽車冷氣濾網');
+                
+                finishedGoods.sort((a, b) => {
+                    let safeA = a.safe_stock_level || 0; let safeB = b.safe_stock_level || 0;
+                    let pA = a.current_stock <= safeA ? 1 : (a.current_stock <= safeA * 1.5 ? 2 : 3);
+                    let pB = b.current_stock <= safeB ? 1 : (b.current_stock <= safeB * 1.5 ? 2 : 3);
+                    if(pA !== pB) return pA - pB;
+                    return a.current_stock - b.current_stock;
+                });
+
+                let filterItems = [...rawTop, ...finishedGoods];
+                
+                let filterHtml = '';
+                if (filterItems.length === 0) {
+                    filterHtml = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無資料</td></tr>';
+                } else {
+                    filterHtml = filterItems.map(i => {
+                        let qtyHtml = '<span class="text-slate-300">0</span>';
+                        let etaHtml = '<span class="text-slate-300">--</span>';
+
+                        if (i.item_type === '成品') {
+                            let rQty = pendingReqs[i.item_code] || 0;
+                            if(rQty > 0) {
+                                qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${rQty}</span>`;
+                                etaHtml = `<span class="text-[9px] font-black text-sky-700 bg-sky-100 px-2 py-0.5 rounded border border-sky-200">請購中</span>`;
+                            }
+                        } else {
+                            let poInfo = pendingPOs[i.item_name];
+                            if(poInfo && poInfo.qty > 0) {
+                                qtyHtml = `<span class="font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded shadow-sm border border-amber-100">${poInfo.qty.toFixed(0)}</span>`;
+                                let dateStr = (poInfo.eta && poInfo.eta !== '未定') ? poInfo.eta.slice(5) : '未定';
+                                etaHtml = dateStr !== '未定' ? `<span class="text-amber-600 font-bold">${dateStr}</span>` : `<span class="text-slate-400 font-bold">未定</span>`;
+                            }
+                        }
+                        
+                        let safe = i.safe_stock_level || 0; let isLow = i.current_stock <= safe; let isWarn = !isLow && i.current_stock <= (safe * 1.5);
+                        let stockClass = 'text-emerald-600'; 
+                        if(isLow) stockClass = 'text-red-600 animate-pulse'; else if(isWarn) stockClass = 'text-amber-500';
+
+                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0">
+                            <td class="p-2.5 font-mono font-black text-slate-700 truncate max-w-[120px]">${i.item_code}</td>
+                            <td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td>
+                            <td class="p-2.5 text-right">${qtyHtml}</td>
+                            <td class="p-2.5 text-center text-[10px]">${etaHtml}</td>
+                        </tr>`;
+                    }).join('');
+                }
+                document.getElementById('ui-filter-status-table').innerHTML = filterHtml;
+
+                if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
+                
+                // 🚨 強制呼叫渲染清單，確保不變白
+                if(document.getElementById('view-inventory-list').classList.contains('active')) renderFilteredInventory();
+
+            } catch(fatalError) {
+                console.error("資料庫連線失敗或權限阻擋", fatalError);
+                document.getElementById('ui-filter-status-table').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500 font-bold">資料庫權限錯誤，請至 Supabase 解除 RLS 防火牆</td></tr>';
             }
-            document.getElementById('ui-filter-status-table').innerHTML = filterHtml;
-
-            if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
-            
-            // 🚨 強制呼叫渲染清單，確保不變白
-            if(document.getElementById('view-inventory-list').classList.contains('active')) renderFilteredInventory();
         }
 
         function openCountViewFromId(id) { const item = window.inventoryData.find(x => x.id === id); if(item) openCountView(item); }
@@ -573,7 +573,6 @@
             renderInventoryListUI(filtered);
         }
 
-        // 🌟 依照全新 9 大資訊渲染卡片，黃金比例版面優化
         function renderInventoryListUI(data) {
             const container = document.getElementById('ui-inventory-list');
             if(!data || data.length === 0) { container.innerHTML = '<div class="text-center text-sm text-slate-400 font-bold py-10">無資料</div>'; return; }
@@ -588,10 +587,11 @@
                 else if (isWarn) { borderClass = 'border-amber-400 bg-amber-50/20'; stockColor = 'text-amber-500'; }
 
                 const chk = window.latestChecks[i.id]; const inCart = reqCart.has(i.id) ? 'checked' : '';
+                
                 let lastCheckText = chk ? `${chk.date} (${chk.emp})` : `<span class="text-red-500">從未盤點過</span>`;
 
                 return `
-                <div class="p-4 rounded-xl border-2 ${borderClass} flex flex-col mb-3 relative shadow-sm">
+                <div class="p-3.5 md:p-4 rounded-xl border-2 ${borderClass} flex flex-col mb-3 relative shadow-sm">
                     <div class="flex justify-between items-start mb-2">
                         <div class="flex space-x-1.5 flex-wrap gap-y-1 pr-14">
                             <span class="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 shadow-sm"><span class="font-bold text-slate-400 mr-0.5">1.類別:</span> ${i.category||'未分類'}</span>
@@ -626,7 +626,6 @@
 
         function toggleReq(id, el) { if(el.checked) reqCart.add(id); else reqCart.delete(id); updateTopReqBar(); }
         
-        // 🌟 修復按鈕同步機制
         function updateTopReqBar() { 
             const countBadge = document.getElementById('list-req-count');
 
@@ -654,7 +653,6 @@
             openModal('req-qty-modal');
         }
 
-        // 🌟 絕對防彈引擎：強制產生 CSV -> 寫入舊表保證成功 -> 不跳轉！
         async function confirmGenerateReq() {
             let isValid = true; document.querySelectorAll('.req-target-qty').forEach(inp => { if((parseInt(inp.value)||0) <= 0) isValid = false; });
             if(!isValid) { alert('請確保所有項目都有輸入大於 0 的數量！'); return; }
@@ -671,7 +669,7 @@
                 if(item && qty > 0) { 
                     targetItems.push({ id: item.item_code, name: item.item_name, qty: qty }); 
                     let safeBom = getSafeArray(item.bom_data);
-                    // 成品展開 BOM，原料直接請購
+                    // 🌟 成品展開 BOM，原料直接請購
                     if (item.item_type === '成品' && safeBom.length > 0) {
                         safeBom.forEach(b => { let key = b.material + '_' + b.unit; if (!rawTotals[key]) rawTotals[key] = { id: item.item_code, name: b.material, unit: b.unit, qty: 0 }; rawTotals[key].qty += (parseFloat(b.total_qty) * qty); });
                     } else { 
@@ -701,26 +699,33 @@
                 link.download = `HYPASS_請購單_${reqNo}.csv`; 
                 document.body.appendChild(link); link.click(); document.body.removeChild(link);
                 
-                // 顯示左側成功浮動通知
                 showSysToast(`已生成請購單編號 ${reqNo}.csv`);
             } catch(csvErr) { 
                 console.error('CSV生成失敗:', csvErr); 
-                alert('CSV 下載被瀏覽器阻擋，但資料仍會安全寫入系統！');
             }
 
-            // 🚨 2. 安全防護：寫入原本就存在的 purchase_orders 表！保證不會失敗！
+            // 🚨 2. 安全防護：寫入資料庫，如果新表不存在，自動備援舊表
             try {
                 const payload = { 
+                    req_no: reqNo,
                     employee_id: window.currentUser?.id || null, 
                     target_items: targetItems, 
-                    raw_materials: rawMaterials, 
-                    status: '請購待處理',
-                    note: reqNo
+                    items_json: rawMaterials, 
+                    status: '待處理'
                 };
-                await window._sb.from('purchase_orders').insert([payload]);
+                try {
+                    await window._sb.from('requisitions').insert([payload]);
+                } catch(e) {
+                    await window._sb.from('purchase_orders').insert([{ 
+                        employee_id: window.currentUser?.id || null, 
+                        target_items: targetItems, 
+                        raw_materials: rawMaterials, 
+                        status: '請購待處理',
+                        note: reqNo
+                    }]);
+                }
             } catch (dbErr) { console.error('資料庫同步失敗:', dbErr); }
 
-            // 🚨 3. 不跳轉：關閉視窗，讓使用者留在庫存介面繼續操作
             closeModal('req-qty-modal');
             reqCart.clear();
             updateTopReqBar();
