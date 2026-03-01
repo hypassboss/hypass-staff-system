@@ -171,6 +171,43 @@
         </main>
     </div>
 
+    <div id="admin-edit-po-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-5 z-[100]">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 relative flex flex-col shadow-2xl">
+            <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800">✏️ 編輯正式採購單狀態</h3>
+            <input type="hidden" id="admin-po-edit-id">
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 ml-1">採購單狀態</label>
+                    <select id="admin-po-edit-status" class="admin-input font-bold bg-slate-50 select-arrow outline-none focus:border-amber-500" onchange="togglePoException()">
+                        <option value="PO已發送">PO已發送</option><option value="PO完成">✅ PO完成</option><option value="PO異常(遲交)">🚨 異常 (遲交)</option><option value="PO異常(拒收)">❌ 異常 (拒收)</option><option value="PO異常(其他)">⚠️ 異常 (其他)</option>
+                    </select>
+                </div>
+                <div id="admin-po-exception-box" class="hidden">
+                    <label class="text-[10px] font-bold text-red-600 ml-1">異常原因說明</label>
+                    <textarea id="admin-po-edit-reason" class="admin-input font-bold bg-red-50 border-red-200 outline-none focus:border-red-500 h-24 resize-none" placeholder="請填寫異常細節..."></textarea>
+                </div>
+            </div>
+            <div class="flex space-x-3 mt-6"><button onclick="closeModal('admin-edit-po-modal')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl">取消</button><button onclick="saveAdminPOEdit()" class="flex-1 bg-amber-600 text-white font-black py-3.5 rounded-xl">儲存</button></div>
+        </div>
+    </div>
+
+    <div id="admin-edit-req-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-5 z-[100]">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 relative flex flex-col shadow-2xl">
+            <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800">✏️ 編輯請購單狀態</h3>
+            <input type="hidden" id="admin-req-edit-id">
+            <input type="hidden" id="admin-req-edit-islegacy">
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 ml-1">請購單狀態</label>
+                    <select id="admin-req-edit-status" class="admin-input font-bold bg-sky-50 select-arrow outline-none focus:border-sky-500 text-sky-900">
+                        <option value="請購待處理">待處理</option><option value="採購中">採購中</option><option value="已完成">✅ 已完成</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex space-x-3 mt-6"><button onclick="closeModal('admin-edit-req-modal')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl">取消</button><button onclick="saveAdminReqEdit()" class="flex-1 bg-sky-600 text-white font-black py-3.5 rounded-xl">儲存</button></div>
+        </div>
+    </div>
+
     <div id="payroll-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-5 z-[100]"><div class="bg-white w-full max-w-md rounded-3xl p-6 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto"><h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800">✏️ 編輯歷史薪資單</h3><input type="hidden" id="edit-pr-id"><div class="space-y-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">月份</label><input type="text" id="edit-pr-month" class="admin-input font-bold bg-slate-100" disabled></div><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">本薪</label><input type="number" id="edit-pr-base" class="admin-input font-black bg-slate-50" oninput="calcEditPayrollNet()"></div><div><label class="text-[10px] font-bold text-emerald-600 ml-1">獎金津貼</label><input type="number" id="edit-pr-bonus" class="admin-input font-black text-emerald-600 bg-emerald-50 border-emerald-200" oninput="calcEditPayrollNet()"></div><div class="col-span-2"><label class="text-[10px] font-bold text-amber-600 ml-1">年終</label><input type="number" id="edit-pr-yeb" class="admin-input font-black text-amber-600 bg-amber-50" oninput="calcEditPayrollNet()"></div><div class="col-span-2"><label class="text-[10px] font-bold text-sky-600 ml-1">特休結算</label><input type="number" id="edit-pr-ulp" class="admin-input font-black text-sky-600 bg-sky-50" oninput="calcEditPayrollNet()"></div><div><label class="text-[10px] font-bold text-red-600 ml-1">勞健保</label><input type="number" id="edit-pr-ins" class="admin-input font-black text-red-600 bg-red-50" oninput="calcEditPayrollNet()"></div><div><label class="text-[10px] font-bold text-red-600 ml-1">二代健保</label><input type="number" id="edit-pr-2nd" class="admin-input font-black text-red-600 bg-red-50" oninput="calcEditPayrollNet()"></div><div class="col-span-2"><label class="text-[10px] font-bold text-red-600 ml-1">請假扣薪</label><input type="number" id="edit-pr-lvd" class="admin-input font-black text-red-600 bg-red-50" oninput="calcEditPayrollNet()"></div></div><div class="flex justify-between items-center bg-slate-100 p-4 rounded-xl mt-3 shadow-inner"><span class="font-bold text-slate-600">重算實領</span><span id="edit-pr-net" class="text-2xl font-black text-sky-600">NT$ 0</span></div></div><div class="flex space-x-3 mt-6"><button onclick="closeModal('payroll-edit-modal')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl">取消</button><button onclick="saveEditPayroll()" class="flex-1 bg-indigo-600 text-white font-black py-3.5 rounded-xl">儲存</button></div></div></div>
 
     <div id="item-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]"><div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-5 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar"><h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex justify-between"><span>✏️ 修改料號</span><button onclick="deleteAdminItem()" class="text-xs bg-red-50 text-red-600 px-3 py-1 rounded-lg">🗑️ 刪除</button></h3><input type="hidden" id="edit-item-id"><div class="space-y-3"><div class="grid grid-cols-2 gap-3"><div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">品名</label><input type="text" id="edit-item-name" class="admin-input font-bold bg-slate-50"></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">料號</label><input type="text" id="edit-item-code" class="admin-input font-mono uppercase bg-slate-50"></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">屬性</label><select id="edit-item-type" class="admin-input bg-white select-arrow"><option value="原料">原料</option><option value="成品">成品</option></select></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">類別</label><select id="edit-item-cat" class="admin-input bg-white select-arrow"><option value="汽車冷氣濾網">汽車冷氣濾網</option><option value="VESTA系列產品">VESTA系列產品</option><option value="未分類">未分類</option></select></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">包裝量</label><input type="number" id="edit-item-qty" class="admin-input bg-slate-50 text-center"></div><div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">規格</label><input type="text" id="edit-item-spec" class="admin-input bg-slate-50"></div><div><label class="text-[10px] font-bold text-red-600 ml-1">低水位</label><input type="number" id="edit-item-safe" class="admin-input text-red-600 bg-red-50 border-red-200"></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">生產週期</label><select id="edit-item-lead" class="admin-input bg-white select-arrow"><option value="15">15天</option><option value="30">30天</option><option value="60">60天</option><option value="90">90天</option></select></div><div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">盤點週期</label><select id="edit-item-cycle" class="admin-input bg-sky-50 text-sky-900 select-arrow font-black"><option value="7">7天 (每週)</option><option value="30">30天 (每月)</option><option value="60">60天 (雙月)</option><option value="90">90天 (一季)</option></select></div></div><div class="border-t border-slate-200 pt-3 mt-2">
@@ -272,6 +309,7 @@
             const elDrafts = document.getElementById('list-admin-po-drafts');
             elDocs.innerHTML = '載入中...'; elDrafts.innerHTML = '載入中...';
             
+            // 1. 載入正式 PO 單 (PDF 檔)
             try {
                 const { data: docs } = await window._sb.from('po_documents').select('*').order('created_at', {ascending: false});
                 if(!docs || docs.length === 0) {
@@ -279,7 +317,7 @@
                 } else {
                     window.adminPoData = docs;
                     elDocs.innerHTML = docs.map(d => {
-                        let statusCol = d.status === '完成' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (d.status.includes('異常') ? 'text-red-700 bg-red-100 border-red-200' : 'text-slate-700 bg-slate-100 border-slate-200');
+                        let statusCol = d.status === 'PO完成' || d.status === '完成' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (d.status.includes('異常') ? 'text-red-700 bg-red-100 border-red-200' : 'text-slate-700 bg-slate-100 border-slate-200');
                         let safeItems = getSafeArray(d.items_json);
                         let expText = d.exception_reason ? `<div class="text-[10px] bg-red-50 text-red-600 p-1.5 rounded-lg border border-red-100 mt-1 font-bold"><span class="mr-1">🚨</span>異常原因: ${d.exception_reason}</div>` : '';
                         
@@ -288,7 +326,7 @@
                             <div class="mb-3 md:mb-0">
                                 <div class="flex items-center mb-1">
                                     <span class="font-mono font-black text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 mr-2">${d.po_no}</span>
-                                    <span class="text-[10px] font-black px-2 py-0.5 rounded border ${statusCol}">${d.status}</span>
+                                    <span class="text-[10px] font-black px-2 py-0.5 rounded border ${statusCol}">${d.status.replace('PO','')}</span>
                                 </div>
                                 <h4 class="font-black text-base text-slate-800">${d.supplier_name} <span class="text-xs text-slate-500 font-bold ml-1">(${safeItems.length}項原料)</span></h4>
                                 <div class="text-[10px] text-slate-500 mt-1 flex items-center">
@@ -306,13 +344,12 @@
                         </div>`;
                     }).join('');
                 }
-            } catch(e) { elDocs.innerHTML = '<p class="text-center text-red-400 font-bold py-6">資料讀取異常</p>'; }
+            } catch(e) { elDocs.innerHTML = '<p class="text-center text-red-400 font-bold py-6">資料庫尚未建立 po_documents</p>'; }
 
             try {
-                // 掃描新版與舊版請購單
+                // 掃描防護版 purchase_orders
                 let reqData = [];
-                try { const { data: r1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false}); if(r1) reqData = r1; } catch(e){}
-                try { const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中']).order('created_at', {ascending: false}); if(r2 && r2.length > 0) { let oldReqs = r2.map(x => ({ id: x.id, req_no: 'REQ-FB-' + x.id.slice(0,4), employee_id: x.employee_id, employees: x.employees, items_json: x.raw_materials, status: x.status === '已建檔' ? '待處理' : x.status, created_at: x.created_at, is_legacy: true })); reqData = [...reqData, ...oldReqs]; } } catch(e){}
+                try { const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中', '請購待處理', '已完成']).order('created_at', {ascending: false}); if(r2 && r2.length > 0) { let validReqs = r2.filter(x => x.note && x.note.startsWith('REQ-')); reqData = validReqs.map(x => ({ id: x.id, req_no: x.note, employee_id: x.employee_id, employees: x.employees, items_json: x.raw_materials, target_items: x.target_items, status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status, created_at: x.created_at, is_legacy: true })); } } catch(e){}
 
                 if(reqData.length === 0) {
                     elDrafts.innerHTML = '<p class="text-center text-slate-400 font-bold py-4">無請購單紀錄</p>';
@@ -401,7 +438,7 @@
 
             if(!reqData) { alert('下載失敗，找不到資料'); return; }
 
-            let reqNo = reqData.req_no || ('REQ-FB-' + reqData.id.slice(0,4));
+            let reqNo = reqData.note || reqData.req_no || ('REQ-FB-' + reqData.id.slice(0,4));
             let csv = "\uFEFF請購單號,申請日期,申請人,請購成品/半成品,生產數量,展開原料名稱,需求總量,單位\n";
             const dateStr = new Date(reqData.created_at).toLocaleDateString('zh-TW');
             
