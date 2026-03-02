@@ -26,7 +26,7 @@
             #dashboard-ui, aside, header { display: none !important; }
             .print-break { page-break-after: always; }
         }
-        
+
         @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         .toast-msg { animation: slideInLeft 0.4s ease-out forwards; }
     </style>
@@ -34,6 +34,7 @@
 <body class="text-slate-800 font-sans min-h-screen md:h-screen md:overflow-hidden md:flex bg-slate-50">
 
     <div id="admin-print-zone" style="display:none; font-family: 'Microsoft JhengHei', sans-serif;"></div>
+    <div id="toast-container" class="fixed bottom-24 left-4 z-[9999] flex flex-col space-y-3 pointer-events-none"></div>
 
     <div id="pdf-preview-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-sm z-[9999] hidden flex-col">
         <div class="flex justify-between items-center p-4 bg-slate-800 text-white shrink-0 shadow-md">
@@ -47,8 +48,6 @@
             <div id="pdf-preview-content" class="bg-white text-black p-4 sm:p-10 shadow-2xl w-full max-w-3xl overflow-x-auto rounded-xl"></div>
         </div>
     </div>
-
-    <div id="toast-container" class="fixed bottom-24 left-4 z-[9999] flex flex-col space-y-3 pointer-events-none"></div>
 
     <div id="login-box" class="flex flex-col items-center justify-center min-h-screen px-5 md:w-full z-50">
         <div class="glass-panel p-8 w-full max-w-sm text-center relative overflow-hidden">
@@ -80,6 +79,7 @@
                 <button onclick="st('sal')" id="dt-sal" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">💼</span> 業務管理中心</button>
                 <button onclick="st('brs')" id="dt-brs" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">📍</span> 企業據點管理</button>
                 <button onclick="st('bull')" id="dt-bull" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">📢</span> 系統公告推播</button>
+                <button onclick="st('pbull')" id="dt-pbull" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">🔔</span> 個人公告管理</button>
             </nav>
             <div class="p-4 border-t border-slate-800"><button onclick="location.reload()" class="w-full bg-slate-800 hover:bg-red-500 text-slate-300 hover:text-white py-3 rounded-xl font-bold transition">安全登出</button></div>
         </aside>
@@ -92,9 +92,9 @@
                 <button onclick="st('att')" id="m-att" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">📋</span><span class="m-text text-[11px] font-bold tracking-widest">出勤大盤</span></button>
                 <button onclick="st('inv')" id="m-inv" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">📦</span><span class="m-text text-[11px] font-bold tracking-widest">庫存清單</span></button>
                 <button onclick="st('pur')" id="m-pur" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">🛒</span><span class="m-text text-[11px] font-bold tracking-widest">採購管理</span></button>
+                <button onclick="st('pbull')" id="m-pbull" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">🔔</span><span class="m-text text-[11px] font-bold tracking-widest">個人公告</span></button>
                 <button onclick="st('fin')" id="m-fin" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">💵</span><span class="m-text text-[11px] font-bold tracking-widest">財務對帳</span></button>
                 <button onclick="st('sal')" id="m-sal" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">💼</span><span class="m-text text-[11px] font-bold tracking-widest">業務總表</span></button>
-                <button onclick="st('brs')" id="m-brs" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">📍</span><span class="m-text text-[11px] font-bold tracking-widest">據點管理</span></button>
                 <button onclick="st('bull')" id="m-bull" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm col-span-3"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">📢</span><span class="m-text text-[11px] font-bold tracking-widest">系統公告推播</span></button>
             </div>
 
@@ -151,12 +151,29 @@
                 </div>
             </section>
 
-            <section id="inv" class="tab-content space-y-5 max-w-6xl">
-                <div><h3 class="font-black text-slate-800 border-l-4 border-emerald-500 pl-3 text-lg mb-4">庫存清單與料號管理</h3><div class="glass-panel p-5 shadow-sm mb-4 flex space-x-2"><select id="admin-inv-cat-filter" class="w-1/3 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none select-arrow shadow-inner" onchange="filterAdminInventory()"><option value="">全部分類</option></select><input type="text" id="admin-inv-search" placeholder="🔍 搜尋料號/品名..." class="w-2/3 admin-input bg-slate-50 font-bold shadow-inner" onkeyup="filterAdminInventory()"></div><div id="list-inv-mobile" class="space-y-3 md:hidden">載入中...</div><div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-left text-sm whitespace-nowrap"><thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold"><tr><th class="px-6 py-4">料號 / 品名 / 規格</th><th class="px-6 py-4 text-right">當前庫存</th><th class="px-6 py-4 text-right">安全低水位</th><th class="px-6 py-4 text-center">生產週期</th><th class="px-6 py-4 text-center">操作</th></tr></thead><tbody id="list-inv-desktop" class="divide-y divide-slate-100"></tbody></table></div></div>
+            <section id="att" class="tab-content space-y-5 max-w-full overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-black text-slate-800 border-l-4 border-slate-500 pl-3 text-lg">全體出勤狀態五日大盤</h3>
+                    <input type="date" id="att-date" onchange="loadAttendance()" class="p-2 border border-slate-300 rounded-lg text-sm font-black bg-white shadow-sm outline-none focus:border-slate-500 w-40">
+                </div>
+                
+                <p class="text-[10px] text-slate-500 font-bold mb-2">📌 顯示所選日期及其前後 2 天。若有異常(曠職/遲到等)可直接發送警告通知至員工前台。</p>
+                
+                <div class="w-full overflow-x-auto no-scrollbar pb-6">
+                    <div class="min-w-[800px]">
+                        <table class="w-full text-left text-sm whitespace-nowrap bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold text-[11px]" id="att-desktop-head">
+                                </thead>
+                            <tbody id="list-attendance-desktop" class="divide-y divide-slate-100 text-xs">
+                                <tr><td colspan="6" class="text-center py-10 text-slate-400">請選擇中心日期</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </section>
 
-            <section id="att" class="tab-content space-y-5 max-w-6xl">
-                <h3 class="font-black text-slate-800 border-l-4 border-slate-500 pl-3 text-lg mb-4">全體出勤狀態總覽</h3><div class="glass-panel p-5 shadow-sm mb-4 max-w-sm"><input type="date" id="att-date" onchange="loadAttendance()" class="admin-input bg-slate-50 font-black text-lg shadow-inner"></div><div id="list-attendance-mobile" class="space-y-3 pb-8 md:hidden">請選擇日期...</div><div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-left text-sm whitespace-nowrap"><thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold"><tr><th class="px-6 py-4">員工姓名</th><th class="px-6 py-4">排定班別</th><th class="px-6 py-4">上班打卡</th><th class="px-6 py-4">下班打卡</th></tr></thead><tbody id="list-attendance-desktop"><tr><td colspan="4" class="text-center py-6 text-slate-400">請選擇日期</td></tr></tbody></table></div>
+            <section id="inv" class="tab-content space-y-5 max-w-6xl">
+                <div><h3 class="font-black text-slate-800 border-l-4 border-emerald-500 pl-3 text-lg mb-4">庫存清單與料號管理</h3><div class="glass-panel p-5 shadow-sm mb-4 flex space-x-2"><select id="admin-inv-cat-filter" class="w-1/3 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none select-arrow shadow-inner" onchange="filterAdminInventory()"><option value="">全部分類</option></select><input type="text" id="admin-inv-search" placeholder="🔍 搜尋料號/品名..." class="w-2/3 admin-input bg-slate-50 font-bold shadow-inner" onkeyup="filterAdminInventory()"></div><div id="list-inv-mobile" class="space-y-3 md:hidden">載入中...</div><div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-left text-sm whitespace-nowrap"><thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold"><tr><th class="px-6 py-4">料號 / 品名 / 規格</th><th class="px-6 py-4 text-right">當前庫存</th><th class="px-6 py-4 text-right">安全低水位</th><th class="px-6 py-4 text-center">生產週期</th><th class="px-6 py-4 text-center">操作</th></tr></thead><tbody id="list-inv-desktop" class="divide-y divide-slate-100"></tbody></table></div></div>
             </section>
 
             <section id="pur" class="tab-content space-y-6 max-w-6xl">
@@ -194,6 +211,27 @@
                 <div class="glass-panel p-6 shadow-sm"><h3 class="font-black text-slate-800 border-l-4 border-amber-500 pl-3 text-lg mb-4" id="blt-form-title">發布企業電子公告</h3><input type="hidden" id="blt-edit-id"><input type="text" id="blt-title" placeholder="主旨標題" class="admin-input mb-3 font-bold text-lg"><textarea id="blt-content" placeholder="請輸入詳細公告內容..." class="admin-input mb-5 h-40 resize-none leading-relaxed shadow-inner"></textarea><div class="flex space-x-2"><button type="button" onclick="cancelEditBlt()" id="btn-cancel-blt" class="hidden w-1/3 bg-slate-200 text-slate-700 font-bold py-4 rounded-xl shadow-sm transition">取消</button><button onclick="postBlt()" id="btn-post-blt" class="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black py-4 rounded-xl shadow-lg transition">立即推播</button></div></div>
                 <div class="glass-panel p-6 shadow-sm"><h3 class="font-black text-slate-600 text-sm mb-3">已公告歷史紀錄</h3><div id="list-admin-blt" class="space-y-3"></div></div>
             </section>
+
+            <section id="pbull" class="tab-content space-y-5 max-w-4xl">
+                <div class="glass-card p-6 shadow-sm border-t-4 border-red-500">
+                    <h3 class="font-black text-slate-800 text-lg mb-4" id="pbull-form-title">發送個人專屬公告/警告</h3>
+                    <input type="hidden" id="pbull-edit-id">
+                    <div class="space-y-3 mb-5">
+                        <select id="pbull-emp" class="admin-input font-bold bg-slate-50 select-arrow" required></select>
+                        <input type="text" id="pbull-title" placeholder="主旨標題 (必填)" class="admin-input font-bold text-lg" required>
+                        <textarea id="pbull-content" placeholder="請輸入詳細內容..." class="admin-input h-32 resize-none leading-relaxed shadow-inner" required></textarea>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button type="button" onclick="cancelEditPBull()" id="btn-cancel-pbull" class="hidden w-1/3 bg-slate-200 text-slate-700 font-bold py-4 rounded-xl shadow-sm transition">取消</button>
+                        <button onclick="postPBull()" id="btn-post-pbull" class="flex-1 bg-gradient-to-r from-red-500 to-rose-600 text-white font-black py-4 rounded-xl shadow-lg transition tracking-widest text-base">立即發送</button>
+                    </div>
+                </div>
+                <div class="glass-panel p-6 shadow-sm">
+                    <h3 class="font-black text-slate-600 text-sm mb-3">個人公告發送紀錄</h3>
+                    <div id="list-admin-pbull" class="space-y-3 max-h-[60vh] overflow-y-auto no-scrollbar pr-1"></div>
+                </div>
+            </section>
+
         </main>
     </div>
 
@@ -281,8 +319,17 @@
 
     <script src="shared.js"></script>
     <script>
-        let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = []; window.adminInvData = []; window.currentPayrollRecords = []; window.supplierData = [];
+        let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = []; window.pBulletins = []; window.adminInvData = []; window.currentPayrollRecords = []; window.supplierData = [];
         window.adminPoData = []; window.adminReqData = [];
+
+        function showSysToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg bg-slate-800 text-white px-4 py-3 rounded-xl shadow-lg border border-slate-700 font-black text-sm flex items-center';
+            toast.innerHTML = `<span class="mr-2 text-xl">✅</span>${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.animation = 'slideInLeft 0.4s ease-in reverse forwards'; setTimeout(() => toast.remove(), 400); }, 5000);
+        }
 
         function getSafeArray(data) {
             if (!data) return [];
@@ -293,8 +340,12 @@
             } catch(e) { return []; }
         }
 
-        async function safeUpdate(table, payload, id) { try { await window._sb.from(table).update(payload).eq('id', id); } catch(e) { console.error(`Update ${table} failed`, e); } }
-        async function safeDelete(table, id) { try { await window._sb.from(table).delete().eq('id', id); } catch(e) { console.error(`Delete ${table} failed`, e); } }
+        async function safeUpdate(table, payload, id) {
+            try { await window._sb.from(table).update(payload).eq('id', id); } catch(e) { console.error(`Update ${table} failed`, e); }
+        }
+        async function safeDelete(table, id) {
+            try { await window._sb.from(table).delete().eq('id', id); } catch(e) { console.error(`Delete ${table} failed`, e); }
+        }
 
         function login() { 
             if(document.getElementById('pin').value === '888888'){ 
@@ -309,6 +360,7 @@
             if(id === 'inv') loadAdminInventory();
             if(id === 'pur') loadAdminPurchase();
             if(id === 'fin') loadAdminFinance();
+            if(id === 'pbull') loadAdminPBull();
         }
         
         function openModal(id) { document.getElementById(id).classList.add('active'); } 
@@ -326,18 +378,18 @@
             aEmps.sort((a, b) => { let valA = a.employee_no && a.employee_no !== '未設定' ? a.employee_no : 'Z999'; let valB = b.employee_no && b.employee_no !== '未設定' ? b.employee_no : 'Z999'; return valA.localeCompare(valB, 'zh-TW', { numeric: true }); });
             
             aEmps.forEach(e => { window.empData[e.id] = { base: e.base_salary, deps: e.dependents_count || 0, start: e.work_start_time || '09:00:00', penalty_points: e.penalty_points || 0 }; }); 
-            const empOpts = '<option value="">選擇發放員工...</option>' + aEmps.map(e => `<option value="${e.id}">[${e.employee_no||'未設'}] ${e.full_name}</option>`).join('');
-            document.getElementById('p-emp').innerHTML = empOpts; document.getElementById('hist-emp').innerHTML = empOpts;
+            const empOpts = '<option value="">選擇員工...</option>' + aEmps.map(e => `<option value="${e.id}">[${e.employee_no||'未設'}] ${e.full_name}</option>`).join('');
+            document.getElementById('p-emp').innerHTML = empOpts; document.getElementById('hist-emp').innerHTML = empOpts; document.getElementById('pbull-emp').innerHTML = empOpts;
 
             if (aEmps.length) {
                 document.getElementById('list-emps-mobile').innerHTML = aEmps.map(e => {
                     let mgrTag = e.is_inventory_manager ? '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1 rounded ml-1">盤點員</span>' : '';
-                    let pntTag = e.penalty_points > 0 ? `<span class="text-[9px] bg-red-100 text-red-700 px-1 rounded ml-1">計點:${e.penalty_points}</span>` : '';
+                    let pntTag = e.penalty_points > 0 ? `<span class="text-[9px] bg-red-100 text-red-700 px-1 rounded ml-1">計點:${e.penalty_points}點</span>` : '';
                     return `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><div class="w-10 h-10 bg-slate-100 border border-slate-200 rounded-full flex items-center justify-center text-slate-500 font-black mr-3">${e.full_name.charAt(0)}</div><div><h4 class="font-black text-sm text-slate-800">${e.full_name} <span class="text-[9px] text-emerald-700 border border-emerald-200 bg-emerald-50 px-1 rounded">${(e.base_salary/1000).toFixed(0)}k</span>${mgrTag}${pntTag}</h4><p class="text-[10px] text-slate-500 mt-1">${e.employee_no||'未編號'} | ${e.branch_locations?.branch_name||'未綁定'}</p></div></div><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl">管理</button></div>`;
                 }).join('');
                 document.getElementById('list-emps-desktop').innerHTML = aEmps.map(e => {
                     let mgrTag = e.is_inventory_manager ? '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1 rounded block mt-1 w-max">盤點負責人</span>' : '';
-                    let pntTag = e.penalty_points > 0 ? `<span class="text-[9px] bg-red-100 text-red-700 px-1 rounded block mt-1 w-max">計點:${e.penalty_points}</span>` : '';
+                    let pntTag = e.penalty_points > 0 ? `<span class="text-[9px] bg-red-100 text-red-700 px-1 rounded block mt-1 w-max">計點:${e.penalty_points}點</span>` : '';
                     return `<tr class="hover:bg-slate-50 transition"><td class="px-6 py-4 font-black text-sky-700 text-xs">${e.employee_no||'--'}</td><td class="px-6 py-4 font-black text-slate-800">${e.full_name}${mgrTag}${pntTag}</td><td class="px-6 py-4 text-slate-600 font-mono text-xs">${e.phone}</td><td class="px-6 py-4 text-emerald-600 font-black">NT$ ${e.base_salary.toLocaleString()}</td><td class="px-6 py-4 text-center"><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">管理</button></td></tr>`;
                 }).join('');
             } else {
@@ -359,7 +411,7 @@
             loadAdminBlt();
         }
 
-        // 🌟 100% 完整還原：員工詳細資料 (包含緊急聯絡人)
+        // 🌟 100% 完整還原：員工詳細資料檢視 (包含緊急聯絡人)
         function openEmpDetail(empId) { 
             const e = window.allEmps.find(x => x.id === empId); 
             if(!e) return; 
@@ -374,7 +426,7 @@
             editBtn.style.display = 'block'; 
             
             let mgrTag = e.is_inventory_manager ? `<span class="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200">盤點負責人</span>` : ''; 
-            let pntTag = e.penalty_points > 0 ? `<span class="text-[10px] font-black text-red-700 bg-red-50 px-2 py-1 rounded-md border border-red-200">計點: ${e.penalty_points}</span>` : ''; 
+            let pntTag = e.penalty_points > 0 ? `<span class="text-[10px] font-black text-red-700 bg-red-50 px-2 py-1 rounded-md border border-red-200">計點: ${e.penalty_points}點</span>` : ''; 
             
             let permTags = []; 
             if(e.perm_inventory) permTags.push('<span class="text-[10px] font-black text-slate-600 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">📦庫存</span>'); 
@@ -563,143 +615,210 @@
                 btn.innerHTML = '✅ 完畢'; await loadAll(); setTimeout(() => openEmpDetail(empId), 500); 
             } 
         }
-        
-        async function calculateSettlement() { const empId = window.currentOffboardEmpId; const lastDay = document.getElementById('modal-off-date').value; const type = document.getElementById('modal-off-type').value; if(!empId || !lastDay) { alert('填寫最後工作日'); return; } const e = window.allEmps.find(x => x.id === empId); const { data: lv } = await window._sb.rpc('fn_get_annual_leave_v2', { p_emp_id: e.id }); const proRat = new Date(lastDay).getDate() / 30.0; const proSal = Math.round((proRat > 1 ? 1 : proRat) * e.base_salary); const uHrs = lv?.remain_hours || 0; const lPay = Math.round(uHrs * (e.base_salary / 240)); let sev = 0; if(type === '非自願離職(資遣)') { const ty = (new Date(lastDay).getTime() - new Date(e.onboarding_date).getTime()) / 31557600000; sev = Math.round(Math.max(0, ty) * 0.5 * e.base_salary); } const tot = proSal + lPay + sev; document.getElementById('res-base').innerText = e.base_salary; document.getElementById('res-pro').innerText = proSal; document.getElementById('res-lvp').innerText = lPay; document.getElementById('res-sev').innerText = sev; document.getElementById('res-total').innerText = tot; document.getElementById('modal-off-result').classList.remove('hidden'); globalOffboardData = { employee_id: empId, settlement_type: type, last_working_day: lastDay, base_salary_ref: e.base_salary, prorated_salary: proSal, unused_leave_hours: uHrs, unused_leave_pay: lPay, severance_pay: sev, total_settlement: tot }; }
-        async function confirmOffboarding() { if(!globalOffboardData || !confirm('⚠️ 確定結算並停權？')) return; await window._sb.from('settlement_records').insert([globalOffboardData]); await window._sb.from('employees').update({ employment_status: '離職', is_approved: false, resignation_date: globalOffboardData.last_working_day }).eq('id', globalOffboardData.employee_id); alert('✅ 帳號已停權。'); closeModal('emp-detail-modal'); loadAll(); }
-        async function exportBankCSV() { const month = document.getElementById('export-mon').value; if(!month) return; const { data } = await window._sb.from('payroll_records').select('total_net_pay, employees(full_name, bank_code, bank_name, bank_user_name, bank_account)').eq('pay_month', month); if(!data || data.length === 0) return; let csv = "\uFEFF銀行代碼,銀行名稱,收款帳號,戶名,匯款金額,備註\n"; data.forEach(r => { csv += `="${r.employees.bank_code}",${r.employees.bank_name},="${r.employees.bank_account}",${r.employees.bank_user_name},${r.total_net_pay},${month}薪資\n`; }); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `HYPASS_${month}_轉帳檔.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
-        async function loadAdminBlt() { const { data: blt } = await window._sb.from('bulletin_board').select('*').order('created_at', {ascending: false}); window.bulletins = blt || []; document.getElementById('list-admin-blt').innerHTML = window.bulletins.map(b => `<div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center hover:bg-white transition shadow-sm"><div><div class="text-[10px] text-amber-600 font-black mb-1">${new Date(b.created_at).toISOString().split('T')[0]}</div><div class="font-black text-sm text-slate-800 truncate w-48">${b.title}</div></div><div class="flex space-x-2"><button onclick="editBlt('${b.id}')" class="text-xs bg-sky-100 text-sky-700 font-bold px-3 py-1.5 rounded-lg">✏️</button><button onclick="delBlt('${b.id}')" class="text-xs bg-red-100 text-red-700 font-bold px-3 py-1.5 rounded-lg">刪除</button></div></div>`).join('') || '<div class="text-center text-xs text-slate-400 py-3">無公告</div>'; }
-        function editBlt(id) { const b = window.bulletins.find(x => x.id === id); if(!b) return; document.getElementById('blt-edit-id').value = b.id; document.getElementById('blt-title').value = b.title; document.getElementById('blt-content').value = b.content; document.getElementById('btn-cancel-blt').classList.remove('hidden'); window.scrollTo({top: 0, behavior: 'smooth'}); }
-        function cancelEditBlt() { document.getElementById('blt-edit-id').value = ''; document.getElementById('blt-title').value = ''; document.getElementById('blt-content').value = ''; document.getElementById('btn-cancel-blt').classList.add('hidden'); }
-        async function postBlt() { const id = document.getElementById('blt-edit-id').value; const title = document.getElementById('blt-title').value; const content = document.getElementById('blt-content').value; if(!title || !content) return; try { if(id) { await window._sb.from('bulletin_board').update({ title, content }).eq('id', id); alert('✅ 已更新'); } else { await window._sb.from('bulletin_board').insert([{ title, content }]); alert('✅ 已推播'); } cancelEditBlt(); loadAdminBlt(); } catch(e) { alert('發佈失敗'); } }
-        async function delBlt(id) { if(!confirm('刪除這則公告嗎？')) return; await window._sb.from('bulletin_board').delete().eq('id', id); alert('✅ 已刪除'); loadAdminBlt(); }
-        let cId = null; function editBr(id) { const b = window.branches.find(x=>x.id===id); cId=b.id; document.getElementById('b-n').value=b.branch_name; document.getElementById('b-a').value=b.address; document.getElementById('b-la').value=b.lat; document.getElementById('b-ln').value=b.lng; document.getElementById('btn-cancel-br').classList.remove('hidden'); window.scrollTo({top: 0, behavior: 'smooth'});}
-        function cancelEditBr() { cId=null; document.getElementById('b-n').value=''; document.getElementById('b-a').value=''; document.getElementById('b-la').value=''; document.getElementById('b-ln').value=''; document.getElementById('btn-cancel-br').classList.add('hidden'); }
-        async function saveBr() { const p={branch_name:document.getElementById('b-n').value, address:document.getElementById('b-a').value, lat:parseFloat(document.getElementById('b-la').value), lng:parseFloat(document.getElementById('b-ln').value)}; if(cId) await window._sb.from('branch_locations').update(p).eq('id', cId); else await window._sb.from('branch_locations').insert([p]); alert('✅ 完成'); cancelEditBr(); loadAll(); }
-        async function updLeave(id, st) { try { const { error } = await window._sb.rpc('fn_approve_leave', { p_leave_id: id, p_status: st }); if(error) throw error; alert(`✅ 已${st}`); loadAll(); } catch(e) { alert('錯誤: ' + e.message); } }
-        async function appr(id) { try { const { data, error } = await window._sb.rpc('fn_approve_employee', { p_emp_id: id }); if(error) throw error; const e = window.allEmps.find(x => x.id === id); await window._sb.functions.invoke('line-webhook', { body: { action: 'notify_approved', name: e.full_name, employee_no: data.employee_no } }).catch(err=>console.log(err)); alert(`✅ 員工權限已開通！\n系統自動發放專屬編號：${data.employee_no}`); loadAll(); } catch(e) { alert('開通失敗: ' + e.message); } }
 
-        // 🌟 終極引擎：全螢幕檢視與下載 PDF (與採購前台同步)
-        let currentViewingPoNo = '';
-        let currentViewingHtml = '';
+        // --- 🌟 全新升級：五日出勤大盤與異常發送系統 ---
+        async function loadAttendance() {
+            const baseDateStr = document.getElementById('att-date').value; 
+            if(!baseDateStr) return; 
+
+            document.getElementById('list-attendance-mobile').innerHTML = '載入中...';
+            document.getElementById('list-attendance-desktop').innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-400 font-bold">資料計算中...</td></tr>';
+            
+            const baseDate = new Date(baseDateStr);
+            let dates = [];
+            for(let i=-2; i<=2; i++) {
+                let d = new Date(baseDate);
+                d.setDate(d.getDate() + i);
+                dates.push(d);
+            }
+            const sT = new Date(dates[0]); sT.setHours(0,0,0,0);
+            const eT = new Date(dates[4]); eT.setHours(23,59,59,999);
+
+            const { data: logs } = await window._sb.from('attendance_logs').select('*, branch_locations(branch_name)').gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString());
+            const { data: leaves } = await window._sb.from('leave_requests').select('*').eq('status', '核准').lte('start_time', eT.toISOString()).gte('end_time', sT.toISOString());
+
+            const activeEmps = window.allEmps.filter(e => e.employment_status === '在職');
+            let empMatrix = {};
+
+            activeEmps.forEach(e => {
+                empMatrix[e.id] = { name: e.full_name, start: e.work_start_time || '09:00:00', end: e.work_end_time || '18:00:00', days: {} };
+                dates.forEach(d => {
+                    let dStr = d.toLocaleDateString('en-CA');
+                    empMatrix[e.id].days[dStr] = { in: null, out: null, leave: null, isPast: d <= new Date() };
+                });
+            });
+
+            if(leaves) {
+                leaves.forEach(l => {
+                    if(!empMatrix[l.employee_id]) return;
+                    let lStart = new Date(l.start_time); let lEnd = new Date(l.end_time);
+                    dates.forEach(d => {
+                        let dStr = d.toLocaleDateString('en-CA');
+                        let dStart = new Date(d); dStart.setHours(0,0,0,0);
+                        let dEnd = new Date(d); dEnd.setHours(23,59,59,999);
+                        if(lStart <= dEnd && lEnd >= dStart) { empMatrix[l.employee_id].days[dStr].leave = l.leave_type; }
+                    });
+                });
+            }
+
+            if(logs) {
+                logs.forEach(l => {
+                    const eid = l.employee_id;
+                    if(!empMatrix[eid]) return;
+                    let dStr = new Date(l.punch_time).toLocaleDateString('en-CA');
+                    if(!empMatrix[eid].days[dStr]) return;
+                    const tStr = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
+                    if(l.punch_type === 'IN' && !empMatrix[eid].days[dStr].in) empMatrix[eid].days[dStr].in = tStr;
+                    if(l.punch_type === 'OUT') empMatrix[eid].days[dStr].out = tStr; 
+                });
+            }
+
+            let thHtml = `<th class="px-4 py-3 bg-slate-100 sticky left-0 z-10 w-24">員工姓名</th>`;
+            dates.forEach(d => {
+                let isToday = d.toLocaleDateString('en-CA') === new Date().toLocaleDateString('en-CA');
+                thHtml += `<th class="px-4 py-3 text-center min-w-[120px] ${isToday?'bg-sky-100 text-sky-800':''}">${d.toLocaleDateString('zh-TW', {month:'short', day:'numeric'})}</th>`;
+            });
+            document.getElementById('att-desktop-head').innerHTML = `<tr>${thHtml}</tr>`;
+
+            let htmlD = ''; let htmlM = '';
+            
+            Object.keys(empMatrix).forEach(eid => {
+                const emp = empMatrix[eid];
+                htmlD += `<tr class="hover:bg-slate-50 border-b border-slate-100"><td class="px-4 py-3 font-black text-slate-800 bg-white sticky left-0 z-10 border-r border-slate-100">${emp.name}</td>`;
+                
+                let mDaysHtml = '';
+
+                dates.forEach(d => {
+                    let dStr = d.toLocaleDateString('en-CA');
+                    let dayData = emp.days[dStr];
+                    let isWeekend = d.getDay() === 0 || d.getDay() === 6;
+                    
+                    let status = { text: '正常', code: 'NORMAL', col: 'text-emerald-600 bg-emerald-50 border-emerald-200' };
+                    
+                    if (dayData.leave) { 
+                        status = { text: `請假(${dayData.leave.replace('(補登)','')})`, code: 'LEAVE', col: 'text-sky-600 bg-sky-50 border-sky-200' }; 
+                    } else if (!dayData.in && !dayData.out) {
+                        if (dayData.isPast && !isWeekend) status = { text: '曠職', code: 'ABSENT', col: 'text-white bg-red-600 animate-pulse border-red-700' };
+                        else status = { text: '--', code: 'NONE', col: 'text-slate-300 border-transparent' };
+                    } else if (dayData.in && !dayData.out) {
+                        if (dayData.isPast && dStr !== new Date().toLocaleDateString('en-CA')) status = { text: '忘記打卡', code: 'MISSING', col: 'text-amber-600 bg-amber-50 border-amber-200' };
+                        else status = { text: '上班中', code: 'WORKING', col: 'text-indigo-600 bg-indigo-50 border-indigo-200' };
+                    } else {
+                        if (dayData.in > emp.start.slice(0,5)) status = { text: '遲到', code: 'LATE', col: 'text-red-600 bg-red-50 border-red-200' };
+                        if (dayData.out < emp.end.slice(0,5)) status = { text: '早退', code: 'EARLY', col: 'text-red-600 bg-red-50 border-red-200' };
+                    }
+
+                    let alertBtn = (status.code !== 'NORMAL' && status.code !== 'NONE' && status.code !== 'WORKING' && status.code !== 'LEAVE') ? `<button onclick="notifyAbnormal('${eid}', '${dStr}', '${status.text}')" class="ml-1 text-[10px] bg-red-100 hover:bg-red-500 hover:text-white text-red-600 px-1.5 rounded transition">🚨</button>` : '';
+                    let timeText = (dayData.in||'--') + ' - ' + (dayData.out||'--');
+                    
+                    htmlD += `<td class="px-4 py-3 text-center border-r border-slate-50 last:border-0"><div class="flex flex-col items-center justify-center"><span class="font-mono text-[10px] text-slate-500 mb-1">${timeText}</span><div class="flex items-center"><span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${status.col}">${status.text}</span>${alertBtn}</div></div></td>`;
+
+                    if (status.code !== 'NONE' || dStr === new Date().toLocaleDateString('en-CA')) {
+                        mDaysHtml += `<div class="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100 mb-1.5"><div class="flex items-center"><span class="text-[10px] font-bold text-slate-500 mr-2 w-10">${d.getDate()}日</span><span class="font-mono text-xs text-slate-700">${timeText}</span></div><div class="flex items-center"><span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${status.col}">${status.text}</span>${alertBtn}</div></div>`;
+                    }
+                });
+                htmlD += `</tr>`;
+                htmlM += `<div class="glass-panel p-4 shadow-sm border-l-4 border-slate-400 mb-3"><h4 class="font-black text-slate-800 text-sm mb-2">${emp.name}</h4><div class="bg-slate-50 p-2 rounded-xl border border-slate-100">${mDaysHtml}</div></div>`;
+            });
+
+            document.getElementById('list-attendance-desktop').innerHTML = htmlD;
+            document.getElementById('list-attendance-mobile').innerHTML = htmlM;
+        }
+
+        async function notifyAbnormal(empId, dateStr, status) {
+            if(!confirm(`確定要發送【${status}】異常通知給該員工嗎？`)) return;
+            const title = `⚠️ 考勤異常通知：${dateStr}`;
+            const content = `系統偵測到您在 ${dateStr} 的出勤狀況為「${status}」。\n\n請您盡速確認打卡紀錄，若有遺漏請提交補登申請，以免影響薪資結算與考勤計點。\n\n如為系統誤判，請立即聯繫管理員處理。`;
+            try {
+                await window._sb.from('personal_bulletins').insert([{ employee_id: empId, title: title, content: content }]);
+                showSysToast('已成功發送異常通知至該員工前台！');
+            } catch(e) { alert('發送失敗'); }
+        }
+
+        // 🌟 個人公告推播管理
+        async function loadAdminPBull() { 
+            const { data } = await window._sb.from('personal_bulletins').select('*, employees(full_name)').order('created_at', {ascending: false}); 
+            window.pBulletins = data || []; 
+            document.getElementById('list-admin-pbull').innerHTML = window.pBulletins.map(b => {
+                let readBadge = b.is_read ? '<span class="text-[9px] bg-slate-100 text-slate-500 px-1.5 rounded">已讀</span>' : '<span class="text-[9px] bg-red-100 text-red-600 px-1.5 rounded animate-pulse">未讀</span>';
+                return `<div class="p-3 bg-white rounded-xl border border-slate-200 flex justify-between items-center shadow-sm mb-2"><div><div class="text-[10px] text-sky-700 font-black mb-1">對象: ${b.employees?.full_name} ${readBadge}</div><div class="font-black text-sm text-slate-800 truncate w-48">${b.title}</div><div class="text-[9px] text-slate-400 mt-1">${new Date(b.created_at).toLocaleString('zh-TW')}</div></div><div class="flex space-x-2"><button onclick="editPBull('${b.id}')" class="text-[10px] bg-amber-50 text-amber-700 font-bold px-3 py-1.5 rounded-lg border border-amber-200">✏️</button><button onclick="delPBull('${b.id}')" class="text-[10px] bg-white text-red-600 font-bold px-3 py-1.5 rounded-lg border border-red-200">🗑️</button></div></div>`;
+            }).join('') || '<div class="text-center text-xs text-slate-400 py-3">無紀錄</div>'; 
+        }
+
+        function editPBull(id) { 
+            const b = window.pBulletins.find(x => x.id === id); if(!b) return; 
+            document.getElementById('pbull-edit-id').value = b.id; 
+            document.getElementById('pbull-emp').value = b.employee_id; 
+            document.getElementById('pbull-title').value = b.title; 
+            document.getElementById('pbull-content').value = b.content; 
+            document.getElementById('btn-cancel-pbull').classList.remove('hidden'); 
+            document.getElementById('btn-post-pbull').innerText = '儲存修改';
+            window.scrollTo({top: 0, behavior: 'smooth'}); 
+        }
+
+        function cancelEditPBull() { 
+            document.getElementById('pbull-edit-id').value = ''; 
+            document.getElementById('pbull-emp').value = ''; 
+            document.getElementById('pbull-title').value = ''; 
+            document.getElementById('pbull-content').value = ''; 
+            document.getElementById('btn-cancel-pbull').classList.add('hidden'); 
+            document.getElementById('btn-post-pbull').innerText = '立即發送';
+        }
+
+        async function postPBull() { 
+            const id = document.getElementById('pbull-edit-id').value; 
+            const empId = document.getElementById('pbull-emp').value; 
+            const title = document.getElementById('pbull-title').value; 
+            const content = document.getElementById('pbull-content').value; 
+            if(!empId || !title || !content) { alert('請填寫完整資訊！'); return; }
+            try { 
+                if(id) { 
+                    await window._sb.from('personal_bulletins').update({ title, content, employee_id: empId, is_read: false }).eq('id', id); 
+                    showSysToast('已更新公告'); 
+                } else { 
+                    await window._sb.from('personal_bulletins').insert([{ employee_id: empId, title, content }]); 
+                    showSysToast('已成功發送專屬公告！'); 
+                } 
+                cancelEditPBull(); 
+                loadAdminPBull(); 
+            } catch(e) { alert('發佈失敗'); } 
+        }
+        async function delPBull(id) { if(!confirm('刪除這則個人公告嗎？')) return; await window._sb.from('personal_bulletins').delete().eq('id', id); showSysToast('已刪除'); loadAdminPBull(); }
+
+        // --- 結尾保留原有 PDF 解析引擎 ---
+        let currentViewingPoNo = ''; let currentViewingHtml = '';
 
         async function processAdminPO_PDF(id, isLegacy, action) {
             let poData = null;
             try { 
                 if (isLegacy) { 
                     const { data } = await window._sb.from('purchase_orders').select('*').eq('id', id).single(); 
-                    if(data) {
-                        let parts = (data.note||'').split('|||');
-                        poData = { po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', expected_date: data.expected_date, items_json: data.raw_materials, created_at: data.created_at };
-                    }
-                }
-                else { 
-                    const { data } = await window._sb.from('po_documents').select('*').eq('id', id).single(); 
-                    poData = data; 
+                    if(data) { let parts = (data.note||'').split('|||'); poData = { po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', expected_date: data.expected_date, items_json: data.raw_materials, created_at: data.created_at }; }
+                } else { 
+                    const { data } = await window._sb.from('po_documents').select('*').eq('id', id).single(); poData = data; 
                 }
             } catch(e){}
 
             if(!poData) { alert('載入 PDF 資料失敗'); return; }
-
             const supInfo = window.supplierData.find(x => x.supplier_name === poData.supplier_name) || {};
             const dateStr = new Date(poData.created_at).toLocaleDateString('zh-TW');
             let safeItems = getSafeArray(poData.items_json);
 
-            let tableRows = safeItems.map((s, i) => `
-                <tr style="border-bottom: 1px solid #e2e8f0;">
-                    <td style="padding: 12px; text-align: center;">${i+1}</td>
-                    <td style="padding: 12px; font-weight: bold;">${s.name} ${s.type === '成品' ? '<span style="font-size:10px; color:#4f46e5;">(成品)</span>' : ''}</td>
-                    <td style="padding: 12px; text-align: right; color: #d97706; font-weight: bold; font-size: 16px;">${parseFloat(s.qty).toFixed(2)}</td>
-                    <td style="padding: 12px; text-align: center; font-size: 12px; color: #64748b;">${s.unit}</td>
-                    <td style="padding: 12px; text-align: center; color: #ef4444; font-weight: bold;">${s.expected_date || poData.expected_date || '未定'}</td>
-                </tr>
-            `).join('');
+            let tableRows = safeItems.map((s, i) => `<tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 12px; text-align: center;">${i+1}</td><td style="padding: 12px; font-weight: bold;">${s.name} ${s.type === '成品' ? '<span style="font-size:10px; color:#4f46e5;">(成品)</span>' : ''}</td><td style="padding: 12px; text-align: right; color: #d97706; font-weight: bold; font-size: 16px;">${parseFloat(s.qty).toFixed(2)}</td><td style="padding: 12px; text-align: center; font-size: 12px; color: #64748b;">${s.unit}</td><td style="padding: 12px; text-align: center; color: #ef4444; font-weight: bold;">${s.expected_date || poData.expected_date || '未定'}</td></tr>`).join('');
 
-            currentViewingHtml = `
-                <div class="print-break" style="width: 100%; font-family: sans-serif; background: white;">
-                    <div style="text-align: center; border-bottom: 4px solid #0f172a; padding-bottom: 15px; margin-bottom: 20px;">
-                        <h1 style="font-size: 28px; font-weight: 900; margin: 0; letter-spacing: 2px;">HYPASS 採購單</h1>
-                        <p style="font-size: 12px; color: #64748b; margin-top: 5px; font-weight: bold; letter-spacing: 1px;">PURCHASE ORDER</p>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px;">
-                        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; width: 48%;">
-                            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">供應商資訊</h3>
-                            <p style="margin: 4px 0;"><strong>名稱：</strong>${poData.supplier_name}</p>
-                            <p style="margin: 4px 0;"><strong>統編：</strong>${supInfo.tax_id||'--'}</p>
-                            <p style="margin: 4px 0;"><strong>聯絡：</strong>${supInfo.contact_name||'--'} / ${supInfo.contact_phone||'--'}</p>
-                        </div>
-                        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; width: 48%;">
-                            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">單據資訊</h3>
-                            <p style="margin: 4px 0;"><strong>單號：</strong><span style="font-family: monospace; font-weight: bold;">${poData.po_no}</span></p>
-                            <p style="margin: 4px 0;"><strong>日期：</strong>${dateStr}</p>
-                        </div>
-                    </div>
-
-                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
-                        <thead style="background: #1e293b; color: white;">
-                            <tr>
-                                <th style="padding: 10px; text-align: center; width: 40px;">項次</th>
-                                <th style="padding: 10px; text-align: left;">採購品名/規格</th>
-                                <th style="padding: 10px; text-align: right;">數量</th>
-                                <th style="padding: 10px; text-align: center;">單位</th>
-                                <th style="padding: 10px; text-align: center;">指定到貨日</th>
-                            </tr>
-                        </thead>
-                        <tbody>${tableRows}</tbody>
-                    </table>
-
-                    <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 12px; border-radius: 8px; font-size: 11px; color: #92400e; margin-bottom: 30px;">
-                        <strong>備註說明：</strong><br>
-                        1. 煩請於指定到貨日前完成交貨，若有延遲請提前告知。<br>
-                        2. 請於出貨單/發票上註明本採購單號：${poData.po_no}。<br>
-                        3. 約定付款方式：${supInfo.payment_method||'依原合約'}。
-                    </div>
-
-                    <div style="display: flex; justify-content: space-between; border-top: 2px solid #1e293b; padding-top: 15px;">
-                        <div style="text-align: center; width: 40%;">
-                            <p style="margin-bottom: 30px; color: #64748b; font-size: 12px;">採購主管簽核</p>
-                            <div style="border-bottom: 1px solid #94a3b8;"></div>
-                        </div>
-                        <div style="text-align: center; width: 40%;">
-                            <p style="margin-bottom: 30px; color: #64748b; font-size: 12px;">供應商確認簽回</p>
-                            <div style="border-bottom: 1px solid #94a3b8;"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
+            currentViewingHtml = `<div class="print-break" style="width: 100%; font-family: sans-serif; background: white;"><div style="text-align: center; border-bottom: 4px solid #0f172a; padding-bottom: 15px; margin-bottom: 20px;"><h1 style="font-size: 28px; font-weight: 900; margin: 0; letter-spacing: 2px;">HYPASS 採購單</h1><p style="font-size: 12px; color: #64748b; margin-top: 5px; font-weight: bold; letter-spacing: 1px;">PURCHASE ORDER</p></div><div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px;"><div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; width: 48%;"><h3 style="margin: 0 0 8px 0; font-size: 14px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">供應商資訊</h3><p style="margin: 4px 0;"><strong>名稱：</strong>${poData.supplier_name}</p><p style="margin: 4px 0;"><strong>統編：</strong>${supInfo.tax_id||'--'}</p><p style="margin: 4px 0;"><strong>聯絡：</strong>${supInfo.contact_name||'--'} / ${supInfo.contact_phone||'--'}</p></div><div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; width: 48%;"><h3 style="margin: 0 0 8px 0; font-size: 14px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">單據資訊</h3><p style="margin: 4px 0;"><strong>單號：</strong><span style="font-family: monospace; font-weight: bold;">${poData.po_no}</span></p><p style="margin: 4px 0;"><strong>日期：</strong>${dateStr}</p></div></div><table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;"><thead style="background: #1e293b; color: white;"><tr><th style="padding: 10px; text-align: center; width: 40px;">項次</th><th style="padding: 10px; text-align: left;">採購品名/規格</th><th style="padding: 10px; text-align: right;">數量</th><th style="padding: 10px; text-align: center;">單位</th><th style="padding: 10px; text-align: center;">指定到貨日</th></tr></thead><tbody>${tableRows}</tbody></table><div style="background: #fffbeb; border: 1px solid #fde68a; padding: 12px; border-radius: 8px; font-size: 11px; color: #92400e; margin-bottom: 30px;"><strong>備註說明：</strong><br>1. 煩請於指定到貨日前完成交貨，若有延遲請提前告知。<br>2. 請於出貨單/發票上註明本採購單號：${poData.po_no}。<br>3. 約定付款方式：${supInfo.payment_method||'依原合約'}。</div><div style="display: flex; justify-content: space-between; border-top: 2px solid #1e293b; padding-top: 15px;"><div style="text-align: center; width: 40%;"><p style="margin-bottom: 30px; color: #64748b; font-size: 12px;">採購主管簽核</p><div style="border-bottom: 1px solid #94a3b8;"></div></div><div style="text-align: center; width: 40%;"><p style="margin-bottom: 30px; color: #64748b; font-size: 12px;">供應商確認簽回</p><div style="border-bottom: 1px solid #94a3b8;"></div></div></div></div>`;
             currentViewingPoNo = poData.po_no;
 
             if(action === 'view') {
                 document.getElementById('pdf-preview-content').innerHTML = currentViewingHtml;
                 const modal = document.getElementById('pdf-preview-modal');
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            } else if(action === 'download') {
-                executePdfDownload(currentViewingHtml, currentViewingPoNo);
-            }
+                modal.classList.remove('hidden'); modal.classList.add('flex');
+            } else if(action === 'download') { executePdfDownload(currentViewingHtml, currentViewingPoNo); }
         }
 
-        function closePdfModal() {
-            const modal = document.getElementById('pdf-preview-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        document.getElementById('btn-modal-download').addEventListener('click', () => {
-            executePdfDownload(currentViewingHtml, currentViewingPoNo);
-        });
-
-        function executePdfDownload(htmlContent, poNo) {
-            showSysToast('PDF 檔案生成中，請稍候...');
-            const opt = { margin: [0.5, 0.5], filename: `${poNo}_採購單.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = htmlContent;
-            tempDiv.style.padding = '20px';
-            html2pdf().set(opt).from(tempDiv).save().then(() => {
-                showSysToast('PDF 下載完成！');
-            });
-        }
+        function closePdfModal() { const m = document.getElementById('pdf-preview-modal'); m.classList.add('hidden'); m.classList.remove('flex'); }
+        document.getElementById('btn-modal-download').addEventListener('click', () => { executePdfDownload(currentViewingHtml, currentViewingPoNo); });
+        function executePdfDownload(htmlContent, poNo) { showSysToast('PDF 檔案生成中，請稍候...'); const opt = { margin: [0.5, 0.5], filename: `${poNo}_採購單.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }; const tempDiv = document.createElement('div'); tempDiv.innerHTML = htmlContent; tempDiv.style.padding = '20px'; html2pdf().set(opt).from(tempDiv).save().then(() => { showSysToast('PDF 下載完成！'); }); }
 
         window.onload = function() {
             if(localStorage.getItem('admin_logged')==='true') {
