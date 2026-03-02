@@ -169,7 +169,6 @@
                         <button onclick="switchInvCat('其他')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">其他</button>
                     </div>
                 </div>
-
                 <div id="ui-inventory-list" class="space-y-4 max-h-[65vh] overflow-y-auto no-scrollbar pr-1 pb-16"></div>
             </div>
 
@@ -239,18 +238,13 @@
     <script src="shared.js"></script>
     <script>
         let html5QrcodeScanner = null; let currentItemPackQty = 1; let allItems = []; window.inventoryData = []; window.latestChecks = {}; let reqCart = new Set(); let isScanning = false;
-        
-        let currentInvType = '全部'; 
-        let currentInvCat = '全部';
+        let currentInvType = '全部'; let currentInvCat = '全部';
 
         // 🚨 絕對防彈：防止 JSON 崩潰
         function getSafeArray(data) { 
             if (!data) return []; 
             if (Array.isArray(data)) return data; 
-            try { 
-                let parsed = (typeof data === 'string') ? JSON.parse(data) : data;
-                return Array.isArray(parsed) ? parsed : [];
-            } catch(e) { return []; } 
+            try { let parsed = (typeof data === 'string') ? JSON.parse(data) : data; return Array.isArray(parsed) ? parsed : []; } catch(e) { return []; } 
         }
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
@@ -299,7 +293,6 @@
             renderItemSearch();
         }
 
-        // 🌟 獨立防彈資料庫讀取引擎
         async function fetchSafeReqsForInv() {
             let reqData = [];
             try { 
@@ -381,7 +374,6 @@
             } 
         }
 
-        // 🚨 所有資料讀取皆為獨立隔離，不崩潰
         async function loadItems() {
             try {
                 const { data, error: itemErr } = await window._sb.from('items').select('*').order('created_at', {ascending: false}); 
@@ -405,25 +397,21 @@
                 let pendingPOs_ETA = {};
 
                 try {
-                    const { data: reqs } = await window._sb.from('requisitions').select('items_json').in('status', ['待處理', '採購中']);
+                    const { data: reqs } = await window._sb.from('requisitions').select('target_items, items_json').in('status', ['待處理', '採購中']);
                     if (reqs) { 
                         reqs.forEach(req => { 
-                            getSafeArray(req.items_json).forEach(r => { 
-                                if(r.type === '成品') pendingReqs_FG[r.id] = (pendingReqs_FG[r.id] || 0) + (parseInt(r.qty) || 0);
-                                else if(r.name) pendingReqs_RAW[r.name] = (pendingReqs_RAW[r.name] || 0) + (parseFloat(r.qty) || 0); 
-                            });
+                            getSafeArray(req.target_items).forEach(t => { if(t.id) pendingReqs_FG[t.id] = (pendingReqs_FG[t.id] || 0) + (parseInt(t.qty) || 0); });
+                            getSafeArray(req.items_json).forEach(r => { if(r.name) pendingReqs_RAW[r.name] = (pendingReqs_RAW[r.name] || 0) + (parseFloat(r.qty) || 0); });
                         }); 
                     }
                 } catch(e) {}
                 
                 try {
-                    const { data: reqs2 } = await window._sb.from('purchase_orders').select('raw_materials').in('status', ['請購待處理', '待處理', '採購中']);
+                    const { data: reqs2 } = await window._sb.from('purchase_orders').select('target_items, raw_materials').in('status', ['請購待處理', '待處理', '採購中']);
                     if (reqs2) { 
                         reqs2.forEach(req => { 
-                            getSafeArray(req.raw_materials).forEach(r => { 
-                                if(r.type === '成品') pendingReqs_FG[r.id] = (pendingReqs_FG[r.id] || 0) + (parseInt(r.qty) || 0);
-                                else if(r.name) pendingReqs_RAW[r.name] = (pendingReqs_RAW[r.name] || 0) + (parseFloat(r.qty) || 0); 
-                            });
+                            getSafeArray(req.target_items).forEach(t => { if(t.id) pendingReqs_FG[t.id] = (pendingReqs_FG[t.id] || 0) + (parseInt(t.qty) || 0); });
+                            getSafeArray(req.raw_materials).forEach(r => { if(r.name) pendingReqs_RAW[r.name] = (pendingReqs_RAW[r.name] || 0) + (parseFloat(r.qty) || 0); });
                         }); 
                     }
                 } catch(e) {}
@@ -764,7 +752,7 @@
                         </div>
                     </div>
 
-                    <div class="text-[10px] text-slate-400 font-bold border-t border-slate-200/60 pt-2.5 flex items-center">
+                    <div class="text-[10px] text-slate-400 font-bold border-t border-slate-200/50 pt-2.5 flex items-center">
                         <span class="mr-1">🕒 最新盤點:</span> ${lastCheckText}
                     </div>
                 </div>`;
@@ -826,7 +814,7 @@
                 if(item && qty > 0) { 
                     let unit = item.item_type === '原料' ? (item.qty_per_pack > 1 ? '箱' : '件') : '件';
                     
-                    // 1. 將成品或原料加入請購單
+                    // 1. 將成品或原料加入請購單 (統一放入 items_json)
                     requestItems.push({ id: item.item_code, name: item.item_name, qty: qty, unit: unit, type: item.item_type });
 
                     // 2. 如果是成品，自動推算 BOM 並在背景扣除庫存！
@@ -839,7 +827,7 @@
                                 ledgerEntries.push({
                                     item_id: rawItem.id,
                                     employee_id: window.currentUser?.id || null,
-                                    change_qty: -deductQty, 
+                                    change_qty: -deductQty, // 🚨 負數代表扣除
                                     action_type: '生產領料',
                                     note: `生產請購自動扣料: ${item.item_name} * ${qty}`
                                 });
@@ -855,9 +843,26 @@
             const reqNo = 'REQ-' + new Date().getFullYear() + String(new Date().getMonth()+1).padStart(2,'0') + String(new Date().getDate()).padStart(2,'0') + '-' + Math.floor(Math.random()*1000).toString().padStart(3,'0');
             const userName = window.currentUser?.full_name || '系統使用者';
             
+            // 🚨 下載 CSV
             try {
-                if (ledgerEntries.length > 0) { await window._sb.from('inventory_ledgers').insert(ledgerEntries); }
+                let csv = "\uFEFF請購單號,申請日期,申請人,請購項目,數量,單位,類型\n";
+                const dateStr = new Date().toLocaleDateString('zh-TW');
+                requestItems.forEach(t => { csv += `="${reqNo}",${dateStr},${userName},${t.name},${t.qty},${t.unit},${t.type}\n`; });
 
+                const link = document.createElement("a"); 
+                link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); 
+                link.download = `HYPASS_請購單_${reqNo}.csv`; 
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            } catch(csvErr) { console.error('CSV:', csvErr); }
+
+            // 🚨 背景寫入
+            try {
+                // 執行庫存扣料
+                if (ledgerEntries.length > 0) {
+                    await window._sb.from('inventory_ledgers').insert(ledgerEntries);
+                }
+
+                // 執行請購單建立
                 const payload = { req_no: reqNo, employee_id: window.currentUser?.id || null, items_json: requestItems, status: '待處理' };
                 try {
                     const { error } = await window._sb.from('requisitions').insert([payload]);
@@ -866,8 +871,9 @@
                     await window._sb.from('purchase_orders').insert([{ employee_id: window.currentUser?.id || null, raw_materials: requestItems, status: '請購待處理', note: reqNo }]);
                 }
                 
-                let successMsg = `已成功送出請購單！\n系統已同步於背景自動扣除相關原料庫存。`;
-                showSysToast(successMsg);
+                let successMsg = `已生成請購單：${reqNo}`;
+                if(deductionMsgs.length > 0) { successMsg += `\n\n系統已於背景自動扣除原料：\n` + deductionMsgs.join('\n'); }
+                alert(successMsg);
 
             } catch (dbErr) { console.error('資料庫同步失敗:', dbErr); }
 
