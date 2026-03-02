@@ -26,7 +26,7 @@
             #dashboard-ui, aside, header { display: none !important; }
             .print-break { page-break-after: always; }
         }
-
+        
         @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         .toast-msg { animation: slideInLeft 0.4s ease-out forwards; }
     </style>
@@ -95,6 +95,7 @@
                 <button onclick="st('pbull')" id="m-pbull" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">🔔</span><span class="m-text text-[11px] font-bold tracking-widest">個人公告</span></button>
                 <button onclick="st('fin')" id="m-fin" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">💵</span><span class="m-text text-[11px] font-bold tracking-widest">財務對帳</span></button>
                 <button onclick="st('sal')" id="m-sal" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">💼</span><span class="m-text text-[11px] font-bold tracking-widest">業務總表</span></button>
+                <button onclick="st('brs')" id="m-brs" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">📍</span><span class="m-text text-[11px] font-bold tracking-widest">據點管理</span></button>
                 <button onclick="st('bull')" id="m-bull" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm col-span-3"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">📢</span><span class="m-text text-[11px] font-bold tracking-widest">系統公告推播</span></button>
             </div>
 
@@ -156,14 +157,11 @@
                     <h3 class="font-black text-slate-800 border-l-4 border-slate-500 pl-3 text-lg">全體出勤狀態五日大盤</h3>
                     <input type="date" id="att-date" onchange="loadAttendance()" class="p-2 border border-slate-300 rounded-lg text-sm font-black bg-white shadow-sm outline-none focus:border-slate-500 w-40">
                 </div>
-                
                 <p class="text-[10px] text-slate-500 font-bold mb-2">📌 顯示所選日期及其前後 2 天。若有異常(曠職/遲到等)可直接發送警告通知至員工前台。</p>
-                
                 <div class="w-full overflow-x-auto no-scrollbar pb-6">
                     <div class="min-w-[800px]">
                         <table class="w-full text-left text-sm whitespace-nowrap bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold text-[11px]" id="att-desktop-head">
-                                </thead>
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold text-[11px]" id="att-desktop-head"></thead>
                             <tbody id="list-attendance-desktop" class="divide-y divide-slate-100 text-xs">
                                 <tr><td colspan="6" class="text-center py-10 text-slate-400">請選擇中心日期</td></tr>
                             </tbody>
@@ -183,7 +181,6 @@
                     </h3>
                     <div class="glass-panel p-5 shadow-sm"><div id="list-admin-po-docs" class="space-y-4">載入中...</div></div>
                 </div>
-                
                 <div>
                     <h3 class="font-black text-slate-800 border-l-4 border-sky-500 pl-3 text-lg mb-4 flex items-center justify-between">
                         <span>📝 內部請購單紀錄</span>
@@ -465,9 +462,9 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <h5 class="text-sm font-black text-slate-700 mb-4 border-l-4 border-slate-500 pl-2">📞 聯絡通訊資料</h5>
                     <div class="grid grid-cols-2 gap-3 md:gap-4">
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">聯絡電話</p><p class="font-black text-slate-800 text-sm mt-0.5">${e.phone}</p></div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">聯絡電話</p><p class="font-black text-slate-800 text-sm mt-0.5">${e.phone||'未設定'}</p></div>
                         <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">身分證字號</p><p class="font-black text-slate-800 text-sm mt-0.5">${e.id_number}</p></div>
-                        <div class="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">通訊送達地址</p><p class="font-black text-slate-800 text-sm leading-relaxed mt-0.5">${e.address}</p></div>
+                        <div class="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">通訊送達地址</p><p class="font-black text-slate-800 text-sm leading-relaxed mt-0.5">${e.address||'未設定'}</p></div>
                         <div class="bg-red-50 p-3 rounded-xl border border-red-100"><p class="text-[10px] font-bold text-red-500 mb-1">緊急聯絡人</p><p class="font-black text-red-800 text-sm mt-0.5">${e.emergency_contact||'未設定'}</p></div>
                         <div class="bg-red-50 p-3 rounded-xl border border-red-100"><p class="text-[10px] font-bold text-red-500 mb-1">緊急聯絡電話</p><p class="font-black text-red-800 text-sm mt-0.5">${e.emergency_phone||'未設定'}</p></div>
                     </div>
@@ -513,10 +510,15 @@
                         </div>
                         <div><label class="text-[10px] font-bold text-slate-500 ml-1">編號</label><input type="text" id="edit-emp-no" value="${e.employee_no==='未設定'?'':e.employee_no}" class="admin-input bg-white font-black text-sky-700"></div>
                         <div><label class="text-[10px] font-bold text-slate-500 ml-1">身分證</label><input type="text" id="edit-idnum" value="${e.id_number}" class="admin-input bg-white uppercase" required></div>
-                        <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">職位</label><select id="edit-job-title" class="admin-input bg-white font-bold select-arrow"><option value="主管" ${e.job_title==='主管'?'selected':''}>主管</option><option value="業務" ${e.job_title==='業務'?'selected':''}>業務</option><option value="助理" ${e.job_title==='助理'?'selected':''}>助理</option></select></div>
                         
-                        <div><label class="text-[10px] font-bold text-red-500 ml-1">緊急聯絡人</label><input type="text" id="edit-emer-contact" value="${e.emergency_contact||''}" class="admin-input bg-white"></div>
-                        <div><label class="text-[10px] font-bold text-red-500 ml-1">緊急聯絡電話</label><input type="text" id="edit-emer-phone" value="${e.emergency_phone||''}" class="admin-input bg-white"></div>
+                        <div><label class="text-[10px] font-bold text-slate-500 ml-1">聯絡電話</label><input type="text" id="edit-phone" value="${e.phone||''}" class="admin-input bg-white" required></div>
+                        <div><label class="text-[10px] font-bold text-slate-500 ml-1">職位</label><select id="edit-job-title" class="admin-input bg-white font-bold select-arrow"><option value="主管" ${e.job_title==='主管'?'selected':''}>主管</option><option value="業務" ${e.job_title==='業務'?'selected':''}>業務</option><option value="助理" ${e.job_title==='助理'?'selected':''}>助理</option></select></div>
+                        <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">通訊送達地址</label><input type="text" id="edit-address" value="${e.address||''}" class="admin-input bg-white" required></div>
+                        
+                        <div class="bg-red-50 p-3 rounded-xl border border-red-100 col-span-2 grid grid-cols-2 gap-3">
+                            <div><label class="text-[10px] font-bold text-red-500 ml-1">緊急聯絡人</label><input type="text" id="edit-emer-contact" value="${e.emergency_contact||''}" class="admin-input bg-white"></div>
+                            <div><label class="text-[10px] font-bold text-red-500 ml-1">緊急聯絡電話</label><input type="text" id="edit-emer-phone" value="${e.emergency_phone||''}" class="admin-input bg-white"></div>
+                        </div>
                         
                         <div class="col-span-2 border-t border-sky-200 pt-3 mt-1">
                             <h5 class="text-[10px] font-black text-slate-700 mb-2">🔐 系統模組存取權限</h5>
@@ -587,6 +589,10 @@
                 employment_status: document.getElementById('edit-status').value, 
                 employee_no: document.getElementById('edit-emp-no').value || '未設定', 
                 id_number: document.getElementById('edit-idnum').value, 
+                phone: document.getElementById('edit-phone').value,
+                address: document.getElementById('edit-address').value,
+                emergency_contact: document.getElementById('edit-emer-contact').value,
+                emergency_phone: document.getElementById('edit-emer-phone').value,
                 onboarding_date: document.getElementById('edit-onboard').value, 
                 job_title: document.getElementById('edit-job-title').value, 
                 work_start_time: st, 
@@ -603,9 +609,7 @@
                 perm_inventory: document.getElementById('edit-perm-inv').checked, 
                 perm_purchase: document.getElementById('edit-perm-pur').checked, 
                 perm_sales: document.getElementById('edit-perm-sal').checked, 
-                perm_finance: document.getElementById('edit-perm-fin').checked,
-                emergency_contact: document.getElementById('edit-emer-contact').value,
-                emergency_phone: document.getElementById('edit-emer-phone').value
+                perm_finance: document.getElementById('edit-perm-fin').checked
             }; 
             
             const { error } = await window._sb.from('employees').update(p).eq('id', empId); 
@@ -708,7 +712,7 @@
                         if (dayData.out < emp.end.slice(0,5)) status = { text: '早退', code: 'EARLY', col: 'text-red-600 bg-red-50 border-red-200' };
                     }
 
-                    let alertBtn = (status.code !== 'NORMAL' && status.code !== 'NONE' && status.code !== 'WORKING' && status.code !== 'LEAVE') ? `<button onclick="notifyAbnormal('${eid}', '${dStr}', '${status.text}')" class="ml-1 text-[10px] bg-red-100 hover:bg-red-500 hover:text-white text-red-600 px-1.5 rounded transition">🚨</button>` : '';
+                    let alertBtn = (status.code !== 'NORMAL' && status.code !== 'NONE' && status.code !== 'WORKING' && status.code !== 'LEAVE') ? `<button onclick="notifyAbnormal('${eid}', '${dStr}', '${status.text}')" class="ml-1 text-[10px] bg-red-100 hover:bg-red-500 hover:text-white text-red-600 px-1.5 rounded transition shadow-sm">🚨通知</button>` : '';
                     let timeText = (dayData.in||'--') + ' - ' + (dayData.out||'--');
                     
                     htmlD += `<td class="px-4 py-3 text-center border-r border-slate-50 last:border-0"><div class="flex flex-col items-center justify-center"><span class="font-mono text-[10px] text-slate-500 mb-1">${timeText}</span><div class="flex items-center"><span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${status.col}">${status.text}</span>${alertBtn}</div></div></td>`;
@@ -785,7 +789,7 @@
         }
         async function delPBull(id) { if(!confirm('刪除這則個人公告嗎？')) return; await window._sb.from('personal_bulletins').delete().eq('id', id); showSysToast('已刪除'); loadAdminPBull(); }
 
-        // --- 結尾保留原有 PDF 解析引擎 ---
+        // --- 🌟 採購單 PDF 預覽與下載引擎 (與採購中心同步) ---
         let currentViewingPoNo = ''; let currentViewingHtml = '';
 
         async function processAdminPO_PDF(id, isLegacy, action) {
