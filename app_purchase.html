@@ -19,25 +19,28 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         
-        @media print {
-            body * { visibility: hidden; }
-            #po-print-zone, #po-print-zone * { visibility: visible; }
-            #po-print-zone { display: block !important; position: absolute; left: 0; top: 0; width: 100vw; background: white; z-index: 9999; padding: 20px;}
-            #app-container, nav { display: none !important; }
-            .print-break { page-break-after: always; }
-        }
-
         nav { display: none !important; }
         #core-bottom-nav { display: flex !important; }
-
+        
         @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         .toast-msg { animation: slideInLeft 0.4s ease-out forwards; }
     </style>
 </head>
 <body class="text-slate-800 relative">
 
-    <div id="po-print-zone" style="display:none; font-family: 'Microsoft JhengHei', sans-serif;"></div>
-    
+    <div id="pdf-preview-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-sm z-[9999] hidden flex-col">
+        <div class="flex justify-between items-center p-4 bg-slate-800 text-white shrink-0 shadow-md">
+            <h3 class="font-black text-base flex items-center"><span class="mr-2 text-xl">📄</span>單據檢視</h3>
+            <div class="space-x-2">
+                <button id="btn-modal-download" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-xs font-black shadow-sm transition">📥 下載</button>
+                <button onclick="closePdfModal()" class="bg-slate-700 hover:bg-red-500 px-4 py-2 rounded-lg text-xs font-black border border-slate-600 transition">✕ 關閉</button>
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-2 sm:p-6 flex justify-center no-scrollbar">
+            <div id="pdf-preview-content" class="bg-white text-black p-4 sm:p-10 shadow-2xl w-full max-w-3xl overflow-x-auto rounded-xl"></div>
+        </div>
+    </div>
+
     <div id="toast-container" class="fixed bottom-24 left-4 z-[9999] flex flex-col space-y-3 pointer-events-none"></div>
 
     <div id="app-container" class="max-w-md mx-auto shadow-2xl relative">
@@ -479,11 +482,13 @@
 
             pendingMats = [];
             pending.forEach(req => {
+                // 1. 原料
                 let itemsArr = getSafeArray(req.items_json);
                 itemsArr.forEach((rm, idx) => {
                     pendingMats.push({ uid: `${req.id}_raw_${idx}`, req_id: req.id, req_no: req.req_no, name: rm.name, qty: rm.qty, unit: rm.unit || '件', is_legacy: req.is_legacy, type: '原料' });
                 });
                 
+                // 2. 🌟 成品獨立採購 (防呆確保有數量)
                 let fgArr = getSafeArray(req.target_items);
                 fgArr.forEach((fg, idx) => {
                     if (fg.name && parseInt(fg.qty) > 0) {
@@ -558,8 +563,10 @@
                     savedIsLegacy = false;
                 } catch(e) { 
                     const { data: legacyData, error: e2 } = await window._sb.from('purchase_orders').insert([{ employee_id: window.currentUser?.id || null, status: 'PO已發送', note: poNo + '|||' + supName, raw_materials: data.items, expected_date: data.maxDate }]).select().single();
-                    savedPoId = legacyData.id;
-                    savedIsLegacy = true;
+                    if(legacyData) {
+                        savedPoId = legacyData.id;
+                        savedIsLegacy = true;
+                    }
                 }
             }
 
@@ -573,7 +580,6 @@
                 }
             } catch(e) { console.log('Update req error', e); }
 
-            // 🌟 產出後自動呼叫檢視 PDF 功能
             if(savedPoId) {
                 alert('✅ 正式採購單已產生並存檔！即將為您打開預覽。'); 
                 processAdminPO_PDF(savedPoId, savedIsLegacy, 'view');
@@ -662,9 +668,12 @@
         async function updateReqStatus(id, st, isLegacy) { try{if(isLegacy) await safeUpdate('purchase_orders', {status:st}, id); else await safeUpdate('requisitions', {status:st}, id); alert('✅ 狀態已更新'); loadDashboardData();}catch(e){} }
         async function delReq(id, isLegacy) { if(confirm('⚠️ 確定刪除這筆請購單?')) { try{if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('requisitions', id); openHistory(); loadDashboardData();}catch(e){} } }
         async function updatePOStatus(id, st, isLegacy) { try{if(isLegacy) await safeUpdate('purchase_orders', {status:'PO'+st}, id); else await safeUpdate('po_documents', {status:st}, id); alert('✅ 狀態已更新'); loadDashboardData();}catch(e){} }
-        async function delPO(id, isLegacy) { if(confirm('⚠️ 確定刪除這筆採購單?')) { try{if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('po_documents', id); openHistory(); loadDashboardData();}catch(e){} } }
+        async function delPO(id, isLegacy) { if(confirm('⚠️ 確定刪除這筆採採購單?')) { try{if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('po_documents', id); openHistory(); loadDashboardData();}catch(e){} } }
 
-        // 🌟 終極引擎：檢視與下載 PDF
+        // 🌟 終極引擎：全螢幕檢視與下載 PDF
+        let currentViewingPoNo = '';
+        let currentViewingHtml = '';
+
         async function processAdminPO_PDF(id, isLegacy, action) {
             let poData = null;
             try { 
@@ -697,78 +706,98 @@
                 </tr>
             `).join('');
 
-            const printHtml = `
-                <div class="print-break" style="max-width: 800px; margin: 0 auto; padding: 40px; color: #1e293b; font-family: sans-serif; background: white;">
-                    <div style="text-align: center; border-bottom: 4px solid #0f172a; padding-bottom: 20px; margin-bottom: 30px;">
-                        <h1 style="font-size: 36px; font-weight: 900; margin: 0; letter-spacing: 2px;">HYPASS 採購單</h1>
-                        <p style="font-size: 14px; color: #64748b; margin-top: 10px; font-weight: bold; letter-spacing: 1px;">PURCHASE ORDER</p>
+            currentViewingHtml = `
+                <div class="print-break" style="width: 100%; font-family: sans-serif; background: white;">
+                    <div style="text-align: center; border-bottom: 4px solid #0f172a; padding-bottom: 15px; margin-bottom: 20px;">
+                        <h1 style="font-size: 28px; font-weight: 900; margin: 0; letter-spacing: 2px;">HYPASS 採購單</h1>
+                        <p style="font-size: 12px; color: #64748b; margin-top: 5px; font-weight: bold; letter-spacing: 1px;">PURCHASE ORDER</p>
                     </div>
                     
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 14px;">
-                        <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; width: 45%;">
-                            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">供應商資訊</h3>
-                            <p style="margin: 5px 0;"><strong>名稱：</strong>${poData.supplier_name}</p>
-                            <p style="margin: 5px 0;"><strong>統編：</strong>${supInfo.tax_id||'--'}</p>
-                            <p style="margin: 5px 0;"><strong>聯絡人：</strong>${supInfo.contact_name||'--'} / ${supInfo.contact_phone||'--'}</p>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px;">
+                        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; width: 48%;">
+                            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">供應商資訊</h3>
+                            <p style="margin: 4px 0;"><strong>名稱：</strong>${poData.supplier_name}</p>
+                            <p style="margin: 4px 0;"><strong>統編：</strong>${supInfo.tax_id||'--'}</p>
+                            <p style="margin: 4px 0;"><strong>聯絡：</strong>${supInfo.contact_name||'--'} / ${supInfo.contact_phone||'--'}</p>
                         </div>
-                        <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; width: 45%;">
-                            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">單據資訊</h3>
-                            <p style="margin: 5px 0;"><strong>單號：</strong><span style="font-family: monospace; font-weight: bold;">${poData.po_no}</span></p>
-                            <p style="margin: 5px 0;"><strong>日期：</strong>${dateStr}</p>
+                        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; width: 48%;">
+                            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">單據資訊</h3>
+                            <p style="margin: 4px 0;"><strong>單號：</strong><span style="font-family: monospace; font-weight: bold;">${poData.po_no}</span></p>
+                            <p style="margin: 4px 0;"><strong>日期：</strong>${dateStr}</p>
                         </div>
                     </div>
 
-                    <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 30px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
                         <thead style="background: #1e293b; color: white;">
                             <tr>
-                                <th style="padding: 12px; text-align: center; width: 50px;">項次</th>
-                                <th style="padding: 12px; text-align: left;">採購品名/規格</th>
-                                <th style="padding: 12px; text-align: right;">數量</th>
-                                <th style="padding: 12px; text-align: center;">單位</th>
-                                <th style="padding: 12px; text-align: center;">指定到貨日</th>
+                                <th style="padding: 10px; text-align: center; width: 40px;">項次</th>
+                                <th style="padding: 10px; text-align: left;">採購品名/規格</th>
+                                <th style="padding: 10px; text-align: right;">數量</th>
+                                <th style="padding: 10px; text-align: center;">單位</th>
+                                <th style="padding: 10px; text-align: center;">指定到貨日</th>
                             </tr>
                         </thead>
                         <tbody>${tableRows}</tbody>
                     </table>
 
-                    <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 15px; border-radius: 8px; font-size: 12px; color: #92400e; margin-bottom: 40px;">
+                    <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 12px; border-radius: 8px; font-size: 11px; color: #92400e; margin-bottom: 30px;">
                         <strong>備註說明：</strong><br>
                         1. 煩請於指定到貨日前完成交貨，若有延遲請提前告知。<br>
                         2. 請於出貨單/發票上註明本採購單號：${poData.po_no}。<br>
                         3. 約定付款方式：${supInfo.payment_method||'依原合約'}。
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; border-top: 2px solid #1e293b; padding-top: 20px;">
-                        <div style="text-align: center; width: 200px;">
-                            <p style="margin-bottom: 40px; color: #64748b;">採購主管簽核</p>
+                    <div style="display: flex; justify-content: space-between; border-top: 2px solid #1e293b; padding-top: 15px;">
+                        <div style="text-align: center; width: 40%;">
+                            <p style="margin-bottom: 30px; color: #64748b; font-size: 12px;">採購主管簽核</p>
                             <div style="border-bottom: 1px solid #94a3b8;"></div>
                         </div>
-                        <div style="text-align: center; width: 200px;">
-                            <p style="margin-bottom: 40px; color: #64748b;">供應商確認簽回</p>
+                        <div style="text-align: center; width: 40%;">
+                            <p style="margin-bottom: 30px; color: #64748b; font-size: 12px;">供應商確認簽回</p>
                             <div style="border-bottom: 1px solid #94a3b8;"></div>
                         </div>
                     </div>
                 </div>
             `;
             
+            currentViewingPoNo = poData.po_no;
+
             if(action === 'view') {
-                document.getElementById('po-print-zone').innerHTML = printHtml;
-                setTimeout(() => { window.print(); }, 150);
+                document.getElementById('pdf-preview-content').innerHTML = currentViewingHtml;
+                const modal = document.getElementById('pdf-preview-modal');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
             } else if(action === 'download') {
-                showSysToast('PDF 檔案生成中，請稍候...');
-                const opt = {
-                    margin:       0.5,
-                    filename:     `${poData.po_no}_採購單.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2 },
-                    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-                };
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = printHtml;
-                html2pdf().set(opt).from(tempDiv).save().then(() => {
-                    showSysToast('PDF 下載完成！');
-                });
+                executePdfDownload(currentViewingHtml, currentViewingPoNo);
             }
+        }
+
+        function closePdfModal() {
+            const modal = document.getElementById('pdf-preview-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        document.getElementById('btn-modal-download').addEventListener('click', () => {
+            executePdfDownload(currentViewingHtml, currentViewingPoNo);
+        });
+
+        function executePdfDownload(htmlContent, poNo) {
+            showSysToast('PDF 檔案生成中，請稍候...');
+            const opt = {
+                margin:       [0.5, 0.5],
+                filename:     `${poNo}_採購單.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+            // 這裡必須加上 padding 來確保匯出的 PDF 不會貼邊
+            tempDiv.style.padding = '20px';
+            html2pdf().set(opt).from(tempDiv).save().then(() => {
+                showSysToast('PDF 下載完成！');
+            });
         }
 
         window.onload = bootPurchase;
