@@ -19,15 +19,25 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         
+        @media print {
+            body * { visibility: hidden; }
+            #po-print-zone, #po-print-zone * { visibility: visible; }
+            #po-print-zone { display: block !important; position: absolute; left: 0; top: 0; width: 100vw; background: white; z-index: 9999; padding: 20px;}
+            #app-container, nav { display: none !important; }
+            .print-break { page-break-after: always; }
+        }
+
         nav { display: none !important; }
         #core-bottom-nav { display: flex !important; }
-        
+
         @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         .toast-msg { animation: slideInLeft 0.4s ease-out forwards; }
     </style>
 </head>
 <body class="text-slate-800 relative">
 
+    <div id="po-print-zone" style="display:none; font-family: 'Microsoft JhengHei', sans-serif;"></div>
+    
     <div id="pdf-preview-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-sm z-[9999] hidden flex-col">
         <div class="flex justify-between items-center p-4 bg-slate-800 text-white shrink-0 shadow-md">
             <h3 class="font-black text-base flex items-center"><span class="mr-2 text-xl">📄</span>單據檢視</h3>
@@ -488,7 +498,7 @@
                     pendingMats.push({ uid: `${req.id}_raw_${idx}`, req_id: req.id, req_no: req.req_no, name: rm.name, qty: rm.qty, unit: rm.unit || '件', is_legacy: req.is_legacy, type: '原料' });
                 });
                 
-                // 2. 🌟 成品獨立採購 (防呆確保有數量)
+                // 2. 🌟 成品獨立採購
                 let fgArr = getSafeArray(req.target_items);
                 fgArr.forEach((fg, idx) => {
                     if (fg.name && parseInt(fg.qty) > 0) {
@@ -580,6 +590,7 @@
                 }
             } catch(e) { console.log('Update req error', e); }
 
+            // 🌟 產出後自動呼叫檢視 PDF 功能
             if(savedPoId) {
                 alert('✅ 正式採購單已產生並存檔！即將為您打開預覽。'); 
                 processAdminPO_PDF(savedPoId, savedIsLegacy, 'view');
@@ -646,7 +657,7 @@
                         <div class="text-[10px] font-bold text-amber-800 bg-amber-50 p-2 rounded-lg border border-amber-100 mb-2 leading-relaxed">${summary}</div>
                         
                         <div class="flex space-x-1.5 border-t border-slate-100 pt-2 mb-1.5">
-                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'view')" class="flex-1 text-[10px] bg-slate-800 text-white py-1.5 rounded-lg font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1">👁️</span> 檢視</button>
+                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'view')" class="flex-1 text-[10px] bg-slate-800 text-white py-1.5 rounded-lg font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1">👁️</span> 檢視 PDF</button>
                             <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'download')" class="flex-1 text-[10px] bg-indigo-600 text-white py-1.5 rounded-lg font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1">📥</span> 下載</button>
                         </div>
 
@@ -668,9 +679,9 @@
         async function updateReqStatus(id, st, isLegacy) { try{if(isLegacy) await safeUpdate('purchase_orders', {status:st}, id); else await safeUpdate('requisitions', {status:st}, id); alert('✅ 狀態已更新'); loadDashboardData();}catch(e){} }
         async function delReq(id, isLegacy) { if(confirm('⚠️ 確定刪除這筆請購單?')) { try{if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('requisitions', id); openHistory(); loadDashboardData();}catch(e){} } }
         async function updatePOStatus(id, st, isLegacy) { try{if(isLegacy) await safeUpdate('purchase_orders', {status:'PO'+st}, id); else await safeUpdate('po_documents', {status:st}, id); alert('✅ 狀態已更新'); loadDashboardData();}catch(e){} }
-        async function delPO(id, isLegacy) { if(confirm('⚠️ 確定刪除這筆採採購單?')) { try{if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('po_documents', id); openHistory(); loadDashboardData();}catch(e){} } }
+        async function delPO(id, isLegacy) { if(confirm('⚠️ 確定刪除這筆採購單?')) { try{if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('po_documents', id); openHistory(); loadDashboardData();}catch(e){} } }
 
-        // 🌟 終極引擎：全螢幕檢視與下載 PDF
+        // 🌟 終極引擎：檢視與下載 PDF
         let currentViewingPoNo = '';
         let currentViewingHtml = '';
 
@@ -793,7 +804,6 @@
             };
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = htmlContent;
-            // 這裡必須加上 padding 來確保匯出的 PDF 不會貼邊
             tempDiv.style.padding = '20px';
             html2pdf().set(opt).from(tempDiv).save().then(() => {
                 showSysToast('PDF 下載完成！');
