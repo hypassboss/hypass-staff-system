@@ -34,6 +34,7 @@
 <body class="text-slate-800 font-sans min-h-screen md:h-screen md:overflow-hidden md:flex bg-slate-50">
 
     <div id="admin-print-zone" style="display:none; font-family: 'Microsoft JhengHei', sans-serif;"></div>
+    
     <div id="toast-container" class="fixed bottom-24 left-4 z-[9999] flex flex-col space-y-3 pointer-events-none"></div>
 
     <div id="pdf-preview-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-sm z-[9999] hidden flex-col">
@@ -79,6 +80,7 @@
                 <button onclick="st('fin')" id="dt-fin" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">💵</span> 財務對帳大盤</button>
                 <button onclick="st('sal')" id="dt-sal" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">💼</span> 業務管理中心</button>
                 <button onclick="st('brs')" id="dt-brs" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">📍</span> 企業據點管理</button>
+                <button onclick="st('rules')" id="dt-rules" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">🎯</span> 計點規定管理</button>
                 <button onclick="st('bull')" id="dt-bull" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">📢</span> 公司最新公告</button>
                 <button onclick="st('pbull')" id="dt-pbull" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">🔔</span> 員工最新通知</button>
             </nav>
@@ -94,28 +96,35 @@
                 <button onclick="st('att')" id="m-att" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">📋</span><span class="m-text text-[11px] font-bold tracking-widest">出勤大盤</span></button>
                 <button onclick="st('inv')" id="m-inv" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">📦</span><span class="m-text text-[11px] font-bold tracking-widest">庫存清單</span></button>
                 <button onclick="st('pur')" id="m-pur" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">🛒</span><span class="m-text text-[11px] font-bold tracking-widest">採購管理</span></button>
-                <button onclick="st('pbull')" id="m-pbull" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">🔔</span><span class="m-text text-[11px] font-bold tracking-widest">員工通知</span></button>
+                <button onclick="st('rules')" id="m-rules" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">🎯</span><span class="m-text text-[11px] font-bold tracking-widest">計點規定</span></button>
                 <button onclick="st('fin')" id="m-fin" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">💵</span><span class="m-text text-[11px] font-bold tracking-widest">財務對帳</span></button>
+                <button onclick="st('pbull')" id="m-pbull" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">🔔</span><span class="m-text text-[11px] font-bold tracking-widest">員工通知</span></button>
+                <button onclick="st('sal')" id="m-sal" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">💼</span><span class="m-text text-[11px] font-bold tracking-widest">業務總表</span></button>
+                <button onclick="st('brs')" id="m-brs" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">📍</span><span class="m-text text-[11px] font-bold tracking-widest">據點管理</span></button>
+                <button onclick="st('bull')" id="m-bull" class="m-btn flex flex-col items-center justify-center py-4 bg-white text-slate-500 rounded-2xl border border-slate-200 transition-all shadow-sm col-span-3"><span class="text-3xl mb-1.5 drop-shadow-sm opacity-80">📢</span><span class="m-text text-[11px] font-bold tracking-widest">公司最新公告</span></button>
             </div>
 
             <section id="boss" class="tab-content active space-y-5 max-w-6xl">
-                <h3 class="font-black text-slate-800 border-l-4 border-slate-900 pl-3 text-lg mb-4">👑 企業異常戰情室</h3>
+                <h3 class="font-black text-slate-800 border-l-4 border-slate-900 pl-3 text-lg mb-4 flex justify-between items-center">
+                    <span>👑 企業異常戰情室</span>
+                    <button onclick="loadBossDashboard()" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg shadow-sm font-bold transition">重新掃描</button>
+                </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="glass-panel p-5 shadow-sm border-t-4 border-red-500 bg-white">
                         <h4 class="font-black text-slate-800 mb-3 flex items-center"><span class="text-xl mr-1.5">🚨</span> 今日考勤異常</h4>
-                        <div id="boss-att-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">載入中...</p></div>
+                        <div id="boss-att-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">掃描中...</p></div>
                     </div>
                     <div class="glass-panel p-5 shadow-sm border-t-4 border-sky-500 bg-white">
                         <h4 class="font-black text-slate-800 mb-3 flex items-center"><span class="text-xl mr-1.5">📝</span> 待簽核單據</h4>
-                        <div id="boss-leave-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">載入中...</p></div>
+                        <div id="boss-leave-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">掃描中...</p></div>
                     </div>
                     <div class="glass-panel p-5 shadow-sm border-t-4 border-emerald-500 bg-white">
                         <h4 class="font-black text-slate-800 mb-3 flex items-center"><span class="text-xl mr-1.5">📦</span> 庫存低水位警報</h4>
-                        <div id="boss-inv-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">載入中...</p></div>
+                        <div id="boss-inv-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">掃描中...</p></div>
                     </div>
                     <div class="glass-panel p-5 shadow-sm border-t-4 border-amber-500 bg-white">
                         <h4 class="font-black text-slate-800 mb-3 flex items-center"><span class="text-xl mr-1.5">🛒</span> 採購異常/遲交警報</h4>
-                        <div id="boss-po-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">載入中...</p></div>
+                        <div id="boss-po-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">掃描中...</p></div>
                     </div>
                 </div>
             </section>
@@ -137,24 +146,22 @@
                     </div>
                     
                     <div class="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
-                        <div class="flex justify-between items-center mb-2"><h4 class="text-[10px] font-black text-indigo-800 tracking-widest">🤖 當月出勤分析</h4><button onclick="updateAttendanceRate()" class="text-[9px] bg-indigo-200 text-indigo-800 px-2 py-1 rounded font-bold">刷新</button></div>
-                        <div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-600 bg-white p-2 rounded-lg border border-indigo-100 shadow-sm mb-3"><div>病假<br><span id="sd-sick" class="text-indigo-600 text-sm font-black">0</span>h</div><div>事假<br><span id="sd-per" class="text-indigo-600 text-sm font-black">0</span>h</div><div>颱風<br><span id="sd-typ" class="text-indigo-600 text-sm font-black">0</span>h</div><div>遲到<br><span id="sd-lat" class="text-indigo-600 text-sm font-black">0</span>次</div><div>加班<br><span id="sd-ovt" class="text-emerald-600 text-sm font-black">0</span>h</div><div>計點<br><span id="sd-pnt" class="text-red-600 text-sm font-black">0</span>點</div></div>
-                        <div class="flex space-x-3"><div class="flex-1"><label class="text-[10px] font-bold text-indigo-800 ml-1">請假扣薪總額</label><input type="number" id="p-lvd" oninput="calcNet()" class="admin-input font-black text-indigo-600 border-indigo-200 bg-white" value="0"></div></div>
+                        <div class="flex justify-between items-center mb-2"><h4 class="text-[10px] font-black text-indigo-800 tracking-widest">🤖 當月出勤分析 (將寫入明細)</h4><button onclick="updateAttendanceRate()" class="text-[9px] bg-indigo-200 text-indigo-800 px-2 py-1 rounded font-bold hover:bg-indigo-300">刷新</button></div>
+                        <div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-600 bg-white p-2 rounded-lg border border-indigo-100 shadow-sm mb-3"><div>病假<br><span id="sd-sick" class="text-indigo-600 text-sm font-black">0</span>h</div><div>事假<br><span id="sd-per" class="text-indigo-600 text-sm font-black">0</span>h</div><div>曠職<br><span id="sd-abs" class="text-red-600 text-sm font-black">0</span>日</div><div>遲到<br><span id="sd-lat" class="text-indigo-600 text-sm font-black">0</span>次</div><div>早退<br><span id="sd-ear" class="text-amber-600 text-sm font-black">0</span>次</div><div>計點<br><span id="sd-pnt" class="text-red-600 text-sm font-black">0</span>點</div></div>
+                        <div class="flex space-x-3"><div class="flex-1"><label class="text-[10px] font-bold text-indigo-800 ml-1">請假/曠職扣薪總額</label><input type="number" id="p-lvd" oninput="calcNet()" class="admin-input font-black text-indigo-600 border-indigo-200 bg-white" value="0"></div></div>
                     </div>
 
-                    <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 shadow-sm space-y-4">
-                        <div><h4 id="lbl-eval-prev" class="text-[10px] font-black text-amber-800 tracking-widest mb-2 border-b border-amber-200 pb-1">上年度</h4><div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-500 bg-white p-2 rounded-lg border border-amber-100 shadow-inner"><div>特休<br><span id="sy-prev-ann" class="text-amber-600 text-sm font-black">0</span>h</div><div>事假<br><span id="sy-prev-per" class="text-amber-600 text-sm font-black">0</span>h</div><div>病假<br><span id="sy-prev-sic" class="text-amber-600 text-sm font-black">0</span>h</div><div>遲到<br><span id="sy-prev-lat" class="text-amber-600 text-sm font-black">0</span>次</div><div>加班<br><span id="sy-prev-ovt" class="text-emerald-600 text-sm font-black">0</span>h</div><div>計點<br><span id="sy-prev-pnt" class="text-red-600 text-sm font-black">0</span>點</div></div></div>
-                        <div><h4 id="lbl-eval-curr" class="text-[10px] font-black text-amber-800 tracking-widest mb-2 border-b border-amber-200 pb-1">當年度</h4><div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-500 bg-white p-2 rounded-lg border border-amber-100 shadow-inner opacity-80"><div>特休<br><span id="sy-curr-ann" class="text-amber-600 text-sm font-black">0</span>h</div><div>事假<br><span id="sy-curr-per" class="text-amber-600 text-sm font-black">0</span>h</div><div>病假<br><span id="sy-curr-sic" class="text-amber-600 text-sm font-black">0</span>h</div><div>遲到<br><span id="sy-curr-lat" class="text-amber-600 text-sm font-black">0</span>次</div><div>加班<br><span id="sy-curr-ovt" class="text-emerald-600 text-sm font-black">0</span>h</div><div>計點<br><span id="sy-curr-pnt" class="text-red-600 text-sm font-black">0</span>點</div></div></div>
+                    <div class="p-4 bg-red-50 rounded-xl border border-red-100 grid grid-cols-2 gap-3 relative">
+                        <div><label class="text-[10px] font-bold text-red-800 ml-1">勞健保</label><input type="number" id="p-ins" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200 bg-white"></div>
+                        <div><label class="text-[10px] font-bold text-red-800 ml-1">二代健保</label><input type="number" id="p-2nd" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200 bg-white"></div>
                     </div>
                     
-                    <div class="p-4 bg-red-50 rounded-xl border border-red-100 grid grid-cols-2 gap-3 relative"><button onclick="calcPayroll()" class="absolute -top-3 right-3 text-[9px] bg-slate-800 text-white font-bold px-2 py-1 rounded shadow-sm">🤖 重算</button><div><label class="text-[10px] font-bold text-red-800 ml-1">勞健保</label><input type="number" id="p-ins" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200 bg-white"></div><div><label class="text-[10px] font-bold text-red-800 ml-1">二代健保</label><input type="number" id="p-2nd" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200 bg-white"></div></div>
-                    <div class="flex justify-between items-center p-5 mt-2 bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl border border-sky-200 shadow-inner"><span class="text-sm font-black text-slate-700">綜合結算實領</span><span class="text-4xl font-black text-sky-600 tracking-tighter" id="p-net-display">NT$ 0</span><input type="hidden" id="p-net"><input type="hidden" id="p-pen"></div>
-                    <button onclick="issuePayroll()" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-transform mt-2 tracking-widest text-lg">🚀 正式發送</button>
-                </div>
-                <div class="glass-panel p-6 space-y-4 border-t-4 border-slate-600">
-                    <h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">📜</span>歷史薪資單管理</h3>
-                    <select id="hist-emp" class="admin-input bg-slate-50 font-bold mb-4 select-arrow" onchange="loadPayrollHistory()"></select>
-                    <div id="ui-payroll-hist" class="space-y-3 max-h-[400px] overflow-y-auto pr-1 no-scrollbar"><div class="text-center text-xs text-slate-400 py-6 bg-slate-50 rounded-xl border border-dashed border-slate-300">請先選擇員工</div></div>
+                    <div class="flex justify-between items-center p-5 mt-2 bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl border border-sky-200 shadow-inner">
+                        <span class="text-sm font-black text-slate-700">綜合結算實領</span>
+                        <span class="text-4xl font-black text-sky-600 tracking-tighter" id="p-net-display">NT$ 0</span>
+                        <input type="hidden" id="p-net"><input type="hidden" id="p-pen">
+                    </div>
+                    <button onclick="issuePayroll()" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-all mt-2 tracking-widest text-lg">🚀 正式發送薪資單</button>
                 </div>
             </section>
 
@@ -184,7 +191,8 @@
                 <div class="w-full overflow-x-auto no-scrollbar pb-6">
                     <div class="min-w-[800px]">
                         <table class="w-full text-left text-sm whitespace-nowrap bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold text-[11px]" id="att-desktop-head"></thead>
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold text-[11px]" id="att-desktop-head">
+                                </thead>
                             <tbody id="list-attendance-desktop" class="divide-y divide-slate-100 text-xs">
                                 <tr><td colspan="6" class="text-center py-10 text-slate-400">請選擇中心日期</td></tr>
                             </tbody>
@@ -229,6 +237,14 @@
                 <div class="glass-panel p-6 shadow-sm mb-4"><h3 class="font-black text-slate-800 border-l-4 border-emerald-500 pl-3 text-lg mb-4" id="br-form-title">新增打卡據點</h3><input type="hidden" id="b-id"><div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3"><input type="text" id="b-n" placeholder="分店名稱" class="admin-input font-bold"><input type="text" id="b-a" placeholder="地址" class="admin-input bg-white"></div><div class="grid grid-cols-2 gap-3 mb-5"><input type="number" step="any" id="b-la" placeholder="緯度" class="admin-input bg-slate-50 font-mono text-sm shadow-inner" required><input type="number" step="any" id="b-ln" placeholder="經度" class="admin-input bg-slate-50 font-mono text-sm shadow-inner" required></div><div class="flex space-x-2"><button type="button" onclick="cancelEditBr()" id="btn-cancel-br" class="hidden w-1/3 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition">取消</button><button onclick="saveBr()" id="btn-save-br" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl shadow-md transition">儲存據點</button></div></div>
                 <div id="list-brs" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             </section>
+
+            <section id="rules" class="tab-content space-y-5 max-w-4xl">
+                <h3 class="font-black text-slate-800 border-l-4 border-rose-500 pl-3 text-lg mb-4">🎯 考勤與異常計點規定管理</h3>
+                <p class="text-[10px] text-slate-500 font-bold mb-4">📌 系統將依據下方設定的點數，在員工發生異常時自動扣除點數。點數將累積於員工個人檔案中，作為獎金發放依據。</p>
+                <div id="list-rules" class="space-y-3 max-w-2xl">
+                    <div class="text-center py-6 text-slate-400">讀取中...</div>
+                </div>
+            </section>
             
             <section id="bull" class="tab-content space-y-5 max-w-4xl">
                 <div class="glass-panel p-6 shadow-sm"><h3 class="font-black text-slate-800 border-l-4 border-amber-500 pl-3 text-lg mb-4" id="blt-form-title">發布公司最新公告</h3><input type="hidden" id="blt-edit-id"><input type="text" id="blt-title" placeholder="主旨標題" class="admin-input mb-3 font-bold text-lg"><textarea id="blt-content" placeholder="請輸入詳細公告內容..." class="admin-input mb-5 h-40 resize-none leading-relaxed shadow-inner"></textarea><div class="flex space-x-2"><button type="button" onclick="cancelEditBlt()" id="btn-cancel-blt" class="hidden w-1/3 bg-slate-200 text-slate-700 font-bold py-4 rounded-xl shadow-sm transition">取消</button><button onclick="postBlt()" id="btn-post-blt" class="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black py-4 rounded-xl shadow-lg transition">立即推播</button></div></div>
@@ -246,7 +262,7 @@
                     </div>
                     <div class="flex space-x-2">
                         <button type="button" onclick="cancelEditPBull()" id="btn-cancel-pbull" class="hidden w-1/3 bg-slate-200 text-slate-700 font-bold py-4 rounded-xl shadow-sm transition">取消</button>
-                        <button onclick="postPBull()" id="btn-post-pbull" class="flex-1 bg-gradient-to-r from-red-500 to-rose-600 text-white font-black py-4 rounded-xl shadow-lg transition tracking-widest text-base">立即發送</button>
+                        <button onclick="postPBull()" id="btn-post-pbull" class="flex-1 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-black py-4 rounded-xl shadow-lg transition tracking-widest text-base">立即發送</button>
                     </div>
                 </div>
                 <div class="glass-panel p-6 shadow-sm">
@@ -263,8 +279,8 @@
             <div class="bg-white flex justify-between items-center p-5 md:p-6 border-b border-slate-200 shrink-0 shadow-sm z-10">
                 <h3 class="font-black text-xl text-slate-800 flex items-center"><span class="text-2xl mr-2">🪪</span>檔案管理中心</h3>
                 <div class="flex space-x-2">
-                    <button id="btn-edit-emp" class="bg-sky-50 text-sky-700 px-4 py-2 rounded-full font-black text-xs shadow-sm">✏️ 編輯</button>
-                    <button onclick="closeModal('emp-detail-modal')" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-full font-black text-xs">✕ 關閉</button>
+                    <button id="btn-edit-emp" class="bg-sky-50 text-sky-700 hover:bg-sky-100 px-4 py-2 rounded-full font-black text-xs shadow-sm transition">✏️ 編輯</button>
+                    <button onclick="closeModal('emp-detail-modal')" class="bg-slate-100 text-slate-600 hover:bg-slate-200 px-4 py-2 rounded-full font-black text-xs transition">✕ 關閉</button>
                 </div>
             </div>
             
@@ -277,7 +293,7 @@
                         <div><label class="text-[10px] font-bold text-slate-500 ml-1 block">離職類別</label><select id="modal-off-type" class="admin-input bg-slate-50"><option value="自願離職">自願離職</option><option value="非自願離職(資遣)">非自願資遣</option></select></div>
                         <div><label class="text-[10px] font-bold text-slate-500 ml-1 block">最後工作日</label><input type="date" id="modal-off-date" class="admin-input bg-slate-50"></div>
                     </div>
-                    <button onclick="calculateSettlement()" class="w-full border-2 border-slate-800 text-slate-800 font-black py-3 rounded-xl hover:bg-slate-800 hover:text-white transition">⚙️ 產生結算報表</button>
+                    <button onclick="calculateSettlement()" class="w-full border-2 border-slate-800 text-slate-800 font-black py-3 rounded-xl hover:bg-slate-800 hover:text-white transition shadow-sm">⚙️ 產生結算報表</button>
                     
                     <div id="modal-off-result" class="hidden mt-6 border-t border-slate-200 pt-5 space-y-2">
                         <div class="flex justify-between text-sm px-2"><span class="font-bold text-slate-500">核算底薪</span><span id="res-base" class="font-black text-slate-700">0</span></div>
@@ -285,7 +301,7 @@
                         <div class="flex justify-between text-sm px-2"><span class="font-bold text-slate-500">特休換現</span><span id="res-lvp" class="font-black text-emerald-600">0</span></div>
                         <div class="flex justify-between text-sm px-2"><span class="font-bold text-slate-500">資遣費</span><span id="res-sev" class="font-black text-amber-600">0</span></div>
                         <div class="flex justify-between text-base items-end pt-2 px-2"><span class="font-black text-slate-800">總計發放</span><span id="res-total" class="text-2xl font-black text-red-600">0</span></div>
-                        <button onclick="confirmOffboarding()" class="w-full bg-red-600 text-white font-black py-4 rounded-xl mt-4">⚠️ 確認結算並停權</button>
+                        <button onclick="confirmOffboarding()" class="w-full bg-red-600 text-white font-black py-4 rounded-xl mt-4 hover:bg-red-700 shadow-md transition">⚠️ 確認結算並停權</button>
                     </div>
                 </div>
             </div>
@@ -322,11 +338,11 @@
                 <div>
                     <label class="text-[10px] font-bold text-slate-500 ml-1">請購單狀態</label>
                     <select id="admin-req-edit-status" class="admin-input font-bold bg-sky-50 select-arrow outline-none focus:border-sky-500 text-sky-900">
-                        <option value="待處理">待處理</option><option value="採購中">採購中</option><option value="已完成">✅ 已完成</option><option value="取消">取消</option>
+                        <option value="待處理">待處理</option><option value="採購中">採購中</option><option value="已完成">✅ 已完成</option><option value="取消">取消作廢</option>
                     </select>
                 </div>
             </div>
-            <div class="flex space-x-3 mt-6"><button onclick="closeModal('admin-edit-req-modal')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl">取消</button><button onclick="saveAdminReqEdit()" class="flex-1 bg-sky-600 text-white font-black py-3.5 rounded-xl">儲存</button></div>
+            <div class="flex space-x-3 mt-6"><button onclick="closeModal('admin-edit-req-modal')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl">取消</button><button onclick="saveAdminReqEdit()" class="flex-1 bg-sky-600 text-white font-black py-3.5 rounded-xl shadow-md">儲存</button></div>
         </div>
     </div>
 
@@ -342,8 +358,8 @@
 
     <script src="shared.js"></script>
     <script>
-        let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = []; window.pBulletins = []; window.adminInvData = []; window.currentPayrollRecords = []; window.supplierData = [];
-        window.adminPoData = []; window.adminReqData = []; window.allLeaves = [];
+        let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = []; window.pBulletins = []; window.adminInvData = []; window.currentPayrollRecords = []; window.supplierData = []; window.adminPoData = []; window.adminReqData = []; window.allLeaves = [];
+        let currentTempPayrollStats = null; // 用於儲存計算出的當月出勤供薪資發放寫入
 
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
@@ -385,6 +401,7 @@
             if(id === 'pur') loadAdminPurchase();
             if(id === 'fin') loadAdminFinance();
             if(id === 'pbull') loadAdminPBull();
+            if(id === 'rules') loadRules(); // 載入計點規則
         }
         
         function openModal(id) { document.getElementById(id).classList.add('active'); } 
@@ -649,10 +666,9 @@
             } 
         }
 
-        // 🌟 穩定版：請假核准 (直接操作資料庫，防護未建 RPC 報錯)
+        // 🌟 穩定版：請假核准 (防護寫入錯誤)
         async function updLeave(id, st) { 
             try { 
-                // 直接使用標準 update 而非依賴 RPC
                 const { error } = await window._sb.from('leave_requests').update({ status: st }).eq('id', id); 
                 if(error) throw error; 
                 alert(`✅ 假單已${st}`); 
@@ -663,7 +679,7 @@
             } 
         }
 
-        // 🌟 全新大腦：老闆專屬戰情室 (資料加載引擎)
+        // 🌟 老闆戰情大廳
         async function loadBossDashboard() {
             const todayStr = new Date().toLocaleDateString('en-CA');
             const sT = new Date(); sT.setHours(0,0,0,0);
@@ -729,7 +745,256 @@
             document.getElementById('boss-po-alerts').innerHTML = poHtml || '<p class="text-xs text-slate-400">✅ 無採購異常狀態</p>';
         }
 
-        // --- 🌟 全新升級：五日出勤大盤與異常發送系統 ---
+        // 🌟 計算當月出勤供薪資發放使用
+        async function updateAttendanceRate() {
+            const empId = document.getElementById('p-emp').value;
+            const monthStr = document.getElementById('p-mon').value;
+            if(!empId || !monthStr) return;
+
+            const [yStr, mStr] = monthStr.split('-');
+            const currYear = parseInt(yStr);
+            const currMonth = parseInt(mStr);
+            const e = window.allEmps.find(x => x.id === empId);
+            
+            const sTY = new Date(`${currYear}-01-01T00:00:00Z`);
+            const eTY = new Date(`${currYear}-12-31T23:59:59Z`);
+            
+            const { data: logs } = await window._sb.from('attendance_logs').select('*').eq('employee_id', empId).gte('punch_time', sTY.toISOString()).lte('punch_time', eTY.toISOString());
+            const { data: leaves } = await window._sb.from('leave_requests').select('*').eq('employee_id', empId).eq('status', '核准').gte('start_time', sTY.toISOString()).lte('end_time', eTY.toISOString());
+
+            let yPer = 0, ySic = 0, yLat = 0, yEar = 0;
+            let mPer = 0, mSic = 0, mLat = 0, mEar = 0, mAnn = 0;
+            let mAbs = 0;
+
+            const targetStart = e.work_start_time ? e.work_start_time.slice(0,5) : '09:00';
+            const targetEnd = e.work_end_time ? e.work_end_time.slice(0,5) : '18:00';
+
+            if(leaves) {
+                leaves.forEach(l => {
+                    let ls = new Date(l.start_time); let le = new Date(l.end_time);
+                    let hrs = Math.ceil((le - ls) / (1000 * 60 * 60));
+                    if(hrs < 0) hrs = 0;
+                    if(l.leave_type === '事假') { yPer += hrs; if(ls.getMonth()+1 === currMonth) mPer += hrs; }
+                    if(l.leave_type === '病假') { ySic += hrs; if(ls.getMonth()+1 === currMonth) mSic += hrs; }
+                    if(l.leave_type === '特休') { if(ls.getMonth()+1 === currMonth) mAnn += hrs; }
+                });
+            }
+
+            // 曠職與遲到早退判定
+            let daysInMonth = new Date(currYear, currMonth, 0).getDate();
+            let punchMap = {};
+            if(logs) {
+                logs.forEach(l => {
+                    const pt = new Date(l.punch_time);
+                    const tStr = pt.toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
+                    const dStr = pt.toLocaleDateString('en-CA');
+                    if(!punchMap[dStr]) punchMap[dStr] = {in:null, out:null};
+                    
+                    if(l.punch_type === 'IN') {
+                        punchMap[dStr].in = tStr;
+                        if(tStr > targetStart) { yLat++; if(pt.getMonth()+1 === currMonth) mLat++; }
+                    }
+                    if(l.punch_type === 'OUT') {
+                        punchMap[dStr].out = tStr;
+                        if(tStr < targetEnd) { yEar++; if(pt.getMonth()+1 === currMonth) mEar++; }
+                    }
+                });
+            }
+
+            // 簡易曠職判定 (該月未請假且無打卡且非假日)
+            for(let i=1; i<=daysInMonth; i++) {
+                let d = new Date(currYear, currMonth-1, i);
+                if(d > new Date() || d.getDay()===0 || d.getDay()===6) continue;
+                let dStr = d.toLocaleDateString('en-CA');
+                let hasLeave = leaves && leaves.some(l => new Date(l.start_time) <= d && new Date(l.end_time) >= d);
+                if(!hasLeave && !punchMap[dStr]) mAbs++;
+            }
+
+            let pnts = e.penalty_points || 0;
+
+            document.getElementById('sd-sick').innerText = mSic;
+            document.getElementById('sd-per').innerText = mPer;
+            document.getElementById('sd-abs').innerText = mAbs;
+            document.getElementById('sd-lat').innerText = mLat;
+            document.getElementById('sd-ear').innerText = mEar;
+            document.getElementById('sd-pnt').innerText = pnts;
+
+            let remainAnn = 0;
+            try {
+                const { data: lvData } = await window._sb.rpc('fn_get_annual_leave_v2', { p_emp_id: empId });
+                if(lvData) remainAnn = lvData.remain_hours || 0;
+            } catch(err) {}
+
+            document.getElementById('sy-prev-ann').innerText = Math.floor(remainAnn/8)+'天'+(remainAnn%8)+'h';
+            document.getElementById('sy-prev-per').innerText = yPer + 'h';
+            document.getElementById('sy-prev-sic').innerText = ySic + 'h';
+            document.getElementById('sy-prev-lat').innerText = yLat + '次';
+            document.getElementById('sy-prev-ovt').innerText = '0h';
+            document.getElementById('sy-prev-pnt').innerText = pnts + '點';
+            
+            // 將數據暫存，供發放薪資單時使用
+            currentTempPayrollStats = {
+                late: mLat, early: mEar, absent: mAbs, per: mPer, sic: mSic, pnt: pnts
+            };
+
+            calcPayroll();
+        }
+
+        function onEmpChange() {
+            const eId = document.getElementById('p-emp').value;
+            if(eId && window.empData[eId]) { document.getElementById('p-base').value = window.empData[eId].base; }
+            updateAttendanceRate();
+        }
+
+        function handleYebToggle() {
+            const isYeb = document.getElementById('toggle-yeb').checked;
+            document.getElementById('yeb-section').style.display = isYeb ? 'grid' : 'none';
+            calcPayroll();
+        }
+
+        function calcNet() {
+            let base = parseFloat(document.getElementById('p-base').value) || 0;
+            let bonus = parseFloat(document.getElementById('p-bonus').value) || 0;
+            let ins = parseFloat(document.getElementById('p-ins').value) || 0;
+            let s2nd = parseFloat(document.getElementById('p-2nd').value) || 0;
+            let lvd = parseFloat(document.getElementById('p-lvd').value) || 0;
+            let yeb = 0; let ulp = 0;
+            if(document.getElementById('toggle-yeb').checked) { yeb = parseFloat(document.getElementById('p-yeb').value) || 0; ulp = parseFloat(document.getElementById('p-ulp').value) || 0; }
+            let net = base + bonus + yeb + ulp - ins - s2nd - lvd;
+            document.getElementById('p-net-display').innerText = 'NT$ ' + net.toLocaleString();
+            document.getElementById('p-net').value = net;
+        }
+
+        function calcPayroll() {
+            let base = parseFloat(document.getElementById('p-base').value) || 0;
+            let mSic = parseFloat(document.getElementById('sd-sick').innerText) || 0;
+            let mPer = parseFloat(document.getElementById('sd-per').innerText) || 0;
+            let mAbs = parseFloat(document.getElementById('sd-abs').innerText) || 0;
+            
+            let hrRate = base / 240;
+            let dailyRate = base / 30;
+            let leaveDed = (mPer * hrRate) + (mSic * hrRate * 0.5) + (mAbs * dailyRate);
+            
+            document.getElementById('p-lvd').value = Math.round(leaveDed);
+            
+            let pns = Math.round(base * 0.06);
+            document.getElementById('p-pen').value = pns;
+            
+            let bonus = parseFloat(document.getElementById('p-bonus').value) || 0;
+            let ins = 1200; 
+            document.getElementById('p-ins').value = ins;
+            let s2nd = (bonus > 0) ? Math.round(bonus * 0.0211) : 0;
+            document.getElementById('p-2nd').value = s2nd;
+
+            if(document.getElementById('toggle-yeb').checked) {
+                document.getElementById('p-yeb').value = base;
+                const remainAnnText = document.getElementById('sy-prev-ann').innerText;
+                const match = remainAnnText.match(/(\d+)天(\d+)h/);
+                let remainHrs = 0;
+                if(match) remainHrs = parseInt(match[1])*8 + parseInt(match[2]);
+                document.getElementById('p-ulp').value = Math.round(remainHrs * hrRate);
+            }
+            calcNet();
+        }
+
+        async function issuePayroll() {
+            const eId = document.getElementById('p-emp').value;
+            const mon = document.getElementById('p-mon').value;
+            if(!eId || !mon) { alert('請選擇員工與月份'); return; }
+            
+            const btn = event.target; btn.innerText = '處理中...'; btn.disabled = true;
+            
+            let yeb = 0; let ulp = 0;
+            if(document.getElementById('toggle-yeb').checked) { yeb = parseFloat(document.getElementById('p-yeb').value) || 0; ulp = parseFloat(document.getElementById('p-ulp').value) || 0; }
+            
+            const payload = {
+                employee_id: eId, pay_month: mon,
+                base_pay: parseFloat(document.getElementById('p-base').value)||0,
+                bonus: parseFloat(document.getElementById('p-bonus').value)||0,
+                year_end_bonus: yeb, unused_leave_pay: ulp,
+                insurance_deduction: parseFloat(document.getElementById('p-ins').value)||0,
+                second_gen_health: parseFloat(document.getElementById('p-2nd').value)||0,
+                leave_deduction: parseFloat(document.getElementById('p-lvd').value)||0,
+                total_net_pay: parseFloat(document.getElementById('p-net').value)||0,
+                labor_pension: parseFloat(document.getElementById('p-pen').value)||0,
+                attendance_stats: currentTempPayrollStats || {} // 🌟 寫入當月出勤數據
+            };
+            
+            const { error } = await window._sb.from('payroll_records').upsert([payload], {onConflict: 'employee_id, pay_month'});
+            if(!error) { alert('✅ 薪資單已正式發放！'); loadPayrollHistory(); } else { alert('發送失敗'); }
+            btn.innerText = '🚀 正式發送薪資單'; btn.disabled = false;
+        }
+
+        async function loadPayrollHistory() {
+            const empId = document.getElementById('hist-emp').value;
+            const container = document.getElementById('ui-payroll-hist');
+            if(!empId) { container.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 bg-slate-50 rounded-xl border border-dashed border-slate-300">請先選擇員工</div>'; return; }
+            container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">載入中...</p>';
+            
+            const { data } = await window._sb.from('payroll_records').select('*').eq('employee_id', empId).order('pay_month', {ascending: false});
+            window.currentPayrollRecords = data || [];
+            
+            if(!data || data.length === 0) { container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">無歷史紀錄</p>'; return; }
+            
+            container.innerHTML = data.map(r => `
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center mb-3">
+                    <div>
+                        <span class="text-[10px] font-black text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 mb-1 inline-block">${r.pay_month}</span>
+                        <h4 class="font-black text-sky-700 text-lg">NT$ ${r.total_net_pay.toLocaleString()}</h4>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="editPayroll('${r.id}')" class="text-xs bg-slate-800 text-white px-4 py-2 rounded-lg font-bold shadow-sm active:scale-95 transition">編輯</button>
+                        <button onclick="delPayroll('${r.id}')" class="text-xs bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold shadow-sm active:scale-95 transition border border-red-200">刪除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function editPayroll(id) {
+            const r = window.currentPayrollRecords.find(x => x.id === id); if(!r) return;
+            document.getElementById('edit-pr-id').value = r.id;
+            document.getElementById('edit-pr-month').value = r.pay_month;
+            document.getElementById('edit-pr-base').value = r.base_pay;
+            document.getElementById('edit-pr-bonus').value = r.bonus;
+            document.getElementById('edit-pr-yeb').value = r.year_end_bonus || 0;
+            document.getElementById('edit-pr-ulp').value = r.unused_leave_pay || 0;
+            document.getElementById('edit-pr-ins').value = r.insurance_deduction;
+            document.getElementById('edit-pr-2nd').value = r.second_gen_health;
+            document.getElementById('edit-pr-lvd').value = r.leave_deduction;
+            calcEditPayrollNet();
+            openModal('payroll-edit-modal');
+        }
+
+        function calcEditPayrollNet() {
+            let base = parseFloat(document.getElementById('edit-pr-base').value) || 0;
+            let bonus = parseFloat(document.getElementById('edit-pr-bonus').value) || 0;
+            let yeb = parseFloat(document.getElementById('edit-pr-yeb').value) || 0;
+            let ulp = parseFloat(document.getElementById('edit-pr-ulp').value) || 0;
+            let ins = parseFloat(document.getElementById('edit-pr-ins').value) || 0;
+            let s2nd = parseFloat(document.getElementById('edit-pr-2nd').value) || 0;
+            let lvd = parseFloat(document.getElementById('edit-pr-lvd').value) || 0;
+            let net = base + bonus + yeb + ulp - ins - s2nd - lvd;
+            document.getElementById('edit-pr-net').innerText = 'NT$ ' + net.toLocaleString();
+        }
+
+        async function saveEditPayroll() {
+            const id = document.getElementById('edit-pr-id').value;
+            let base = parseFloat(document.getElementById('edit-pr-base').value) || 0;
+            let bonus = parseFloat(document.getElementById('edit-pr-bonus').value) || 0;
+            let yeb = parseFloat(document.getElementById('edit-pr-yeb').value) || 0;
+            let ulp = parseFloat(document.getElementById('edit-pr-ulp').value) || 0;
+            let ins = parseFloat(document.getElementById('edit-pr-ins').value) || 0;
+            let s2nd = parseFloat(document.getElementById('edit-pr-2nd').value) || 0;
+            let lvd = parseFloat(document.getElementById('edit-pr-lvd').value) || 0;
+            let net = base + bonus + yeb + ulp - ins - s2nd - lvd;
+
+            const p = { base_pay: base, bonus: bonus, year_end_bonus: yeb, unused_leave_pay: ulp, insurance_deduction: ins, second_gen_health: s2nd, leave_deduction: lvd, total_net_pay: net };
+            await safeUpdate('payroll_records', p, id);
+            alert('✅ 薪資單已更新'); closeModal('payroll-edit-modal'); loadPayrollHistory();
+        }
+        async function delPayroll(id) { if(confirm('確定刪除此紀錄？')) { await safeDelete('payroll_records', id); loadPayrollHistory(); } }
+
+        // --- 🌟 考勤大盤渲染 ---
         async function loadAttendance() {
             const baseDateStr = document.getElementById('att-date').value; 
             if(!baseDateStr) return; 
@@ -740,9 +1005,7 @@
             const baseDate = new Date(baseDateStr);
             let dates = [];
             for(let i=-2; i<=2; i++) {
-                let d = new Date(baseDate);
-                d.setDate(d.getDate() + i);
-                dates.push(d);
+                let d = new Date(baseDate); d.setDate(d.getDate() + i); dates.push(d);
             }
             const sT = new Date(dates[0]); sT.setHours(0,0,0,0);
             const eT = new Date(dates[4]); eT.setHours(23,59,59,999);
@@ -821,7 +1084,6 @@
                         if (dayData.out < emp.end.slice(0,5)) status = { text: '早退', code: 'EARLY', col: 'text-red-600 bg-red-50 border-red-200' };
                     }
 
-                    // 異常按鈕：加入推播功能
                     let alertBtn = (status.code !== 'NORMAL' && status.code !== 'NONE' && status.code !== 'WORKING' && status.code !== 'LEAVE') ? `<button onclick="notifyAbnormal('${eid}', '${dStr}', '${status.text}')" class="ml-1 text-[10px] bg-red-100 hover:bg-red-500 hover:text-white text-red-600 px-1.5 rounded transition shadow-sm">🚨通知</button>` : '';
                     let timeText = (dayData.in||'--') + ' - ' + (dayData.out||'--');
                     
@@ -850,11 +1112,10 @@
                 showSysToast('已成功發送異常通知至該員工前台！');
             } catch(e) { 
                 alert('發送失敗: ' + (e.message || '請確認 personal_bulletins 表格是否存在')); 
-                console.error(e);
             }
         }
 
-        // 🌟 員工通知 (個人公告) 推播管理 (強制捕捉錯誤)
+        // 🌟 員工通知推播管理
         async function loadAdminPBull() { 
             try {
                 const { data } = await window._sb.from('personal_bulletins').select('*, employees(full_name)').order('created_at', {ascending: false}); 
@@ -864,7 +1125,7 @@
                     return `<div class="p-3 bg-white rounded-xl border border-slate-200 flex justify-between items-center shadow-sm mb-2"><div><div class="text-[10px] text-sky-700 font-black mb-1">對象: ${b.employees?.full_name} ${readBadge}</div><div class="font-black text-sm text-slate-800 truncate w-48">${b.title}</div><div class="text-[9px] text-slate-400 mt-1">${new Date(b.created_at).toLocaleString('zh-TW')}</div></div><div class="flex space-x-2"><button onclick="editPBull('${b.id}')" class="text-[10px] bg-amber-50 text-amber-700 font-bold px-3 py-1.5 rounded-lg border border-amber-200">✏️</button><button onclick="delPBull('${b.id}')" class="text-[10px] bg-white text-red-600 font-bold px-3 py-1.5 rounded-lg border border-red-200">🗑️</button></div></div>`;
                 }).join('') || '<div class="text-center text-xs text-slate-400 py-3">無紀錄</div>'; 
             } catch(e) {
-                document.getElementById('list-admin-pbull').innerHTML = '<div class="text-center text-xs text-red-500 py-3">讀取失敗，請確認資料庫已建立。</div>';
+                document.getElementById('list-admin-pbull').innerHTML = '<div class="text-center text-xs text-red-500 py-3">讀取失敗，請確認資料庫。</div>';
             }
         }
 
@@ -910,10 +1171,45 @@
                 loadAdminPBull(); 
             } catch(e) { 
                 alert('發佈失敗: ' + (e.message || '資料庫操作錯誤')); 
-                console.error(e);
             } 
         }
-        async function delPBull(id) { if(!confirm('刪除這則通知嗎？')) return; await window._sb.from('personal_bulletins').delete().eq('id', id); showSysToast('已刪除'); loadAdminPBull(); }
+        async function delPBull(id) { if(!confirm('刪除這則個人公告嗎？')) return; await window._sb.from('personal_bulletins').delete().eq('id', id); showSysToast('已刪除'); loadAdminPBull(); }
+
+        // --- 🎯 全新功能：計點規則管理 ---
+        async function loadRules() {
+            const el = document.getElementById('list-rules');
+            try {
+                const { data } = await window._sb.from('penalty_rules').select('*').order('rule_name');
+                if(data && data.length > 0) {
+                    el.innerHTML = data.map(r => `
+                        <div class="glass-panel p-4 flex justify-between items-center shadow-sm">
+                            <div>
+                                <h4 class="font-black text-slate-800 text-sm mb-1">${r.rule_name}</h4>
+                                <p class="text-[10px] text-slate-500 font-bold w-48 truncate">${r.description}</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="number" id="rule-${r.id}" value="${r.points}" class="admin-input w-16 text-center font-black text-red-600 bg-red-50 border-red-200">
+                                <span class="text-xs font-bold text-slate-500">點</span>
+                                <button onclick="updateRule('${r.id}')" class="bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-black shadow-sm active:scale-95 transition">儲存</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    el.innerHTML = '<p class="text-center py-4 text-xs font-bold text-slate-400">目前無計點規則</p>';
+                }
+            } catch(e) {
+                el.innerHTML = '<p class="text-center py-4 text-xs font-bold text-red-500">請先執行計點規則資料表 SQL。</p>';
+            }
+        }
+
+        async function updateRule(id) {
+            const pts = document.getElementById(`rule-${id}`).value;
+            try {
+                const { error } = await window._sb.from('penalty_rules').update({points: pts}).eq('id', id);
+                if(error) throw error;
+                showSysToast('✅ 計點規則已更新');
+            } catch(e) { alert('更新失敗'); }
+        }
 
         // --- 全螢幕預覽與下載 PDF 引擎 ---
         let currentViewingPoNo = ''; let currentViewingHtml = '';
@@ -930,6 +1226,7 @@
             } catch(e){}
 
             if(!poData) { alert('載入 PDF 資料失敗'); return; }
+
             const supInfo = window.supplierData.find(x => x.supplier_name === poData.supplier_name) || {};
             const dateStr = new Date(poData.created_at).toLocaleDateString('zh-TW');
             let safeItems = getSafeArray(poData.items_json);
