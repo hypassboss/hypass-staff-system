@@ -152,6 +152,7 @@
 
                     <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 shadow-sm space-y-4">
                         <div><h4 id="lbl-eval-prev" class="text-[10px] font-black text-amber-800 tracking-widest mb-2 border-b border-amber-200 pb-1">上年度</h4><div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-500 bg-white p-2 rounded-lg border border-amber-100 shadow-inner"><div>特休<br><span id="sy-prev-ann" class="text-amber-600 text-sm font-black">0</span></div><div>事假<br><span id="sy-prev-per" class="text-amber-600 text-sm font-black">0</span>h</div><div>病假<br><span id="sy-prev-sic" class="text-amber-600 text-sm font-black">0</span>h</div><div>遲/早<br><span id="sy-prev-lat" class="text-amber-600 text-sm font-black">0</span>次</div><div>曠職<br><span id="sy-prev-abs" class="text-red-600 text-sm font-black">0</span>日</div><div>計點<br><span id="sy-prev-pnt" class="text-red-600 text-sm font-black">0</span>點</div></div></div>
+                        <div><h4 id="lbl-eval-curr" class="text-[10px] font-black text-amber-800 tracking-widest mb-2 border-b border-amber-200 pb-1">當年度</h4><div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-500 bg-white p-2 rounded-lg border border-amber-100 shadow-inner opacity-80"><div>特休<br><span id="sy-curr-ann" class="text-amber-600 text-sm font-black">0</span>h</div><div>事假<br><span id="sy-curr-per" class="text-amber-600 text-sm font-black">0</span>h</div><div>病假<br><span id="sy-curr-sic" class="text-amber-600 text-sm font-black">0</span>h</div><div>遲到<br><span id="sy-curr-lat" class="text-amber-600 text-sm font-black">0</span>次</div><div>加班<br><span id="sy-curr-ovt" class="text-emerald-600 text-sm font-black">0</span>h</div><div>計點<br><span id="sy-curr-pnt" class="text-red-600 text-sm font-black">0</span>點</div></div></div>
                     </div>
                     
                     <div class="p-4 bg-red-50 rounded-xl border border-red-100 grid grid-cols-2 gap-3 relative"><button onclick="calcPayroll()" class="absolute -top-3 right-3 text-[9px] bg-slate-800 text-white font-bold px-2 py-1 rounded shadow-sm">🤖 重算</button><div><label class="text-[10px] font-bold text-red-800 ml-1">勞健保</label><input type="number" id="p-ins" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200 bg-white"></div><div><label class="text-[10px] font-bold text-red-800 ml-1">二代健保</label><input type="number" id="p-2nd" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200 bg-white"></div></div>
@@ -191,13 +192,15 @@
                 <div class="w-full overflow-x-auto no-scrollbar pb-6">
                     <div class="min-w-[800px]">
                         <table class="w-full text-left text-sm whitespace-nowrap bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold text-[11px]" id="att-desktop-head"></thead>
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold text-[11px]" id="att-desktop-head">
+                                </thead>
                             <tbody id="list-attendance-desktop" class="divide-y divide-slate-100 text-xs">
                                 <tr><td colspan="6" class="text-center py-10 text-slate-400">請選擇中心日期</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
+                
                 <div id="list-attendance-mobile" class="md:hidden space-y-3 pb-8"></div>
             </section>
 
@@ -206,8 +209,19 @@
             </section>
 
             <section id="pur" class="tab-content space-y-6 max-w-6xl">
-                <div><h3 class="font-black text-slate-800 border-l-4 border-amber-500 pl-3 text-lg mb-4 flex items-center justify-between"><span>📄 正式採購單 (PDF) 管理</span></h3><div class="glass-panel p-5 shadow-sm"><div id="list-admin-po-docs" class="space-y-4">載入中...</div></div></div>
-                <div><h3 class="font-black text-slate-800 border-l-4 border-sky-500 pl-3 text-lg mb-4 flex items-center justify-between"><span>📝 內部請購單紀錄</span></h3><div class="glass-panel p-5 shadow-sm bg-slate-50/50 border border-dashed border-slate-300"><div id="list-admin-po-drafts" class="space-y-3">載入中...</div></div></div>
+                <div>
+                    <h3 class="font-black text-slate-800 border-l-4 border-amber-500 pl-3 text-lg mb-4 flex items-center justify-between">
+                        <span>📄 正式採購單 (PDF) 管理</span>
+                    </h3>
+                    <div class="glass-panel p-5 shadow-sm"><div id="list-admin-po-docs" class="space-y-4">載入中...</div></div>
+                </div>
+                
+                <div>
+                    <h3 class="font-black text-slate-800 border-l-4 border-sky-500 pl-3 text-lg mb-4 flex items-center justify-between">
+                        <span>📝 內部請購單紀錄</span>
+                    </h3>
+                    <div class="glass-panel p-5 shadow-sm bg-slate-50/50 border border-dashed border-slate-300"><div id="list-admin-po-drafts" class="space-y-3">載入中...</div></div>
+                </div>
             </section>
 
             <section id="fin" class="tab-content space-y-5 max-w-6xl">
@@ -345,7 +359,8 @@
 
     <script src="shared.js"></script>
     <script>
-        let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = []; window.pBulletins = []; window.adminInvData = []; window.currentPayrollRecords = []; window.supplierData = []; window.adminPoData = []; window.adminReqData = []; window.allLeaves = [];
+        let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = []; window.pBulletins = []; window.adminInvData = []; window.currentPayrollRecords = []; window.supplierData = [];
+        window.adminPoData = []; window.adminReqData = []; window.allLeaves = [];
         let currentTempPayrollStats = null; 
 
         function showSysToast(msg) {
@@ -394,7 +409,7 @@
         function openModal(id) { document.getElementById(id).classList.add('active'); } 
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // 🌟 終極防彈版 loadAll：獨立提取，不再依賴外鍵 Join 防止崩潰
+        // 🌟 終極防彈版 loadAll：獨立提取，不再依賴外鍵 Join 防止崩潰，包含全盤開通與渲染
         async function loadAll() {
             try {
                 if (!window._sb) throw new Error("無法連線到 Supabase，請確認 shared.js 中的金鑰設定是否正確。");
@@ -414,7 +429,7 @@
                 });
 
                 const p = window.allEmps.filter(e => !e.is_approved && e.employment_status === '在職');
-                document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><span class="text-2xl mr-3">👤</span><div><h4 class="font-black text-sm text-slate-800">${e.full_name}</h4><p class="text-[10px] text-slate-500">${e.onboarding_date}</p></div></div><button onclick="appr('${e.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-4 py-2 rounded-lg transition">開通</button></div>`).join('') : '<p class="text-xs text-slate-400 font-bold text-center py-4">無待辦人員</p>';
+                document.getElementById('list-pend').innerHTML = p.length ? p.map(e => `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><span class="text-2xl mr-3">👤</span><div><h4 class="font-black text-sm text-slate-800">${e.full_name}</h4><p class="text-[10px] text-slate-500">${e.onboarding_date}</p></div></div><button onclick="appr('${e.id}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-4 py-2 rounded-lg transition shadow-md">開通</button></div>`).join('') : '<p class="text-xs text-slate-400 font-bold text-center py-4">無待辦人員</p>';
                 
                 const aEmps = window.allEmps.filter(e => e.is_approved && e.employment_status === '在職');
                 aEmps.sort((a, b) => { let valA = a.employee_no && a.employee_no !== '未設定' ? a.employee_no : 'Z999'; let valB = b.employee_no && b.employee_no !== '未設定' ? b.employee_no : 'Z999'; return valA.localeCompare(valB, 'zh-TW', { numeric: true }); });
@@ -461,6 +476,33 @@
             } catch (error) {
                 console.error('loadAll Error:', error);
                 alert(`系統載入失敗！\n\n詳細原因：\n${error.message || error}`);
+            }
+        }
+
+        // 🌟 防彈版：一鍵開通新員工函數
+        async function appr(id) {
+            if(!confirm('確定要開通此員工權限嗎？')) return;
+            try {
+                // 產生簡易員工編號 (如無 RPC 也能運作)
+                const empNo = 'HY' + Math.floor(Math.random()*1000).toString().padStart(3, '0');
+                
+                const { error } = await window._sb.from('employees').update({ 
+                    is_approved: true, 
+                    employee_no: empNo, 
+                    employment_status: '在職' 
+                }).eq('id', id);
+                
+                if(error) throw error;
+
+                const e = window.allEmps.find(x => x.id === id);
+                if (e) {
+                    window._sb.functions.invoke('line-webhook', { body: { action: 'notify_approved', name: e.full_name, employee_no: empNo } }).catch(err=>{});
+                }
+                
+                alert(`✅ 員工權限已開通！\n系統已配發專屬編號：${empNo}`);
+                loadAll();
+            } catch(e) {
+                alert('開通失敗: ' + (e.message || '資料庫操作錯誤'));
             }
         }
 
@@ -760,6 +802,34 @@
             }
         }
 
+        // 🌟 據點管理 (新增防彈載入機制)
+        let cId = null; 
+        function editBr(id) { 
+            const b = window.branches.find(x=>x.id===id); 
+            cId=b.id; 
+            document.getElementById('b-n').value=b.branch_name; 
+            document.getElementById('b-a').value=b.address; 
+            document.getElementById('b-la').value=b.lat; 
+            document.getElementById('b-ln').value=b.lng; 
+            document.getElementById('btn-cancel-br').classList.remove('hidden'); 
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+        function cancelEditBr() { 
+            cId=null; 
+            document.getElementById('b-n').value=''; 
+            document.getElementById('b-a').value=''; 
+            document.getElementById('b-la').value=''; 
+            document.getElementById('b-ln').value=''; 
+            document.getElementById('btn-cancel-br').classList.add('hidden'); 
+        }
+        async function saveBr() { 
+            const p={branch_name:document.getElementById('b-n').value, address:document.getElementById('b-a').value, lat:parseFloat(document.getElementById('b-la').value), lng:parseFloat(document.getElementById('b-ln').value)}; 
+            if(cId) await window._sb.from('branch_locations').update(p).eq('id', cId); 
+            else await window._sb.from('branch_locations').insert([p]); 
+            showSysToast('✅ 據點已儲存'); 
+            cancelEditBr(); loadAll(); 
+        }
+
         // 🌟 計算當月出勤供薪資發放使用 (修復薪資單未能寫入出勤紀錄的 Bug)
         async function updateAttendanceRate() {
             const empId = document.getElementById('p-emp').value;
@@ -942,7 +1012,7 @@
                     const res = await window._sb.from('payroll_records').upsert([payload], {onConflict: 'employee_id, pay_month'});
                     if(res.error) throw res.error;
                 }
-                alert('✅ 薪資單已正式發放！'); loadPayrollHistory(); 
+                showSysToast('✅ 薪資單已正式發放！'); loadPayrollHistory(); 
             } catch(e) {
                 alert('發送失敗: ' + e.message);
             }
@@ -1015,7 +1085,7 @@
 
             const p = { base_pay: base, bonus: bonus, year_end_bonus: yeb, unused_leave_pay: ulp, insurance_deduction: ins, second_gen_health: s2nd, leave_deduction: lvd, total_net_pay: net };
             await safeUpdate('payroll_records', p, id);
-            alert('✅ 薪資單已更新'); closeModal('payroll-edit-modal'); loadPayrollHistory();
+            showSysToast('✅ 薪資單已更新'); closeModal('payroll-edit-modal'); loadPayrollHistory();
         }
         async function delPayroll(id) { if(confirm('確定刪除此紀錄？')) { await safeDelete('payroll_records', id); loadPayrollHistory(); } }
 
@@ -1143,7 +1213,6 @@
         // 🌟 員工通知 (個人公告) 推播管理
         async function loadAdminPBull() { 
             try {
-                // 不使用 join，手動配對
                 const { data } = await window._sb.from('personal_bulletins').select('*').order('created_at', {ascending: false}); 
                 window.pBulletins = data || []; 
                 document.getElementById('list-admin-pbull').innerHTML = window.pBulletins.map(b => {
@@ -1294,6 +1363,74 @@
         function closePdfModal() { const m = document.getElementById('pdf-preview-modal'); m.classList.add('hidden'); m.classList.remove('flex'); }
         document.getElementById('btn-modal-download').addEventListener('click', () => { executePdfDownload(currentViewingHtml, currentViewingPoNo); });
         function executePdfDownload(htmlContent, poNo) { showSysToast('PDF 檔案生成中，請稍候...'); const opt = { margin: [0.5, 0.5], filename: `${poNo}_採購單.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }; const tempDiv = document.createElement('div'); tempDiv.innerHTML = htmlContent; tempDiv.style.padding = '20px'; html2pdf().set(opt).from(tempDiv).save().then(() => { showSysToast('PDF 下載完成！'); }); }
+
+        // 🌟 獨立運作的庫存與採購大盤載入引擎
+        async function loadAdminInventory() {
+            try {
+                const { data } = await window._sb.from('items').select('*').order('created_at', {ascending:false});
+                window.adminInvData = data || [];
+                filterAdminInventory();
+            } catch(e) { console.error(e); }
+        }
+        function filterAdminInventory() {
+            let kw = document.getElementById('admin-inv-search').value.toLowerCase();
+            let cat = document.getElementById('admin-inv-cat-filter').value;
+            let res = window.adminInvData.filter(i => (i.item_code.toLowerCase().includes(kw) || i.item_name.toLowerCase().includes(kw)) && (cat==='' || i.category===cat));
+            
+            document.getElementById('list-inv-desktop').innerHTML = res.map(i => `<tr class="hover:bg-slate-50 border-b border-slate-100"><td class="px-6 py-4 font-black text-slate-800">${i.item_code}<br><span class="text-xs text-slate-500">${i.item_name}</span></td><td class="px-6 py-4 text-right font-black text-sky-600 text-lg">參見前台</td><td class="px-6 py-4 text-right font-black text-red-500">${i.safe_stock_level||0}</td><td class="px-6 py-4 text-center font-bold text-slate-600">${i.lead_time_days||0}天</td><td class="px-6 py-4 text-center"><button onclick="editAdminItem('${i.id}')" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold">編輯</button></td></tr>`).join('');
+            document.getElementById('list-inv-mobile').innerHTML = res.map(i => `<div class="glass-panel p-4 shadow-sm mb-2 flex justify-between items-center"><div><h4 class="font-black text-sm text-slate-800">${i.item_code}</h4><p class="text-xs text-slate-500">${i.item_name}</p></div><button onclick="editAdminItem('${i.id}')" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold">編輯</button></div>`).join('');
+        }
+        function editAdminItem(id) {
+            const i = window.adminInvData.find(x=>x.id===id); if(!i) return;
+            document.getElementById('edit-item-id').value = i.id;
+            document.getElementById('edit-item-name').value = i.item_name;
+            document.getElementById('edit-item-code').value = i.item_code;
+            document.getElementById('edit-item-type').value = i.item_type;
+            document.getElementById('edit-item-cat').value = i.category || '未分類';
+            document.getElementById('edit-item-qty').value = i.qty_per_pack || 1;
+            document.getElementById('edit-item-spec').value = i.specification || '';
+            document.getElementById('edit-item-safe').value = i.safe_stock_level || 0;
+            document.getElementById('edit-item-lead').value = i.lead_time_days || 15;
+            document.getElementById('edit-item-cycle').value = i.stocktake_cycle || 30;
+            openModal('item-edit-modal');
+        }
+        async function saveAdminItem() {
+            const id = document.getElementById('edit-item-id').value;
+            const p = { item_name: document.getElementById('edit-item-name').value, item_code: document.getElementById('edit-item-code').value, item_type: document.getElementById('edit-item-type').value, category: document.getElementById('edit-item-cat').value, qty_per_pack: parseInt(document.getElementById('edit-item-qty').value)||1, specification: document.getElementById('edit-item-spec').value, safe_stock_level: parseInt(document.getElementById('edit-item-safe').value)||0, lead_time_days: parseInt(document.getElementById('edit-item-lead').value)||15, stocktake_cycle: parseInt(document.getElementById('edit-item-cycle').value)||30 };
+            await safeUpdate('items', p, id); showSysToast('✅ 料號已更新'); closeModal('item-edit-modal'); loadAdminInventory();
+        }
+        async function deleteAdminItem() {
+            const id = document.getElementById('edit-item-id').value;
+            if(confirm('確定刪除此料號嗎？')) { await safeDelete('items', id); closeModal('item-edit-modal'); loadAdminInventory(); }
+        }
+
+        async function loadAdminPurchase() {
+            try {
+                const { data: pos } = await window._sb.from('po_documents').select('*').order('created_at', {ascending:false});
+                const { data: reqs } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending:false});
+                window.adminPoData = pos || []; window.adminReqData = reqs || [];
+                
+                document.getElementById('list-admin-po-docs').innerHTML = window.adminPoData.map(p => {
+                    let stCol = p.status.includes('異常') ? 'text-red-600 bg-red-50 border-red-200' : 'text-amber-700 bg-amber-50 border-amber-200';
+                    return `<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center mb-2"><div><span class="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">${p.po_no}</span> <span class="text-[10px] font-black px-1.5 py-0.5 rounded border ${stCol}">${p.status}</span><h4 class="font-black text-slate-800 text-sm mt-1">${p.supplier_name}</h4></div><div class="flex space-x-2"><button onclick="processAdminPO_PDF('${p.id}', false, 'view')" class="text-xs bg-slate-800 text-white px-3 py-1.5 rounded-lg">檢視</button><button onclick="openAdminPOEdit('${p.id}', false, '${p.status}', '')" class="text-xs bg-amber-100 text-amber-700 font-bold px-3 py-1.5 rounded-lg">編輯</button></div></div>`;
+                }).join('') || '<div class="text-center text-xs text-slate-400 py-4">無採購單</div>';
+
+                document.getElementById('list-admin-po-drafts').innerHTML = window.adminReqData.map(r => {
+                    let stCol = r.status === '已完成' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-sky-700 bg-sky-50 border-sky-200';
+                    return `<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center mb-2"><div><span class="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">${r.req_no}</span> <span class="text-[10px] font-black px-1.5 py-0.5 rounded border ${stCol}">${r.status}</span><h4 class="font-black text-slate-800 text-sm mt-1">申請人: ${r.employees?.full_name||'未知'}</h4></div><div class="flex space-x-2"><button onclick="openAdminReqEdit('${r.id}', false, '${r.status}')" class="text-xs bg-sky-100 text-sky-700 font-bold px-3 py-1.5 rounded-lg">編輯</button></div></div>`;
+                }).join('') || '<div class="text-center text-xs text-slate-400 py-4">無請購單</div>';
+            } catch(e) { console.error(e); }
+        }
+
+        function openAdminPOEdit(id, isLegacy, st, reason) { document.getElementById('admin-po-edit-id').value = id; document.getElementById('admin-po-edit-islegacy').value = isLegacy; document.getElementById('admin-po-edit-status').value = st; document.getElementById('admin-po-edit-reason').value = reason||''; togglePoException(); openModal('admin-edit-po-modal'); }
+        function togglePoException() { const v = document.getElementById('admin-po-edit-status').value; if(v.includes('異常')) document.getElementById('admin-po-exception-box').classList.remove('hidden'); else document.getElementById('admin-po-exception-box').classList.add('hidden'); }
+        async function saveAdminPOEdit() { const id = document.getElementById('admin-po-edit-id').value; const st = document.getElementById('admin-po-edit-status').value; await safeUpdate('po_documents', {status: st}, id); showSysToast('✅ 採購單狀態已更新'); closeModal('admin-edit-po-modal'); loadAdminPurchase(); }
+        function openAdminReqEdit(id, isLegacy, st) { document.getElementById('admin-req-edit-id').value = id; document.getElementById('admin-req-edit-islegacy').value = isLegacy; document.getElementById('admin-req-edit-status').value = st; openModal('admin-edit-req-modal'); }
+        async function saveAdminReqEdit() { const id = document.getElementById('admin-req-edit-id').value; const st = document.getElementById('admin-req-edit-status').value; await safeUpdate('requisitions', {status: st}, id); showSysToast('✅ 請購單狀態已更新'); closeModal('admin-edit-req-modal'); loadAdminPurchase(); }
+
+        async function loadAdminFinance() { const el = document.getElementById('list-admin-fin'); el.innerHTML = '<div class="p-6 text-center"><h4 class="text-xl font-black text-slate-700">財務對帳大盤</h4><p class="text-sm text-slate-500 mt-2 font-bold">請前往左側【綜合薪資發放】進行薪資管理。</p></div>'; }
+
+        async function exportBankCSV() { const month = document.getElementById('export-mon').value; if(!month) return; const { data } = await window._sb.from('payroll_records').select('total_net_pay, employees(full_name, bank_code, bank_name, bank_user_name, bank_account)').eq('pay_month', month); if(!data || data.length === 0) return; let csv = "\uFEFF銀行代碼,銀行名稱,收款帳號,戶名,匯款金額,備註\n"; data.forEach(r => { csv += `="${r.employees.bank_code}",${r.employees.bank_name},="${r.employees.bank_account}",${r.employees.bank_user_name},${r.total_net_pay},${month}薪資\n`; }); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `HYPASS_${month}_轉帳檔.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
 
         window.onload = function() {
             if(localStorage.getItem('admin_logged')==='true') {
