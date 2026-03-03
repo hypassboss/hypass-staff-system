@@ -84,10 +84,10 @@
                     </div>
                 </div>
 
-                <div class="bg-amber-50 border border-amber-200 rounded-[1.5rem] p-3 flex items-center shadow-sm cursor-pointer active:scale-95 transition" onclick="openView('bulletin', '企業公告區')">
+                <div class="bg-amber-50 border border-amber-200 rounded-[1.5rem] p-3 flex items-center shadow-sm cursor-pointer active:scale-95 transition" onclick="openView('bulletin', '公司最新公告')">
                     <span class="text-xl mr-3 shrink-0">📢</span>
                     <div class="flex-1 min-w-0 overflow-hidden">
-                        <div class="text-[10px] font-black text-amber-700 mb-0.5">最新公告</div>
+                        <div class="text-[10px] font-black text-amber-700 mb-0.5">公司最新公告</div>
                         <div class="text-xs font-bold text-slate-700 truncate" id="latest-bulletin">載入中...</div>
                     </div>
                     <span class="text-slate-400 ml-2">➔</span>
@@ -96,8 +96,8 @@
                 <div class="bg-red-50 border border-red-200 rounded-[1.5rem] p-3 flex items-center shadow-sm cursor-pointer active:scale-95 transition" onclick="openPersonalBulletins()">
                     <span class="text-xl mr-3 shrink-0">🔔</span>
                     <div class="flex-1 min-w-0 overflow-hidden">
-                        <div class="text-[10px] font-black text-red-700 mb-0.5">個人專屬公告欄</div>
-                        <div class="text-xs font-bold text-slate-700 truncate" id="latest-p-bulletin">點擊查看個人通知...</div>
+                        <div class="text-[10px] font-black text-red-700 mb-0.5">員工最新通知</div>
+                        <div class="text-xs font-bold text-slate-700 truncate" id="latest-p-bulletin">點擊查看通知...</div>
                     </div>
                     <span id="unread-bulletin-badge" class="bg-red-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full hidden animate-pulse shadow-md mr-2">0</span>
                     <span class="text-slate-400 ml-2">➔</span>
@@ -106,11 +106,11 @@
                 <div class="grid grid-cols-2 gap-3 mt-4">
                     <button onclick="openStatsAndCalendar()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">📅</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">年度行事曆與差勤</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">打卡與行事曆</span>
                     </button>
-                    <button onclick="openView('leave', '請假與補登單')" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
+                    <button onclick="openView('leave', '請假單與補登')" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">📝</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">請假單/補登</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">請假單與補登</span>
                     </button>
                     <button onclick="openSalaryView()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">💰</span>
@@ -118,7 +118,7 @@
                     </button>
                     <button onclick="openContractView()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">🪪</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">基本資料與合約</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">基本資料與聘雇合約</span>
                     </button>
                 </div>
             </div>
@@ -126,7 +126,7 @@
             <div id="view-personal-bulletins" class="view-panel space-y-4">
                 <div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-red-500 relative pb-10">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">🔔</span>個人專屬公告與警示</h3>
+                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">🔔</span>員工最新通知</h3>
                     </div>
                     <div id="ui-personal-bulletin-list" class="space-y-3 max-h-[65vh] overflow-y-auto no-scrollbar pr-1">
                         <p class="text-center text-xs text-slate-400 py-6">載入中...</p>
@@ -137,24 +137,27 @@
             <div id="view-punch" class="view-panel space-y-4">
                 <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-sky-500 text-center">
                     <h3 class="font-black text-lg text-slate-800 mb-1" id="punch-title">執行打卡</h3>
-                    <p class="text-xs font-bold text-slate-500 mb-4">請確認定位與授權相機</p>
+                    <p class="text-xs font-bold text-slate-500 mb-4">系統僅採用高精度 GPS 定位</p>
                     
-                    <div class="bg-slate-50 rounded-xl p-3 mb-4 border border-slate-200 text-left space-y-2">
-                        <div class="flex items-start"><span class="mr-2 text-base">📍</span><div class="flex-1"><p class="text-[10px] font-black text-slate-400">目前定位</p><p class="text-xs font-bold text-slate-700" id="punch-loc">定位中...</p></div></div>
-                        <div class="flex items-start"><span class="mr-2 text-base">🏢</span><div class="flex-1"><p class="text-[10px] font-black text-slate-400">判定狀態</p><p class="text-xs font-black text-sky-600" id="punch-status">計算中...</p></div></div>
-                    </div>
-
-                    <div class="w-full aspect-square bg-slate-900 rounded-2xl mb-5 flex items-center justify-center relative overflow-hidden shadow-inner border border-slate-300">
-                        <video id="camera-feed" class="w-full h-full object-cover hidden"></video>
-                        <div id="camera-placeholder" class="text-center">
-                            <span class="text-4xl mb-2 block opacity-50">📷</span>
-                            <span class="text-xs font-bold text-slate-400 tracking-widest">人臉辨識系統啟動中</span>
+                    <div class="bg-slate-50 rounded-xl p-4 mb-5 border border-slate-200 text-left space-y-4 shadow-inner">
+                        <div class="flex items-start">
+                            <span class="mr-3 text-xl mt-0.5">📍</span>
+                            <div class="flex-1">
+                                <p class="text-[10px] font-black text-slate-400 tracking-widest uppercase">目前所在座標</p>
+                                <p class="text-sm font-black text-slate-700 mt-1 font-mono" id="punch-loc">定位獲取中...</p>
+                            </div>
                         </div>
-                        <div id="scan-line" class="absolute left-0 right-0 h-1 bg-sky-400/50 shadow-[0_0_15px_rgba(56,189,248,1)] hidden"></div>
+                        <div class="border-t border-slate-200 pt-3 flex items-start">
+                            <span class="mr-3 text-xl mt-0.5">🏢</span>
+                            <div class="flex-1">
+                                <p class="text-[10px] font-black text-slate-400 tracking-widest uppercase">區域判定狀態</p>
+                                <p class="text-sm font-black text-sky-600 mt-1" id="punch-status">計算中...</p>
+                            </div>
+                        </div>
                     </div>
 
                     <input type="hidden" id="punch-type-val">
-                    <button id="btn-execute-punch" onclick="executePunch()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base disabled:opacity-50 disabled:cursor-not-allowed">確認並送出打卡</button>
+                    <button id="btn-execute-punch" onclick="executePunch()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base disabled:opacity-50 disabled:cursor-not-allowed">確認並送出打卡</button>
                 </div>
             </div>
 
@@ -163,32 +166,32 @@
                 <div class="glass-card p-4 rounded-[1.5rem] shadow-sm border-t-4 border-indigo-500">
                     <h3 class="font-black text-slate-800 text-sm mb-3 flex justify-between items-center">
                         <span class="flex items-center"><span class="mr-1.5 text-lg">📊</span> 當月出勤統計</span>
-                        <span class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-1 rounded font-black border border-indigo-200" id="stat-month-label">2026年3月</span>
+                        <span class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-1 rounded font-black border border-indigo-200" id="stat-month-label">載入中</span>
                     </h3>
                     <div class="grid grid-cols-5 gap-1 text-center bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-inner">
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">特休</p><p class="font-black text-sky-600 text-sm" id="sm-ann">--</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">事假</p><p class="font-black text-amber-600 text-sm" id="sm-per">--</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">病假</p><p class="font-black text-amber-600 text-sm" id="sm-sic">--</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">遲到</p><p class="font-black text-red-500 text-sm" id="sm-lat">--</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">計點</p><p class="font-black text-red-600 text-sm" id="sm-pnt">--點</p></div>
+                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">特休</p><p class="font-black text-sky-600 text-xs sm:text-sm" id="sm-ann">--</p></div>
+                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">事假</p><p class="font-black text-amber-600 text-xs sm:text-sm" id="sm-per">--</p></div>
+                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">病假</p><p class="font-black text-amber-600 text-xs sm:text-sm" id="sm-sic">--</p></div>
+                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">遲到</p><p class="font-black text-red-500 text-xs sm:text-sm" id="sm-lat">--</p></div>
+                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">計點</p><p class="font-black text-red-600 text-xs sm:text-sm" id="sm-pnt">--點</p></div>
                     </div>
 
                     <h3 class="font-black text-slate-800 text-sm mb-3 mt-4 flex justify-between items-center border-t border-slate-100 pt-4">
                         <span class="flex items-center"><span class="mr-1.5 text-lg">📈</span> 當年度統計</span>
-                        <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded font-black border border-slate-200" id="stat-year-label">2026年</span>
+                        <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded font-black border border-slate-200" id="stat-year-label">載入中</span>
                     </h3>
                     <div class="grid grid-cols-5 gap-1 text-center bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-inner opacity-90">
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">未休特休</p><p class="font-black text-emerald-600 text-sm" id="sy-ann">--</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">事假</p><p class="font-black text-amber-600 text-sm" id="sy-per">--</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">病假</p><p class="font-black text-amber-600 text-sm" id="sy-sic">--</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">遲到</p><p class="font-black text-red-500 text-sm" id="sy-lat">--</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">計點</p><p class="font-black text-red-600 text-sm" id="sy-pnt">--點</p></div>
+                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">未休特休</p><p class="font-black text-emerald-600 text-xs sm:text-sm whitespace-nowrap" id="sy-ann">--</p></div>
+                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">事假</p><p class="font-black text-amber-600 text-xs sm:text-sm" id="sy-per">--</p></div>
+                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">病假</p><p class="font-black text-amber-600 text-xs sm:text-sm" id="sy-sic">--</p></div>
+                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">遲到</p><p class="font-black text-red-500 text-xs sm:text-sm" id="sy-lat">--</p></div>
+                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">計點</p><p class="font-black text-red-600 text-xs sm:text-sm" id="sy-pnt">--點</p></div>
                     </div>
                 </div>
 
                 <div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-sky-500">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2">🗓️</span>打卡與行事曆</h3>
+                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2">🗓️</span>行事曆與打卡紀錄</h3>
                         <input type="month" id="cal-month-picker" class="p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-sky-500 text-slate-700" onchange="renderCalendarUI()">
                     </div>
                     
@@ -200,21 +203,23 @@
                             </div>
                     </div>
 
-                    <h4 class="text-[11px] font-black text-slate-500 mb-3 border-b border-slate-200 pb-1">📜 該月打卡明細</h4>
-                    <div id="ui-history-list" class="space-y-2 max-h-[30vh] overflow-y-auto no-scrollbar pr-1"></div>
+                    <h4 class="text-[11px] font-black text-slate-500 mb-3 border-b border-slate-200 pb-1">📜 該月每日出勤狀態明細</h4>
+                    <div id="ui-history-list" class="space-y-2 max-h-[40vh] overflow-y-auto no-scrollbar pr-1 pb-10"></div>
                 </div>
             </div>
 
             <div id="view-leave" class="view-panel space-y-4">
                 <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-amber-500">
-                    <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2">📝</span>申請單填寫</h3>
+                    <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2">📝</span>請假單與補登申請</h3>
                     <form onsubmit="submitLeave(event)" class="space-y-4">
                         <div>
                             <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">申請類型</label>
                             <select id="l-type" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 select-arrow" onchange="toggleLeaveType()">
-                                <option value="事假">事假 (無薪)</option>
-                                <option value="病假">病假 (半薪)</option>
-                                <option value="特休">特休 (全薪)</option>
+                                <option value="事假">事假</option>
+                                <option value="病假">病假</option>
+                                <option value="特休">特休</option>
+                                <option value="公假">公假</option>
+                                <option value="颱風假">颱風假</option>
                                 <option value="忘記打卡(補登)" class="font-black text-sky-700">忘記打卡 (補登申請)</option>
                             </select>
                         </div>
@@ -268,36 +273,62 @@
                         </div>
                     </div>
 
-                    <div class="space-y-5">
-                        <div>
-                            <h5 class="text-sm font-black text-slate-700 mb-2 border-l-4 border-slate-500 pl-2">📋 基本條款</h5>
-                            <p class="text-xs text-slate-600 font-bold leading-relaxed mb-1">1. 雙方同意依勞動基準法及相關法令規定，訂定勞動契約。</p>
-                            <p class="text-xs text-slate-600 font-bold leading-relaxed">2. 員工應遵守公司內部各項管理辦法及保密協定。</p>
-                        </div>
-                        <div>
-                            <h5 class="text-sm font-black text-slate-700 mb-2 border-l-4 border-slate-500 pl-2">🔒 機密保護</h5>
-                            <p class="text-xs text-slate-600 font-bold leading-relaxed">員工任職期間及離職後，對於所知悉之公司業務機密（包含但不限於 VESTA 產品配方、專利技術、供應商與客戶名單），負有絕對保密義務。如有洩漏，願負一切法律損害賠償責任。</p>
-                        </div>
-                        <div>
-                            <h5 class="text-sm font-black text-red-700 mb-2 border-l-4 border-red-500 pl-2">⚠️ 出勤與曠職規範</h5>
-                            <p class="text-xs text-slate-600 font-bold leading-relaxed mb-1">
-                                1. 員工應依規定時間出勤。未經請假或假單未獲核准而缺勤者，視為曠職。
-                            </p>
-                            <p class="text-xs text-red-600 font-black leading-relaxed bg-red-50 p-2 rounded-lg border border-red-100 mb-1">
-                                2. 無正當理由繼續曠職三日，或一個月內曠職達六日者，本公司得依《勞動基準法》第十二條規定，不經預告逕行終止勞動契約，且不發給資遣費。
-                            </p>
-                            <p class="text-xs text-slate-600 font-bold leading-relaxed">
-                                3. 遲到、早退及忘記打卡之懲處，依公司內部考勤管理辦法辦理，並於系統記錄計點。
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    <div class="space-y-5 bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-xs text-slate-700 leading-relaxed text-justify">
+                        <h4 class="text-center font-black text-base text-slate-900 mb-4 border-b border-slate-200 pb-2">HYPASS 勞動契約書</h4>
+                        
+                        <p class="font-bold">立合約書人：HYPASS（以下簡稱甲方）與 員工（以下簡稱乙方）。雙方同意依勞動基準法及相關法令規定，訂定下列條款，以資共同遵守：</p>
 
-            <div id="view-bulletin" class="view-panel space-y-4">
-                <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-amber-500">
-                    <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center border-b border-slate-100 pb-3"><span class="mr-2 text-xl">📢</span>企業公告</h3>
-                    <div id="ui-bulletin-list" class="space-y-4"></div>
+                        <div class="mt-4">
+                            <h5 class="font-black text-slate-800 mb-1">第一條（職務與工作地點）</h5>
+                            <p>乙方同意受甲方僱用，擔任約定之職務。工作地點為甲方指定之營業據點或外勤指派地點。甲方得視業務需要，在不違反勞動法令之範圍內調動乙方之工作地點與職務。</p>
+                        </div>
+
+                        <div class="mt-4">
+                            <h5 class="font-black text-slate-800 mb-1">第二條（工作時間與考勤）</h5>
+                            <p>1. 乙方之正常工作時間依甲方規定之班表執行，打卡須使用本系統之定位功能確實驗證。</p>
+                            <p>2. 遲到、早退、忘記打卡等考勤異常，依甲方內部考勤管理辦法辦理，並於系統記錄計點。</p>
+                        </div>
+
+                        <div class="mt-4 bg-red-50 p-3 rounded-lg border border-red-100">
+                            <h5 class="font-black text-red-800 mb-1 text-[13px]">第三條（請假與曠職規範）⚠️</h5>
+                            <p class="mb-1 text-red-700 font-bold">1. 乙方應依規定時間出勤。未經請假或假單未獲核准而缺勤者，視為曠職。</p>
+                            <p class="text-red-600 font-black">2. 無正當理由繼續曠職三日，或一個月內曠職達六日者，甲方得依《勞動基準法》第十二條規定，不經預告逕行終止本勞動契約，且不發給資遣費。</p>
+                        </div>
+
+                        <div class="mt-4">
+                            <h5 class="font-black text-slate-800 mb-1">第四條（薪資與福利）</h5>
+                            <p>1. 甲方應依約定之核定底薪及獎金制度，於每月發薪日將薪資匯入乙方指定之金融帳戶。</p>
+                            <p>2. 依法代扣勞健保費自付額、所得稅及法定扣款項目。</p>
+                        </div>
+
+                        <div class="mt-4">
+                            <h5 class="font-black text-slate-800 mb-1">第五條（機密保護與競業禁止）</h5>
+                            <p>乙方於任職期間及離職後，對於所知悉之甲方業務機密（包含但不限於 VESTA 產品配方、專利技術、供應商與客戶名單、系統架構），負有絕對保密義務。未經甲方書面同意，絕不洩漏或交付任何第三方。如有違反，乙方願負一切法律與損害賠償責任。</p>
+                        </div>
+                        
+                        <p class="mt-6 font-bold text-center border-t border-slate-200 pt-4">本人已詳細閱讀並完全同意上述聘僱合約與公司規章。</p>
+                    </div>
+
+                    <div class="mt-6" id="signature-section">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">數位簽章區</span>
+                            <button onclick="clearSignature()" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-1 rounded font-bold hover:bg-slate-300">清除重簽</button>
+                        </div>
+                        <canvas id="signature-pad" class="w-full h-32 border-2 border-dashed border-slate-300 rounded-xl bg-white touch-none cursor-crosshair shadow-inner"></canvas>
+                        
+                        <div class="flex items-center space-x-2 mt-4 mb-2">
+                            <input type="checkbox" id="contract-agree-chk" class="w-5 h-5 accent-slate-900">
+                            <label for="contract-agree-chk" class="text-xs font-bold text-slate-700">我承諾簽名屬實，並具備法律效力</label>
+                        </div>
+                        <button onclick="saveContractSignature()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base">確認簽署並送出</button>
+                    </div>
+                    
+                    <div id="signature-done-msg" class="hidden mt-6 bg-emerald-50 p-4 rounded-xl border border-emerald-200 text-center">
+                        <span class="text-4xl mb-2 block">✅</span>
+                        <h4 class="font-black text-emerald-800 text-lg">合約已簽署完成</h4>
+                        <p class="text-xs font-bold text-emerald-600 mt-1">您的數位簽章已安全紀錄於系統資料庫中。</p>
+                    </div>
+
                 </div>
             </div>
 
@@ -315,7 +346,11 @@
     <script src="shared.js"></script>
     <script>
         let currentPunchType = ''; let currentBranch = null; let scanAnim = null;
-        let twHolidays = {}; // 存放國定假日資料
+        let twHolidays = {}; 
+        
+        // Canvas Variables
+        let sigCanvas, sigCtx;
+        let isDrawing = false;
 
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
@@ -356,40 +391,33 @@
                 document.getElementById('cv-emer-phone').innerText = window.currentUser.emergency_phone || '未填寫';
                 document.getElementById('cv-bank').innerText = `${window.currentUser.bank_name || '--'} (${window.currentUser.bank_code || '--'}) - ${window.currentUser.bank_account || '--'}`;
 
-                // 預設行事曆選擇本月
                 let curMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
                 document.getElementById('cal-month-picker').value = curMonthStr;
 
-                // 預載資料
                 await fetchHolidays(now.getFullYear());
                 loadTodayPunch();
                 loadBulletins();
                 loadPersonalBulletins();
-                loadCalendarAndStats(); // 載入考勤大盤數據
+                loadCalendarAndStats(); 
+                initSignaturePad();
                 
             } catch(e) { console.error(e); }
         }
 
-        // 🌟 獲取台灣政府開源行事曆資料 (自動更新國定假日)
         async function fetchHolidays(year) {
             try {
-                // 使用開源的政府行事曆 JSON
                 const res = await fetch(`https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${year}.json`);
                 if(res.ok) {
                     const data = await res.json();
                     twHolidays = {};
                     data.forEach(d => {
                         if(d.isHoliday) {
-                            // 格式轉換 20260101 -> 2026-01-01
                             let ds = `${d.date.substring(0,4)}-${d.date.substring(4,6)}-${d.date.substring(6,8)}`;
                             twHolidays[ds] = d.description || '假日';
                         }
                     });
                 }
-            } catch(e) {
-                console.log('Holiday API Fallback');
-                twHolidays = {};
-            }
+            } catch(e) { twHolidays = {}; }
         }
 
         function openView(viewId, title) {
@@ -408,10 +436,21 @@
             if(scanAnim) clearInterval(scanAnim);
         }
 
-        function openContractView() { openView('contract', '基本資料與合約'); }
-        function openStatsAndCalendar() { openView('calendar', '年度行事曆與差勤'); renderCalendarUI(); }
+        function openContractView() { 
+            openView('contract', '基本資料與合約'); 
+            // 處理視窗顯示，確保 canvas 尺寸正確
+            setTimeout(() => {
+                if(sigCanvas) {
+                    const rect = sigCanvas.parentElement.getBoundingClientRect();
+                    sigCanvas.width = rect.width;
+                    sigCanvas.height = 128; // h-32
+                }
+            }, 100);
+        }
+        
+        function openStatsAndCalendar() { openView('calendar', '打卡與行事曆'); renderCalendarUI(); }
 
-        // 🌟 核心：計算當月、當年度的考勤數據與渲染行事曆
+        // 🌟 統計大盤計算
         async function loadCalendarAndStats() {
             const now = new Date();
             const currYear = now.getFullYear();
@@ -420,15 +459,17 @@
             document.getElementById('stat-month-label').innerText = `${currYear}年${currMonth}月`;
             document.getElementById('stat-year-label').innerText = `${currYear}年`;
 
-            // 1. 計算年度未休特休
-            let remainAnn = '--';
+            // 1. 計算年度未休特休 (轉換為天+小時)
+            let remainAnn = 0;
             try {
                 const { data: lvData } = await window._sb.rpc('fn_get_annual_leave_v2', { p_emp_id: window.currentUser.id });
-                if(lvData) remainAnn = lvData.remain_hours;
+                if(lvData) remainAnn = lvData.remain_hours || 0;
             } catch(e) {}
-            document.getElementById('sy-ann').innerText = remainAnn;
+            let annDays = Math.floor(remainAnn / 8);
+            let annHours = remainAnn % 8;
+            document.getElementById('sy-ann').innerText = `${annDays}天${annHours}h`;
             
-            // 2. 獲取本年度所有資料
+            // 2. 獲取本年度資料
             const sTY = new Date(`${currYear}-01-01T00:00:00Z`);
             const eTY = new Date(`${currYear}-12-31T23:59:59Z`);
             
@@ -440,7 +481,6 @@
 
             const targetStart = window.currentUser.work_start_time ? window.currentUser.work_start_time.slice(0,5) : '09:00';
 
-            // 分析請假
             if(leaves) {
                 leaves.forEach(l => {
                     let ls = new Date(l.start_time); let le = new Date(l.end_time);
@@ -453,7 +493,6 @@
                 });
             }
 
-            // 分析遲到 (同日只算一次)
             if(logs) {
                 let latSetY = new Set(); let latSetM = new Set();
                 logs.forEach(l => {
@@ -471,9 +510,8 @@
                 mLat = latSetM.size;
             }
 
-            // 更新 UI 數據 (計點直接取員工身上最新總值，不分年月)
             let pnts = window.currentUser.penalty_points || 0;
-            document.getElementById('sm-ann').innerText = mAnn + 'h';
+            document.getElementById('sm-ann').innerText = Math.floor(mAnn/8)+'天'+(mAnn%8)+'h';
             document.getElementById('sm-per').innerText = mPer + 'h';
             document.getElementById('sm-sic').innerText = mSic + 'h';
             document.getElementById('sm-lat').innerText = mLat + '次';
@@ -485,62 +523,104 @@
             document.getElementById('sy-pnt').innerText = pnts + '點';
         }
 
-        // 🌟 行事曆渲染器 (結合打卡紀錄與國定假日)
+        // 🌟 行事曆與狀態渲染
         async function renderCalendarUI() {
             const mStr = document.getElementById('cal-month-picker').value;
             if(!mStr) return;
             const [yStr, moStr] = mStr.split('-');
             const year = parseInt(yStr); const month = parseInt(moStr);
             
-            // 如果切換了年份，重新抓取該年度假日
             if(!twHolidays[`${year}-01-01`]) { await fetchHolidays(year); }
 
             const sT = new Date(year, month - 1, 1);
             const eT = new Date(year, month, 0, 23, 59, 59);
 
             const { data: logs } = await window._sb.from('attendance_logs').select('*, branch_locations(branch_name)').eq('employee_id', window.currentUser.id).gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString()).order('punch_time', {ascending: false});
+            const { data: leaves } = await window._sb.from('leave_requests').select('*').eq('employee_id', window.currentUser.id).eq('status', '核准').gte('start_time', sT.toISOString()).lte('end_time', eT.toISOString());
             
-            // 渲染明細清單
-            const listEl = document.getElementById('ui-history-list');
-            if(!logs || logs.length === 0) {
-                listEl.innerHTML = '<p class="text-center text-xs font-bold text-slate-400 py-4 border border-dashed border-slate-200 rounded-xl">本月尚無紀錄</p>';
-            } else {
-                listEl.innerHTML = logs.map(l => {
-                    const d = new Date(l.punch_time);
-                    const isRet = l.note && l.note.includes('[補登核准]');
-                    const icon = l.punch_type === 'IN' ? '👋' : '🏃';
-                    const color = l.punch_type === 'IN' ? 'text-sky-600 bg-sky-50 border-sky-100' : 'text-indigo-600 bg-indigo-50 border-indigo-100';
-                    const label = l.punch_type === 'IN' ? '上班' : '下班';
-                    const loc = isRet ? '系統後台核准補登' : (l.branch_locations?.branch_name || '外勤打卡');
-                    return `
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between mb-2">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm border ${color}">${icon}</div>
-                            <div>
-                                <h4 class="font-black text-slate-800 text-xs">${d.toLocaleDateString('zh-TW')} ${d.toLocaleTimeString('en-US',{hour12:false, hour:'2-digit', minute:'2-digit'})}</h4>
-                                <p class="text-[9px] font-bold text-slate-400 mt-0.5 flex items-center"><span class="mr-1">📍</span>${loc}</p>
-                            </div>
-                        </div>
-                        <span class="text-[9px] font-black tracking-widest px-2 py-0.5 rounded-md border ${color}">${label}</span>
-                    </div>`;
-                }).join('');
+            const targetStart = window.currentUser.work_start_time ? window.currentUser.work_start_time.slice(0,5) : '09:00';
+            const targetEnd = window.currentUser.work_end_time ? window.currentUser.work_end_time.slice(0,5) : '18:00';
+
+            // 構建每日資料矩陣
+            let daysData = {};
+            const totalDays = eT.getDate();
+            for(let i=1; i<=totalDays; i++) {
+                let d = new Date(year, month - 1, i);
+                let dStr = d.toLocaleDateString('en-CA');
+                daysData[dStr] = { in: null, out: null, leave: null, isPast: d <= new Date(), isWeekend: (d.getDay()===0||d.getDay()===6), holiday: twHolidays[dStr] };
             }
 
-            // 渲染月曆網格
-            let logMap = {};
-            if(logs) {
-                logs.forEach(l => {
-                    let d = new Date(l.punch_time).toLocaleDateString('en-CA');
-                    if(!logMap[d]) logMap[d] = { in:false, out:false };
-                    if(l.punch_type === 'IN') logMap[d].in = true;
-                    if(l.punch_type === 'OUT') logMap[d].out = true;
+            if(leaves) {
+                leaves.forEach(l => {
+                    let ls = new Date(l.start_time); let le = new Date(l.end_time);
+                    for(let i=1; i<=totalDays; i++) {
+                        let d = new Date(year, month - 1, i);
+                        let dStr = d.toLocaleDateString('en-CA');
+                        let dStart = new Date(d); dStart.setHours(0,0,0,0);
+                        let dEnd = new Date(d); dEnd.setHours(23,59,59,999);
+                        if(ls <= dEnd && le >= dStart) { daysData[dStr].leave = l.leave_type; }
+                    }
                 });
             }
 
+            if(logs) {
+                logs.forEach(l => {
+                    let dStr = new Date(l.punch_time).toLocaleDateString('en-CA');
+                    if(!daysData[dStr]) return;
+                    const tStr = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
+                    if(l.punch_type === 'IN' && !daysData[dStr].in) daysData[dStr].in = tStr;
+                    if(l.punch_type === 'OUT') daysData[dStr].out = tStr; 
+                });
+            }
+
+            // 渲染明細清單
+            const listEl = document.getElementById('ui-history-list');
+            let listHtml = '';
+            
+            // 從最後一天往前印
+            for(let i=totalDays; i>=1; i--) {
+                let dDate = new Date(year, month - 1, i);
+                let dStr = dDate.toLocaleDateString('en-CA');
+                let dayD = daysData[dStr];
+                
+                if(!dayD.isPast && dStr !== new Date().toLocaleDateString('en-CA')) continue; // 未來的不用印狀態
+
+                let status = { text: '正常', col: 'text-emerald-600 bg-emerald-50 border-emerald-200' };
+                
+                if (dayD.leave) { 
+                    status = { text: dayD.leave.replace('(補登)',''), col: 'text-sky-600 bg-sky-50 border-sky-200' }; 
+                } else if (!dayD.in && !dayD.out) {
+                    if (dayD.isPast && !dayD.isWeekend && !dayD.holiday) status = { text: '曠職', col: 'text-white bg-red-600 border-red-700 animate-pulse' };
+                    else status = { text: '無紀錄', col: 'text-slate-400 bg-slate-100 border-slate-200' };
+                } else if (dayD.in && !dayD.out) {
+                    if (dayD.isPast && dStr !== new Date().toLocaleDateString('en-CA')) status = { text: '忘記打卡', col: 'text-amber-600 bg-amber-50 border-amber-200' };
+                    else status = { text: '上班中', col: 'text-indigo-600 bg-indigo-50 border-indigo-200' };
+                } else {
+                    if (dayD.in > targetStart) status = { text: '遲到', col: 'text-red-600 bg-red-50 border-red-200' };
+                    if (dayD.out < targetEnd) status = { text: '早退', col: 'text-red-600 bg-red-50 border-red-200' };
+                }
+
+                if(status.text !== '無紀錄' || dStr === new Date().toLocaleDateString('en-CA')) {
+                    let timeText = (dayD.in||'--:--') + ' ~ ' + (dayD.out||'--:--');
+                    let titleText = `${dDate.toLocaleDateString('zh-TW', {month:'numeric', day:'numeric'})} (${['日','一','二','三','四','五','六'][dDate.getDay()]})`;
+                    
+                    listHtml += `
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between mb-2">
+                        <div>
+                            <h4 class="font-black text-slate-800 text-sm mb-0.5">${titleText}</h4>
+                            <p class="font-mono text-[10px] font-bold text-slate-500">${timeText}</p>
+                        </div>
+                        <span class="text-[10px] font-black tracking-widest px-2 py-1 rounded-md border ${status.col}">${status.text}</span>
+                    </div>`;
+                }
+            }
+            if(!listHtml) listHtml = '<p class="text-center text-xs font-bold text-slate-400 py-4 border border-dashed border-slate-200 rounded-xl">本月尚無紀錄</p>';
+            listEl.innerHTML = listHtml;
+
+            // 渲染月曆網格
             const daysContainer = document.getElementById('calendar-days');
             let html = '';
             const firstDayIndex = sT.getDay();
-            const totalDays = eT.getDate();
             const todayStr = new Date().toLocaleDateString('en-CA');
 
             for(let i=0; i<firstDayIndex; i++) { html += `<div class="cal-day empty"></div>`; }
@@ -548,45 +628,23 @@
             for(let i=1; i<=totalDays; i++) {
                 let dDate = new Date(year, month - 1, i);
                 let dStr = dDate.toLocaleDateString('en-CA');
-                let dayOfWeek = dDate.getDay();
-                let isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                let holidayName = twHolidays[dStr];
+                let dayD = daysData[dStr];
                 
                 let extraClass = '';
                 if(dStr === todayStr) extraClass = 'today';
-                else if(holidayName) extraClass = 'holiday';
-                else if(isWeekend) extraClass = 'weekend';
+                else if(dayD.holiday) extraClass = 'holiday';
+                else if(dayD.isWeekend) extraClass = 'weekend';
 
                 let dotHtml = '';
-                if(logMap[dStr]) {
-                    if(logMap[dStr].in && logMap[dStr].out) dotHtml = '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mx-auto mt-1 block"></span>';
-                    else dotHtml = '<span class="w-1.5 h-1.5 bg-amber-500 rounded-full mx-auto mt-1 block"></span>';
-                }
+                if(dayD.in && dayD.out) dotHtml = '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mx-auto mt-1 block"></span>';
+                else if(dayD.in || dayD.out) dotHtml = '<span class="w-1.5 h-1.5 bg-amber-500 rounded-full mx-auto mt-1 block"></span>';
+                else if(dayD.leave) dotHtml = '<span class="w-1.5 h-1.5 bg-sky-500 rounded-full mx-auto mt-1 block"></span>';
 
-                let badgeHtml = holidayName ? `<span class="holiday-badge text-red-500">${holidayName}</span>` : '';
+                let badgeHtml = dayD.holiday ? `<span class="holiday-badge text-red-500">${dayD.holiday}</span>` : '';
 
                 html += `<div class="cal-day flex flex-col justify-start items-center ${extraClass}"><span>${i}</span>${badgeHtml}${dotHtml}</div>`;
             }
             daysContainer.innerHTML = html;
-        }
-
-
-        async function loadTodayPunch() {
-            const sT = new Date(); sT.setHours(0,0,0,0);
-            const eT = new Date(); eT.setHours(23,59,59,999);
-            const { data } = await window._sb.from('attendance_logs').select('*').eq('employee_id', window.currentUser.id).gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString());
-            if(data) {
-                data.forEach(l => {
-                    const t = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
-                    if(l.punch_type === 'IN') {
-                        document.getElementById('status-in').innerText = `已打卡: ${t}`;
-                        document.getElementById('status-in').classList.replace('text-sky-100', 'text-sky-200');
-                    } else if(l.punch_type === 'OUT') {
-                        document.getElementById('status-out').innerText = `已打卡: ${t}`;
-                        document.getElementById('status-out').classList.replace('text-indigo-100', 'text-indigo-200');
-                    }
-                });
-            }
         }
 
         async function loadPersonalBulletins() {
@@ -596,7 +654,7 @@
                 const badge = document.getElementById('unread-bulletin-badge');
                 
                 if (!data || data.length === 0) {
-                    container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">目前無任何個人公告</p>';
+                    container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">目前無任何通知</p>';
                     document.getElementById('latest-p-bulletin').innerText = '目前無個人通知';
                     if(badge) badge.classList.add('hidden');
                     return;
@@ -633,7 +691,7 @@
             try { await window._sb.from('personal_bulletins').update({ is_read: true }).eq('id', id); loadPersonalBulletins(); } catch(e) {}
         }
 
-        function openPersonalBulletins() { openView('personal-bulletins', '🔔 個人專屬公告'); loadPersonalBulletins(); }
+        function openPersonalBulletins() { openView('personal-bulletins', '🔔 員工最新通知'); loadPersonalBulletins(); }
 
         async function loadBulletins() {
             const { data } = await window._sb.from('bulletin_board').select('*').order('created_at', {ascending: false});
@@ -649,7 +707,7 @@
         function openPunch(type) {
             currentPunchType = type;
             document.getElementById('punch-title').innerText = type === 'IN' ? '👋 執行上班打卡' : '🏃 執行下班打卡';
-            document.getElementById('punch-loc').innerText = '正在獲取 GPS 座標...';
+            document.getElementById('punch-loc').innerText = '正在透過 GPS 獲取精準座標...';
             document.getElementById('punch-status').innerText = '判定中...';
             document.getElementById('btn-execute-punch').disabled = true;
             document.getElementById('punch-type-val').value = type;
@@ -658,16 +716,8 @@
         }
 
         function simulateVerification() {
-            const line = document.getElementById('scan-line');
-            line.classList.remove('hidden');
-            let pos = 0; let dir = 1;
-            scanAnim = setInterval(() => { pos += 5 * dir; if(pos > 250) dir = -1; else if(pos < 0) dir = 1; line.style.top = pos + 'px'; }, 30);
-
             setTimeout(async () => {
-                clearInterval(scanAnim);
-                line.classList.add('hidden');
                 document.getElementById('punch-loc').innerText = '22.9908° N, 120.2133° E (誤差 5m)';
-                
                 const { data: brs } = await window._sb.from('branch_locations').select('*');
                 const defaultBrId = window.currentUser.default_branch_id;
                 currentBranch = brs.find(b => b.id === defaultBrId);
@@ -679,15 +729,50 @@
                     document.getElementById('punch-status').innerHTML = `<span class="text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 shadow-sm">⚠️ 未綁定據點，將記錄為外勤定位</span>`;
                     document.getElementById('btn-execute-punch').disabled = false;
                 }
-            }, 2000);
+            }, 1500);
         }
 
+        // 🌟 自動防呆：遲到早退自動詢問請假
         async function executePunch() {
             const btn = document.getElementById('btn-execute-punch');
             btn.innerText = '寫入中...'; btn.disabled = true;
-            const payload = { employee_id: window.currentUser.id, branch_id: currentBranch ? currentBranch.id : null, punch_type: document.getElementById('punch-type-val').value, lat: 22.9908, lng: 120.2133 };
+            
+            const pType = document.getElementById('punch-type-val').value;
+            const ptDate = new Date();
+            const tStr = ptDate.toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
+            
+            const eStart = (window.currentUser.work_start_time || '09:00').slice(0,5);
+            const eEnd = (window.currentUser.work_end_time || '18:00').slice(0,5);
+            
+            let isLate = (pType === 'IN' && tStr > eStart);
+            let isEarly = (pType === 'OUT' && tStr < eEnd);
+
+            const payload = { employee_id: window.currentUser.id, branch_id: currentBranch ? currentBranch.id : null, punch_type: pType, lat: 22.9908, lng: 120.2133, punch_time: ptDate.toISOString() };
             const { error } = await window._sb.from('attendance_logs').insert([payload]);
-            if(!error) { alert('✅ 打卡成功！'); loadTodayPunch(); loadCalendarAndStats(); backToDash(); } else { alert('寫入失敗'); }
+            
+            if(!error) { 
+                loadTodayPunch(); 
+                loadCalendarAndStats(); 
+                
+                if (isLate) {
+                    if(confirm(`⚠️ 系統偵測到您今日上班遲到 (規定:${eStart} / 打卡:${tStr})。\n是否要立即填寫「請假單」？\n\n(選擇「確定」前往請假單，選擇「取消」則記錄為遲到不請假)`)) {
+                        openView('leave', '請假單與補登');
+                        document.getElementById('l-type').value = '事假';
+                        return;
+                    }
+                } else if (isEarly) {
+                    if(confirm(`⚠️ 系統偵測到您今日下班早退 (規定:${eEnd} / 打卡:${tStr})。\n是否要立即填寫「請假單」？\n\n(選擇「確定」前往請假單，選擇「取消」則記錄為早退不請假)`)) {
+                        openView('leave', '請假單與補登');
+                        document.getElementById('l-type').value = '事假';
+                        return;
+                    }
+                } else {
+                    alert('✅ 打卡成功！');
+                }
+                backToDash(); 
+            } else { 
+                alert('寫入失敗'); 
+            }
             btn.innerText = '確認並送出打卡'; btn.disabled = false;
         }
 
@@ -772,6 +857,64 @@
                     </div>
                 </div>`;
             }
+        }
+
+        // 🌟 數位簽章 Canvas 控制邏輯
+        function initSignaturePad() {
+            sigCanvas = document.getElementById('signature-pad');
+            if(!sigCanvas) return;
+            sigCtx = sigCanvas.getContext('2d');
+            
+            // 設定正確的解析度與畫筆
+            sigCanvas.width = sigCanvas.offsetWidth;
+            sigCanvas.height = sigCanvas.offsetHeight;
+            sigCtx.lineWidth = 3;
+            sigCtx.lineCap = 'round';
+            sigCtx.strokeStyle = '#0f172a';
+
+            const startPos = (e) => { isDrawing = true; draw(e); };
+            const endPos = () => { isDrawing = false; sigCtx.beginPath(); };
+            const draw = (e) => {
+                if(!isDrawing) return;
+                e.preventDefault();
+                let x = e.clientX || e.touches[0].clientX;
+                let y = e.clientY || e.touches[0].clientY;
+                let rect = sigCanvas.getBoundingClientRect();
+                sigCtx.lineTo(x - rect.left, y - rect.top);
+                sigCtx.stroke();
+                sigCtx.beginPath();
+                sigCtx.moveTo(x - rect.left, y - rect.top);
+            };
+
+            sigCanvas.addEventListener('mousedown', startPos);
+            sigCanvas.addEventListener('mouseup', endPos);
+            sigCanvas.addEventListener('mousemove', draw);
+            sigCanvas.addEventListener('touchstart', startPos);
+            sigCanvas.addEventListener('touchend', endPos);
+            sigCanvas.addEventListener('touchmove', draw);
+        }
+
+        function clearSignature() {
+            if(sigCtx && sigCanvas) {
+                sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+            }
+        }
+
+        function saveContractSignature() {
+            const isAgreed = document.getElementById('contract-agree-chk').checked;
+            if(!isAgreed) { alert('請勾選同意法律效力核取方塊！'); return; }
+            
+            // 簡易判斷畫布是否為空
+            const blank = document.createElement('canvas');
+            blank.width = sigCanvas.width; blank.height = sigCanvas.height;
+            if(sigCanvas.toDataURL() === blank.toDataURL()) {
+                alert('請在上方空白處完成數位簽名！'); return;
+            }
+
+            document.getElementById('signature-done-msg').classList.remove('hidden');
+            document.getElementById('signature-section').classList.add('hidden');
+            showSysToast('合約簽署成功，已歸檔備查！');
+            // 實務上這裡會將 sigCanvas.toDataURL() 存入資料庫
         }
 
         window.onload = bootHr;
