@@ -292,9 +292,7 @@
                         <p class="text-center font-bold text-slate-400 py-10">合約內容載入中...</p>
                     </div>
 
-                    <div id="cv-signature-action-area">
-                        </div>
-
+                    <div id="cv-signature-action-area"></div>
                 </div>
             </div>
 
@@ -316,8 +314,6 @@
         
         let sigCanvas, sigCtx, isDrawing = false;
         let currentPayrollData = null; 
-        
-        // 記錄從資料庫抓下來的最新合約版本與內容
         let latestContractVersion = "V1.0";
         let latestContractContent = "";
 
@@ -346,7 +342,6 @@
 
                 document.getElementById('dash-shift').innerText = `${(window.currentUser.work_start_time||'09:00').slice(0,5)} ~ ${(window.currentUser.work_end_time||'18:00').slice(0,5)}`;
 
-                // 基本資料預載
                 document.getElementById('cv-name').innerText = window.currentUser.full_name || '--';
                 document.getElementById('cv-idnum').innerText = window.currentUser.id_number || '--';
                 document.getElementById('cv-phone').innerText = window.currentUser.phone || '--';
@@ -399,11 +394,9 @@
             if(scanAnim) clearInterval(scanAnim);
         }
 
-        // 🌟 點擊合約版位時，動態判斷是否需要重新簽署
         async function openContractView() { 
             openView('contract', '基本資料與合約'); 
             
-            // 抓取公司最新合約設定
             try {
                 const { data } = await window._sb.from('company_forms').select('*').eq('form_type', 'employment_contract').single();
                 if(data) {
@@ -416,12 +409,9 @@
             document.getElementById('cv-contract-content').innerHTML = latestContractContent || '<p>合約載入中...</p>';
 
             const actionArea = document.getElementById('cv-signature-action-area');
-            
-            // 比較員工已簽署版本與最新版本
             const empSignedVersion = window.currentUser.signed_contract_version || '未簽署';
             
             if (empSignedVersion === latestContractVersion && window.currentUser.signature_data) {
-                // ✅ 版本一致，鎖定簽名板，顯示已簽署狀態
                 const signDate = new Date(window.currentUser.nda_signed_at).toLocaleString('zh-TW');
                 actionArea.innerHTML = `
                     <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 text-center">
@@ -435,7 +425,6 @@
                     </div>
                 `;
             } else {
-                // ⚠️ 版本不一致或是未簽署，顯示警告並要求重新簽署
                 let alertMsg = empSignedVersion === '未簽署' ? '您尚未完成合約簽署，請立即補簽。' : `公司合約已更新至 ${latestContractVersion} (您舊版為 ${empSignedVersion})，請重新確認並簽署。`;
                 
                 actionArea.innerHTML = `
@@ -458,7 +447,6 @@
                     <button onclick="updateContractSignature()" id="btn-update-sig" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition text-base tracking-widest">確認簽署並更新合約</button>
                 `;
                 
-                // 動態產生 Canvas 後，需要稍微延遲初始化
                 setTimeout(() => {
                     initSignaturePad();
                     if(sigCanvas) {
@@ -612,7 +600,7 @@
                 if (dayD.leave) { 
                     status = { text: dayD.leave.replace('(補登)',''), col: 'text-sky-600 bg-sky-50 border-sky-200' }; 
                 } else if (!dayD.in && !dayD.out) {
-                    if (dayD.isPast && !dayD.isWeekend && !dayD.holiday) status = { text: '曠職', col: 'text-white bg-red-600 border-red-700 animate-pulse' };
+                    if (dayD.isPast && !dayD.isWeekend && !dayD.holiday) status = { text: '曠職', col: 'text-white bg-red-600 border-red-700 animate-pulse shadow-md' };
                     else status = { text: '無紀錄', col: 'text-slate-400 bg-slate-100 border-slate-200' };
                 } else if (dayD.in && !dayD.out) {
                     if (dayD.isPast && dStr !== new Date().toLocaleDateString('en-CA')) status = { text: '忘記打卡', col: 'text-amber-600 bg-amber-50 border-amber-200' };
@@ -866,6 +854,7 @@
             }
         }
 
+        // 🌟 強化請假 Webhook 內容，給老闆清楚的審核提示
         async function submitLeave(e) {
             e.preventDefault();
             const t = document.getElementById('l-type').value;
@@ -890,8 +879,13 @@
             try {
                 const { error } = await window._sb.from('leave_requests').insert([p]);
                 if(error) throw error;
+                
                 showSysToast('申請已送出，等待主管核准！'); 
-                window._sb.functions.invoke('line-webhook', { body: { action: 'leave_request', name: window.currentUser.full_name, type: t, reason: res } }).catch(err=>{});
+                
+                // 🌟 新增詳盡的老闆通知語句
+                const bossMsg = `⚠️ 【待辦審核通知】\n員工「${window.currentUser.full_name}」送出了 ${t} 申請。\n事由：${res}\n\n👉 系統提示：請登入後台「待辦審核」進行【核准】或【核駁】。`;
+                window._sb.functions.invoke('line-webhook', { body: { action: 'leave_request', name: window.currentUser.full_name, type: t, reason: res, message: bossMsg } }).catch(err=>{});
+                
                 e.target.reset(); toggleLeaveType(); backToDash(); 
             } catch(error) { 
                 alert('送出失敗: ' + (error.message || '資料庫寫入錯誤')); 
@@ -1056,10 +1050,12 @@
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = html;
             tempDiv.style.padding = '20px';
-            html2pdf().set(opt).from(tempDiv).save().then(() => { showSysToast('薪資單 PDF 下載完成！'); });
+            html2pdf().set(opt).from(tempDiv).save().then(() => {
+                showSysToast('薪資單 PDF 下載完成！');
+            });
         }
 
-        // 🌟 判斷並執行合約重新簽署
+        // 判斷並執行合約重新簽署
         async function updateContractSignature() {
             const isAgreed = document.getElementById('contract-agree-chk').checked;
             if(!isAgreed) { alert('請勾選同意法律效力核取方塊！'); return; }
@@ -1088,7 +1084,7 @@
                 window.currentUser.nda_signed_at = p.nda_signed_at;
 
                 showSysToast('合約已成功簽署更新！');
-                openContractView(); // 重新渲染畫面以鎖定簽名板
+                openContractView(); 
             } catch(e) {
                 alert('更新失敗: ' + (e.message || '資料庫錯誤'));
                 btn.innerText = '確認簽署並更新合約'; btn.disabled = false;
