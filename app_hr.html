@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { background: #e2e8f0; font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; padding-bottom: 80px;}
         #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; }
@@ -21,7 +22,6 @@
         .punch-btn { position: relative; overflow: hidden; transition: all 0.2s; }
         .punch-btn:active { transform: scale(0.95); }
         
-        /* 日曆專用樣式 */
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
         .cal-header { font-size: 10px; font-weight: 900; color: #64748b; padding: 4px 0; }
         .cal-day { font-size: 12px; font-weight: bold; padding: 8px 0; border-radius: 8px; background: white; border: 1px solid #f1f5f9; transition: all 0.2s;}
@@ -30,10 +30,19 @@
         .cal-day.today { background: #38bdf8; color: white; border-color: #0ea5e9; font-weight: 900; box-shadow: 0 2px 5px rgba(14,165,233,0.3);}
         .cal-day.empty { background: transparent; border-color: transparent; }
         .holiday-badge { font-size: 8px; display: block; margin-top: 1px; line-height: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 2px;}
+
+        @media print {
+            body * { visibility: hidden; }
+            #salary-print-zone, #salary-print-zone * { visibility: visible; }
+            #salary-print-zone { display: block !important; position: absolute; left: 0; top: 0; width: 100vw; background: white; z-index: 9999; padding: 20px;}
+            #app-container, nav { display: none !important; }
+            .print-break { page-break-after: always; }
+        }
     </style>
 </head>
 <body class="text-slate-800 relative">
 
+    <div id="salary-print-zone" style="display:none; font-family: 'Microsoft JhengHei', sans-serif;"></div>
     <div id="toast-container" class="fixed bottom-24 left-4 z-[9999] flex flex-col space-y-3 pointer-events-none"></div>
 
     <div id="loading-screen" class="fixed inset-0 bg-slate-900 z-[9999] flex flex-col items-center justify-center text-white transition-opacity duration-500">
@@ -169,10 +178,10 @@
                         <span class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-1 rounded font-black border border-indigo-200" id="stat-month-label">載入中</span>
                     </h3>
                     <div class="grid grid-cols-5 gap-1 text-center bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-inner">
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">特休</p><p class="font-black text-sky-600 text-xs sm:text-sm" id="sm-ann">--</p></div>
+                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">特休</p><p class="font-black text-sky-600 text-xs sm:text-sm whitespace-nowrap" id="sm-ann">--</p></div>
                         <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">事假</p><p class="font-black text-amber-600 text-xs sm:text-sm" id="sm-per">--</p></div>
                         <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">病假</p><p class="font-black text-amber-600 text-xs sm:text-sm" id="sm-sic">--</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">遲到</p><p class="font-black text-red-500 text-xs sm:text-sm" id="sm-lat">--</p></div>
+                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">遲/早</p><p class="font-black text-red-500 text-xs sm:text-sm" id="sm-lat">--</p></div>
                         <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">計點</p><p class="font-black text-red-600 text-xs sm:text-sm" id="sm-pnt">--點</p></div>
                     </div>
 
@@ -184,7 +193,7 @@
                         <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">未休特休</p><p class="font-black text-emerald-600 text-xs sm:text-sm whitespace-nowrap" id="sy-ann">--</p></div>
                         <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">事假</p><p class="font-black text-amber-600 text-xs sm:text-sm" id="sy-per">--</p></div>
                         <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">病假</p><p class="font-black text-amber-600 text-xs sm:text-sm" id="sy-sic">--</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">遲到</p><p class="font-black text-red-500 text-xs sm:text-sm" id="sy-lat">--</p></div>
+                        <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">遲/早</p><p class="font-black text-red-500 text-xs sm:text-sm" id="sy-lat">--</p></div>
                         <div><p class="text-[9px] font-bold text-slate-500 mb-0.5">計點</p><p class="font-black text-red-600 text-xs sm:text-sm" id="sy-pnt">--點</p></div>
                     </div>
                 </div>
@@ -199,8 +208,7 @@
                         <div class="cal-grid cal-header mb-1 border-b border-slate-200 pb-2">
                             <div class="text-red-500">日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div class="text-red-500">六</div>
                         </div>
-                        <div id="calendar-days" class="cal-grid">
-                            </div>
+                        <div id="calendar-days" class="cal-grid"></div>
                     </div>
 
                     <h4 class="text-[11px] font-black text-slate-500 mb-3 border-b border-slate-200 pb-1">📜 該月每日出勤狀態明細</h4>
@@ -243,16 +251,21 @@
 
             <div id="view-salary" class="view-panel space-y-4">
                 <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-emerald-500">
-                    <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2">💰</span>我的薪資單</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2">💰</span>我的薪資單</h3>
+                        <button onclick="downloadSalaryPDF()" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow-sm transition active:scale-95">📥 下載 PDF</button>
+                    </div>
+                    
                     <div class="flex space-x-2 mb-4"><input type="month" id="sal-month" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-emerald-500" onchange="loadSalary()"></div>
-                    <div id="ui-salary-detail" class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner min-h-[200px] flex flex-col justify-center">
+                    
+                    <div id="ui-salary-detail" class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner min-h-[200px] flex flex-col justify-center relative overflow-hidden">
                         <p class="text-center text-xs font-bold text-slate-400">請選擇月份查詢</p>
                     </div>
                 </div>
             </div>
 
             <div id="view-contract" class="view-panel space-y-4">
-                <div class="glass-card p-5 md:p-6 rounded-[2rem] shadow-sm border-t-4 border-slate-700">
+                <div class="glass-card p-5 md:p-6 rounded-[2rem] shadow-sm border-t-4 border-slate-700 relative pb-10">
                     <h3 class="font-black text-slate-800 text-lg mb-5 flex items-center border-b border-slate-100 pb-3"><span class="mr-2 text-xl">🪪</span>基本資料與聘雇合約</h3>
                     
                     <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner">
@@ -274,58 +287,59 @@
                     </div>
 
                     <div class="space-y-5 bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-xs text-slate-700 leading-relaxed text-justify">
-                        <h4 class="text-center font-black text-base text-slate-900 mb-4 border-b border-slate-200 pb-2">勞動契約書</h4>
+                        <h4 class="text-center font-black text-base text-slate-900 mb-4 border-b border-slate-200 pb-2">勞動契約與管理規章</h4>
                         
-                        <p class="font-bold">立合約書人（以下簡稱甲方）與 員工（以下簡稱乙方）。雙方同意依勞動基準法及相關法令規定，訂定下列條款，以資共同遵守：</p>
+                        <p class="font-bold text-sky-800 bg-sky-50 p-2 rounded-md">立合約書人（以下簡稱甲方）與 員工（以下簡稱乙方）。雙方同意依勞動基準法及相關法令規定，訂定下列條款，以資共同遵守：</p>
 
                         <div class="mt-4">
-                            <h5 class="font-black text-slate-800 mb-1">第一條（職務與工作地點）</h5>
+                            <h5 class="font-black text-slate-800 mb-1 border-l-2 border-slate-400 pl-1">第一條（職務與工作地點）</h5>
                             <p>乙方同意受甲方僱用，擔任約定之職務。工作地點為甲方指定之營業據點或外勤指派地點。甲方得視業務需要，在不違反勞動法令之範圍內調動乙方之工作地點與職務。</p>
                         </div>
 
                         <div class="mt-4">
-                            <h5 class="font-black text-slate-800 mb-1">第二條（工作時間與考勤打卡）</h5>
+                            <h5 class="font-black text-slate-800 mb-1 border-l-2 border-slate-400 pl-1">第二條（工作時間與考勤打卡）</h5>
                             <p>1. 乙方應依甲方規定之班表出勤，並使用本系統之 GPS 定位功能確實驗證打卡。</p>
-                            <p class="text-amber-700 font-bold bg-amber-50 px-2 py-1 rounded my-1">2. 遲到寬限規定：每月給予 3 次遲到寬限期，每次寬限 10 分鐘。超過寬限次數或時間者，依公司考勤辦法扣薪與計點。</p>
+                            <p class="text-amber-700 font-bold bg-amber-50 px-2 py-1 rounded my-1 shadow-sm border border-amber-100">2. 遲到寬限規定：每月給予 3 次遲到寬限期，每次寬限 10 分鐘。超過寬限次數或時間者，依公司考勤辦法扣薪與計點。</p>
                             <p>3. 忘記打卡、遲到、早退之懲處，依甲方內部考勤管理辦法辦理，並於系統記錄計點（單位：點）。</p>
                         </div>
 
-                        <div class="mt-4 bg-red-50 p-3 rounded-lg border border-red-100">
-                            <h5 class="font-black text-red-800 mb-1 text-[13px]">第三條（請假與曠職規範）⚠️</h5>
-                            <p class="mb-1 text-red-700 font-bold">1. 乙方應依規定時間出勤。未經請假或假單未獲核准而缺勤者，視為曠職。曠職期間不給薪。</p>
-                            <p class="text-red-600 font-black">2. 曠職解僱條款：無正當理由繼續曠職三日，或一個月內曠職達六日者，甲方得依《勞動基準法》第十二條規定，不經預告逕行終止勞動契約，且不發給資遣費。</p>
+                        <div class="mt-4 bg-red-50 p-3 rounded-lg border border-red-200 shadow-inner">
+                            <h5 class="font-black text-red-800 mb-2 text-[13px] flex items-center"><span class="mr-1">⚠️</span>第三條（請假與曠職規範）</h5>
+                            <p class="mb-1.5 text-red-700 font-bold leading-normal">1. 乙方應依規定時間出勤。未經請假或假單未獲核准而缺勤者，視為曠職。曠職期間不給薪。</p>
+                            <p class="text-red-700 font-black leading-normal border-t border-red-200 pt-1.5">2. 曠職解僱條款：無正當理由繼續曠職三日，或一個月內曠職達六日者，甲方得依《勞動基準法》第十二條規定，不經預告逕行終止勞動契約，且不發給資遣費。</p>
+                            <p class="text-red-700 font-bold mt-1.5 border-t border-red-200 pt-1.5">3. 早退定義：未經請假程序且無正當理由，提前離開工作崗位者，依規定扣薪並記點 1 點。</p>
                         </div>
 
                         <div class="mt-4">
-                            <h5 class="font-black text-slate-800 mb-1">第四條（薪資計算與發放）</h5>
+                            <h5 class="font-black text-slate-800 mb-1 border-l-2 border-slate-400 pl-1">第四條（薪資計算與發放）</h5>
                             <p>1. 薪資結構：依雙方議定之月薪或時薪計給。每月發薪日將薪資匯入乙方指定帳戶。</p>
-                            <p class="text-indigo-700 font-bold bg-indigo-50 px-2 py-1 rounded my-1">2. 計算基準：月薪制者，日薪為月薪除以30日計算，時薪為日薪除以8小時計算。</p>
+                            <p class="text-indigo-700 font-bold bg-indigo-50 px-2 py-1 rounded my-1 shadow-sm border border-indigo-100">2. 計算基準：月薪制者，日薪為月薪除以 30 日計算，時薪為日薪除以 8 小時計算。</p>
                             <p>3. 請假扣薪與給薪規定：</p>
-                            <ul class="list-disc pl-4 mt-1 space-y-1 font-bold text-slate-600">
-                                <li>事假：期間不給薪。</li>
-                                <li>病假：一年內未超過三十日部分，工資折半發給。</li>
-                                <li>公假、特休：工資照給。</li>
-                                <li>颱風假：因天災停班，依政府公告辦理，未出勤日不給薪（扣除當日薪資）。</li>
+                            <ul class="list-disc pl-5 mt-1 space-y-1 font-bold text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                <li><span class="text-slate-800">事假：</span>期間不給薪。</li>
+                                <li><span class="text-slate-800">病假：</span>一年內未超過三十日部分，工資折半發給。</li>
+                                <li><span class="text-slate-800">公假、特休：</span>工資照給。</li>
+                                <li><span class="text-slate-800">颱風假：</span>因天災停班，依政府公告辦理，未出勤日不給薪（扣除當日薪資）。</li>
                             </ul>
                         </div>
 
                         <div class="mt-4">
-                            <h5 class="font-black text-red-800 mb-1">第五條（考勤與獎懲管理辦法）</h5>
+                            <h5 class="font-black text-red-800 mb-1 border-l-2 border-red-500 pl-1">第五條（考勤與獎懲管理辦法）</h5>
                             <p>1. 遲到、早退、忘記打卡、未依規定請假或違反公司規定者，將依公司內部辦法予以「計點」處分。</p>
-                            <p class="font-bold text-red-600">2. 員工之日常考勤表現與累計計點，將直接影響每月獎金發放額度及年終考核評估。</p>
+                            <p class="font-black text-red-600">2. 員工之日常考勤表現與累計計點，將直接影響每月獎金發放額度及年終考核評估。</p>
                         </div>
 
                         <div class="mt-4">
-                            <h5 class="font-black text-slate-800 mb-1">第六條（保密協定與競業禁止）</h5>
+                            <h5 class="font-black text-slate-800 mb-1 border-l-2 border-slate-400 pl-1">第六條（保密協定與競業禁止）</h5>
                             <p>乙方於任職期間及離職後，對於所知悉之甲方業務機密（包含但不限於產品配方、專利技術、供應商與客戶名單、系統架構及營運數據等），負有絕對保密義務。未經甲方書面同意，絕不洩漏或交付任何第三方。如有違反，乙方願負一切法律與損害賠償責任。</p>
                         </div>
 
                         <div class="mt-4">
-                            <h5 class="font-black text-slate-800 mb-1">第七條（離職與交接）</h5>
+                            <h5 class="font-black text-slate-800 mb-1 border-l-2 border-slate-400 pl-1">第七條（離職與交接）</h5>
                             <p>乙方自請離職時，應依勞動基準法規定期間預告甲方，並辦妥各項業務與資產交接手續後，始得離職。</p>
                         </div>
                         
-                        <p class="mt-6 font-bold text-center border-t border-slate-200 pt-4 text-sm text-slate-900">本人已詳細閱讀並完全同意上述聘僱合約與公司規章。</p>
+                        <p class="mt-6 font-black text-center border-t border-slate-200 pt-4 text-sm text-slate-800 bg-slate-100 p-2 rounded-lg">本人已詳細閱讀並完全同意上述聘僱合約與公司規章。</p>
                     </div>
 
                     <div class="mt-6" id="signature-section">
@@ -374,8 +388,10 @@
         let currentPunchType = ''; let currentBranch = null; let scanAnim = null;
         let twHolidays = {}; 
         
+        // Canvas Variables
         let sigCanvas, sigCtx;
         let isDrawing = false;
+        let currentPayrollData = null; // 用於 PDF 生成
 
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
@@ -401,9 +417,7 @@
                 const now = new Date();
                 document.getElementById('dash-date').innerText = now.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'long' });
                 document.getElementById('dash-time').innerText = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
-                setInterval(() => {
-                    document.getElementById('dash-time').innerText = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
-                }, 1000);
+                setInterval(() => { document.getElementById('dash-time').innerText = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }); }, 1000);
 
                 document.getElementById('dash-shift').innerText = `${(window.currentUser.work_start_time||'09:00').slice(0,5)} ~ ${(window.currentUser.work_end_time||'18:00').slice(0,5)}`;
 
@@ -466,13 +480,14 @@
                 if(sigCanvas) {
                     const rect = sigCanvas.parentElement.getBoundingClientRect();
                     sigCanvas.width = rect.width;
-                    sigCanvas.height = 128;
+                    sigCanvas.height = 128; // h-32
                 }
             }, 100);
         }
         
         function openStatsAndCalendar() { openView('calendar', '打卡與行事曆'); renderCalendarUI(); }
 
+        // 🌟 統計大盤計算 (支援天數+小時)
         async function loadCalendarAndStats() {
             const now = new Date();
             const currYear = now.getFullYear();
@@ -496,16 +511,18 @@
             const { data: logs } = await window._sb.from('attendance_logs').select('*').eq('employee_id', window.currentUser.id).gte('punch_time', sTY.toISOString()).lte('punch_time', eTY.toISOString());
             const { data: leaves } = await window._sb.from('leave_requests').select('*').eq('employee_id', window.currentUser.id).eq('status', '核准').gte('start_time', sTY.toISOString()).lte('end_time', eTY.toISOString());
 
-            let yPer = 0, ySic = 0, yLat = 0;
-            let mPer = 0, mSic = 0, mLat = 0, mAnn = 0;
+            let yPer = 0, ySic = 0, yLat = 0, yEar = 0;
+            let mPer = 0, mSic = 0, mLat = 0, mEar = 0, mAnn = 0;
 
             const targetStart = window.currentUser.work_start_time ? window.currentUser.work_start_time.slice(0,5) : '09:00';
+            const targetEnd = window.currentUser.work_end_time ? window.currentUser.work_end_time.slice(0,5) : '18:00';
 
             if(leaves) {
                 leaves.forEach(l => {
                     let ls = new Date(l.start_time); let le = new Date(l.end_time);
                     let hrs = Math.ceil((le - ls) / (1000 * 60 * 60));
                     if(hrs < 0) hrs = 0;
+                    
                     if(l.leave_type === '事假') { yPer += hrs; if(ls.getMonth()+1 === currMonth) mPer += hrs; }
                     if(l.leave_type === '病假') { ySic += hrs; if(ls.getMonth()+1 === currMonth) mSic += hrs; }
                     if(l.leave_type === '特休') { if(ls.getMonth()+1 === currMonth) mAnn += hrs; }
@@ -514,33 +531,39 @@
 
             if(logs) {
                 let latSetY = new Set(); let latSetM = new Set();
+                let earSetY = new Set(); let earSetM = new Set();
                 logs.forEach(l => {
-                    if(l.punch_type === 'IN') {
-                        const pt = new Date(l.punch_time);
-                        const tStr = pt.toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
-                        const dStr = pt.toLocaleDateString('en-CA');
-                        if(tStr > targetStart) {
-                            latSetY.add(dStr);
-                            if(pt.getMonth()+1 === currMonth) latSetM.add(dStr);
-                        }
+                    const pt = new Date(l.punch_time);
+                    const tStr = pt.toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
+                    const dStr = pt.toLocaleDateString('en-CA');
+                    
+                    if(l.punch_type === 'IN' && tStr > targetStart) {
+                        latSetY.add(dStr);
+                        if(pt.getMonth()+1 === currMonth) latSetM.add(dStr);
+                    }
+                    if(l.punch_type === 'OUT' && tStr < targetEnd) {
+                        earSetY.add(dStr);
+                        if(pt.getMonth()+1 === currMonth) earSetM.add(dStr);
                     }
                 });
                 yLat = latSetY.size; mLat = latSetM.size;
+                yEar = earSetY.size; mEar = earSetM.size;
             }
 
             let pnts = window.currentUser.penalty_points || 0;
             document.getElementById('sm-ann').innerText = Math.floor(mAnn/8)+'天'+(mAnn%8)+'h';
             document.getElementById('sm-per').innerText = mPer + 'h';
             document.getElementById('sm-sic').innerText = mSic + 'h';
-            document.getElementById('sm-lat').innerText = mLat + '次';
+            document.getElementById('sm-lat').innerText = (mLat + mEar) + '次'; // 合併遲到早退次數
             document.getElementById('sm-pnt').innerText = pnts + '點';
             
             document.getElementById('sy-per').innerText = yPer + 'h';
             document.getElementById('sy-sic').innerText = ySic + 'h';
-            document.getElementById('sy-lat').innerText = yLat + '次';
+            document.getElementById('sy-lat').innerText = (yLat + yEar) + '次';
             document.getElementById('sy-pnt').innerText = pnts + '點';
         }
 
+        // 🌟 行事曆與狀態渲染 (超強出勤狀態判定)
         async function renderCalendarUI() {
             const mStr = document.getElementById('cal-month-picker').value;
             if(!mStr) return;
@@ -558,6 +581,7 @@
             const targetStart = window.currentUser.work_start_time ? window.currentUser.work_start_time.slice(0,5) : '09:00';
             const targetEnd = window.currentUser.work_end_time ? window.currentUser.work_end_time.slice(0,5) : '18:00';
 
+            // 構建每日資料矩陣
             let daysData = {};
             const totalDays = eT.getDate();
             for(let i=1; i<=totalDays; i++) {
@@ -590,23 +614,26 @@
                 });
             }
 
+            // 渲染明細清單
             const listEl = document.getElementById('ui-history-list');
             let listHtml = '';
             
+            // 從最後一天往前印
             for(let i=totalDays; i>=1; i--) {
                 let dDate = new Date(year, month - 1, i);
                 let dStr = dDate.toLocaleDateString('en-CA');
                 let dayD = daysData[dStr];
                 
-                if(!dayD.isPast && dStr !== new Date().toLocaleDateString('en-CA')) continue;
+                if(!dayD.isPast && dStr !== new Date().toLocaleDateString('en-CA')) continue; // 未來的不用印狀態
 
                 let status = { text: '正常', col: 'text-emerald-600 bg-emerald-50 border-emerald-200' };
                 let extraBadge = '';
 
+                // 判斷邏輯：正常、特休、事假、病假、公假、颱風假、遲到、早退、曠職、補打卡、加班
                 if (dayD.leave) { 
                     status = { text: dayD.leave.replace('(補登)',''), col: 'text-sky-600 bg-sky-50 border-sky-200' }; 
                 } else if (!dayD.in && !dayD.out) {
-                    if (dayD.isPast && !dayD.isWeekend && !dayD.holiday) status = { text: '曠職', col: 'text-white bg-red-600 border-red-700 animate-pulse' };
+                    if (dayD.isPast && !dayD.isWeekend && !dayD.holiday) status = { text: '曠職', col: 'text-white bg-red-600 border-red-700 animate-pulse shadow-md' };
                     else status = { text: '無紀錄', col: 'text-slate-400 bg-slate-100 border-slate-200' };
                 } else if (dayD.in && !dayD.out) {
                     if (dayD.isPast && dStr !== new Date().toLocaleDateString('en-CA')) status = { text: '忘記打卡', col: 'text-amber-600 bg-amber-50 border-amber-200' };
@@ -615,6 +642,7 @@
                     if (dayD.in > targetStart) status = { text: '遲到', col: 'text-red-600 bg-red-50 border-red-200' };
                     if (dayD.out < targetEnd) status = { text: '早退', col: 'text-red-600 bg-red-50 border-red-200' };
                     
+                    // 加班判定：下班時間超過應下班時間 1 小時
                     let outHr = parseInt((dayD.out||'00:00').slice(0,2));
                     let endHr = parseInt(targetEnd.slice(0,2));
                     if(outHr > endHr) { extraBadge += `<span class="text-[9px] font-black px-1.5 py-0.5 rounded border text-indigo-600 bg-indigo-50 border-indigo-200 ml-1">加班</span>`; }
@@ -642,6 +670,7 @@
             if(!listHtml) listHtml = '<p class="text-center text-xs font-bold text-slate-400 py-4 border border-dashed border-slate-200 rounded-xl">本月尚無出勤紀錄</p>';
             listEl.innerHTML = listHtml;
 
+            // 渲染月曆網格
             const daysContainer = document.getElementById('calendar-days');
             let html = '';
             const firstDayIndex = sT.getDay();
@@ -696,7 +725,7 @@
                 const badge = document.getElementById('unread-bulletin-badge');
                 
                 if (!data || data.length === 0) {
-                    container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">目前無任何個人通知</p>';
+                    container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">目前無任何通知</p>';
                     document.getElementById('latest-p-bulletin').innerText = '目前無個人通知';
                     if(badge) badge.classList.add('hidden');
                     return;
@@ -774,7 +803,7 @@
             }, 1000); 
         }
 
-        // 🌟 遲到早退防呆與自動寫入個人公告
+        // 🌟 異常打卡防呆與自動扣點推播引擎
         async function executePunch() {
             const btn = document.getElementById('btn-execute-punch');
             btn.innerText = '寫入中...'; btn.disabled = true;
@@ -797,24 +826,20 @@
                 loadCalendarAndStats(); 
                 
                 if (isLate) {
-                    if(confirm(`⚠️ 系統偵測到您今日上班遲到 (規定:${eStart} / 打卡:${tStr})。\n是否要立即填寫「請假單」？\n\n(選擇「確定」前往請假單，選擇「取消」則記錄為遲到不請假)`)) {
+                    if(confirm(`⚠️ 系統偵測到您今日上班遲到 (規定:${eStart} / 打卡:${tStr})。\n是否要立即填寫「請假單」？\n\n(選擇「確定」前往請假單，選擇「取消」則記錄為遲到不請假，系統將自動扣點)`)) {
                         openView('leave', '請假單與補登');
                         document.getElementById('l-type').value = '事假';
                         return;
                     } else {
-                        // 自動發送遲到通知
-                        await window._sb.from('personal_bulletins').insert([{ employee_id: window.currentUser.id, title: '⚠️ 遲到紀錄通知', content: `您今日於 ${tStr} 上班打卡，已超過規定時間 ${eStart}，記錄為遲到。\n\n請注意考勤表現與計點將影響獎金發放與績效評估。` }]);
-                        alert('✅ 打卡成功！(已自動發送遲到通知)');
+                        await applyPenalty('遲到', `上班打卡遲到: ${tStr}`);
                     }
                 } else if (isEarly) {
-                    if(confirm(`⚠️ 系統偵測到您今日下班早退 (規定:${eEnd} / 打卡:${tStr})。\n是否要立即填寫「請假單」？\n\n(選擇「確定」前往請假單，選擇「取消」則記錄為早退不請假)`)) {
+                    if(confirm(`⚠️ 系統偵測到您今日下班早退 (規定:${eEnd} / 打卡:${tStr})。\n是否要立即填寫「請假單」？\n\n(選擇「確定」前往請假單，選擇「取消」則記錄為早退不請假，系統將自動扣點)`)) {
                         openView('leave', '請假單與補登');
                         document.getElementById('l-type').value = '事假';
                         return;
                     } else {
-                        // 自動發送早退通知
-                        await window._sb.from('personal_bulletins').insert([{ employee_id: window.currentUser.id, title: '⚠️ 早退紀錄通知', content: `您今日於 ${tStr} 下班打卡，早於規定時間 ${eEnd}，記錄為早退。\n\n請注意考勤表現與計點將影響獎金發放與績效評估。` }]);
-                        alert('✅ 打卡成功！(已自動發送早退通知)');
+                        await applyPenalty('早退', `下班打卡早退: ${tStr}`);
                     }
                 } else {
                     alert('✅ 打卡成功！');
@@ -825,6 +850,32 @@
                 alert('寫入失敗'); 
             }
             btn.innerText = '確認並送出打卡'; btn.disabled = false;
+        }
+
+        // 🌟 自動扣點與推播核心
+        async function applyPenalty(ruleName, detail) {
+            try {
+                // 1. 抓取規則分數
+                let pts = 1;
+                const { data: rule } = await window._sb.from('penalty_rules').select('points').eq('rule_name', ruleName).single();
+                if(rule) pts = rule.points;
+
+                // 2. 寫入員工最新通知
+                await window._sb.from('personal_bulletins').insert([{ 
+                    employee_id: window.currentUser.id, 
+                    title: `⚠️ 考勤異常記點通知 (${ruleName})`, 
+                    content: `您因【${detail}】產生考勤異常，未依規定請假。\n\n依公司管理辦法，已將您記點 ${pts} 點。\n累計計點將直接影響您的獎金發放與年終考核，請務必留意出勤狀況！` 
+                }]);
+
+                // 3. 寫入計點 log 並更新員工總點數
+                await window._sb.from('penalty_logs').insert([{ employee_id: window.currentUser.id, points: pts, reason: detail }]);
+                
+                let currentPts = window.currentUser.penalty_points || 0;
+                await window._sb.from('employees').update({ penalty_points: currentPts + pts }).eq('id', window.currentUser.id);
+                window.currentUser.penalty_points = currentPts + pts; // 更新本地
+
+                alert(`⚠️ 打卡成功，但因【${ruleName}】系統已自動發送警告通知與計點，請至首頁查看！`);
+            } catch(e) { console.error('Penalty error:', e); alert('打卡成功，但計點系統異常。'); }
         }
 
         function toggleLeaveType() {
@@ -843,7 +894,7 @@
             }
         }
 
-        // 🌟 修復請假單送出邏輯，並加入 Webhook 通知老闆
+        // 🌟 請假單送出邏輯 (強制捕捉錯誤與 Webhook)
         async function submitLeave(e) {
             e.preventDefault();
             const t = document.getElementById('l-type').value;
@@ -872,7 +923,7 @@
                 showSysToast('申請已送出，等待主管核准！'); 
                 
                 // 背景觸發 Webhook 通知老闆
-                window._sb.functions.invoke('line-webhook', { body: { action: 'leave_request', name: window.currentUser.full_name, type: t, reason: res } }).catch(err=>console.log(err));
+                window._sb.functions.invoke('line-webhook', { body: { action: 'leave_request', name: window.currentUser.full_name, type: t, reason: res } }).catch(err=>{});
 
                 e.target.reset(); 
                 toggleLeaveType(); 
@@ -903,9 +954,28 @@
             if(!data) {
                 container.innerHTML = `<div class="text-center"><span class="text-4xl mb-2 block opacity-30">📭</span><p class="text-xs font-bold text-slate-400">本月份薪資單尚未發放</p></div>`;
             } else {
+                currentPayrollData = data;
                 let yebHtml = ''; let ulpHtml = '';
                 if(data.year_end_bonus > 0) yebHtml = `<div class="flex justify-between items-center bg-amber-50 p-2.5 rounded-lg border border-amber-100"><span class="text-[10px] font-black text-amber-700">🎁 年終獎金</span><span class="text-sm font-black text-amber-600">+ ${data.year_end_bonus.toLocaleString()}</span></div>`;
                 if(data.unused_leave_pay > 0) ulpHtml = `<div class="flex justify-between items-center bg-sky-50 p-2.5 rounded-lg border border-sky-100"><span class="text-[10px] font-black text-sky-700">🏖️ 未休假折現</span><span class="text-sm font-black text-sky-600">+ ${data.unused_leave_pay.toLocaleString()}</span></div>`;
+
+                // 🌟 新增出勤明細版位
+                let attStatsHtml = '';
+                if (data.attendance_stats) {
+                    let st = data.attendance_stats;
+                    attStatsHtml = `
+                    <div class="space-y-2.5 border-t border-slate-200 pt-4 mt-2">
+                        <h4 class="text-[10px] font-black text-indigo-700 border-l-2 border-indigo-500 pl-2">當月出勤狀況</h4>
+                        <div class="grid grid-cols-3 gap-2 bg-indigo-50 p-3 rounded-lg border border-indigo-100 text-center text-xs font-bold text-indigo-800">
+                            <div>遲到<br><span class="text-sm font-black">${st.late||0}次</span></div>
+                            <div>早退<br><span class="text-sm font-black">${st.early||0}次</span></div>
+                            <div>曠職<br><span class="text-sm font-black text-red-600">${st.absent||0}日</span></div>
+                            <div>事假<br><span class="text-sm font-black">${st.per||0}h</span></div>
+                            <div>病假<br><span class="text-sm font-black">${st.sic||0}h</span></div>
+                            <div>計點<br><span class="text-sm font-black text-red-600">${st.pnt||0}點</span></div>
+                        </div>
+                    </div>`;
+                }
 
                 container.innerHTML = `
                 <div class="space-y-4">
@@ -925,11 +995,108 @@
                         <div class="flex justify-between items-center px-2"><span class="text-xs font-bold text-slate-600">二代健保補充保費</span><span class="text-sm font-black text-red-600">- ${data.second_gen_health.toLocaleString()}</span></div>
                         <div class="flex justify-between items-center px-2"><span class="text-xs font-bold text-slate-600">請假扣薪</span><span class="text-sm font-black text-red-600">- ${data.leave_deduction.toLocaleString()}</span></div>
                     </div>
+                    ${attStatsHtml}
                     <div class="bg-slate-100 p-3 rounded-xl mt-4 border border-slate-200">
                         <p class="text-[9px] font-bold text-slate-500 flex justify-between"><span>提撥勞退 6% (公司給付)</span><span class="font-black text-slate-700">${data.labor_pension.toLocaleString()}</span></p>
                     </div>
                 </div>`;
             }
+        }
+
+        // 🌟 薪資單 PDF 產出引擎
+        function downloadSalaryPDF() {
+            if(!currentPayrollData) { alert('請先查詢薪資單後再點擊下載！'); return; }
+            showSysToast('PDF 檔案生成中，請稍候...');
+            const d = currentPayrollData;
+            const m = document.getElementById('sal-month').value;
+            
+            let attHtml = '';
+            if (d.attendance_stats) {
+                let st = d.attendance_stats;
+                attHtml = `
+                <div style="margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;">
+                    <h4 style="font-size: 14px; font-weight: bold; color: #334155; margin-bottom: 10px;">當月出勤狀況</h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: center;">
+                        <tr style="background: #f1f5f9;">
+                            <th style="padding: 8px; border: 1px solid #e2e8f0;">遲到</th>
+                            <th style="padding: 8px; border: 1px solid #e2e8f0;">早退</th>
+                            <th style="padding: 8px; border: 1px solid #e2e8f0;">曠職</th>
+                            <th style="padding: 8px; border: 1px solid #e2e8f0;">事假</th>
+                            <th style="padding: 8px; border: 1px solid #e2e8f0;">病假</th>
+                            <th style="padding: 8px; border: 1px solid #e2e8f0;">計點</th>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold;">${st.late||0}次</td>
+                            <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold;">${st.early||0}次</td>
+                            <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold; color: red;">${st.absent||0}日</td>
+                            <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold;">${st.per||0}h</td>
+                            <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold;">${st.sic||0}h</td>
+                            <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold; color: red;">${st.pnt||0}點</td>
+                        </tr>
+                    </table>
+                </div>`;
+            }
+
+            const html = `
+                <div class="print-break" style="width: 100%; font-family: sans-serif; background: white; padding: 40px; color: #1e293b;">
+                    <div style="text-align: center; border-bottom: 4px solid #0f172a; padding-bottom: 15px; margin-bottom: 20px;">
+                        <h1 style="font-size: 28px; font-weight: 900; margin: 0; letter-spacing: 2px;">HYPASS 薪資明細單</h1>
+                        <p style="font-size: 14px; color: #64748b; margin-top: 5px; font-weight: bold;">PAYROLL SLIP</p>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px;">
+                        <p><strong>員工姓名：</strong>${window.currentUser.full_name}</p>
+                        <p><strong>結算月份：</strong>${m}</p>
+                    </div>
+
+                    <div style="text-align: center; background: #f8fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                        <p style="font-size: 12px; color: #64748b; margin-bottom: 5px;">實領總額</p>
+                        <h2 style="font-size: 36px; font-weight: 900; color: #0284c7; margin: 0;">NT$ ${d.total_net_pay.toLocaleString()}</h2>
+                    </div>
+
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 20px;">
+                        <thead style="background: #1e293b; color: white;">
+                            <tr><th style="padding: 10px; text-align: left;" colspan="2">應發項目</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">本薪</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: bold;">${d.base_pay.toLocaleString()}</td></tr>
+                            <tr><td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">獎金津貼</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: bold;">${d.bonus.toLocaleString()}</td></tr>
+                            ${d.year_end_bonus > 0 ? `<tr><td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">年終獎金</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: bold;">${d.year_end_bonus.toLocaleString()}</td></tr>` : ''}
+                            ${d.unused_leave_pay > 0 ? `<tr><td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">未休假折現</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: bold;">${d.unused_leave_pay.toLocaleString()}</td></tr>` : ''}
+                        </tbody>
+                    </table>
+
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 20px;">
+                        <thead style="background: #ef4444; color: white;">
+                            <tr><th style="padding: 10px; text-align: left;" colspan="2">應扣項目</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">勞健保費</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: bold; color: red;">- ${d.insurance_deduction.toLocaleString()}</td></tr>
+                            <tr><td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">二代健保</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: bold; color: red;">- ${d.second_gen_health.toLocaleString()}</td></tr>
+                            <tr><td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">請假扣薪</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: bold; color: red;">- ${d.leave_deduction.toLocaleString()}</td></tr>
+                        </tbody>
+                    </table>
+                    
+                    <p style="font-size: 12px; color: #64748b;">公司提撥勞退 6%：${d.labor_pension.toLocaleString()}</p>
+                    ${attHtml}
+                </div>
+            `;
+            
+            document.getElementById('salary-print-zone').innerHTML = html;
+            
+            const opt = {
+                margin:       [0.5, 0.5],
+                filename:     `HYPASS_${m}_薪資單_${window.currentUser.full_name}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            tempDiv.style.padding = '20px';
+            html2pdf().set(opt).from(tempDiv).save().then(() => {
+                showSysToast('薪資單 PDF 下載完成！');
+            });
         }
 
         // 數位簽章 Canvas 邏輯
