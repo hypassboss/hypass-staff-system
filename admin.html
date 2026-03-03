@@ -145,7 +145,7 @@
                     </div>
                     
                     <div class="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
-                        <div class="flex justify-between items-center mb-2"><h4 class="text-[10px] font-black text-indigo-800 tracking-widest">🤖 當月出勤分析 (將寫入明細)</h4><button onclick="updateAttendanceRate()" class="text-[9px] bg-indigo-200 text-indigo-800 px-2 py-1 rounded font-bold hover:bg-indigo-300 transition">刷新</button></div>
+                        <div class="flex justify-between items-center mb-2"><h4 class="text-[10px] font-black text-indigo-800 tracking-widest">🤖 當月出勤分析 (將寫入明細)</h4><button onclick="updateAttendanceRate()" class="text-[9px] bg-indigo-200 text-indigo-800 px-2 py-1 rounded font-bold hover:bg-indigo-300">刷新</button></div>
                         <div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-600 bg-white p-2 rounded-lg border border-indigo-100 shadow-sm mb-3"><div>病假<br><span id="sd-sick" class="text-indigo-600 text-sm font-black">0</span>h</div><div>事假<br><span id="sd-per" class="text-indigo-600 text-sm font-black">0</span>h</div><div>曠職<br><span id="sd-abs" class="text-red-600 text-sm font-black">0</span>日</div><div>遲到<br><span id="sd-lat" class="text-indigo-600 text-sm font-black">0</span>次</div><div>早退<br><span id="sd-ear" class="text-amber-600 text-sm font-black">0</span>次</div><div>計點<br><span id="sd-pnt" class="text-red-600 text-sm font-black">0</span>點</div></div>
                         <div class="flex space-x-3"><div class="flex-1"><label class="text-[10px] font-bold text-indigo-800 ml-1">請假/曠職扣薪總額</label><input type="number" id="p-lvd" oninput="calcNet()" class="admin-input font-black text-indigo-600 border-indigo-200 bg-white" value="0"></div></div>
                     </div>
@@ -185,7 +185,9 @@
                     <h3 class="font-black text-slate-800 border-l-4 border-slate-500 pl-3 text-lg">全體出勤狀態五日大盤</h3>
                     <input type="date" id="att-date" onchange="loadAttendance()" class="p-2 border border-slate-300 rounded-lg text-sm font-black bg-white shadow-sm outline-none focus:border-slate-500 w-40">
                 </div>
+                
                 <p class="text-[10px] text-slate-500 font-bold mb-2">📌 顯示所選日期及其前後 2 天。若有異常(曠職/遲到等)可直接發送警告通知至員工前台。</p>
+                
                 <div class="w-full overflow-x-auto no-scrollbar pb-6">
                     <div class="min-w-[800px]">
                         <table class="w-full text-left text-sm whitespace-nowrap bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -343,9 +345,8 @@
 
     <script src="shared.js"></script>
     <script>
-        let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = []; window.pBulletins = []; window.adminInvData = []; window.currentPayrollRecords = []; window.supplierData = [];
-        window.adminPoData = []; window.adminReqData = []; window.allLeaves = [];
-        let currentTempPayrollStats = null; // 儲存當月出勤供薪資發放寫入
+        let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = []; window.pBulletins = []; window.adminInvData = []; window.currentPayrollRecords = []; window.supplierData = []; window.adminPoData = []; window.adminReqData = []; window.allLeaves = [];
+        let currentTempPayrollStats = null; 
 
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
@@ -393,11 +394,16 @@
         function openModal(id) { document.getElementById(id).classList.add('active'); } 
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // 🌟 防彈版 loadAll：拆分查詢防止連鎖崩潰
+        // 🌟 終極防彈版 loadAll：獨立提取，不再依賴外鍵 Join 防止崩潰
         async function loadAll() {
             try {
+                if (!window._sb) throw new Error("無法連線到 Supabase，請確認 shared.js 中的金鑰設定是否正確。");
+
                 const { data: emps, error: err1 } = await window._sb.from('employees').select('*');
+                if (err1) throw new Error(`[讀取員工表失敗] ${err1.message}`);
+                
                 const { data: brs, error: err2 } = await window._sb.from('branch_locations').select('*');
+                if (err2) throw new Error(`[讀取據點表失敗] ${err2.message}`);
                 
                 window.allEmps = emps || []; 
                 window.branches = brs || [];
@@ -433,8 +439,10 @@
                     document.getElementById('list-emps-desktop').innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">無在職員工</td></tr>';
                 }
 
-                // 直接抓取請假單並自行比對員工姓名，防止 join 失敗
-                const { data: rawLv } = await window._sb.from('leave_requests').select('*').eq('status', '審核中');
+                // 獨立抓取假單，在 Javascript 中合併，防止外鍵崩潰
+                const { data: rawLv, error: err3 } = await window._sb.from('leave_requests').select('*').eq('status', '審核中');
+                if (err3) throw new Error(`[讀取請假單失敗] ${err3.message}`);
+                
                 window.allLeaves = rawLv || [];
                 
                 document.getElementById('list-leaves').innerHTML = (window.allLeaves.length > 0) ? window.allLeaves.map(l => {
@@ -452,7 +460,7 @@
                 loadBossDashboard();
             } catch (error) {
                 console.error('loadAll Error:', error);
-                alert('載入資料發生錯誤，請檢查資料庫連線');
+                alert(`系統載入失敗！\n\n詳細原因：\n${error.message || error}`);
             }
         }
 
@@ -681,44 +689,46 @@
             } 
         }
 
-        // 🌟 全新大腦：老闆專屬戰情室 (資料加載引擎)
+        // 🌟 全新大腦：老闆專屬戰情室 (不依賴外鍵，防崩潰)
         async function loadBossDashboard() {
-            const todayStr = new Date().toLocaleDateString('en-CA');
-            const sT = new Date(); sT.setHours(0,0,0,0);
-            const eT = new Date(); eT.setHours(23,59,59,999);
-
-            // 1. 考勤異常
-            let attHtml = '';
-            const { data: logs } = await window._sb.from('attendance_logs').select('*, employees(full_name, work_start_time, work_end_time)').gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString());
-            if(logs) {
-                let empLogs = {};
-                logs.forEach(l => {
-                    if(!empLogs[l.employee_id]) empLogs[l.employee_id] = { name: l.employees?.full_name, in: null, out: null, start: (l.employees?.work_start_time||'09:00').slice(0,5), end: (l.employees?.work_end_time||'18:00').slice(0,5) };
-                    const tStr = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
-                    if(l.punch_type === 'IN') empLogs[l.employee_id].in = tStr;
-                    if(l.punch_type === 'OUT') empLogs[l.employee_id].out = tStr;
-                });
-                
-                Object.values(empLogs).forEach(emp => {
-                    if(emp.in && emp.in > emp.start) attHtml += `<div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-red-100"><span class="font-bold text-xs text-slate-700">${emp.name}</span><span class="text-[10px] font-black text-red-600 bg-red-100 px-2 py-0.5 rounded">遲到 (${emp.in})</span></div>`;
-                    if(emp.out && emp.out < emp.end) attHtml += `<div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-red-100"><span class="font-bold text-xs text-slate-700">${emp.name}</span><span class="text-[10px] font-black text-red-600 bg-red-100 px-2 py-0.5 rounded">早退 (${emp.out})</span></div>`;
-                });
-            }
-            document.getElementById('boss-att-alerts').innerHTML = attHtml || '<p class="text-xs text-slate-400">✅ 今日全體考勤正常</p>';
-
-            // 2. 待審核假單
-            let leaveHtml = '';
-            if(window.allLeaves && window.allLeaves.length > 0) {
-                leaveHtml = window.allLeaves.map(l => {
-                    const empName = window.allEmps.find(x => x.id === l.employee_id)?.full_name || '未知';
-                    return `<div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-sky-100"><div class="flex flex-col"><span class="font-bold text-xs text-slate-700">${empName}</span><span class="text-[9px] text-slate-500">${l.leave_type.replace('(補登)','')}</span></div><button onclick="st('pend')" class="text-[10px] bg-sky-100 text-sky-700 font-black px-2 py-1 rounded hover:bg-sky-200">去審核</button></div>`;
-                }).join('');
-            }
-            document.getElementById('boss-leave-alerts').innerHTML = leaveHtml || '<p class="text-xs text-slate-400">✅ 無待審核單據</p>';
-
-            // 3. 庫存低水位警報
-            let invHtml = '';
             try {
+                const todayStr = new Date().toLocaleDateString('en-CA');
+                const sT = new Date(); sT.setHours(0,0,0,0);
+                const eT = new Date(); eT.setHours(23,59,59,999);
+
+                // 1. 考勤異常
+                let attHtml = '';
+                const { data: logs } = await window._sb.from('attendance_logs').select('*').gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString());
+                if(logs && window.allEmps) {
+                    let empLogs = {};
+                    logs.forEach(l => {
+                        const emp = window.allEmps.find(x => x.id === l.employee_id);
+                        if(!emp) return;
+                        if(!empLogs[l.employee_id]) empLogs[l.employee_id] = { name: emp.full_name, in: null, out: null, start: (emp.work_start_time||'09:00').slice(0,5), end: (emp.work_end_time||'18:00').slice(0,5) };
+                        const tStr = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
+                        if(l.punch_type === 'IN') empLogs[l.employee_id].in = tStr;
+                        if(l.punch_type === 'OUT') empLogs[l.employee_id].out = tStr;
+                    });
+                    
+                    Object.values(empLogs).forEach(emp => {
+                        if(emp.in && emp.in > emp.start) attHtml += `<div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-red-100"><span class="font-bold text-xs text-slate-700">${emp.name}</span><span class="text-[10px] font-black text-red-600 bg-red-100 px-2 py-0.5 rounded">遲到 (${emp.in})</span></div>`;
+                        if(emp.out && emp.out < emp.end) attHtml += `<div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-red-100"><span class="font-bold text-xs text-slate-700">${emp.name}</span><span class="text-[10px] font-black text-red-600 bg-red-100 px-2 py-0.5 rounded">早退 (${emp.out})</span></div>`;
+                    });
+                }
+                document.getElementById('boss-att-alerts').innerHTML = attHtml || '<p class="text-xs text-slate-400">✅ 今日全體考勤正常</p>';
+
+                // 2. 待審核假單
+                let leaveHtml = '';
+                if(window.allLeaves && window.allLeaves.length > 0) {
+                    leaveHtml = window.allLeaves.map(l => {
+                        const empName = window.allEmps.find(x => x.id === l.employee_id)?.full_name || '未知';
+                        return `<div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-sky-100"><div class="flex flex-col"><span class="font-bold text-xs text-slate-700">${empName}</span><span class="text-[9px] text-slate-500">${l.leave_type.replace('(補登)','')}</span></div><button onclick="st('pend')" class="text-[10px] bg-sky-100 text-sky-700 font-black px-2 py-1 rounded hover:bg-sky-200">去審核</button></div>`;
+                    }).join('');
+                }
+                document.getElementById('boss-leave-alerts').innerHTML = leaveHtml || '<p class="text-xs text-slate-400">✅ 無待審核單據</p>';
+
+                // 3. 庫存低水位警報
+                let invHtml = '';
                 const { data: items } = await window._sb.from('items').select('*');
                 const { data: ledgers } = await window._sb.from('inventory_ledgers').select('item_id, change_qty');
                 if(items && ledgers) {
@@ -730,12 +740,10 @@
                         }
                     });
                 }
-            } catch(e) {}
-            document.getElementById('boss-inv-alerts').innerHTML = invHtml || '<p class="text-xs text-slate-400">✅ 庫存皆在安全水位</p>';
+                document.getElementById('boss-inv-alerts').innerHTML = invHtml || '<p class="text-xs text-slate-400">✅ 庫存皆在安全水位</p>';
 
-            // 4. 採購異常警報
-            let poHtml = '';
-            try {
+                // 4. 採購異常警報
+                let poHtml = '';
                 const { data: pos } = await window._sb.from('po_documents').select('*').in('status', ['已發送', '已下單', '異常(遲交)']);
                 if(pos) {
                     pos.forEach(po => {
@@ -746,8 +754,10 @@
                         }
                     });
                 }
-            } catch(e) {}
-            document.getElementById('boss-po-alerts').innerHTML = poHtml || '<p class="text-xs text-slate-400">✅ 無採購異常狀態</p>';
+                document.getElementById('boss-po-alerts').innerHTML = poHtml || '<p class="text-xs text-slate-400">✅ 無採購異常狀態</p>';
+            } catch(e) {
+                console.error("老闆大廳載入錯誤", e);
+            }
         }
 
         // 🌟 計算當月出勤供薪資發放使用 (修復薪資單未能寫入出勤紀錄的 Bug)
@@ -834,10 +844,10 @@
             document.getElementById('sy-prev-per').innerText = yPer + 'h';
             document.getElementById('sy-prev-sic').innerText = ySic + 'h';
             document.getElementById('sy-prev-lat').innerText = yLat + '次';
-            document.getElementById('sy-prev-ovt').innerText = '0h';
+            document.getElementById('sy-prev-abs').innerText = yEar + '次'; // 顯示在原本的空位
             document.getElementById('sy-prev-pnt').innerText = pnts + '點';
             
-            // 🌟 將數據暫存，供發放薪資單時使用 (解決發放沒紀錄的問題)
+            // 🌟 將數據暫存，供發放薪資單時使用
             currentTempPayrollStats = { late: mLat, early: mEar, absent: mAbs, per: mPer, sic: mSic, pnt: pnts };
 
             calcPayroll();
@@ -1009,7 +1019,7 @@
         }
         async function delPayroll(id) { if(confirm('確定刪除此紀錄？')) { await safeDelete('payroll_records', id); loadPayrollHistory(); } }
 
-        // --- 🌟 五日出勤大盤與異常發送系統 ---
+        // --- 🌟 考勤大盤渲染 (獨立不崩潰版) ---
         async function loadAttendance() {
             const baseDateStr = document.getElementById('att-date').value; 
             if(!baseDateStr) return; 
@@ -1020,14 +1030,12 @@
             const baseDate = new Date(baseDateStr);
             let dates = [];
             for(let i=-2; i<=2; i++) {
-                let d = new Date(baseDate);
-                d.setDate(d.getDate() + i);
-                dates.push(d);
+                let d = new Date(baseDate); d.setDate(d.getDate() + i); dates.push(d);
             }
             const sT = new Date(dates[0]); sT.setHours(0,0,0,0);
             const eT = new Date(dates[4]); eT.setHours(23,59,59,999);
 
-            const { data: logs } = await window._sb.from('attendance_logs').select('*, branch_locations(branch_name)').gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString());
+            const { data: logs } = await window._sb.from('attendance_logs').select('*').gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString());
             const { data: leaves } = await window._sb.from('leave_requests').select('*').eq('status', '核准').lte('start_time', eT.toISOString()).gte('end_time', sT.toISOString());
 
             const activeEmps = window.allEmps.filter(e => e.employment_status === '在職');
@@ -1101,7 +1109,6 @@
                         if (dayData.out < emp.end.slice(0,5)) status = { text: '早退', code: 'EARLY', col: 'text-red-600 bg-red-50 border-red-200' };
                     }
 
-                    // 異常按鈕：加入推播功能
                     let alertBtn = (status.code !== 'NORMAL' && status.code !== 'NONE' && status.code !== 'WORKING' && status.code !== 'LEAVE') ? `<button onclick="notifyAbnormal('${eid}', '${dStr}', '${status.text}')" class="ml-1 text-[10px] bg-red-100 hover:bg-red-500 hover:text-white text-red-600 px-1.5 rounded transition shadow-sm">🚨通知</button>` : '';
                     let timeText = (dayData.in||'--') + ' - ' + (dayData.out||'--');
                     
@@ -1133,17 +1140,19 @@
             }
         }
 
-        // 🌟 員工通知 (個人公告) 推播管理 (強制捕捉錯誤)
+        // 🌟 員工通知 (個人公告) 推播管理
         async function loadAdminPBull() { 
             try {
-                const { data } = await window._sb.from('personal_bulletins').select('*, employees(full_name)').order('created_at', {ascending: false}); 
+                // 不使用 join，手動配對
+                const { data } = await window._sb.from('personal_bulletins').select('*').order('created_at', {ascending: false}); 
                 window.pBulletins = data || []; 
                 document.getElementById('list-admin-pbull').innerHTML = window.pBulletins.map(b => {
+                    const empName = window.allEmps.find(x => x.id === b.employee_id)?.full_name || '未知員工';
                     let readBadge = b.is_read ? '<span class="text-[9px] bg-slate-100 text-slate-500 px-1.5 rounded">已讀</span>' : '<span class="text-[9px] bg-red-100 text-red-600 px-1.5 rounded animate-pulse">未讀</span>';
-                    return `<div class="p-3 bg-white rounded-xl border border-slate-200 flex justify-between items-center shadow-sm mb-2"><div><div class="text-[10px] text-sky-700 font-black mb-1">對象: ${b.employees?.full_name} ${readBadge}</div><div class="font-black text-sm text-slate-800 truncate w-48">${b.title}</div><div class="text-[9px] text-slate-400 mt-1">${new Date(b.created_at).toLocaleString('zh-TW')}</div></div><div class="flex space-x-2"><button onclick="editPBull('${b.id}')" class="text-[10px] bg-amber-50 text-amber-700 font-bold px-3 py-1.5 rounded-lg border border-amber-200">✏️</button><button onclick="delPBull('${b.id}')" class="text-[10px] bg-white text-red-600 font-bold px-3 py-1.5 rounded-lg border border-red-200">🗑️</button></div></div>`;
+                    return `<div class="p-3 bg-white rounded-xl border border-slate-200 flex justify-between items-center shadow-sm mb-2"><div><div class="text-[10px] text-sky-700 font-black mb-1">對象: ${empName} ${readBadge}</div><div class="font-black text-sm text-slate-800 truncate w-48">${b.title}</div><div class="text-[9px] text-slate-400 mt-1">${new Date(b.created_at).toLocaleString('zh-TW')}</div></div><div class="flex space-x-2"><button onclick="editPBull('${b.id}')" class="text-[10px] bg-amber-50 text-amber-700 font-bold px-3 py-1.5 rounded-lg border border-amber-200">✏️</button><button onclick="delPBull('${b.id}')" class="text-[10px] bg-white text-red-600 font-bold px-3 py-1.5 rounded-lg border border-red-200">🗑️</button></div></div>`;
                 }).join('') || '<div class="text-center text-xs text-slate-400 py-3">無紀錄</div>'; 
             } catch(e) {
-                document.getElementById('list-admin-pbull').innerHTML = '<div class="text-center text-xs text-red-500 py-3">讀取失敗，請確認資料庫已建立。</div>';
+                document.getElementById('list-admin-pbull').innerHTML = '<div class="text-center text-xs text-red-500 py-3">讀取失敗，請確認資料庫。</div>';
             }
         }
 
@@ -1228,6 +1237,27 @@
                 showSysToast('✅ 計點規則已更新');
             } catch(e) { alert('更新失敗'); }
         }
+
+        // --- 📢 公司最新公告管理 ---
+        async function loadAdminBlt() { 
+            const { data: blt } = await window._sb.from('bulletin_board').select('*').order('created_at', {ascending: false}); 
+            window.bulletins = blt || []; 
+            document.getElementById('list-admin-blt').innerHTML = window.bulletins.map(b => `<div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center hover:bg-white transition shadow-sm"><div><div class="text-[10px] text-amber-600 font-black mb-1">${new Date(b.created_at).toISOString().split('T')[0]}</div><div class="font-black text-sm text-slate-800 truncate w-48">${b.title}</div></div><div class="flex space-x-2"><button onclick="editBlt('${b.id}')" class="text-xs bg-sky-100 text-sky-700 font-bold px-3 py-1.5 rounded-lg">✏️</button><button onclick="delBlt('${b.id}')" class="text-xs bg-red-100 text-red-700 font-bold px-3 py-1.5 rounded-lg">刪除</button></div></div>`).join('') || '<div class="text-center text-xs text-slate-400 py-3">無公告</div>'; 
+        }
+        function editBlt(id) { const b = window.bulletins.find(x => x.id === id); if(!b) return; document.getElementById('blt-edit-id').value = b.id; document.getElementById('blt-title').value = b.title; document.getElementById('blt-content').value = b.content; document.getElementById('btn-cancel-blt').classList.remove('hidden'); window.scrollTo({top: 0, behavior: 'smooth'}); }
+        function cancelEditBlt() { document.getElementById('blt-edit-id').value = ''; document.getElementById('blt-title').value = ''; document.getElementById('blt-content').value = ''; document.getElementById('btn-cancel-blt').classList.add('hidden'); }
+        async function postBlt() { 
+            const id = document.getElementById('blt-edit-id').value; 
+            const title = document.getElementById('blt-title').value; 
+            const content = document.getElementById('blt-content').value; 
+            if(!title || !content) return; 
+            try { 
+                if(id) { await window._sb.from('bulletin_board').update({ title, content }).eq('id', id); showSysToast('✅ 已更新'); } 
+                else { await window._sb.from('bulletin_board').insert([{ title, content }]); showSysToast('✅ 已推播'); } 
+                cancelEditBlt(); loadAdminBlt(); 
+            } catch(e) { alert('發佈失敗'); } 
+        }
+        async function delBlt(id) { if(!confirm('刪除這則公告嗎？')) return; await window._sb.from('bulletin_board').delete().eq('id', id); showSysToast('✅ 已刪除'); loadAdminBlt(); }
 
         // --- 全螢幕預覽與下載 PDF 引擎 ---
         let currentViewingPoNo = ''; let currentViewingHtml = '';
