@@ -199,8 +199,7 @@
                         <div class="cal-grid cal-header mb-1 border-b border-slate-200 pb-2">
                             <div class="text-red-500">日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div class="text-red-500">六</div>
                         </div>
-                        <div id="calendar-days" class="cal-grid">
-                            </div>
+                        <div id="calendar-days" class="cal-grid"></div>
                     </div>
 
                     <h4 class="text-[11px] font-black text-slate-500 mb-3 border-b border-slate-200 pb-1">📜 該月每日出勤狀態明細</h4>
@@ -225,8 +224,8 @@
                         </div>
                         
                         <div id="leave-datetime-group" class="grid grid-cols-2 gap-3">
-                            <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">開始時間</label><input type="datetime-local" id="l-start" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500" required></div>
-                            <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">結束時間</label><input type="datetime-local" id="l-end" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500" required></div>
+                            <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">開始時間</label><input type="datetime-local" id="l-start" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500"></div>
+                            <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">結束時間</label><input type="datetime-local" id="l-end" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500"></div>
                         </div>
 
                         <div id="retro-group" class="hidden grid grid-cols-2 gap-3 bg-sky-50 p-4 rounded-xl border border-sky-100 shadow-inner">
@@ -252,7 +251,7 @@
             </div>
 
             <div id="view-contract" class="view-panel space-y-4">
-                <div class="glass-card p-5 md:p-6 rounded-[2rem] shadow-sm border-t-4 border-slate-700">
+                <div class="glass-card p-5 md:p-6 rounded-[2rem] shadow-sm border-t-4 border-slate-700 relative pb-10">
                     <h3 class="font-black text-slate-800 text-lg mb-5 flex items-center border-b border-slate-100 pb-3"><span class="mr-2 text-xl">🪪</span>基本資料與聘雇合約</h3>
                     
                     <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner">
@@ -284,46 +283,58 @@
                         </div>
 
                         <div class="mt-4">
-                            <h5 class="font-black text-slate-800 mb-1">第二條（工作時間與考勤）</h5>
-                            <p>1. 乙方之正常工作時間依甲方規定之班表執行，打卡須使用本系統之定位功能確實驗證。</p>
-                            <p>2. 遲到、早退、忘記打卡等考勤異常，依甲方內部考勤管理辦法辦理，並於系統記錄計點。</p>
+                            <h5 class="font-black text-slate-800 mb-1">第二條（工作時間與考勤打卡）</h5>
+                            <p>1. 乙方應依甲方規定之班表出勤，並使用本系統之 GPS 定位功能確實驗證打卡。</p>
+                            <p>2. 遲到寬限規定：每月給予 3 次遲到寬限期，每次寬限 10 分鐘。超過寬限次數或時間者，依公司考勤辦法扣薪與計點。</p>
+                            <p>3. 忘記打卡、遲到、早退之懲處，依甲方內部考勤管理辦法辦理，並於系統記錄計點（單位：點）。</p>
                         </div>
 
                         <div class="mt-4 bg-red-50 p-3 rounded-lg border border-red-100">
                             <h5 class="font-black text-red-800 mb-1 text-[13px]">第三條（請假與曠職規範）⚠️</h5>
-                            <p class="mb-1 text-red-700 font-bold">1. 乙方應依規定時間出勤。未經請假或假單未獲核准而缺勤者，視為曠職。</p>
-                            <p class="text-red-600 font-black">2. 無正當理由繼續曠職三日，或一個月內曠職達六日者，甲方得依《勞動基準法》第十二條規定，不經預告逕行終止本勞動契約，且不發給資遣費。</p>
+                            <p class="mb-1 text-red-700 font-bold">1. 乙方應依規定時間出勤。未經請假或假單未獲核准而缺勤者，視為曠職。曠職期間不給薪。</p>
+                            <p class="text-red-600 font-black">2. 曠職解僱條款：無正當理由繼續曠職三日，或一個月內曠職達六日者，甲方得依《勞動基準法》第十二條規定，不經預告逕行終止勞動契約，且不發給資遣費。</p>
                         </div>
 
                         <div class="mt-4">
-                            <h5 class="font-black text-slate-800 mb-1">第四條（薪資與福利）</h5>
-                            <p>1. 甲方應依約定之核定底薪及獎金制度，於每月發薪日將薪資匯入乙方指定之金融帳戶。</p>
-                            <p>2. 依法代扣勞健保費自付額、所得稅及法定扣款項目。</p>
+                            <h5 class="font-black text-slate-800 mb-1">第四條（薪資計算與發放）</h5>
+                            <p>1. 薪資結構：依雙方議定之月薪或時薪計給。每月發薪日將薪資匯入乙方指定帳戶。</p>
+                            <p>2. 請假扣薪與給薪規定：</p>
+                            <ul class="list-disc pl-4 mt-1 space-y-1 font-bold text-slate-600">
+                                <li>事假：期間不給薪。</li>
+                                <li>病假：一年內未超過三十日部分，工資折半發給。</li>
+                                <li>公假、特休：工資照給。</li>
+                                <li>颱風假：因天災停班，依政府公告辦理，未出勤日不給薪（扣除當日薪資）。</li>
+                            </ul>
                         </div>
 
                         <div class="mt-4">
-                            <h5 class="font-black text-slate-800 mb-1">第五條（機密保護與競業禁止）</h5>
-                            <p>乙方於任職期間及離職後，對於所知悉之甲方業務機密（包含但不限於 VESTA 產品配方、專利技術、供應商與客戶名單、系統架構），負有絕對保密義務。未經甲方書面同意，絕不洩漏或交付任何第三方。如有違反，乙方願負一切法律與損害賠償責任。</p>
+                            <h5 class="font-black text-slate-800 mb-1">第五條（保密協定與競業禁止）</h5>
+                            <p>乙方於任職期間及離職後，對於所知悉之甲方業務機密（包含但不限於產品配方、專利技術、供應商與客戶名單、系統架構及營運數據等），負有絕對保密義務。未經甲方書面同意，絕不洩漏或交付任何第三方。如有違反，乙方願負一切法律與損害賠償責任。</p>
+                        </div>
+
+                        <div class="mt-4">
+                            <h5 class="font-black text-slate-800 mb-1">第六條（離職與交接）</h5>
+                            <p>乙方自請離職時，應依勞動基準法規定期間預告甲方，並辦妥各項業務與資產交接手續後，始得離職。</p>
                         </div>
                         
-                        <p class="mt-6 font-bold text-center border-t border-slate-200 pt-4">本人已詳細閱讀並完全同意上述聘僱合約與公司規章。</p>
+                        <p class="mt-6 font-bold text-center border-t border-slate-200 pt-4 text-sm text-slate-900">本人已詳細閱讀並完全同意上述聘僱合約與公司規章。</p>
                     </div>
 
                     <div class="mt-6" id="signature-section">
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">數位簽章區</span>
-                            <button onclick="clearSignature()" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-1 rounded font-bold hover:bg-slate-300">清除重簽</button>
+                            <button onclick="clearSignature()" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-1 rounded font-bold hover:bg-slate-300 transition">清除重簽</button>
                         </div>
                         <canvas id="signature-pad" class="w-full h-32 border-2 border-dashed border-slate-300 rounded-xl bg-white touch-none cursor-crosshair shadow-inner"></canvas>
                         
-                        <div class="flex items-center space-x-2 mt-4 mb-2">
+                        <div class="flex items-center space-x-2 mt-4 mb-3 pl-1">
                             <input type="checkbox" id="contract-agree-chk" class="w-5 h-5 accent-slate-900">
                             <label for="contract-agree-chk" class="text-xs font-bold text-slate-700">我承諾簽名屬實，並具備法律效力</label>
                         </div>
-                        <button onclick="saveContractSignature()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base">確認簽署並送出</button>
+                        <button onclick="saveContractSignature()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base">確認簽署並送出</button>
                     </div>
                     
-                    <div id="signature-done-msg" class="hidden mt-6 bg-emerald-50 p-4 rounded-xl border border-emerald-200 text-center">
+                    <div id="signature-done-msg" class="hidden mt-6 bg-emerald-50 p-5 rounded-xl border border-emerald-200 text-center">
                         <span class="text-4xl mb-2 block">✅</span>
                         <h4 class="font-black text-emerald-800 text-lg">合約已簽署完成</h4>
                         <p class="text-xs font-bold text-emerald-600 mt-1">您的數位簽章已安全紀錄於系統資料庫中。</p>
@@ -348,7 +359,6 @@
         let currentPunchType = ''; let currentBranch = null; let scanAnim = null;
         let twHolidays = {}; 
         
-        // Canvas Variables
         let sigCanvas, sigCtx;
         let isDrawing = false;
 
@@ -382,7 +392,6 @@
 
                 document.getElementById('dash-shift').innerText = `${(window.currentUser.work_start_time||'09:00').slice(0,5)} ~ ${(window.currentUser.work_end_time||'18:00').slice(0,5)}`;
 
-                // 填入基本資料合約版位
                 document.getElementById('cv-name').innerText = window.currentUser.full_name || '--';
                 document.getElementById('cv-idnum').innerText = window.currentUser.id_number || '--';
                 document.getElementById('cv-phone').innerText = window.currentUser.phone || '--';
@@ -438,12 +447,11 @@
 
         function openContractView() { 
             openView('contract', '基本資料與合約'); 
-            // 處理視窗顯示，確保 canvas 尺寸正確
             setTimeout(() => {
                 if(sigCanvas) {
                     const rect = sigCanvas.parentElement.getBoundingClientRect();
                     sigCanvas.width = rect.width;
-                    sigCanvas.height = 128; // h-32
+                    sigCanvas.height = 128;
                 }
             }, 100);
         }
@@ -459,7 +467,6 @@
             document.getElementById('stat-month-label').innerText = `${currYear}年${currMonth}月`;
             document.getElementById('stat-year-label').innerText = `${currYear}年`;
 
-            // 1. 計算年度未休特休 (轉換為天+小時)
             let remainAnn = 0;
             try {
                 const { data: lvData } = await window._sb.rpc('fn_get_annual_leave_v2', { p_emp_id: window.currentUser.id });
@@ -469,7 +476,6 @@
             let annHours = remainAnn % 8;
             document.getElementById('sy-ann').innerText = `${annDays}天${annHours}h`;
             
-            // 2. 獲取本年度資料
             const sTY = new Date(`${currYear}-01-01T00:00:00Z`);
             const eTY = new Date(`${currYear}-12-31T23:59:59Z`);
             
@@ -486,7 +492,6 @@
                     let ls = new Date(l.start_time); let le = new Date(l.end_time);
                     let hrs = Math.ceil((le - ls) / (1000 * 60 * 60));
                     if(hrs < 0) hrs = 0;
-                    
                     if(l.leave_type === '事假') { yPer += hrs; if(ls.getMonth()+1 === currMonth) mPer += hrs; }
                     if(l.leave_type === '病假') { ySic += hrs; if(ls.getMonth()+1 === currMonth) mSic += hrs; }
                     if(l.leave_type === '特休') { if(ls.getMonth()+1 === currMonth) mAnn += hrs; }
@@ -506,8 +511,7 @@
                         }
                     }
                 });
-                yLat = latSetY.size;
-                mLat = latSetM.size;
+                yLat = latSetY.size; mLat = latSetM.size;
             }
 
             let pnts = window.currentUser.penalty_points || 0;
@@ -523,7 +527,7 @@
             document.getElementById('sy-pnt').innerText = pnts + '點';
         }
 
-        // 🌟 行事曆與狀態渲染
+        // 🌟 行事曆與狀態渲染 (超強判定引擎)
         async function renderCalendarUI() {
             const mStr = document.getElementById('cal-month-picker').value;
             if(!mStr) return;
@@ -541,13 +545,12 @@
             const targetStart = window.currentUser.work_start_time ? window.currentUser.work_start_time.slice(0,5) : '09:00';
             const targetEnd = window.currentUser.work_end_time ? window.currentUser.work_end_time.slice(0,5) : '18:00';
 
-            // 構建每日資料矩陣
             let daysData = {};
             const totalDays = eT.getDate();
             for(let i=1; i<=totalDays; i++) {
                 let d = new Date(year, month - 1, i);
                 let dStr = d.toLocaleDateString('en-CA');
-                daysData[dStr] = { in: null, out: null, leave: null, isPast: d <= new Date(), isWeekend: (d.getDay()===0||d.getDay()===6), holiday: twHolidays[dStr] };
+                daysData[dStr] = { in: null, out: null, leave: null, isRet: false, isPast: d <= new Date(), isWeekend: (d.getDay()===0||d.getDay()===6), holiday: twHolidays[dStr] };
             }
 
             if(leaves) {
@@ -570,23 +573,23 @@
                     const tStr = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
                     if(l.punch_type === 'IN' && !daysData[dStr].in) daysData[dStr].in = tStr;
                     if(l.punch_type === 'OUT') daysData[dStr].out = tStr; 
+                    if(l.note && l.note.includes('[補登核准]')) daysData[dStr].isRet = true;
                 });
             }
 
-            // 渲染明細清單
             const listEl = document.getElementById('ui-history-list');
             let listHtml = '';
             
-            // 從最後一天往前印
             for(let i=totalDays; i>=1; i--) {
                 let dDate = new Date(year, month - 1, i);
                 let dStr = dDate.toLocaleDateString('en-CA');
                 let dayD = daysData[dStr];
                 
-                if(!dayD.isPast && dStr !== new Date().toLocaleDateString('en-CA')) continue; // 未來的不用印狀態
+                if(!dayD.isPast && dStr !== new Date().toLocaleDateString('en-CA')) continue;
 
                 let status = { text: '正常', col: 'text-emerald-600 bg-emerald-50 border-emerald-200' };
-                
+                let extraBadge = '';
+
                 if (dayD.leave) { 
                     status = { text: dayD.leave.replace('(補登)',''), col: 'text-sky-600 bg-sky-50 border-sky-200' }; 
                 } else if (!dayD.in && !dayD.out) {
@@ -598,7 +601,14 @@
                 } else {
                     if (dayD.in > targetStart) status = { text: '遲到', col: 'text-red-600 bg-red-50 border-red-200' };
                     if (dayD.out < targetEnd) status = { text: '早退', col: 'text-red-600 bg-red-50 border-red-200' };
+                    
+                    // 加班判定：下班時間超過應下班時間 1 小時
+                    let outHr = parseInt((dayD.out||'00:00').slice(0,2));
+                    let endHr = parseInt(targetEnd.slice(0,2));
+                    if(outHr > endHr) { extraBadge += `<span class="text-[9px] font-black px-1.5 py-0.5 rounded border text-indigo-600 bg-indigo-50 border-indigo-200 ml-1">加班</span>`; }
                 }
+
+                if(dayD.isRet) extraBadge += `<span class="text-[9px] font-black px-1.5 py-0.5 rounded border text-amber-700 bg-amber-50 border-amber-200 ml-1">補打卡</span>`;
 
                 if(status.text !== '無紀錄' || dStr === new Date().toLocaleDateString('en-CA')) {
                     let timeText = (dayD.in||'--:--') + ' ~ ' + (dayD.out||'--:--');
@@ -610,14 +620,16 @@
                             <h4 class="font-black text-slate-800 text-sm mb-0.5">${titleText}</h4>
                             <p class="font-mono text-[10px] font-bold text-slate-500">${timeText}</p>
                         </div>
-                        <span class="text-[10px] font-black tracking-widest px-2 py-1 rounded-md border ${status.col}">${status.text}</span>
+                        <div class="flex items-center">
+                            <span class="text-[10px] font-black tracking-widest px-2 py-1 rounded-md border ${status.col}">${status.text}</span>
+                            ${extraBadge}
+                        </div>
                     </div>`;
                 }
             }
-            if(!listHtml) listHtml = '<p class="text-center text-xs font-bold text-slate-400 py-4 border border-dashed border-slate-200 rounded-xl">本月尚無紀錄</p>';
+            if(!listHtml) listHtml = '<p class="text-center text-xs font-bold text-slate-400 py-4 border border-dashed border-slate-200 rounded-xl">本月尚無出勤紀錄</p>';
             listEl.innerHTML = listHtml;
 
-            // 渲染月曆網格
             const daysContainer = document.getElementById('calendar-days');
             let html = '';
             const firstDayIndex = sT.getDay();
@@ -647,6 +659,25 @@
             daysContainer.innerHTML = html;
         }
 
+
+        async function loadTodayPunch() {
+            const sT = new Date(); sT.setHours(0,0,0,0);
+            const eT = new Date(); eT.setHours(23,59,59,999);
+            const { data } = await window._sb.from('attendance_logs').select('*').eq('employee_id', window.currentUser.id).gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString());
+            if(data) {
+                data.forEach(l => {
+                    const t = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
+                    if(l.punch_type === 'IN') {
+                        document.getElementById('status-in').innerText = `已打卡: ${t}`;
+                        document.getElementById('status-in').classList.replace('text-sky-100', 'text-sky-200');
+                    } else if(l.punch_type === 'OUT') {
+                        document.getElementById('status-out').innerText = `已打卡: ${t}`;
+                        document.getElementById('status-out').classList.replace('text-indigo-100', 'text-indigo-200');
+                    }
+                });
+            }
+        }
+
         async function loadPersonalBulletins() {
             try {
                 const { data } = await window._sb.from('personal_bulletins').select('*').eq('employee_id', window.currentUser.id).order('created_at', { ascending: false });
@@ -654,7 +685,7 @@
                 const badge = document.getElementById('unread-bulletin-badge');
                 
                 if (!data || data.length === 0) {
-                    container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">目前無任何通知</p>';
+                    container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">目前無任何個人通知</p>';
                     document.getElementById('latest-p-bulletin').innerText = '目前無個人通知';
                     if(badge) badge.classList.add('hidden');
                     return;
@@ -729,10 +760,10 @@
                     document.getElementById('punch-status').innerHTML = `<span class="text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 shadow-sm">⚠️ 未綁定據點，將記錄為外勤定位</span>`;
                     document.getElementById('btn-execute-punch').disabled = false;
                 }
-            }, 1500);
+            }, 1000); // 加快定位速度
         }
 
-        // 🌟 自動防呆：遲到早退自動詢問請假
+        // 🌟 防呆引導：遲到早退詢問是否請假
         async function executePunch() {
             const btn = document.getElementById('btn-execute-punch');
             btn.innerText = '寫入中...'; btn.disabled = true;
@@ -776,6 +807,7 @@
             btn.innerText = '確認並送出打卡'; btn.disabled = false;
         }
 
+        // 請假單顯示切換
         function toggleLeaveType() {
             const t = document.getElementById('l-type').value;
             const dtg = document.getElementById('leave-datetime-group');
@@ -792,6 +824,7 @@
             }
         }
 
+        // 🌟 修復送出失敗的邏輯
         async function submitLeave(e) {
             e.preventDefault();
             const t = document.getElementById('l-type').value;
@@ -803,11 +836,28 @@
 
             if(!sT || !eT) { alert('請填寫完整時間'); return; }
 
-            const p = { employee_id: window.currentUser.id, leave_type: t, start_time: new Date(sT).toISOString(), end_time: new Date(eT).toISOString(), reason: res, target_punch_type: pt, status: '審核中' };
-            const { error } = await window._sb.from('leave_requests').insert([p]);
+            // 確保資料正確寫入
+            const p = { 
+                employee_id: window.currentUser.id, 
+                leave_type: t, 
+                start_time: new Date(sT).toISOString(), 
+                end_time: new Date(eT).toISOString(), 
+                reason: res, 
+                target_punch_type: pt, 
+                status: '審核中' 
+            };
             
-            if(!error) { showSysToast('申請已送出，等待主管核准！'); e.target.reset(); toggleLeaveType(); backToDash(); } 
-            else { alert('送出失敗'); }
+            try {
+                const { error } = await window._sb.from('leave_requests').insert([p]);
+                if(error) throw error;
+                showSysToast('申請已送出，等待主管核准！'); 
+                e.target.reset(); 
+                toggleLeaveType(); 
+                backToDash(); 
+            } catch(error) { 
+                alert('送出失敗: ' + (error.message || '資料庫錯誤')); 
+                console.error(error);
+            }
         }
 
         function openSalaryView() {
@@ -859,13 +909,12 @@
             }
         }
 
-        // 🌟 數位簽章 Canvas 控制邏輯
+        // 數位簽章 Canvas 控制邏輯
         function initSignaturePad() {
             sigCanvas = document.getElementById('signature-pad');
             if(!sigCanvas) return;
             sigCtx = sigCanvas.getContext('2d');
             
-            // 設定正確的解析度與畫筆
             sigCanvas.width = sigCanvas.offsetWidth;
             sigCanvas.height = sigCanvas.offsetHeight;
             sigCtx.lineWidth = 3;
@@ -889,9 +938,9 @@
             sigCanvas.addEventListener('mousedown', startPos);
             sigCanvas.addEventListener('mouseup', endPos);
             sigCanvas.addEventListener('mousemove', draw);
-            sigCanvas.addEventListener('touchstart', startPos);
+            sigCanvas.addEventListener('touchstart', startPos, {passive: false});
             sigCanvas.addEventListener('touchend', endPos);
-            sigCanvas.addEventListener('touchmove', draw);
+            sigCanvas.addEventListener('touchmove', draw, {passive: false});
         }
 
         function clearSignature() {
@@ -904,7 +953,6 @@
             const isAgreed = document.getElementById('contract-agree-chk').checked;
             if(!isAgreed) { alert('請勾選同意法律效力核取方塊！'); return; }
             
-            // 簡易判斷畫布是否為空
             const blank = document.createElement('canvas');
             blank.width = sigCanvas.width; blank.height = sigCanvas.height;
             if(sigCanvas.toDataURL() === blank.toDataURL()) {
@@ -914,7 +962,6 @@
             document.getElementById('signature-done-msg').classList.remove('hidden');
             document.getElementById('signature-section').classList.add('hidden');
             showSysToast('合約簽署成功，已歸檔備查！');
-            // 實務上這裡會將 sigCanvas.toDataURL() 存入資料庫
         }
 
         window.onload = bootHr;
