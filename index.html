@@ -64,9 +64,23 @@
                         <label class="text-[11px] font-black text-slate-500 ml-1 block mb-1 uppercase tracking-wider">聯絡手機</label>
                         <input type="tel" id="reg-phone" class="input-field" placeholder="09XX-XXX-XXX" required>
                     </div>
+                    
                     <div>
                         <label class="text-[11px] font-black text-slate-500 ml-1 block mb-1 uppercase tracking-wider">通訊地址</label>
-                        <input type="text" id="reg-address" class="input-field" placeholder="請輸入完整通訊送達地址" required>
+                        <div class="flex space-x-2">
+                            <select id="reg-city" class="input-field select-arrow w-2/5 p-3 text-sm" required>
+                                <option value="" disabled selected>縣市</option>
+                                <option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option>
+                                <option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option>
+                                <option value="苗栗縣">苗栗縣</option><option value="台中市">台中市</option><option value="彰化縣">彰化縣</option>
+                                <option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option><option value="嘉義市">嘉義市</option>
+                                <option value="嘉義縣">嘉義縣</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option>
+                                <option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option>
+                                <option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option>
+                                <option value="連江縣">連江縣</option>
+                            </select>
+                            <input type="text" id="reg-address-detail" class="input-field w-3/5 p-3 text-sm" placeholder="鄉鎮市區與詳細地址" required>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -176,8 +190,6 @@
         let sigCanvas, sigCtx, isDrawing = false;
         let globalLineId = "";
         let globalLineEmail = "no-email@line.me";
-        
-        // 🌟 記錄當前載入的合約版本
         let currentLoadedContractVersion = "V1.0"; 
 
         function initSignaturePad() {
@@ -217,7 +229,6 @@
             if(sigCtx && sigCanvas) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
         }
 
-        // 🌟 自動獲取後台最新合約
         async function fetchLatestContract() {
             try {
                 const { data, error } = await window._sb.from('company_forms').select('*').eq('form_type', 'employment_contract').single();
@@ -232,14 +243,15 @@
             } catch(e) {
                 console.log("合約抓取失敗，使用預設值", e);
                 document.getElementById('contract-version-badge').innerText = "V1.0";
-                document.getElementById('dynamic-contract-content').innerHTML = "<p>合約載入失敗，請聯繫管理員。</p>";
+                document.getElementById('dynamic-contract-content').innerHTML = "<p>合約載入失敗，請聯繫管理員確認後台設定。</p>";
             }
         }
 
         async function initApp() {
             try {
-                if(!window._sb) throw new Error("Supabase 尚未初始化，請確認 shared.js 內的金鑰設定是否正確。");
+                if(!window._sb) throw new Error("Supabase 尚未初始化，請確認 shared.js 設定。");
 
+                // 🌟 更新為您提供的最新正確 LIFF ID
                 const LIFF_ID = "2009148826-RoogHmxk"; 
                 let liffInitSuccess = false;
                 
@@ -247,15 +259,16 @@
                     await liff.init({ liffId: LIFF_ID });
                     liffInitSuccess = true;
                 } catch(e) {
-                    console.warn("LIFF初始化失敗 (可能為本機端或 ID 錯誤):", e);
+                    console.warn("LIFF初始化失敗:", e);
                 }
                 
+                // 🚨 終極防護：無論在哪裡打開，只要 LIFF 失敗就彈出測試選項
                 if (!liffInitSuccess || (!liff.isInClient() && window.location.protocol !== 'file:')) {
                     if(confirm('偵測到非 LINE APP 環境或 LIFF ID 尚未生效！\n\n是否啟用「網頁開發測試模式」強制進入系統？\n(按「確定」可繞過驗證直接進入註冊測試)')) {
                         globalLineId = "TEST_LOCAL_ID_" + Math.floor(Math.random()*10000);
                         globalLineEmail = "test@local.me";
                     } else {
-                        if (!liffInitSuccess) throw new Error("LIFF init failed. 若要在正式環境使用，請確保已在 LINE Developer 後台發布此 ID。");
+                        if (!liffInitSuccess) throw new Error(`LIFF app '${LIFF_ID}' was not found. 請確認 LINE Developer 設定。`);
                         if (!liff.isLoggedIn()) { liff.login(); return; }
                         const profile = await liff.getProfile();
                         globalLineId = profile.userId;
@@ -310,13 +323,16 @@
 
             const bankVal = document.getElementById('reg-bank-code').value;
             const [bankCode, bankName] = bankVal.split('-');
+            
+            // 🌟 合併縣市與詳細地址
+            const fullAddress = document.getElementById('reg-city').value + document.getElementById('reg-address-detail').value;
 
             const payload = {
                 line_id: globalLineId,
                 full_name: document.getElementById('reg-name').value,
                 id_number: document.getElementById('reg-idnum').value.toUpperCase(),
                 phone: document.getElementById('reg-phone').value,
-                address: document.getElementById('reg-address').value,
+                address: fullAddress,
                 emergency_contact: document.getElementById('reg-emer-name').value,
                 emergency_phone: document.getElementById('reg-emer-phone').value,
                 bank_code: bankCode,
@@ -326,7 +342,6 @@
                 onboarding_date: new Date().toISOString().split('T')[0],
                 email: globalLineEmail,
                 nda_signed_at: new Date().toISOString(),
-                // 🌟 將簽名圖片與合約版本寫入員工資料表
                 signature_data: sigCanvas.toDataURL("image/png"),
                 signed_contract_version: currentLoadedContractVersion,
                 is_approved: false,
