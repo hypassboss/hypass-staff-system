@@ -26,7 +26,7 @@
             #dashboard-ui, aside, header { display: none !important; }
             .print-break { page-break-after: always; }
         }
-        
+
         @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         .toast-msg { animation: slideInLeft 0.4s ease-out forwards; }
     </style>
@@ -38,7 +38,7 @@
 
     <div id="pdf-preview-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-sm z-[9999] hidden flex-col">
         <div class="flex justify-between items-center p-4 bg-slate-800 text-white shrink-0 shadow-md">
-            <h3 class="font-black text-base flex items-center"><span class="mr-2 text-xl">📄</span>單據檢視</h3>
+            <h3 class="font-black text-base flex items-center"><span class="mr-2 text-xl">📄</span>單據檢視與下載</h3>
             <div class="space-x-2">
                 <button id="btn-modal-download" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-xs font-black shadow-sm transition">📥 下載</button>
                 <button onclick="closePdfModal()" class="bg-slate-700 hover:bg-red-500 px-4 py-2 rounded-lg text-xs font-black border border-slate-600 transition">✕ 關閉</button>
@@ -157,17 +157,22 @@
                     <h3 class="font-black text-slate-800 border-l-4 border-slate-500 pl-3 text-lg">全體出勤狀態五日大盤</h3>
                     <input type="date" id="att-date" onchange="loadAttendance()" class="p-2 border border-slate-300 rounded-lg text-sm font-black bg-white shadow-sm outline-none focus:border-slate-500 w-40">
                 </div>
+                
                 <p class="text-[10px] text-slate-500 font-bold mb-2">📌 顯示所選日期及其前後 2 天。若有異常(曠職/遲到等)可直接發送警告通知至員工前台。</p>
+                
                 <div class="w-full overflow-x-auto no-scrollbar pb-6">
                     <div class="min-w-[800px]">
                         <table class="w-full text-left text-sm whitespace-nowrap bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold text-[11px]" id="att-desktop-head"></thead>
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold text-[11px]" id="att-desktop-head">
+                                </thead>
                             <tbody id="list-attendance-desktop" class="divide-y divide-slate-100 text-xs">
                                 <tr><td colspan="6" class="text-center py-10 text-slate-400">請選擇中心日期</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
+                
+                <div id="list-attendance-mobile" class="md:hidden space-y-3 pb-8"></div>
             </section>
 
             <section id="inv" class="tab-content space-y-5 max-w-6xl">
@@ -181,6 +186,7 @@
                     </h3>
                     <div class="glass-panel p-5 shadow-sm"><div id="list-admin-po-docs" class="space-y-4">載入中...</div></div>
                 </div>
+                
                 <div>
                     <h3 class="font-black text-slate-800 border-l-4 border-sky-500 pl-3 text-lg mb-4 flex items-center justify-between">
                         <span>📝 內部請購單紀錄</span>
@@ -318,15 +324,6 @@
     <script>
         let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = []; window.pBulletins = []; window.adminInvData = []; window.currentPayrollRecords = []; window.supplierData = [];
         window.adminPoData = []; window.adminReqData = [];
-
-        function showSysToast(msg) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast-msg bg-slate-800 text-white px-4 py-3 rounded-xl shadow-lg border border-slate-700 font-black text-sm flex items-center';
-            toast.innerHTML = `<span class="mr-2 text-xl">✅</span>${msg}`;
-            container.appendChild(toast);
-            setTimeout(() => { toast.style.animation = 'slideInLeft 0.4s ease-in reverse forwards'; setTimeout(() => toast.remove(), 400); }, 5000);
-        }
 
         function getSafeArray(data) {
             if (!data) return [];
@@ -489,7 +486,7 @@
             document.getElementById('emp-detail-modal').classList.add('active'); 
         }
 
-        // 🌟 100% 完整還原：員工編輯表單 (包含緊急聯絡人)
+        // 🌟 100% 完整還原：員工編輯表單 (包含緊急聯絡人與完整通訊)
         function renderEditEmpForm(empId) { 
             const e = window.allEmps.find(x => x.id === empId); 
             if(!e) return; 
@@ -534,7 +531,7 @@
                             <h5 class="text-[10px] font-black text-red-700 mb-2">⚙️ 考勤與紀律設定</h5>
                             <div class="grid grid-cols-2 gap-3">
                                 <div><label class="text-[10px] font-bold text-slate-500 ml-1">庫存盤點員</label><select id="edit-inv-mgr" class="admin-input bg-white select-arrow"><option value="false" ${!e.is_inventory_manager?'selected':''}>否</option><option value="true" ${e.is_inventory_manager?'selected':''}>是</option></select></div>
-                                <div><label class="text-[10px] font-bold text-slate-500 ml-1">修改計點絕對值</label><input type="number" id="edit-penalty" value="${e.penalty_points||0}" class="admin-input bg-white font-black text-red-600" required></div>
+                                <div><label class="text-[10px] font-bold text-slate-500 ml-1">修改計點絕對值 (單位:點)</label><input type="number" id="edit-penalty" value="${e.penalty_points||0}" class="admin-input bg-white font-black text-red-600" required></div>
                             </div>
                         </div>
                         
@@ -789,7 +786,7 @@
         }
         async function delPBull(id) { if(!confirm('刪除這則個人公告嗎？')) return; await window._sb.from('personal_bulletins').delete().eq('id', id); showSysToast('已刪除'); loadAdminPBull(); }
 
-        // --- 🌟 採購單 PDF 預覽與下載引擎 (與採購中心同步) ---
+        // --- 全螢幕預覽與下載 PDF 引擎 ---
         let currentViewingPoNo = ''; let currentViewingHtml = '';
 
         async function processAdminPO_PDF(id, isLegacy, action) {
@@ -823,6 +820,8 @@
         function closePdfModal() { const m = document.getElementById('pdf-preview-modal'); m.classList.add('hidden'); m.classList.remove('flex'); }
         document.getElementById('btn-modal-download').addEventListener('click', () => { executePdfDownload(currentViewingHtml, currentViewingPoNo); });
         function executePdfDownload(htmlContent, poNo) { showSysToast('PDF 檔案生成中，請稍候...'); const opt = { margin: [0.5, 0.5], filename: `${poNo}_採購單.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }; const tempDiv = document.createElement('div'); tempDiv.innerHTML = htmlContent; tempDiv.style.padding = '20px'; html2pdf().set(opt).from(tempDiv).save().then(() => { showSysToast('PDF 下載完成！'); }); }
+
+        async function exportBankCSV() { const month = document.getElementById('export-mon').value; if(!month) return; const { data } = await window._sb.from('payroll_records').select('total_net_pay, employees(full_name, bank_code, bank_name, bank_user_name, bank_account)').eq('pay_month', month); if(!data || data.length === 0) return; let csv = "\uFEFF銀行代碼,銀行名稱,收款帳號,戶名,匯款金額,備註\n"; data.forEach(r => { csv += `="${r.employees.bank_code}",${r.employees.bank_name},="${r.employees.bank_account}",${r.employees.bank_user_name},${r.total_net_pay},${month}薪資\n`; }); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `HYPASS_${month}_轉帳檔.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
 
         window.onload = function() {
             if(localStorage.getItem('admin_logged')==='true') {
