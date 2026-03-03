@@ -24,6 +24,7 @@
         <div class="text-6xl mb-6 animate-bounce">🛡️</div>
         <h2 class="text-2xl font-black tracking-widest mb-2">HYPASS</h2>
         <p class="text-sm font-bold text-slate-400 tracking-wider">安全驗證與連線中...</p>
+        <p id="loading-error-text" class="text-xs font-bold text-red-400 mt-4 px-6 text-center"></p>
     </div>
 
     <div id="pending-screen" class="hidden glass-panel p-8 w-full max-w-sm text-center relative overflow-hidden z-50">
@@ -31,6 +32,13 @@
         <h2 class="text-2xl font-black mb-3 text-slate-800">資料審核中</h2>
         <p class="text-sm font-bold text-slate-500 mb-8 leading-relaxed">您的註冊資料已送出！<br>請等待管理員開通權限後，<br>再次開啟此畫面即可進入系統。</p>
         <button onclick="liff.closeWindow()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition text-lg tracking-widest">關閉視窗</button>
+    </div>
+
+    <div id="unauthorized-screen" class="fixed inset-0 bg-slate-50 z-[9998] hidden flex-col items-center justify-center p-6 text-center">
+        <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center text-5xl mb-6 shadow-inner">🚫</div>
+        <h2 class="text-2xl font-black text-slate-800 mb-2">無權限訪問</h2>
+        <p class="text-sm font-bold text-slate-500 leading-relaxed mb-8">您的帳號目前處於未開通或停權狀態。<br>如有疑問，請聯繫系統管理員。</p>
+        <button onclick="liff.closeWindow()" class="w-full max-w-xs bg-slate-900 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition">關閉視窗</button>
     </div>
 
     <div id="register-screen" class="hidden w-full max-w-md mx-auto z-40 pb-10">
@@ -41,7 +49,7 @@
 
         <form id="reg-form" class="space-y-5" onsubmit="submitRegistration(event)">
             
-            <div class="glass-panel p-6 shadow-sm">
+            <div class="glass-panel p-6 shadow-sm border-t-4 border-sky-400">
                 <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2 text-xl">👤</span>基本身分資料</h3>
                 <div class="space-y-4">
                     <div>
@@ -137,7 +145,7 @@
                 <h3 class="font-black text-slate-800 text-lg mb-5 flex items-center border-b border-slate-100 pb-3"><span class="mr-2 text-xl">⚖️</span>勞動契約與管理規章</h3>
                 
                 <div class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200 text-[11px] text-slate-700 leading-relaxed text-justify mb-6 h-64 overflow-y-auto shadow-inner">
-                    <p class="font-bold text-sky-800 bg-sky-100 p-2 rounded border border-sky-200">立合約書人（以下簡稱甲方）與 員工（以下簡稱乙方）。雙方同意依勞動基準法及相關法令規定，訂定下列條款，以資共同遵守：</p>
+                    <p class="font-bold text-sky-800 bg-sky-100 p-2 rounded border border-sky-200">立合約書人：HYPASS（以下簡稱甲方）與 員工（以下簡稱乙方）。雙方同意依勞動基準法及相關法令規定，訂定下列條款，以資共同遵守：</p>
 
                     <div class="mt-3">
                         <h5 class="font-black text-slate-800 mb-1 border-l-2 border-slate-400 pl-1">第一條（職務與工作地點）</h5>
@@ -147,11 +155,11 @@
                     <div class="mt-3">
                         <h5 class="font-black text-slate-800 mb-1 border-l-2 border-slate-400 pl-1">第二條（工作時間與考勤打卡）</h5>
                         <p>1. 乙方應依甲方規定之班表出勤，並使用本系統之 GPS 定位功能確實驗證打卡。</p>
-                        <p class="text-amber-700 font-bold bg-amber-100 px-2 py-1 rounded my-1">2. 遲到寬限規定：每月給予 3 次遲到寬限期，每次寬限 10 分鐘。超過寬限次數或時間者，依公司考勤辦法扣薪與計點。</p>
+                        <p class="text-amber-700 font-bold bg-amber-100 px-2 py-1 rounded my-1 shadow-sm border border-amber-200">2. 遲到寬限規定：每月給予 3 次遲到寬限期，每次寬限 10 分鐘。超過寬限次數或時間者，依公司考勤辦法扣薪與計點。</p>
                         <p>3. 忘記打卡、遲到、早退之懲處，依甲方內部考勤管理辦法辦理，並於系統記錄計點（單位：點）。</p>
                     </div>
 
-                    <div class="mt-3 bg-red-100 p-2 rounded-lg border border-red-200">
+                    <div class="mt-3 bg-red-100 p-2 rounded-lg border border-red-200 shadow-sm">
                         <h5 class="font-black text-red-800 mb-1 flex items-center"><span class="mr-1">⚠️</span>第三條（請假與曠職規範）</h5>
                         <p class="text-red-700 font-bold">1. 乙方應依規定時間出勤。未經請假或假單未獲核准而缺勤者，視為曠職。曠職期間不給薪。</p>
                         <p class="text-red-700 font-black border-t border-red-200 pt-1 mt-1">2. 曠職解僱條款：無正當理由繼續曠職三日，或一個月內曠職達六日者，甲方得依《勞動基準法》第十二條規定，不經預告逕行終止勞動契約，且不發給資遣費。</p>
@@ -161,13 +169,13 @@
                     <div class="mt-3">
                         <h5 class="font-black text-slate-800 mb-1 border-l-2 border-slate-400 pl-1">第四條（薪資計算與發放）</h5>
                         <p>1. 薪資結構：依雙方議定之月薪或時薪計給。每月發薪日將薪資匯入乙方指定帳戶。</p>
-                        <p class="text-indigo-700 font-bold">2. 計算基準：月薪制者，日薪為月薪除以 30 日計算，時薪為日薪除以 8 小時計算。</p>
+                        <p class="text-indigo-700 font-bold bg-indigo-50 px-2 py-1 rounded my-1 border border-indigo-100">2. 計算基準：月薪制者，日薪為月薪除以 30 日計算，時薪為日薪除以 8 小時計算。</p>
                         <p>3. 請假扣薪與給薪規定：</p>
-                        <ul class="list-disc pl-4 mt-1 space-y-0.5 font-bold">
+                        <ul class="list-disc pl-5 mt-1 space-y-0.5 font-bold">
                             <li>事假：期間不給薪。</li>
                             <li>病假：一年內未超過三十日部分，工資折半發給。</li>
                             <li>公假、特休：工資照給。</li>
-                            <li>颱風假：因天災停班，依政府公告辦理，未出勤日不給薪。</li>
+                            <li>颱風假：因天災停班，依政府公告辦理，未出勤日不給薪（扣除當日薪資）。</li>
                         </ul>
                     </div>
 
@@ -211,6 +219,8 @@
     <script src="shared.js"></script>
     <script>
         let sigCanvas, sigCtx, isDrawing = false;
+        let globalLineId = "";
+        let globalLineEmail = "no-email@line.me";
 
         function initSignaturePad() {
             sigCanvas = document.getElementById('signature-pad');
@@ -249,38 +259,54 @@
             if(sigCtx && sigCanvas) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
         }
 
+        // 🌟 終極防彈版 initApp：具備完整報錯與本機測試降級機制
         async function initApp() {
             try {
-                await liff.init({ liffId: "2006764506-oGvVb3A2" });
-                if (!liff.isLoggedIn()) { liff.login(); return; }
-                
-                const profile = await liff.getProfile();
-                const lineId = profile.userId;
+                if(!window._sb) throw new Error("Supabase 尚未初始化，請確認 shared.js 設定。");
 
-                const { data: user, error } = await window._sb.from('employees').select('*').eq('line_id', lineId).single();
+                await liff.init({ liffId: "2006764506-oGvVb3A2" });
+                
+                // 本機測試備援機制 (如果在電腦本機開啟)
+                if (!liff.isInClient() && (window.location.hostname === 'localhost' || window.location.protocol === 'file:')) {
+                    if(confirm('偵測到非 LINE 內部環境，是否啟用本機測試模式？\n(按確定使用虛擬身分，按取消則嘗試網頁登入)')) {
+                        globalLineId = "TEST_LOCAL_ID_" + Math.floor(Math.random()*1000);
+                        globalLineEmail = "test@local.me";
+                    } else {
+                        if (!liff.isLoggedIn()) { liff.login(); return; }
+                        const profile = await liff.getProfile();
+                        globalLineId = profile.userId;
+                        globalLineEmail = liff.getDecodedIDToken()?.email || "no-email@line.me";
+                    }
+                } else {
+                    if (!liff.isLoggedIn()) { liff.login(); return; }
+                    const profile = await liff.getProfile();
+                    globalLineId = profile.userId;
+                    globalLineEmail = liff.getDecodedIDToken()?.email || "no-email@line.me";
+                }
+
+                const { data: user, error } = await window._sb.from('employees').select('*').eq('line_id', globalLineId).single();
                 
                 document.getElementById('loading-screen').classList.add('opacity-0');
                 setTimeout(() => { document.getElementById('loading-screen').style.display = 'none'; }, 500);
 
                 if (user) {
                     if (user.is_approved && user.employment_status === '在職') {
-                        // 如果已經開通，直接跳轉到員工中心
                         window.location.href = 'app_hr.html';
                     } else if (user.employment_status === '離職' || user.employment_status === '留職停薪') {
                         document.getElementById('unauthorized-screen').classList.remove('hidden');
                         document.getElementById('unauthorized-screen').classList.add('flex');
                     } else {
-                        // 仍在審核中
                         document.getElementById('pending-screen').classList.remove('hidden');
                     }
                 } else {
-                    // 新用戶，顯示註冊表單
                     document.getElementById('register-screen').classList.remove('hidden');
-                    setTimeout(initSignaturePad, 300); // 確保 Canvas 載入後初始化
+                    setTimeout(initSignaturePad, 300);
                 }
             } catch (err) {
                 console.error('LIFF Init failed', err);
-                alert('系統初始化失敗，請在 LINE 內部開啟！');
+                const errText = document.getElementById('loading-error-text');
+                if(errText) errText.innerText = err.message || err;
+                alert('系統初始化發生錯誤！\n\n錯誤訊息：' + (err.message || err) + '\n\n若您是在電腦上開啟，請確保已上傳至網路並使用 HTTPS。');
             }
         }
 
@@ -301,7 +327,7 @@
             const [bankCode, bankName] = bankVal.split('-');
 
             const payload = {
-                line_id: liff.getDecodedIDToken().sub,
+                line_id: globalLineId,
                 full_name: document.getElementById('reg-name').value,
                 id_number: document.getElementById('reg-idnum').value.toUpperCase(),
                 phone: document.getElementById('reg-phone').value,
@@ -314,7 +340,7 @@
                 bank_account: document.getElementById('reg-bank-acc').value,
                 bank_user_name: document.getElementById('reg-bank-user').value,
                 onboarding_date: new Date().toISOString().split('T')[0],
-                email: liff.getDecodedIDToken().email || 'no-email@line.me',
+                email: globalLineEmail,
                 nda_signed_at: new Date().toISOString(),
                 is_approved: false,
                 employment_status: '在職'
@@ -323,18 +349,16 @@
             try {
                 const { error } = await window._sb.from('employees').insert([payload]);
                 if (error) {
-                    // 若有違反唯一鍵 (如身分證重複)
                     if(error.code === '23505') throw new Error('身分證字號已被註冊！');
                     throw error;
                 }
                 
-                // 觸發 Webhook 通知老闆
-                window._sb.functions.invoke('line-webhook', { body: { action: 'notify_boss_new_emp', name: payload.full_name } }).catch(err=>console.log(err));
+                window._sb.functions.invoke('line-webhook', { body: { action: 'notify_boss_new_emp', name: payload.full_name } }).catch(err=>{});
 
                 document.getElementById('register-screen').classList.add('hidden');
                 document.getElementById('pending-screen').classList.remove('hidden');
             } catch (err) {
-                alert('註冊失敗：' + err.message);
+                alert('註冊失敗：' + (err.message || '資料庫連線錯誤'));
                 btn.innerText = '確認送出並建檔';
                 btn.disabled = false;
             }
