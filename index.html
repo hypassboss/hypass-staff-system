@@ -145,7 +145,7 @@
                 <h3 class="font-black text-slate-800 text-lg mb-5 flex items-center border-b border-slate-100 pb-3"><span class="mr-2 text-xl">⚖️</span>勞動契約與管理規章</h3>
                 
                 <div class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200 text-[11px] text-slate-700 leading-relaxed text-justify mb-6 h-64 overflow-y-auto shadow-inner">
-                    <p class="font-bold text-sky-800 bg-sky-100 p-2 rounded border border-sky-200">立合約書人（以下簡稱甲方）與 員工（以下簡稱乙方）。雙方同意依勞動基準法及相關法令規定，訂定下列條款，以資共同遵守：</p>
+                    <p class="font-bold text-sky-800 bg-sky-100 p-2 rounded border border-sky-200">立合約書人：HYPASS（以下簡稱甲方）與 員工（以下簡稱乙方）。雙方同意依勞動基準法及相關法令規定，訂定下列條款，以資共同遵守：</p>
 
                     <div class="mt-3">
                         <h5 class="font-black text-slate-800 mb-1 border-l-2 border-slate-400 pl-1">第一條（職務與工作地點）</h5>
@@ -259,26 +259,28 @@
             if(sigCtx && sigCanvas) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
         }
 
-        // 🌟 終極防彈版 initApp：具備完整報錯與本機測試降級機制
+        // 🌟 終極防彈版 initApp：具備全新 LIFF ID 與強制降級測試機制
         async function initApp() {
             try {
-                if(!window._sb) throw new Error("Supabase 尚未初始化，請確認 shared.js 設定。");
+                if(!window._sb) throw new Error("Supabase 尚未初始化，請確認 shared.js 內的金鑰設定是否正確。");
 
+                const LIFF_ID = "2009148826-RoogHmxk"; // 確保為最新的正確 ID
                 let liffInitSuccess = false;
+                
                 try {
-                    await liff.init({ liffId: "2006764506-oGvVb3A2" });
+                    await liff.init({ liffId: LIFF_ID });
                     liffInitSuccess = true;
                 } catch(e) {
-                    console.warn("LIFF初始化失敗:", e);
+                    console.warn("LIFF初始化失敗 (可能為本機端或 ID 錯誤):", e);
                 }
                 
-                // 🚨 無論 LIFF 成功或失敗，如果是網頁環境或是初始化失敗，都給予測試模式的選擇
+                // 🚨 強制降級機制：即使在 Github 網頁端打開也能測試
                 if (!liffInitSuccess || (!liff.isInClient() && window.location.protocol !== 'file:')) {
-                    if(confirm('偵測到非 LINE 環境或 LIFF ID 失效！\n\n是否啟用「網頁開發測試模式」強制進入系統？\n(按「確定」可直接進入註冊測試，按「取消」則顯示真實報錯)')) {
-                        globalLineId = "TEST_LOCAL_ID_" + Math.floor(Math.random()*1000);
+                    if(confirm('偵測到非 LINE APP 環境或 LIFF ID 尚未生效！\n\n是否啟用「網頁開發測試模式」強制進入系統？\n(按「確定」可繞過驗證直接進入註冊測試)')) {
+                        globalLineId = "TEST_LOCAL_ID_" + Math.floor(Math.random()*10000);
                         globalLineEmail = "test@local.me";
                     } else {
-                        if (!liffInitSuccess) throw new Error("LIFF app not found. 請至 LINE Developer 更新正確的 ID。");
+                        if (!liffInitSuccess) throw new Error("LIFF init failed. 若要在正式環境使用，請確保已在 LINE Developer 後台發布此 ID。");
                         if (!liff.isLoggedIn()) { liff.login(); return; }
                         const profile = await liff.getProfile();
                         globalLineId = profile.userId;
@@ -291,6 +293,7 @@
                     globalLineEmail = liff.getDecodedIDToken()?.email || "no-email@line.me";
                 }
 
+                // 驗證員工資料庫狀態
                 const { data: user, error } = await window._sb.from('employees').select('*').eq('line_id', globalLineId).single();
                 
                 document.getElementById('loading-screen').classList.add('opacity-0');
@@ -306,14 +309,15 @@
                         document.getElementById('pending-screen').classList.remove('hidden');
                     }
                 } else {
+                    // 若無資料，展開註冊表單
                     document.getElementById('register-screen').classList.remove('hidden');
                     setTimeout(initSignaturePad, 300);
                 }
             } catch (err) {
-                console.error('LIFF Init failed', err);
+                console.error('System Init Error:', err);
                 const errText = document.getElementById('loading-error-text');
                 if(errText) errText.innerText = err.message || err;
-                alert('系統初始化發生錯誤！\n\n錯誤訊息：' + (err.message || err) + '\n\n請確認您的 LINE LIFF ID 是否正確。');
+                alert('系統初始化發生錯誤！\n\n錯誤訊息：' + (err.message || err));
             }
         }
 
@@ -359,12 +363,13 @@
                     throw error;
                 }
                 
-                window._sb.functions.invoke('line-webhook', { body: { action: 'notify_boss_new_emp', name: payload.full_name } }).catch(err=>{});
+                // 嘗試推播給老闆 (忽略錯誤不阻擋流程)
+                window._sb.functions.invoke('line-webhook', { body: { action: 'notify_boss_new_emp', name: payload.full_name } }).catch(err=>console.log("Webhook 忽略:", err));
 
                 document.getElementById('register-screen').classList.add('hidden');
                 document.getElementById('pending-screen').classList.remove('hidden');
             } catch (err) {
-                alert('註冊失敗：' + (err.message || '資料庫連線錯誤'));
+                alert('註冊失敗：' + (err.message || '資料庫連線錯誤，請確認 Supabase 權限設定'));
                 btn.innerText = '確認送出並建檔';
                 btn.disabled = false;
             }
