@@ -68,6 +68,10 @@
                         <label class="text-[11px] font-black text-slate-500 ml-1 block mb-1 uppercase tracking-wider">電子信箱 Email</label>
                         <input type="email" id="reg-email" class="input-field" placeholder="example@hypass.com" required>
                     </div>
+                    <div class="bg-sky-50 p-3 rounded-xl border border-sky-100">
+                        <label class="text-[11px] font-black text-sky-700 ml-1 block mb-1 uppercase tracking-wider">到職日期 (舊員工請填原到職日)</label>
+                        <input type="date" id="reg-onboard-date" class="input-field border-sky-200 focus:border-sky-500 font-bold" required>
+                    </div>
                     <div>
                         <label class="text-[11px] font-black text-slate-500 ml-1 block mb-1 uppercase tracking-wider">通訊地址</label>
                         <div class="flex space-x-2 mb-2">
@@ -189,7 +193,6 @@
         let globalLineId = "";
         let currentLoadedContractVersion = "V1.0"; 
 
-        // 🌟 台灣縣市與鄉鎮市區資料
         const twCounties = {
             "基隆市": ["仁愛區", "信義區", "中正區", "中山區", "安樂區", "暖暖區", "七堵區"],
             "台北市": ["中正區", "大同區", "中山區", "松山區", "大安區", "萬華區", "信義區", "士林區", "北投區", "內湖區", "南港區", "文山區"],
@@ -288,13 +291,12 @@
             }
         }
 
-        // 🌟 終極防彈版 initApp：LIFF 初始化失敗時強制降級，保證絕不卡死
         async function initApp() {
-            populateCities(); // 初始化縣市選單
+            populateCities(); 
             try {
                 if(!window._sb) throw new Error("Supabase 尚未初始化，請確認 shared.js 內的金鑰設定是否正確。");
 
-                const LIFF_ID = "2009148826-RoogHmxk"; // 已更新為您最新的正確 ID
+                const LIFF_ID = "2009148826-RoogHmxk"; 
                 let liffInitSuccess = false;
                 
                 try {
@@ -304,9 +306,8 @@
                     console.warn("LIFF初始化失敗:", e);
                 }
                 
-                // 🚨 強制降級測試機制
                 if (!liffInitSuccess || (!liff.isInClient() && window.location.protocol !== 'file:')) {
-                    if(confirm('偵測到非 LINE APP 環境或 LIFF ID 尚未生效！\n\n是否啟用「網頁開發測試模式」強制進入系統？\n(按「確定」可繞過驗證直接進入註冊)')) {
+                    if(confirm('偵測到非 LINE APP 環境或 LIFF ID 尚未生效！\n\n是否啟用「網頁開發測試模式」強制進入系統？\n(按「確定」可繞過驗證直接進入註冊測試)')) {
                         globalLineId = "TEST_LOCAL_ID_" + Math.floor(Math.random()*10000);
                     } else {
                         if (!liffInitSuccess) throw new Error(`LIFF app '${LIFF_ID}' was not found. 請確認 LINE Developer 設定。`);
@@ -363,8 +364,8 @@
             const bankVal = document.getElementById('reg-bank-code').value;
             const [bankCode, bankName] = bankVal.split('-');
             
-            // 🌟 組合完整地址
             const fullAddress = document.getElementById('reg-city').value + document.getElementById('reg-district').value + document.getElementById('reg-address-detail').value;
+            const onboardDate = document.getElementById('reg-onboard-date').value;
 
             const payload = {
                 line_id: globalLineId,
@@ -378,8 +379,8 @@
                 bank_name: bankName,
                 bank_account: document.getElementById('reg-bank-acc').value,
                 bank_user_name: document.getElementById('reg-bank-user').value,
-                onboarding_date: new Date().toISOString().split('T')[0],
-                email: document.getElementById('reg-email').value, // 🌟 抓取 Email
+                onboarding_date: onboardDate, // 🌟 使用自訂輸入的到職日期
+                email: document.getElementById('reg-email').value, 
                 nda_signed_at: new Date().toISOString(),
                 signature_data: sigCanvas.toDataURL("image/png"),
                 signed_contract_version: currentLoadedContractVersion,
@@ -394,7 +395,9 @@
                     throw error;
                 }
                 
-                window._sb.functions.invoke('line-webhook', { body: { action: 'notify_boss_new_emp', name: payload.full_name } }).catch(err=>console.log("Webhook 忽略:", err));
+                // 🌟 強化 Webhook 訊息，包含指示老闆動作的說明
+                const bossMsg = `⚠️ 【新進/舊員工註冊通知】\n員工「${payload.full_name}」已提交基本資料與合約簽署。\n\n👉 系統提示：請登入後台「待辦審核」確認身分，並執行【開通】以配發員工編號，或予以駁回刪除。`;
+                window._sb.functions.invoke('line-webhook', { body: { action: 'notify_boss_new_emp', name: payload.full_name, message: bossMsg } }).catch(err=>console.log("Webhook 忽略:", err));
 
                 document.getElementById('register-screen').classList.add('hidden');
                 document.getElementById('pending-screen').classList.remove('hidden');
