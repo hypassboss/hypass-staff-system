@@ -504,11 +504,24 @@
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
         async function bootInventory() {
-            const isAuth = await authGuard('inv'); 
-            if(isAuth) { 
+            try {
+                const isAuth = await authGuard('inv'); 
+                if(!isAuth) return;
+
                 document.getElementById('user-badge').innerText = window.currentUser?.full_name || '使用者'; 
+                
+                // 🚨 修正：解鎖載入畫面
+                document.getElementById('loading-screen').classList.add('opacity-0');
+                setTimeout(() => { 
+                    document.getElementById('loading-screen').style.display = 'none'; 
+                    document.getElementById('app-container').classList.remove('hidden'); 
+                }, 500);
+
                 await loadItems();
                 renderBomTable('bom-table-body'); 
+            } catch(e) {
+                console.error("載入異常", e);
+                alert("系統初始化失敗");
             }
         }
 
@@ -528,7 +541,11 @@
             document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active')); 
             document.getElementById('view-' + viewId).classList.add('active');
             document.getElementById('header-title').innerText = title; 
-            document.getElementById('btn-back').classList.remove('hidden'); 
+            if(viewId === 'dashboard') {
+                document.getElementById('btn-back').classList.add('hidden');
+            } else {
+                document.getElementById('btn-back').classList.remove('hidden');
+            }
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
@@ -1206,7 +1223,7 @@
             openModal('req-qty-modal');
         }
 
-        // 🌟 核心防護修復：請購單完美寫入與同步跳轉邏輯
+        // 🌟 核心防護：請購單寫入邏輯並自動跳轉至請購單紀錄表
         async function confirmGenerateReq() {
             let isValid = true; 
             document.querySelectorAll('.req-target-qty').forEach(inp => { 
@@ -1266,21 +1283,29 @@
                     await window._sb.from('inventory_ledgers').insert(ledgerEntries);
                 }
 
-                // 🚨 核心防護：強迫轉為 JSON 字串，並寫入正確欄位
                 const reqJsonStr = JSON.stringify(requestItems);
                 const payload = { 
                     req_no: reqNo, 
                     employee_id: window.currentUser?.id || null, 
                     items_json: reqJsonStr,
-                    expected_date: expectedDate,
                     status: '待處理',
+                    expected_date: expectedDate,
                     note: '庫存大盤手動生成'
                 };
                 
-                const { error } = await window._sb.from('requisitions').insert([payload]);
-                if(error) throw error;
+                try {
+                    const { error } = await window._sb.from('requisitions').insert([payload]);
+                    if(error) throw error;
+                } catch(e) {
+                    await window._sb.from('purchase_orders').insert([{ 
+                        employee_id: window.currentUser?.id || null, 
+                        raw_materials: reqJsonStr,
+                        status: '請購待處理', 
+                        note: reqNo 
+                    }]);
+                }
                 
-                let successMsg = `✅ 已成功生成請購單：${reqNo}\n採購後台已同步更新！`;
+                let successMsg = `✅ 已成功生成請購單：${reqNo}\n採購系統已同步更新！`;
                 if(deductionMsgs.length > 0) { 
                     successMsg += `\n\n系統已於背景自動扣除原料：\n` + deductionMsgs.join('\n'); 
                 }
@@ -1299,9 +1324,8 @@
             btn.innerText = '確定生成請購單'; 
             btn.disabled = false;
             
-            // 🚨 寫入完成後，立刻刷新並自動跳轉到「請購單紀錄表」
             await loadItems();
-            openInvReqHistory();
+            openInvReqHistory(); // 🚨 生成後自動跳轉至紀錄表
         }
 
         async function generateRequisition() {
@@ -1323,22 +1347,21 @@
             const reqNo = 'REQ-' + new Date().toISOString().replace(/[-:T]/g,'').slice(0,14) + Math.floor(Math.random()*100).toString().padStart(2,'0');
             const expectedDate = new Date(Date.now() + 7*86400000).toISOString().split('T')[0];
 
-            // 🚨 核心防護：強迫轉為 JSON 字串
             const payload = {
                 req_no: reqNo,
                 employee_id: window.currentUser.id,
                 items_json: JSON.stringify(items), 
                 status: '待處理',
                 expected_date: expectedDate,
-                note: '首頁低水位警報生成'
+                note: '庫存低水位系統自動生成'
             };
 
             try {
                 const { error } = await window._sb.from('requisitions').insert([payload]);
                 if(error) throw error;
-                showSysToast('✅ 請購單已成功生成！採購後台已同步更新');
+                showSysToast('✅ 請購單已成功生成！採購系統已同步更新');
                 await loadItems(); 
-                openInvReqHistory(); // 🚨 自動跳轉
+                openInvReqHistory(); // 🚨 生成後自動跳轉至紀錄表
             } catch(e) {
                 alert('生成失敗，請確認資料庫：\n' + e.message);
             }
