@@ -156,13 +156,16 @@
             const { data: ledgers } = await window._sb.from('inventory_ledgers').select('*');
             invItems = items || [];
             stockMap = {};
-            if(ledgers) ledgers.forEach(l => { stockMap[l.item_id] = (stockMap[l.item_id] || 0) + l.change_qty; });
             
-            // 載入下拉選單
+            if(ledgers) {
+                ledgers.forEach(l => { 
+                    stockMap[l.item_id] = (stockMap[l.item_id] || 0) + l.change_qty; 
+                });
+            }
+            
             const itemOpts = '<option value="" disabled selected>請選擇...</option>' + invItems.map(i => `<option value="${i.id}">[${i.item_code}] ${i.item_name}</option>`).join('');
             document.getElementById('ledger-item').innerHTML = itemOpts;
 
-            // 低水位警報與生成表單
             let lowStockHtml = '';
             invItems.forEach(i => {
                 i.current_stock = stockMap[i.id] || 0;
@@ -184,7 +187,6 @@
             });
             document.getElementById('low-stock-list').innerHTML = lowStockHtml || '<p class="text-center text-xs font-bold text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl">✅ 所有庫存皆在安全水位之上</p>';
 
-            // 盤點表單
             document.getElementById('stocktake-list').innerHTML = invItems.map(i => `
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
                     <div><h4 class="font-black text-sm text-slate-800">${i.item_code}</h4><p class="text-[10px] text-slate-500">${i.item_name}</p><p class="text-[10px] text-indigo-600 font-bold mt-1">帳面庫存: ${i.current_stock}</p></div>
@@ -192,7 +194,6 @@
                 </div>
             `).join('');
 
-            // 歷史請購單
             const { data: reqs } = await window._sb.from('requisitions').select('*').order('created_at', {ascending: false});
             const safeReqs = reqs || [];
             document.getElementById('req-history-list').innerHTML = safeReqs.map(r => {
@@ -212,7 +213,7 @@
             }).join('') || '<p class="text-center text-xs font-bold text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl">尚無請購紀錄</p>';
         }
 
-        // 🌟 防彈版：完美生成並寫入 JSONB 請購單
+        // 🌟 核心修復：強制將陣列轉換為 JSON 字串，保證資料庫相容寫入
         async function generateRequisition() {
             const checks = document.querySelectorAll('.req-chk:checked');
             if(checks.length === 0) { alert('⚠️ 請先勾選需要請購的品項！'); return; }
@@ -229,12 +230,12 @@
             });
 
             const reqNo = 'REQ-' + new Date().toISOString().replace(/[-:T]/g,'').slice(0,14) + Math.floor(Math.random()*100).toString().padStart(2,'0');
-            const expectedDate = new Date(Date.now() + 7*86400000).toISOString().split('T')[0]; // 預設 7 天後
+            const expectedDate = new Date(Date.now() + 7*86400000).toISOString().split('T')[0];
 
             const payload = {
                 req_no: reqNo,
                 employee_id: window.currentUser.id,
-                items_json: items, // Supabase JS SDK 會自動將陣列轉為 Postgres 的 JSONB
+                items_json: JSON.stringify(items), // 🚨 確保格式正確
                 status: '待處理',
                 expected_date: expectedDate,
                 note: '庫存低水位系統自動生成'
@@ -243,7 +244,7 @@
             try {
                 const { error } = await window._sb.from('requisitions').insert([payload]);
                 if(error) throw error;
-                showSysToast('請購單已成功寫入，採購後台已同步更新！');
+                showSysToast('✅ 請購單已成功生成！後台已同步更新');
                 await loadInventoryData();
             } catch(e) {
                 alert('生成失敗，請確認資料庫：\n' + e.message);
