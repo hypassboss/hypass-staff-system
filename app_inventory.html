@@ -42,7 +42,12 @@
 
         <main class="p-4 relative z-10">
             <div id="view-dashboard" class="view-panel active space-y-4">
-                <div class="grid grid-cols-2 gap-3 mb-4">
+                
+                <div class="grid grid-cols-3 gap-3 mb-4">
+                    <button onclick="openView('catalog', '庫存清單大盤')" class="glass-card p-4 rounded-2xl flex flex-col items-center justify-center shadow-sm border border-emerald-100 hover:bg-emerald-50 transition active:scale-95">
+                        <span class="text-3xl mb-2 drop-shadow-sm">📊</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest">庫存大盤</span>
+                    </button>
                     <button onclick="openView('ledger', '進出庫作業')" class="glass-card p-4 rounded-2xl flex flex-col items-center justify-center shadow-sm border border-emerald-100 hover:bg-emerald-50 transition active:scale-95">
                         <span class="text-3xl mb-2 drop-shadow-sm">📥</span>
                         <span class="font-black text-slate-700 text-xs tracking-widest">進出庫作業</span>
@@ -65,6 +70,23 @@
                     <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center"><span class="mr-2 text-lg">📄</span>內部請購單歷史紀錄</h3>
                     <div id="req-history-list" class="space-y-3 max-h-[30vh] overflow-y-auto pr-1 no-scrollbar">
                         <p class="text-xs text-slate-400 text-center py-4">載入中...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-catalog" class="view-panel space-y-4">
+                <div class="glass-card p-5 rounded-2xl shadow-sm border-t-4 border-emerald-500">
+                    <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2">📦</span>庫存即時狀態清單</h3>
+                    
+                    <div class="flex space-x-2 mb-5">
+                        <select id="cat-filter" class="input-field select-arrow w-2/5 p-2.5 text-xs font-bold" onchange="renderCatalog()">
+                            <option value="">全部分類</option>
+                        </select>
+                        <input type="text" id="cat-search" class="input-field w-3/5 p-2.5 text-xs font-bold" placeholder="🔍 搜尋料號或品名..." onkeyup="renderCatalog()">
+                    </div>
+
+                    <div id="catalog-list" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1 no-scrollbar">
+                        <p class="text-center text-xs font-bold text-slate-400 py-6">載入中...</p>
                     </div>
                 </div>
             </div>
@@ -103,7 +125,7 @@
                         <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2">📋</span>實體盤點作業</h3>
                     </div>
                     <p class="text-[10px] text-slate-500 font-bold mb-4">系統將對比帳面數量與實際盤點數，自動生成盤盈虧紀錄。</p>
-                    <div id="stocktake-list" class="space-y-3 mb-6"></div>
+                    <div id="stocktake-list" class="space-y-3 mb-6 max-h-[60vh] overflow-y-auto no-scrollbar"></div>
                     <button onclick="submitStocktake()" id="btn-stocktake-submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base">確認完成盤點</button>
                 </div>
             </div>
@@ -160,29 +182,49 @@
                 }, 500);
 
                 await loadInventoryData();
-            } catch(e) { console.error(e); }
+            } catch(e) { 
+                console.error(e); 
+            }
         }
 
         async function loadInventoryData() {
             const { data: items } = await window._sb.from('items').select('*');
             const { data: ledgers } = await window._sb.from('inventory_ledgers').select('*');
+            
             invItems = items || [];
             stockMap = {};
             
+            // 建立過濾器
+            let catSet = new Set();
+            invItems.forEach(i => {
+                if(i.category) catSet.add(i.category);
+            });
+            const catFilterEl = document.getElementById('cat-filter');
+            catFilterEl.innerHTML = '<option value="">全部分類</option>';
+            catSet.forEach(c => {
+                catFilterEl.innerHTML += `<option value="${c}">${c}</option>`;
+            });
+
             if(ledgers) {
                 ledgers.forEach(l => { 
                     stockMap[l.item_id] = (stockMap[l.item_id] || 0) + l.change_qty; 
                 });
             }
             
-            // 載入下拉選單
+            // 將計算後的庫存存入陣列，方便渲染
+            invItems.forEach(i => {
+                i.current_stock = stockMap[i.id] || 0;
+            });
+            
             const itemOpts = '<option value="" disabled selected>請選擇...</option>' + invItems.map(i => `<option value="${i.id}">[${i.item_code}] ${i.item_name}</option>`).join('');
             document.getElementById('ledger-item').innerHTML = itemOpts;
 
-            // 低水位警報與生成表單 (多行排版恢復)
+            // 🌟 重新呼叫渲染目錄
+            renderCatalog();
+
+            // 低水位警報
             let lowStockHtml = '';
             invItems.forEach(i => {
-                i.current_stock = stockMap[i.id] || 0;
                 if(i.current_stock <= (i.safe_stock_level || 0)) {
                     let reqQty = ((i.safe_stock_level || 10) * 2) - i.current_stock;
                     if(reqQty < 1) reqQty = 10;
@@ -208,7 +250,7 @@
             });
             document.getElementById('low-stock-list').innerHTML = lowStockHtml || '<p class="text-center text-xs font-bold text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl">✅ 所有庫存皆在安全水位之上</p>';
 
-            // 盤點表單 (多行排版恢復)
+            // 盤點表單
             document.getElementById('stocktake-list').innerHTML = invItems.map(i => `
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
                     <div>
@@ -223,13 +265,16 @@
                 </div>
             `).join('');
 
-            // 歷史請購單 (多行排版恢復)
+            // 歷史請購單
             const { data: reqs } = await window._sb.from('requisitions').select('*').order('created_at', {ascending: false});
             const safeReqs = reqs || [];
             document.getElementById('req-history-list').innerHTML = safeReqs.map(r => {
                 let stCol = r.status === '已完成' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-sky-700 bg-sky-50 border-sky-200';
                 let items = [];
-                try { items = typeof r.items_json === 'string' ? JSON.parse(r.items_json) : r.items_json; } catch(e){}
+                try { 
+                    items = typeof r.items_json === 'string' ? JSON.parse(r.items_json) : r.items_json; 
+                } catch(e){}
+                
                 let itemsStr = Array.isArray(items) ? items.map(x => `${x.name} x${x.qty}`).join(', ') : '無明細';
                 
                 return `
@@ -245,30 +290,63 @@
             }).join('') || '<p class="text-center text-xs font-bold text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl">尚無請購紀錄</p>';
         }
 
-        // 🌟 核心防彈寫入邏輯：保證資料庫 JSONB 相容
+        // 🌟 恢復：庫存大盤渲染函數
+        function renderCatalog() {
+            const filter = document.getElementById('cat-filter').value;
+            const kw = document.getElementById('cat-search').value.toLowerCase();
+            const list = document.getElementById('catalog-list');
+            
+            let html = '';
+            invItems.forEach(i => {
+                if(filter && i.category !== filter) return;
+                if(kw && !i.item_code.toLowerCase().includes(kw) && !i.item_name.toLowerCase().includes(kw)) return;
+                
+                let stockClass = i.current_stock <= (i.safe_stock_level || 0) ? 'text-red-600 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200';
+                
+                html += `
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] font-black text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">${i.item_code}</span>
+                            <h4 class="font-black text-slate-800 text-sm mt-1">${i.item_name}</h4>
+                            <p class="text-[10px] text-slate-400 mt-1">規格: ${i.specification || '--'} | 分類: ${i.category || '未分類'}</p>
+                        </div>
+                        <div class="text-right flex flex-col items-end">
+                            <p class="text-[9px] font-bold text-slate-500 mb-1">當前庫存</p>
+                            <span class="text-lg font-black px-3 py-1 rounded-lg border shadow-sm ${stockClass}">${i.current_stock}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            list.innerHTML = html || '<p class="text-center text-xs font-bold text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl">找不到符合的品項</p>';
+        }
+
+        // 🌟 防彈版：完美轉為 JSON 字串寫入請購單
         async function generateRequisition() {
             const checks = document.querySelectorAll('.req-chk:checked');
-            if(checks.length === 0) { alert('⚠️ 請先勾選需要請購的品項！'); return; }
+            if(checks.length === 0) { 
+                alert('⚠️ 請先勾選需要請購的品項！'); 
+                return; 
+            }
             
             const btn = document.getElementById('btn-gen-req');
-            btn.innerText = '生成並寫入中...'; btn.disabled = true;
+            btn.innerText = '生成並寫入中...'; 
+            btn.disabled = true;
 
             let items = [];
             checks.forEach(c => {
                 const id = c.value;
                 const name = c.dataset.name;
                 const qty = parseInt(document.getElementById(`req-qty-${id}`).value) || 1;
-                items.push({ id, name, qty, unit: '件' });
+                items.push({ id: id, name: name, qty: qty, unit: '件' });
             });
 
             const reqNo = 'REQ-' + new Date().toISOString().replace(/[-:T]/g,'').slice(0,14) + Math.floor(Math.random()*100).toString().padStart(2,'0');
             const expectedDate = new Date(Date.now() + 7*86400000).toISOString().split('T')[0];
 
-            // 🚨 將 JSON 陣列明確轉換為字串，滿足 Supabase 寫入需求
             const payload = {
                 req_no: reqNo,
                 employee_id: window.currentUser.id,
-                items_json: JSON.stringify(items), 
+                items_json: JSON.stringify(items), // 🚨 確保寫入 JSONB 欄位不報錯
                 status: '待處理',
                 expected_date: expectedDate,
                 note: '庫存低水位系統自動生成'
@@ -277,18 +355,21 @@
             try {
                 const { error } = await window._sb.from('requisitions').insert([payload]);
                 if(error) throw error;
-                showSysToast('✅ 請購單已成功生成！後台已同步更新');
+                showSysToast('✅ 請購單已成功生成！採購後台已同步更新');
                 await loadInventoryData();
             } catch(e) {
-                alert('生成失敗，請確認資料庫連線：\n' + e.message);
+                alert('生成失敗，請確認資料庫：\n' + e.message);
             }
-            btn.innerText = '🛒 勾選並生成內部請購單'; btn.disabled = false;
+            
+            btn.innerText = '🛒 勾選並生成內部請購單'; 
+            btn.disabled = false;
         }
 
         async function submitLedger(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-ledger-submit');
-            btn.innerText = '處理中...'; btn.disabled = true;
+            btn.innerText = '處理中...'; 
+            btn.disabled = true;
 
             const t = document.getElementById('ledger-type').value;
             const iId = document.getElementById('ledger-item').value;
@@ -315,16 +396,19 @@
             } catch(error) { 
                 alert('登記失敗: ' + error.message); 
             }
-            btn.innerText = '確認送出'; btn.disabled = false;
+            btn.innerText = '確認送出'; 
+            btn.disabled = false;
         }
 
         async function submitStocktake() {
             if(!confirm('確認送出實體盤點數據？系統將自動生成盈虧紀錄。')) return;
             const btn = document.getElementById('btn-stocktake-submit');
-            btn.innerText = '結算中...'; btn.disabled = true;
+            btn.innerText = '結算中...'; 
+            btn.disabled = true;
 
             const inputs = document.querySelectorAll('.st-input');
             let payloads = [];
+            
             inputs.forEach(input => {
                 const id = input.dataset.id;
                 const curr = parseInt(input.dataset.current);
@@ -354,7 +438,8 @@
             } catch(e) { 
                 alert('盤點失敗: ' + e.message); 
             }
-            btn.innerText = '確認完成盤點'; btn.disabled = false;
+            btn.innerText = '確認完成盤點'; 
+            btn.disabled = false;
         }
 
         window.onload = bootInv;
