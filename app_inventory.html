@@ -10,7 +10,8 @@
     <style>
         body { background: #e2e8f0; font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; padding-bottom: 80px;}
         #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; }
-        .view-panel { display: none; animation: fadeIn 0.3s ease; } .view-panel.active { display: block; }
+        .view-panel { display: none; animation: fadeIn 0.3s ease; } 
+        .view-panel.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.8); }
         .input-field { width: 100%; padding: 0.75rem 1rem; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 0.75rem; font-size: 0.875rem; font-weight: bold; color: #1e293b; transition: all 0.2s; }
@@ -43,10 +44,12 @@
             <div id="view-dashboard" class="view-panel active space-y-4">
                 <div class="grid grid-cols-2 gap-3 mb-4">
                     <button onclick="openView('ledger', '進出庫作業')" class="glass-card p-4 rounded-2xl flex flex-col items-center justify-center shadow-sm border border-emerald-100 hover:bg-emerald-50 transition active:scale-95">
-                        <span class="text-3xl mb-2 drop-shadow-sm">📥</span><span class="font-black text-slate-700 text-xs tracking-widest">進出庫作業</span>
+                        <span class="text-3xl mb-2 drop-shadow-sm">📥</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest">進出庫作業</span>
                     </button>
                     <button onclick="openView('stocktake', '實體盤點作業')" class="glass-card p-4 rounded-2xl flex flex-col items-center justify-center shadow-sm border border-emerald-100 hover:bg-emerald-50 transition active:scale-95">
-                        <span class="text-3xl mb-2 drop-shadow-sm">📋</span><span class="font-black text-slate-700 text-xs tracking-widest">實體盤點</span>
+                        <span class="text-3xl mb-2 drop-shadow-sm">📋</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest">實體盤點</span>
                     </button>
                 </div>
 
@@ -126,15 +129,21 @@
             toast.className = 'toast-msg bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-lg font-black text-sm flex items-center';
             toast.innerHTML = `<span class="mr-2 text-xl">✅</span>${msg}`;
             container.appendChild(toast);
-            setTimeout(() => { toast.style.animation = 'slideInLeft 0.4s ease-in reverse forwards'; setTimeout(() => toast.remove(), 400); }, 5000);
+            setTimeout(() => { 
+                toast.style.animation = 'slideInLeft 0.4s ease-in reverse forwards'; 
+                setTimeout(() => toast.remove(), 400); 
+            }, 5000);
         }
 
         function openView(viewId, title) {
             document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active'));
             document.getElementById('view-' + viewId).classList.add('active');
             document.getElementById('header-title').innerText = title;
-            if(viewId === 'dashboard') document.getElementById('btn-back').classList.add('hidden');
-            else document.getElementById('btn-back').classList.remove('hidden');
+            if(viewId === 'dashboard') {
+                document.getElementById('btn-back').classList.add('hidden');
+            } else {
+                document.getElementById('btn-back').classList.remove('hidden');
+            }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -145,7 +154,10 @@
                 
                 document.getElementById('user-badge').innerText = window.currentUser?.full_name || '倉管人員';
                 document.getElementById('loading-screen').classList.add('opacity-0');
-                setTimeout(() => { document.getElementById('loading-screen').style.display = 'none'; document.getElementById('app-container').classList.remove('hidden'); }, 500);
+                setTimeout(() => { 
+                    document.getElementById('loading-screen').style.display = 'none'; 
+                    document.getElementById('app-container').classList.remove('hidden'); 
+                }, 500);
 
                 await loadInventoryData();
             } catch(e) { console.error(e); }
@@ -163,9 +175,11 @@
                 });
             }
             
+            // 載入下拉選單
             const itemOpts = '<option value="" disabled selected>請選擇...</option>' + invItems.map(i => `<option value="${i.id}">[${i.item_code}] ${i.item_name}</option>`).join('');
             document.getElementById('ledger-item').innerHTML = itemOpts;
 
+            // 低水位警報與生成表單 (多行排版恢復)
             let lowStockHtml = '';
             invItems.forEach(i => {
                 i.current_stock = stockMap[i.id] || 0;
@@ -173,27 +187,43 @@
                     let reqQty = ((i.safe_stock_level || 10) * 2) - i.current_stock;
                     if(reqQty < 1) reqQty = 10;
                     lowStockHtml += `
-                    <div class="bg-white p-3 rounded-xl border border-red-200 flex justify-between items-center mb-2 shadow-sm">
-                        <div class="flex items-center">
-                            <input type="checkbox" class="req-chk w-5 h-5 mr-3 accent-red-600 rounded" value="${i.id}" data-name="${i.item_name}" checked>
-                            <div><p class="font-black text-sm text-slate-800">${i.item_code}</p><p class="text-[10px] text-slate-500 truncate w-24">${i.item_name}</p></div>
+                        <div class="bg-white p-3 rounded-xl border border-red-200 flex justify-between items-center mb-2 shadow-sm">
+                            <div class="flex items-center">
+                                <input type="checkbox" class="req-chk w-5 h-5 mr-3 accent-red-600 rounded" value="${i.id}" data-name="${i.item_name}" checked>
+                                <div>
+                                    <p class="font-black text-sm text-slate-800">${i.item_code}</p>
+                                    <p class="text-[10px] text-slate-500 truncate w-24">${i.item_name}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-100">餘 ${i.current_stock}</span>
+                                <div class="flex items-center">
+                                    <span class="text-[10px] text-slate-500 mr-1 font-bold">請購:</span>
+                                    <input type="number" id="req-qty-${i.id}" value="${reqQty}" class="w-14 p-1 border border-slate-300 rounded text-center text-sm font-black text-slate-800 outline-none focus:border-red-500 bg-slate-50">
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-100">餘 ${i.current_stock}</span>
-                            <div class="flex items-center"><span class="text-[10px] text-slate-500 mr-1 font-bold">請購:</span><input type="number" id="req-qty-${i.id}" value="${reqQty}" class="w-14 p-1 border border-slate-300 rounded text-center text-sm font-black text-slate-800 outline-none focus:border-red-500 bg-slate-50"></div>
-                        </div>
-                    </div>`;
+                    `;
                 }
             });
             document.getElementById('low-stock-list').innerHTML = lowStockHtml || '<p class="text-center text-xs font-bold text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl">✅ 所有庫存皆在安全水位之上</p>';
 
+            // 盤點表單 (多行排版恢復)
             document.getElementById('stocktake-list').innerHTML = invItems.map(i => `
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
-                    <div><h4 class="font-black text-sm text-slate-800">${i.item_code}</h4><p class="text-[10px] text-slate-500">${i.item_name}</p><p class="text-[10px] text-indigo-600 font-bold mt-1">帳面庫存: ${i.current_stock}</p></div>
-                    <div class="flex flex-col items-end"><label class="text-[9px] font-bold text-slate-400 mb-1">實際盤點數</label><input type="number" id="st-${i.id}" data-id="${i.id}" data-current="${i.current_stock}" value="${i.current_stock}" class="st-input w-20 p-2 border border-indigo-200 rounded-lg text-center text-sm font-black text-indigo-800 outline-none focus:border-indigo-600 bg-indigo-50"></div>
+                    <div>
+                        <h4 class="font-black text-sm text-slate-800">${i.item_code}</h4>
+                        <p class="text-[10px] text-slate-500">${i.item_name}</p>
+                        <p class="text-[10px] text-indigo-600 font-bold mt-1">帳面庫存: ${i.current_stock}</p>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <label class="text-[9px] font-bold text-slate-400 mb-1">實際盤點數</label>
+                        <input type="number" id="st-${i.id}" data-id="${i.id}" data-current="${i.current_stock}" value="${i.current_stock}" class="st-input w-20 p-2 border border-indigo-200 rounded-lg text-center text-sm font-black text-indigo-800 outline-none focus:border-indigo-600 bg-indigo-50">
+                    </div>
                 </div>
             `).join('');
 
+            // 歷史請購單 (多行排版恢復)
             const { data: reqs } = await window._sb.from('requisitions').select('*').order('created_at', {ascending: false});
             const safeReqs = reqs || [];
             document.getElementById('req-history-list').innerHTML = safeReqs.map(r => {
@@ -202,18 +232,20 @@
                 try { items = typeof r.items_json === 'string' ? JSON.parse(r.items_json) : r.items_json; } catch(e){}
                 let itemsStr = Array.isArray(items) ? items.map(x => `${x.name} x${x.qty}`).join(', ') : '無明細';
                 
-                return `<div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm mb-2 hover:bg-slate-50 transition">
-                    <div class="flex justify-between items-center mb-1.5 border-b border-slate-100 pb-1.5">
-                        <span class="text-[10px] font-black text-slate-500 tracking-wider">${r.req_no}</span>
-                        <span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${stCol}">${r.status}</span>
+                return `
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm mb-2 hover:bg-slate-50 transition">
+                        <div class="flex justify-between items-center mb-1.5 border-b border-slate-100 pb-1.5">
+                            <span class="text-[10px] font-black text-slate-500 tracking-wider">${r.req_no}</span>
+                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${stCol}">${r.status}</span>
+                        </div>
+                        <p class="text-xs font-bold text-slate-700 truncate leading-relaxed">品項: ${itemsStr}</p>
+                        <p class="text-[9px] text-slate-400 font-bold mt-1 tracking-wider">${new Date(r.created_at).toLocaleDateString('zh-TW')} - 預期: ${r.expected_date||'未定'}</p>
                     </div>
-                    <p class="text-xs font-bold text-slate-700 truncate leading-relaxed">品項: ${itemsStr}</p>
-                    <p class="text-[9px] text-slate-400 font-bold mt-1 tracking-wider">${new Date(r.created_at).toLocaleDateString('zh-TW')} - 預期: ${r.expected_date||'未定'}</p>
-                </div>`;
+                `;
             }).join('') || '<p class="text-center text-xs font-bold text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl">尚無請購紀錄</p>';
         }
 
-        // 🌟 核心修復：強制將陣列轉換為 JSON 字串，保證資料庫相容寫入
+        // 🌟 核心防彈寫入邏輯：保證資料庫 JSONB 相容
         async function generateRequisition() {
             const checks = document.querySelectorAll('.req-chk:checked');
             if(checks.length === 0) { alert('⚠️ 請先勾選需要請購的品項！'); return; }
@@ -232,10 +264,11 @@
             const reqNo = 'REQ-' + new Date().toISOString().replace(/[-:T]/g,'').slice(0,14) + Math.floor(Math.random()*100).toString().padStart(2,'0');
             const expectedDate = new Date(Date.now() + 7*86400000).toISOString().split('T')[0];
 
+            // 🚨 將 JSON 陣列明確轉換為字串，滿足 Supabase 寫入需求
             const payload = {
                 req_no: reqNo,
                 employee_id: window.currentUser.id,
-                items_json: JSON.stringify(items), // 🚨 確保格式正確
+                items_json: JSON.stringify(items), 
                 status: '待處理',
                 expected_date: expectedDate,
                 note: '庫存低水位系統自動生成'
@@ -247,7 +280,7 @@
                 showSysToast('✅ 請購單已成功生成！後台已同步更新');
                 await loadInventoryData();
             } catch(e) {
-                alert('生成失敗，請確認資料庫：\n' + e.message);
+                alert('生成失敗，請確認資料庫連線：\n' + e.message);
             }
             btn.innerText = '🛒 勾選並生成內部請購單'; btn.disabled = false;
         }
@@ -264,7 +297,13 @@
             
             let finalQty = t === 'IN' ? qty : -qty;
 
-            const payload = { item_id: iId, change_type: t, change_qty: finalQty, employee_id: window.currentUser.id, note: note };
+            const payload = { 
+                item_id: iId, 
+                change_type: t, 
+                change_qty: finalQty, 
+                employee_id: window.currentUser.id, 
+                note: note 
+            };
             
             try {
                 const { error } = await window._sb.from('inventory_ledgers').insert([payload]);
@@ -273,7 +312,9 @@
                 e.target.reset();
                 await loadInventoryData();
                 openView('dashboard', '庫存中心大廳');
-            } catch(error) { alert('登記失敗: ' + error.message); }
+            } catch(error) { 
+                alert('登記失敗: ' + error.message); 
+            }
             btn.innerText = '確認送出'; btn.disabled = false;
         }
 
@@ -290,7 +331,13 @@
                 const actual = parseInt(input.value);
                 const diff = actual - curr;
                 if(diff !== 0) {
-                    payloads.push({ item_id: id, change_type: '盤點調整', change_qty: diff, employee_id: window.currentUser.id, note: `系統盤盈虧: 帳面 ${curr}, 實盤 ${actual}` });
+                    payloads.push({ 
+                        item_id: id, 
+                        change_type: '盤點調整', 
+                        change_qty: diff, 
+                        employee_id: window.currentUser.id, 
+                        note: `系統盤盈虧: 帳面 ${curr}, 實盤 ${actual}` 
+                    });
                 }
             });
 
@@ -304,7 +351,9 @@
                 }
                 await loadInventoryData();
                 openView('dashboard', '庫存中心大廳');
-            } catch(e) { alert('盤點失敗: ' + e.message); }
+            } catch(e) { 
+                alert('盤點失敗: ' + e.message); 
+            }
             btn.innerText = '確認完成盤點'; btn.disabled = false;
         }
 
