@@ -87,15 +87,15 @@
 
                 <div class="glass-card p-4 rounded-[2rem] shadow-sm border-t-4 border-red-500 relative overflow-hidden">
                     <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between">
-                        <span class="flex items-center"><span class="mr-1.5 text-lg">🚨</span> 庫存警示 (低水位優先)</span>
-                        <span class="text-[9px] bg-red-100 text-red-700 px-2 py-1 rounded-md font-black border border-red-200 shadow-sm">智慧排序</span>
+                        <span class="flex items-center"><span class="mr-1.5 text-lg">🚨</span> 庫存警示狀況</span>
+                        <span class="text-[9px] bg-red-100 text-red-700 px-2 py-1 rounded-md font-black border border-red-200 shadow-sm">低水位與警示</span>
                     </h3>
                     <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
                         <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[280px]">
                             <thead class="text-slate-500 border-b border-slate-200">
                                 <tr><th class="p-2 font-bold text-left">料號/品名</th><th class="p-2 font-bold text-right text-emerald-700">最新庫存</th><th class="p-2 font-bold text-right text-sky-600">請/採購量</th><th class="p-2 font-bold text-center">狀態/交期</th></tr>
                             </thead>
-                            <tbody id="ui-filter-status-table-all" class="divide-y divide-slate-100 bg-white rounded-lg">
+                            <tbody id="ui-filter-status-table-alert" class="divide-y divide-slate-100 bg-white rounded-lg">
                                 <tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">系統連線中...</td></tr>
                             </tbody>
                         </table>
@@ -629,7 +629,7 @@
             try {
                 const { data, error: itemErr } = await window._sb.from('items').select('*').order('created_at', {ascending: false}); 
                 if(itemErr) {
-                    const statusTable = document.getElementById('ui-filter-status-table-all');
+                    const statusTable = document.getElementById('ui-filter-status-table-alert');
                     if(statusTable) statusTable.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500 font-bold">讀取失敗，請確認已執行 SQL 解除 RLS</td></tr>`;
                     return;
                 }
@@ -781,68 +781,55 @@
                     }
                 }
 
-                // 🌟 整合版：統一所有警示項目 (低水位優先)
+                // 🌟 整合版：庫存警示 (低水位與警示優先)
                 let alertGoods = window.inventoryData.filter(i => {
                     let safe = i.safe_stock_level || 0;
-                    return i.current_stock <= (safe * 1.5); // 只抓取等於小於 1.5 倍水位的項目
+                    return i.current_stock <= (safe * 1.5);
                 });
 
                 alertGoods.sort((a, b) => {
-                    let safeA = a.safe_stock_level || 0; 
-                    let safeB = b.safe_stock_level || 0;
+                    let safeA = a.safe_stock_level || 0; let safeB = b.safe_stock_level || 0;
                     let pA = a.current_stock <= safeA ? 1 : 2;
                     let pB = b.current_stock <= safeB ? 1 : 2;
                     if(pA !== pB) return pA - pB;
                     return a.current_stock - b.current_stock;
                 });
 
-                let filterHtml = '';
+                let alertHtml = '';
                 if (alertGoods.length === 0) {
-                    filterHtml = '<tr><td colspan="4" class="p-4 text-center text-emerald-600 font-bold">✅ 所有庫存皆在安全水位之上</td></tr>';
+                    alertHtml = '<tr><td colspan="4" class="p-4 text-center text-emerald-600 font-bold">✅ 庫存皆在安全水位</td></tr>';
                 } else {
-                    filterHtml = alertGoods.map(i => {
-                        let qtyHtml = '<span class="text-slate-300">0</span>'; 
-                        let etaHtml = '<span class="text-slate-300">--</span>';
-                        let rQty = 0;
+                    alertHtml = alertGoods.map(i => {
+                        let qtyHtml = '<span class="text-slate-300">0</span>'; let etaHtml = '<span class="text-slate-300">--</span>';
+                        let poQty = pendingPOs_RAW[i.item_name] || 0;
+                        let reqQtyRaw = pendingReqs_RAW[i.item_name] || 0;
+                        let reqQtyFg = pendingReqs_FG[i.item_code] || 0;
 
                         if (i.item_type === '原料') {
-                            let poQty = pendingPOs_RAW[i.item_name] || 0;
-                            let reqQty = pendingReqs_RAW[i.item_name] || 0;
                             if(poQty > 0) {
                                 qtyHtml = `<span class="font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded shadow-sm border border-amber-100">${poQty.toFixed(0)}</span>`;
                                 let dStr = pendingPOs_ETA[i.item_name];
                                 etaHtml = (dStr && dStr !== '未定' && dStr !== null) ? `<span class="text-amber-600 font-bold">${String(dStr).slice(5)}</span>` : `<span class="text-slate-400 font-bold">採購中</span>`;
-                            } else if(reqQty > 0) {
-                                qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${reqQty.toFixed(0)}</span>`;
+                            } else if(reqQtyRaw > 0) {
+                                qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${reqQtyRaw.toFixed(0)}</span>`;
                                 etaHtml = `<span class="text-[9px] font-black text-sky-700 bg-sky-100 px-2 py-0.5 rounded border border-sky-200">請購中</span>`;
                             }
                         } else {
-                            rQty = pendingReqs_FG[i.item_code] || 0;
-                            if(rQty > 0) {
-                                qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${rQty}</span>`;
+                            if(reqQtyFg > 0) {
+                                qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${reqQtyFg}</span>`;
                                 etaHtml = `<span class="text-[9px] font-black text-sky-700 bg-sky-100 px-2 py-0.5 rounded border border-sky-200">待生產</span>`;
                             }
                         }
                         
-                        let safe = i.safe_stock_level || 0; 
-                        let isLow = i.current_stock <= safe; 
+                        let safe = i.safe_stock_level || 0; let isLow = i.current_stock <= safe;
                         let stockClass = isLow ? 'text-red-600 animate-pulse' : 'text-amber-500';
+                        let displayName = i.item_type === '原料' ? i.item_name : i.item_code;
 
-                        return `
-                            <tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0">
-                                <td class="p-2.5 font-black text-slate-700 truncate max-w-[140px]">
-                                    <span class="text-[9px] bg-slate-100 text-slate-500 px-1 rounded mr-1">${i.item_type==='原料'?'🏭':'📦'}</span>
-                                    ${i.item_type==='原料' ? i.item_name : i.item_code}
-                                </td>
-                                <td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td>
-                                <td class="p-2.5 text-right">${qtyHtml}</td>
-                                <td class="p-2.5 text-center text-[10px]">${etaHtml}</td>
-                            </tr>
-                        `;
+                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="p-2.5 font-mono font-black text-slate-700 truncate max-w-[120px]"><span class="text-[9px] bg-slate-100 text-slate-500 px-1 rounded mr-1">${i.item_type==='原料'?'🏭':'📦'}</span>${displayName}</td><td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="p-2.5 text-right">${qtyHtml}</td><td class="p-2.5 text-center text-[10px]">${etaHtml}</td></tr>`;
                     }).join('');
                 }
-                const uiFilterStatusTableAll = document.getElementById('ui-filter-status-table-all');
-                if (uiFilterStatusTableAll) uiFilterStatusTableAll.innerHTML = filterHtml;
+                const uiAlertTable = document.getElementById('ui-filter-status-table-alert');
+                if (uiAlertTable) uiAlertTable.innerHTML = alertHtml;
 
                 if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
                 if(document.getElementById('view-catalog').classList.contains('active')) renderFilteredInventory();
@@ -1184,8 +1171,17 @@
                     note: '庫存大盤手動生成'
                 };
                 
-                const { error } = await window._sb.from('requisitions').insert([payload]);
-                if(error) throw error;
+                try {
+                    const { error } = await window._sb.from('requisitions').insert([payload]);
+                    if(error) throw error;
+                } catch(e) {
+                    await window._sb.from('purchase_orders').insert([{ 
+                        employee_id: window.currentUser?.id || null, 
+                        raw_materials: reqJsonStr,
+                        status: '請購待處理', 
+                        note: reqNo 
+                    }]);
+                }
                 
                 let successMsg = `✅ 已成功生成請購單：${reqNo}\n採購後台已同步更新！`;
                 if(deductionMsgs.length > 0) { 
