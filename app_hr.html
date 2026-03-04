@@ -248,6 +248,11 @@
                         
                         <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base">送出申請</button>
                     </form>
+
+                    <h4 class="text-[11px] font-black text-slate-500 mb-3 mt-6 border-b border-slate-200 pb-1">📜 歷史請假與補登紀錄</h4>
+                    <div id="leave-history-list" class="space-y-2 max-h-[40vh] overflow-y-auto no-scrollbar pr-1 pb-2">
+                        <p class="text-center text-xs font-bold text-slate-400 py-4 border border-dashed border-slate-200 rounded-xl">載入中...</p>
+                    </div>
                 </div>
             </div>
 
@@ -358,6 +363,7 @@
                 loadBulletins();
                 loadPersonalBulletins();
                 loadCalendarAndStats(); 
+                loadLeaveHistory(); // 🌟 載入歷史請假單
                 
             } catch(e) { console.error(e); }
         }
@@ -784,6 +790,47 @@
             }
         }
 
+        // 🌟 假單歷史紀錄載入引擎
+        async function loadLeaveHistory() {
+            const container = document.getElementById('leave-history-list');
+            if(!container) return;
+            container.innerHTML = '<p class="text-center text-xs font-bold text-slate-400 py-4 border border-dashed border-slate-200 rounded-xl">載入中...</p>';
+            
+            try {
+                const { data, error } = await window._sb.from('leave_requests')
+                    .select('*')
+                    .eq('employee_id', window.currentUser.id)
+                    .order('created_at', { ascending: false });
+                
+                if(error) throw error;
+                if(!data || data.length === 0) {
+                    container.innerHTML = '<p class="text-center text-xs font-bold text-slate-400 py-4 border border-dashed border-slate-200 rounded-xl">尚無任何紀錄</p>';
+                    return;
+                }
+                
+                container.innerHTML = data.map(l => {
+                    let stCol = l.status === '核准' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : (l.status === '核駁' ? 'text-red-700 bg-red-50 border-red-200' : 'text-amber-700 bg-amber-50 border-amber-200');
+                    let timeStr = '';
+                    if(l.leave_type === '忘記打卡(補登)') {
+                        timeStr = `補登時間: ${new Date(l.start_time).toLocaleString('zh-TW')} (${l.target_punch_type==='IN'?'上班':'下班'})`;
+                    } else {
+                        timeStr = `${new Date(l.start_time).toLocaleString('zh-TW', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} ~ ${new Date(l.end_time).toLocaleString('zh-TW', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}`;
+                    }
+                    return `
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col mb-2 transition hover:bg-slate-50">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-black text-slate-800">${l.leave_type}</span>
+                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${stCol} shadow-sm">${l.status}</span>
+                        </div>
+                        <div class="text-[10px] font-mono font-bold text-slate-500 mb-1.5">${timeStr}</div>
+                        <div class="text-[10px] text-slate-600 font-bold bg-slate-50 p-1.5 rounded-lg border border-slate-100">事由: ${l.reason}</div>
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                container.innerHTML = '<p class="text-center text-xs text-red-500 py-4">歷史紀錄讀取失敗</p>';
+            }
+        }
+
         // 🌟 強制補登阻擋邏輯核心
         async function openPunch(type) {
             if (type === 'IN') {
@@ -966,7 +1013,11 @@
                 const bossMsg = `⚠️ 【待辦審核通知】\n員工「${window.currentUser.full_name}」送出了 ${t} 申請。\n事由：${res}\n\n👉 系統提示：請登入後台「待辦審核」進行【核准】或【核駁】。`;
                 window._sb.functions.invoke('line-webhook', { body: { action: 'leave_request', name: window.currentUser.full_name, type: t, reason: res, message: bossMsg } }).catch(err=>{});
                 
-                e.target.reset(); toggleLeaveType(); backToDash(); 
+                e.target.reset(); toggleLeaveType(); 
+                
+                // 🌟 刷新歷史紀錄並停留在此畫面讓員工確認
+                loadLeaveHistory();
+                
             } catch(error) { 
                 alert('送出失敗: ' + (error.message || '資料庫寫入錯誤')); 
             }
