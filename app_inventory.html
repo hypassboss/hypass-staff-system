@@ -42,8 +42,14 @@
     <div id="print-zone" style="display:none;"></div>
     <div id="toast-container" class="fixed bottom-24 left-4 z-[9999] flex flex-col space-y-3 pointer-events-none"></div>
 
-    <div id="app-container" class="max-w-md mx-auto shadow-2xl relative">
-        <header class="bg-slate-900 text-white px-4 py-3 shadow-md sticky top-0 z-50 flex items-center justify-between h-14 relative">
+    <div id="loading-screen" class="fixed inset-0 bg-slate-900 z-[9999] flex flex-col items-center justify-center text-white transition-opacity duration-500">
+        <div class="text-6xl mb-4 animate-bounce">📦</div>
+        <h2 class="text-xl font-black tracking-widest mb-2">HYPASS 庫存中心</h2>
+        <p class="text-xs font-bold text-slate-400 tracking-wider">系統載入中...</p>
+    </div>
+
+    <div id="app-container" class="max-w-md mx-auto shadow-2xl relative hidden">
+        <header class="bg-emerald-900 text-white px-4 py-3 shadow-md sticky top-0 z-50 flex items-center justify-between h-14 relative">
             <button id="btn-back" onclick="backToDash()" class="hidden mr-2 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition shrink-0 flex items-center">🔙 返回</button>
             <div class="flex-1 min-w-0 flex justify-center text-center">
                 <h1 class="text-base sm:text-lg font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-200 truncate px-2" id="header-title">庫存大廳</h1>
@@ -64,51 +70,32 @@
 
             <div id="view-dashboard" class="view-panel active space-y-4">
                 
-                <div class="glass-card p-4 rounded-[2rem] shadow-sm border-t-4 border-teal-500 relative overflow-hidden">
-                    <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between">
-                        <span class="flex items-center"><span class="mr-1.5 text-lg">🚗</span> 汽車濾網最新狀況</span>
-                        <span class="text-[9px] bg-teal-100 text-teal-700 px-2 py-1 rounded-md font-black border border-teal-200 shadow-sm">智慧排序</span>
-                    </h3>
-                    <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
-                        <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[280px]">
-                            <thead class="text-slate-500 border-b border-slate-200">
-                                <tr><th class="p-2 font-bold text-left">料號</th><th class="p-2 font-bold text-right text-emerald-700">最新庫存</th><th class="p-2 font-bold text-right text-sky-600">請/採購量</th><th class="p-2 font-bold text-center">狀態/交期</th></tr>
-                            </thead>
-                            <tbody id="ui-filter-status-table" class="divide-y divide-slate-100 bg-white rounded-lg">
-                                <tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">系統連線中...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="grid grid-cols-3 gap-3 mb-4">
+                    <button onclick="openView('catalog', '庫存清單大盤')" class="glass-card p-4 rounded-2xl flex flex-col items-center justify-center shadow-sm border border-emerald-100 hover:bg-emerald-50 transition active:scale-95">
+                        <span class="text-3xl mb-2 drop-shadow-sm">📊</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest">庫存大盤</span>
+                    </button>
+                    <button onclick="openView('ledger', '進出庫作業')" class="glass-card p-4 rounded-2xl flex flex-col items-center justify-center shadow-sm border border-emerald-100 hover:bg-emerald-50 transition active:scale-95">
+                        <span class="text-3xl mb-2 drop-shadow-sm">📥</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest">進出庫作業</span>
+                    </button>
+                    <button onclick="openView('stocktake', '實體盤點作業')" class="glass-card p-4 rounded-2xl flex flex-col items-center justify-center shadow-sm border border-emerald-100 hover:bg-emerald-50 transition active:scale-95">
+                        <span class="text-3xl mb-2 drop-shadow-sm">📋</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest">實體盤點</span>
+                    </button>
                 </div>
 
-                <div class="glass-card p-4 rounded-[2rem] shadow-sm border-t-4 border-indigo-500 relative overflow-hidden">
+                <div class="glass-card p-4 rounded-[2rem] shadow-sm border-t-4 border-sky-500 relative overflow-hidden">
                     <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between">
-                        <span class="flex items-center"><span class="mr-1.5 text-lg">✨</span> VESTA系列產品最新狀況</span>
-                        <span class="text-[9px] bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md font-black border border-indigo-200 shadow-sm">智慧排序</span>
+                        <span class="flex items-center"><span class="mr-1.5 text-lg">📊</span> 庫存最新狀況</span>
+                        <span class="text-[9px] bg-sky-100 text-sky-700 px-2 py-1 rounded-md font-black border border-sky-200 shadow-sm">包含成品與原料</span>
                     </h3>
                     <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
                         <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[280px]">
                             <thead class="text-slate-500 border-b border-slate-200">
-                                <tr><th class="p-2 font-bold text-left">料號</th><th class="p-2 font-bold text-right text-emerald-700">最新庫存</th><th class="p-2 font-bold text-right text-sky-600">請/採購量</th><th class="p-2 font-bold text-center">狀態/交期</th></tr>
+                                <tr><th class="p-2 font-bold text-left">料號/品名</th><th class="p-2 font-bold text-right text-emerald-700">最新庫存</th><th class="p-2 font-bold text-right text-sky-600">請/採購量</th><th class="p-2 font-bold text-center">狀態/交期</th></tr>
                             </thead>
-                            <tbody id="ui-filter-status-table-vesta" class="divide-y divide-slate-100 bg-white rounded-lg">
-                                <tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">系統連線中...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="glass-card p-4 rounded-[2rem] shadow-sm border-t-4 border-slate-600 relative overflow-hidden">
-                    <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between">
-                        <span class="flex items-center"><span class="mr-1.5 text-lg">🏭</span> 原料最新狀況</span>
-                        <span class="text-[9px] bg-slate-100 text-slate-700 px-2 py-1 rounded-md font-black border border-slate-200 shadow-sm">智慧排序</span>
-                    </h3>
-                    <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
-                        <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[280px]">
-                            <thead class="text-slate-500 border-b border-slate-200">
-                                <tr><th class="p-2 font-bold text-left">料號/品名</th><th class="p-2 font-bold text-right text-emerald-700">最新庫存</th><th class="p-2 font-bold text-right text-amber-600">採購量</th><th class="p-2 font-bold text-center">狀態/交期</th></tr>
-                            </thead>
-                            <tbody id="ui-filter-status-table-raw" class="divide-y divide-slate-100 bg-white rounded-lg">
+                            <tbody id="ui-latest-status-table" class="divide-y divide-slate-100 bg-white rounded-lg">
                                 <tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">系統連線中...</td></tr>
                             </tbody>
                         </table>
@@ -122,7 +109,7 @@
                     </button>
                     <button onclick="openInventoryList()" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-indigo-200 hover:bg-indigo-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">📋</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">庫存清單、請購申請</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">庫存請購</span>
                     </button>
                     <button onclick="openInvReqHistory()" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-amber-200 hover:bg-amber-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">📜</span>
@@ -134,15 +121,32 @@
                     </button>
                     <button onclick="openSearchPrintView()" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">🖨️</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">料號紀錄標籤列印</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">標籤列印</span>
                     </button>
+                </div>
+            </div>
+
+            <div id="view-catalog" class="view-panel space-y-4">
+                <div class="glass-card p-5 rounded-2xl shadow-sm border-t-4 border-emerald-500">
+                    <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2">📦</span>庫存即時狀態清單</h3>
+                    
+                    <div class="flex space-x-2 mb-5">
+                        <select id="cat-filter" class="input-field select-arrow w-2/5 p-2.5 text-xs font-bold" onchange="renderCatalog()">
+                            <option value="">全部分類</option>
+                        </select>
+                        <input type="text" id="cat-search" class="input-field w-3/5 p-2.5 text-xs font-bold" placeholder="🔍 搜尋料號或品名..." onkeyup="renderCatalog()">
+                    </div>
+
+                    <div id="catalog-list" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1 no-scrollbar pb-10">
+                        <p class="text-center text-xs font-bold text-slate-400 py-6">載入中...</p>
+                    </div>
                 </div>
             </div>
 
             <div id="view-inventory-list" class="view-panel relative">
                 <div class="sticky top-14 z-30 bg-[#f1f5f9] pt-2 pb-3 border-b border-slate-300 shadow-sm -mx-4 px-4 mb-4">
                     <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1.5">📦</span> 庫存大盤 <span class="text-[10px] text-slate-400 font-bold ml-2">(低水位優先)</span></h3>
+                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1.5">🚨</span> 低水位警報 <span class="text-[10px] text-slate-400 font-bold ml-2">(可快速請購)</span></h3>
                         <button onclick="openReqModal()" class="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-md active:scale-95 transition flex items-center">
                             生成請購單 <span id="list-req-count" class="ml-1.5 bg-white text-sky-600 px-2 py-0.5 rounded text-[11px] transition-all duration-300 shadow-sm">0</span>
                         </button>
@@ -176,7 +180,7 @@
                 <div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-amber-500 relative pb-10">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
                         <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">📜</span>請購單紀錄表</h3>
-                        <span class="text-[9px] text-slate-400 font-bold bg-slate-50 px-2 py-1 rounded shadow-sm border border-slate-200">同步至採購中心</span>
+                        <span class="text-[9px] text-slate-400 font-bold bg-slate-50 px-2 py-1 rounded shadow-sm border border-slate-200">同步至採購系統</span>
                     </div>
                     <div id="ui-inv-req-hist" class="space-y-3 max-h-[65vh] overflow-y-auto no-scrollbar pr-1">
                         <p class="text-center text-xs text-slate-400 py-6">載入中...</p>
@@ -184,14 +188,248 @@
                 </div>
             </div>
 
-            <div id="view-scanner" class="view-panel"><div class="glass-card p-4 rounded-[2rem] shadow-sm mb-4 bg-slate-900 border-0"><h3 class="text-white font-black text-center mb-3 tracking-widest text-sm">請將鏡頭對準料號條碼</h3><div id="reader" class="w-full rounded-2xl overflow-hidden bg-black min-h-[350px] shadow-inner"></div><button onclick="backToDash()" class="w-full mt-4 bg-slate-700 hover:bg-slate-600 text-white font-black py-4 rounded-xl active:scale-95 transition">結束掃描並返回</button></div></div>
-            <div id="view-count" class="view-panel space-y-4"><div class="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-6 rounded-[2rem] shadow-lg text-center relative overflow-hidden"><div class="absolute -left-4 -bottom-4 text-7xl opacity-10">🏷️</div><div class="text-[10px] text-sky-400 font-black tracking-widest mb-1 bg-white/10 inline-block px-3 py-1 rounded-full" id="c-item-code">料號讀取中...</div><h3 class="text-2xl font-black mb-1 mt-2" id="c-item-name">品名讀取中...</h3><p class="text-xs text-slate-400 font-bold" id="c-item-spec">規格讀取中...</p><input type="hidden" id="c-item-id"><input type="hidden" id="c-qty-per-pack"></div><div class="glass-card p-5 rounded-[2rem] shadow-sm border border-emerald-100"><h4 class="text-sm font-black text-slate-700 mb-4 flex items-center"><span class="mr-2 text-xl">✍️</span>請輸入盤點數量</h4><div class="grid grid-cols-2 gap-3 mb-5"><div class="bg-slate-50 p-2.5 rounded-2xl border border-slate-200 shadow-inner"><label class="text-[11px] font-black text-slate-500 ml-1 mb-1.5 block tracking-wider">📦 儲存庫 (整箱)</label><select id="c-box-count" onchange="calcTotal()" class="w-full bg-white border border-slate-300 p-2.5 rounded-xl text-base font-black text-slate-800 text-center select-arrow shadow-sm outline-none"><option value="0" selected>0 箱</option><option value="1">1 箱</option><option value="2">2 箱</option><option value="3">3 箱</option><option value="4">4 箱</option><option value="5">5 箱</option><option value="6">6 箱</option><option value="7">7 箱</option><option value="8">8 箱</option><option value="9">9 箱</option><option value="custom">自訂輸入...</option></select><input type="number" id="c-custom-box" oninput="calcTotal()" class="hidden w-full bg-sky-50 border border-sky-300 p-2.5 rounded-xl text-base font-black text-sky-800 text-center shadow-sm mt-2 outline-none" placeholder="輸入箱數"></div><div class="bg-slate-50 p-2.5 rounded-2xl border border-slate-200 shadow-inner"><label class="text-[11px] font-black text-slate-500 ml-1 mb-1.5 block tracking-wider">🏷️ 出貨庫 (散裝)</label><select id="c-fraction-count" onchange="calcTotal()" class="w-full bg-white border border-slate-300 p-2.5 rounded-xl text-base font-black text-slate-800 text-center select-arrow shadow-sm outline-none"><option value="1">1 箱</option><option value="0.75">3/4 箱</option><option value="0.5">1/2 箱</option><option value="0.25">1/4 箱</option><option value="0" selected>0 箱</option></select></div></div><div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl mb-5 text-center shadow-inner"><p class="text-[10px] font-black text-emerald-700 mb-1.5 tracking-widest uppercase">系統自動換算總量</p><p class="text-[9px] font-bold text-emerald-600/70 mb-3">(包裝為每箱 <span id="c-pack-num" class="font-black text-emerald-800 text-sm">--</span> 件)</p><div class="flex items-center justify-center space-x-4"><button onclick="adjustTotal(-1)" class="w-10 h-10 bg-white rounded-full font-black text-xl text-emerald-600 shadow-md active:scale-90 transition transform">-</button><input type="number" id="c-total-qty" class="bg-transparent text-5xl font-black text-emerald-900 w-24 text-center outline-none tracking-tighter" readonly><button onclick="adjustTotal(1)" class="w-10 h-10 bg-white rounded-full font-black text-xl text-emerald-600 shadow-md active:scale-90 transition transform">+</button></div></div><button id="btn-submit-count" onclick="submitCount()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition text-base tracking-widest flex justify-center items-center"><span>💾 確認並盤點下一個</span></button></div></div>
-            <div id="view-register" class="view-panel space-y-5"><div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-sky-500"><h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">➕</span> 新增料號基本資料</h3><form onsubmit="saveItem(event)" class="space-y-4"><div class="grid grid-cols-2 gap-3"><div class="col-span-2"><input type="text" id="i-name" placeholder="品名 (必填)" class="w-full p-2.5 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none focus:border-sky-500" required></div><div><input type="text" id="i-code" placeholder="料號 (例: TMP-001)" class="w-full p-2.5 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 uppercase outline-none focus:border-sky-500" required></div><div><select id="i-type" class="w-full p-2.5 bg-white rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required><option value="原料">原料</option><option value="成品" selected>成品</option></select></div><div class="col-span-2"><select id="i-category" onchange="checkCustomCategory()" class="w-full p-2.5 bg-white rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required><option value="" disabled selected>請選擇產品類別</option><option value="汽車冷氣濾網">汽車冷氣濾網</option><option value="VESTA系列產品">VESTA系列產品</option><option value="卡卡吸管">卡卡吸管</option><option value="空氣瓶子">空氣瓶子</option><option value="標籤貼紙">標籤貼紙</option><option value="車用濾布">車用濾布</option><option value="custom" class="text-sky-600 font-black">➕ 新增自訂類別...</option></select><input type="text" id="i-custom-category" placeholder="請輸入新類別名稱" class="hidden mt-2 w-full p-2.5 bg-sky-50 rounded-xl text-sm font-bold border border-sky-300 outline-none"></div><div class="col-span-2"><input type="text" id="i-spec" placeholder="詳細規格尺寸 (選填)" class="w-full p-2.5 bg-slate-50 rounded-xl text-sm border border-slate-200 outline-none focus:border-sky-500"></div><div class="bg-white p-2 rounded-xl border border-slate-200"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">每箱包裝數量</label><input type="number" id="i-qty" value="1" min="1" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none" required></div><div class="bg-white p-2 rounded-xl border border-slate-200"><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">生產週期</label><select id="i-lead" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow" required><option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option></select></div><div class="col-span-2 bg-white p-2.5 rounded-xl border border-sky-200 shadow-sm"><label class="text-[10px] font-black text-sky-700 ml-1 block mb-1 tracking-widest">盤點週期 (逾期提醒頻率)</label><select id="i-cycle" class="w-full p-2 bg-sky-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow text-sky-900" required><option value="7">7 天 (每週)</option><option value="30" selected>30 天 (每月)</option><option value="60">60 天 (雙月)</option><option value="90">90 天 (每季)</option></select></div><div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-xs font-black text-slate-700 mb-3 flex items-center justify-between"><span class="flex items-center"><span class="mr-1 text-lg">⚙️</span> 產品 BOM 表設定</span><span class="text-[9px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded">最多 6 項</span></h5><div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-100 p-1"><table class="w-full text-left text-[10px] whitespace-nowrap min-w-[450px]"><thead class="text-slate-500 border-b border-slate-200"><tr><th class="p-2 font-bold w-6 text-center">項次</th><th class="p-2 font-bold">原料名稱</th><th class="p-2 font-bold">用量</th><th class="p-2 font-bold">單位</th><th class="p-2 font-bold text-sky-700">總用量(+10%損耗)</th></tr></thead><tbody id="bom-table-body" class="divide-y divide-slate-100 bg-white rounded-lg"></tbody></table></div></div></div><button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-3.5 rounded-2xl shadow-md active:scale-95 transition tracking-widest text-base mt-4">💾 儲存料號與 BOM</button></form></div></div>
-            <div id="view-search-print" class="view-panel space-y-5"><div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-slate-600"><h3 class="font-black text-slate-800 pl-1 text-base md:text-lg mb-4 flex items-center"><span class="mr-2">🔍</span>料號紀錄標籤列印</h3><div class="flex space-x-2 mb-4"><select id="search-cat-filter" class="w-[35%] p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold outline-none select-arrow shadow-inner" onchange="renderItemSearch()"><option value="">全部分類</option></select><input type="text" id="item-search-input" placeholder="搜尋料號/品名..." class="w-[65%] p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold outline-none focus:border-slate-500 transition shadow-inner" onkeyup="renderItemSearch()"></div><div id="item-search-results" class="space-y-3 max-h-[65vh] overflow-y-auto pr-1 no-scrollbar pb-10"><div class="text-center text-xs text-slate-400 py-6 italic">請輸入關鍵字搜尋料號...</div></div></div></div>
+            <div id="view-ledger" class="view-panel space-y-4">
+                <div class="glass-card p-5 rounded-2xl shadow-sm border-t-4 border-emerald-500">
+                    <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2">📥</span>進出庫登記</h3>
+                    <form onsubmit="submitLedger(event)" class="space-y-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">作業類型</label>
+                            <select id="ledger-type" class="input-field select-arrow font-black">
+                                <option value="IN" class="text-emerald-600">📥 入庫 (進貨/退回)</option>
+                                <option value="OUT" class="text-red-600">📤 出庫 (領用/消耗)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">選擇料號/品名</label>
+                            <select id="ledger-item" class="input-field select-arrow" required></select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">異動數量</label>
+                            <input type="number" id="ledger-qty" class="input-field font-black text-lg" min="1" required>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">備註單號或說明</label>
+                            <input type="text" id="ledger-note" class="input-field" placeholder="例如：採購單號、領用人">
+                        </div>
+                        <button type="submit" id="btn-ledger-submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base">確認送出</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="view-stocktake" class="view-panel space-y-4">
+                <div class="glass-card p-5 rounded-2xl shadow-sm border-t-4 border-indigo-500 relative pb-20">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2">📋</span>實體盤點作業</h3>
+                    </div>
+                    <p class="text-[10px] text-slate-500 font-bold mb-4">系統將對比帳面數量與實際盤點數，自動生成盤盈虧紀錄。</p>
+                    <div id="stocktake-list" class="space-y-3 mb-6 max-h-[60vh] overflow-y-auto no-scrollbar"></div>
+                    <button onclick="submitStocktake()" id="btn-stocktake-submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base">確認完成盤點</button>
+                </div>
+            </div>
+
+            <div id="view-scanner" class="view-panel">
+                <div class="glass-card p-4 rounded-[2rem] shadow-sm mb-4 bg-slate-900 border-0">
+                    <h3 class="text-white font-black text-center mb-3 tracking-widest text-sm">請將鏡頭對準料號條碼</h3>
+                    <div id="reader" class="w-full rounded-2xl overflow-hidden bg-black min-h-[350px] shadow-inner"></div>
+                    <button onclick="backToDash()" class="w-full mt-4 bg-slate-700 hover:bg-slate-600 text-white font-black py-4 rounded-xl active:scale-95 transition">結束掃描並返回</button>
+                </div>
+            </div>
+
+            <div id="view-count" class="view-panel space-y-4">
+                <div class="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-6 rounded-[2rem] shadow-lg text-center relative overflow-hidden">
+                    <div class="absolute -left-4 -bottom-4 text-7xl opacity-10">🏷️</div>
+                    <div class="text-[10px] text-sky-400 font-black tracking-widest mb-1 bg-white/10 inline-block px-3 py-1 rounded-full" id="c-item-code">料號讀取中...</div>
+                    <h3 class="text-2xl font-black mb-1 mt-2" id="c-item-name">品名讀取中...</h3>
+                    <p class="text-xs text-slate-400 font-bold" id="c-item-spec">規格讀取中...</p>
+                    <input type="hidden" id="c-item-id">
+                    <input type="hidden" id="c-qty-per-pack">
+                </div>
+                <div class="glass-card p-5 rounded-[2rem] shadow-sm border border-emerald-100">
+                    <h4 class="text-sm font-black text-slate-700 mb-4 flex items-center"><span class="mr-2 text-xl">✍️</span>請輸入盤點數量</h4>
+                    <div class="grid grid-cols-2 gap-3 mb-5">
+                        <div class="bg-slate-50 p-2.5 rounded-2xl border border-slate-200 shadow-inner">
+                            <label class="text-[11px] font-black text-slate-500 ml-1 mb-1.5 block tracking-wider">📦 儲存庫 (整箱)</label>
+                            <select id="c-box-count" onchange="calcTotal()" class="w-full bg-white border border-slate-300 p-2.5 rounded-xl text-base font-black text-slate-800 text-center select-arrow shadow-sm outline-none">
+                                <option value="0" selected>0 箱</option><option value="1">1 箱</option><option value="2">2 箱</option><option value="3">3 箱</option><option value="4">4 箱</option><option value="5">5 箱</option><option value="6">6 箱</option><option value="7">7 箱</option><option value="8">8 箱</option><option value="9">9 箱</option><option value="custom">自訂輸入...</option>
+                            </select>
+                            <input type="number" id="c-custom-box" oninput="calcTotal()" class="hidden w-full bg-sky-50 border border-sky-300 p-2.5 rounded-xl text-base font-black text-sky-800 text-center shadow-sm mt-2 outline-none" placeholder="輸入箱數">
+                        </div>
+                        <div class="bg-slate-50 p-2.5 rounded-2xl border border-slate-200 shadow-inner">
+                            <label class="text-[11px] font-black text-slate-500 ml-1 mb-1.5 block tracking-wider">🏷️ 出貨庫 (散裝)</label>
+                            <select id="c-fraction-count" onchange="calcTotal()" class="w-full bg-white border border-slate-300 p-2.5 rounded-xl text-base font-black text-slate-800 text-center select-arrow shadow-sm outline-none">
+                                <option value="1">1 箱</option><option value="0.75">3/4 箱</option><option value="0.5">1/2 箱</option><option value="0.25">1/4 箱</option><option value="0" selected>0 箱</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl mb-5 text-center shadow-inner">
+                        <p class="text-[10px] font-black text-emerald-700 mb-1.5 tracking-widest uppercase">系統自動換算總量</p>
+                        <p class="text-[9px] font-bold text-emerald-600/70 mb-3">(包裝為每箱 <span id="c-pack-num" class="font-black text-emerald-800 text-sm">--</span> 件)</p>
+                        <div class="flex items-center justify-center space-x-4">
+                            <button onclick="adjustTotal(-1)" class="w-10 h-10 bg-white rounded-full font-black text-xl text-emerald-600 shadow-md active:scale-90 transition transform">-</button>
+                            <input type="number" id="c-total-qty" class="bg-transparent text-5xl font-black text-emerald-900 w-24 text-center outline-none tracking-tighter" readonly>
+                            <button onclick="adjustTotal(1)" class="w-10 h-10 bg-white rounded-full font-black text-xl text-emerald-600 shadow-md active:scale-90 transition transform">+</button>
+                        </div>
+                    </div>
+                    <button id="btn-submit-count" onclick="submitCount()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition text-base tracking-widest flex justify-center items-center">
+                        <span>💾 確認並盤點下一個</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="view-register" class="view-panel space-y-5">
+                <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-sky-500">
+                    <h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">➕</span> 新增料號基本資料</h3>
+                    <form onsubmit="saveItem(event)" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="col-span-2">
+                                <input type="text" id="i-name" placeholder="品名 (必填)" class="w-full p-2.5 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none focus:border-sky-500" required>
+                            </div>
+                            <div>
+                                <input type="text" id="i-code" placeholder="料號 (例: TMP-001)" class="w-full p-2.5 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 uppercase outline-none focus:border-sky-500" required>
+                            </div>
+                            <div>
+                                <select id="i-type" class="w-full p-2.5 bg-white rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required>
+                                    <option value="原料">原料</option><option value="成品" selected>成品</option>
+                                </select>
+                            </div>
+                            <div class="col-span-2">
+                                <select id="i-category" onchange="checkCustomCategory()" class="w-full p-2.5 bg-white rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required>
+                                    <option value="" disabled selected>請選擇產品類別</option>
+                                    <option value="汽車冷氣濾網">汽車冷氣濾網</option><option value="VESTA系列產品">VESTA系列產品</option>
+                                    <option value="卡卡吸管">卡卡吸管</option><option value="空氣瓶子">空氣瓶子</option>
+                                    <option value="標籤貼紙">標籤貼紙</option><option value="車用濾布">車用濾布</option>
+                                    <option value="custom" class="text-sky-600 font-black">➕ 新增自訂類別...</option>
+                                </select>
+                                <input type="text" id="i-custom-category" placeholder="請輸入新類別名稱" class="hidden mt-2 w-full p-2.5 bg-sky-50 rounded-xl text-sm font-bold border border-sky-300 outline-none">
+                            </div>
+                            <div class="col-span-2">
+                                <input type="text" id="i-spec" placeholder="詳細規格尺寸 (選填)" class="w-full p-2.5 bg-slate-50 rounded-xl text-sm border border-slate-200 outline-none focus:border-sky-500">
+                            </div>
+                            <div class="bg-white p-2 rounded-xl border border-slate-200">
+                                <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">每箱包裝數量</label>
+                                <input type="number" id="i-qty" value="1" min="1" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none" required>
+                            </div>
+                            <div class="bg-white p-2 rounded-xl border border-slate-200">
+                                <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">生產週期</label>
+                                <select id="i-lead" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow" required>
+                                    <option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option>
+                                </select>
+                            </div>
+                            <div class="col-span-2 bg-white p-2.5 rounded-xl border border-sky-200 shadow-sm">
+                                <label class="text-[10px] font-black text-sky-700 ml-1 block mb-1 tracking-widest">盤點週期 (逾期提醒頻率)</label>
+                                <select id="i-cycle" class="w-full p-2 bg-sky-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow text-sky-900" required>
+                                    <option value="7">7 天 (每週)</option><option value="30" selected>30 天 (每月)</option><option value="60">60 天 (雙月)</option><option value="90">90 天 (每季)</option>
+                                </select>
+                            </div>
+                            <div class="col-span-2 border-t border-sky-200 pt-3 mt-1">
+                                <h5 class="text-xs font-black text-slate-700 mb-3 flex items-center justify-between">
+                                    <span class="flex items-center"><span class="mr-1 text-lg">⚙️</span> 產品 BOM 表設定</span>
+                                    <span class="text-[9px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded">最多 6 項</span>
+                                </h5>
+                                <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-100 p-1">
+                                    <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[450px]">
+                                        <thead class="text-slate-500 border-b border-slate-200">
+                                            <tr><th class="p-2 font-bold w-6 text-center">項次</th><th class="p-2 font-bold">原料名稱</th><th class="p-2 font-bold">用量</th><th class="p-2 font-bold">單位</th><th class="p-2 font-bold text-sky-700">總用量(+10%損耗)</th></tr>
+                                        </thead>
+                                        <tbody id="bom-table-body" class="divide-y divide-slate-100 bg-white rounded-lg"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-3.5 rounded-2xl shadow-md active:scale-95 transition tracking-widest text-base mt-4">💾 儲存料號與 BOM</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="view-search-print" class="view-panel space-y-5">
+                <div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-slate-600">
+                    <h3 class="font-black text-slate-800 pl-1 text-base md:text-lg mb-4 flex items-center"><span class="mr-2">🔍</span>料號紀錄標籤列印</h3>
+                    <div class="flex space-x-2 mb-4">
+                        <select id="search-cat-filter" class="w-[35%] p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold outline-none select-arrow shadow-inner" onchange="renderItemSearch()">
+                            <option value="">全部分類</option>
+                        </select>
+                        <input type="text" id="item-search-input" placeholder="搜尋料號/品名..." class="w-[65%] p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold outline-none focus:border-slate-500 transition shadow-inner" onkeyup="renderItemSearch()">
+                    </div>
+                    <div id="item-search-results" class="space-y-3 max-h-[65vh] overflow-y-auto pr-1 no-scrollbar pb-10">
+                        <div class="text-center text-xs text-slate-400 py-6 italic">請輸入關鍵字搜尋料號...</div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
-    <div id="front-item-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]"><div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-5 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar"><h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯基本資料與 BOM</h3><input type="hidden" id="fe-item-id"><div class="space-y-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">品名</label><input type="text" id="fe-item-name" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-500 transition shadow-inner"></div><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">產品類別</label><select id="fe-item-cat" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-sky-500 transition shadow-inner"></select></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">生產週期</label><select id="fe-item-lead" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-sky-500 transition shadow-inner"><option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option></select></div><div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">盤點週期 (逾期提醒)</label><select id="fe-item-cycle" class="w-full p-2.5 bg-sky-50 border border-sky-200 rounded-xl text-sm font-black text-sky-900 select-arrow outline-none focus:border-sky-500 transition shadow-inner"><option value="7">7 天 (每週)</option><option value="30">30 天 (每月)</option><option value="60">60 天 (雙月)</option><option value="90">90 天 (一季)</option></select></div></div><div class="border-t border-slate-200 pt-3 mt-2"><h5 class="text-[10px] font-black text-sky-700 mb-2 tracking-widest">⚙️ BOM 表修正</h5><div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1"><table class="w-full text-left text-[10px] whitespace-nowrap min-w-[400px]"><thead class="text-slate-500 border-b border-slate-200"><tr><th class="p-1 font-bold">項次</th><th class="p-1 font-bold">原料名稱</th><th class="p-1 font-bold">用量</th><th class="p-1 font-bold">單位</th><th class="p-1 font-bold text-sky-700">總用量(+10%損耗)</th></tr></thead><tbody id="fe-bom-table-body" class="divide-y divide-slate-100 bg-white rounded-lg"></tbody></table></div></div></div><div class="flex space-x-3 mt-6"><button onclick="closeModal('front-item-edit-modal')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3.5 rounded-xl transition active:scale-95">取消</button><button onclick="saveFrontEditItem()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest active:scale-95">儲存修改</button></div></div></div>
+    <div id="inv-req-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[9990]">
+        <div class="bg-white w-full max-w-sm m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl">
+            <h3 class="font-black text-lg border-b border-slate-100 pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2 text-xl">✏️</span> 編輯請購單</h3>
+            <input type="hidden" id="inv-req-edit-id">
+            <input type="hidden" id="inv-req-edit-islegacy">
+            <div class="space-y-3 mb-5">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">修改狀態</label>
+                    <select id="inv-req-edit-status" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-amber-500">
+                        <option value="待處理">待處理</option>
+                        <option value="採購中">採購中</option>
+                        <option value="已完成">✅ 已完成</option>
+                        <option value="取消">取消作廢</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">期望到貨日</label>
+                    <input type="date" id="inv-req-edit-date" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">備註說明</label>
+                    <textarea id="inv-req-edit-note" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 h-20 resize-none" placeholder="輸入備註..."></textarea>
+                </div>
+            </div>
+            <div class="flex space-x-3 mt-2">
+                <button onclick="closeModal('inv-req-edit-modal')" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl transition active:scale-95">取消</button>
+                <button onclick="saveInvReqEdit()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest active:scale-95">儲存修改</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="front-item-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
+        <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-5 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
+            <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯基本資料與 BOM</h3>
+            <input type="hidden" id="fe-item-id">
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 ml-1">品名</label>
+                    <input type="text" id="fe-item-name" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-500 transition shadow-inner">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 ml-1">產品類別</label>
+                        <select id="fe-item-cat" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-sky-500 transition shadow-inner"></select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 ml-1">生產週期</label>
+                        <select id="fe-item-lead" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-sky-500 transition shadow-inner"><option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option></select>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="text-[10px] font-bold text-slate-500 ml-1">盤點週期 (逾期提醒)</label>
+                        <select id="fe-item-cycle" class="w-full p-2.5 bg-sky-50 border border-sky-200 rounded-xl text-sm font-black text-sky-900 select-arrow outline-none focus:border-sky-500 transition shadow-inner"><option value="7">7 天 (每週)</option><option value="30">30 天 (每月)</option><option value="60">60 天 (雙月)</option><option value="90">90 天 (一季)</option></select>
+                    </div>
+                </div>
+                <div class="border-t border-slate-200 pt-3 mt-2">
+                    <h5 class="text-[10px] font-black text-sky-700 mb-2 tracking-widest">⚙️ BOM 表修正</h5>
+                    <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
+                        <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[400px]">
+                            <thead class="text-slate-500 border-b border-slate-200">
+                                <tr><th class="p-1 font-bold">項次</th><th class="p-1 font-bold">原料名稱</th><th class="p-1 font-bold">用量</th><th class="p-1 font-bold">單位</th><th class="p-1 font-bold text-sky-700">總用量(+10%損耗)</th></tr>
+                            </thead>
+                            <tbody id="fe-bom-table-body" class="divide-y divide-slate-100 bg-white rounded-lg"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="flex space-x-3 mt-6">
+                <button onclick="closeModal('front-item-edit-modal')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3.5 rounded-xl transition active:scale-95">取消</button>
+                <button onclick="saveFrontEditItem()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest active:scale-95">儲存修改</button>
+            </div>
+        </div>
+    </div>
 
     <div id="req-qty-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-sm items-center justify-center p-4 z-[9990]">
         <div class="bg-white w-full max-w-sm m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl">
@@ -200,27 +438,6 @@
             <div class="flex space-x-3 mt-2">
                 <button onclick="closeModal('req-qty-modal')" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl transition active:scale-95">取消</button>
                 <button id="btn-run-req" onclick="confirmGenerateReq()" class="flex-1 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest active:scale-95">確定生成請購單</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="inv-req-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[9990]">
-        <div class="bg-white w-full max-w-sm m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl">
-            <h3 class="font-black text-lg border-b border-slate-100 pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2 text-xl">✏️</span> 編輯請購單狀態</h3>
-            <input type="hidden" id="inv-req-edit-id">
-            <input type="hidden" id="inv-req-edit-islegacy">
-            <div class="space-y-3 mb-5">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">修改狀態</label>
-                    <select id="inv-req-edit-status" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-amber-500">
-                        <option value="待處理">待處理</option>
-                        <option value="取消">取消作廢</option>
-                    </select>
-                </div>
-            </div>
-            <div class="flex space-x-3 mt-2">
-                <button onclick="closeModal('inv-req-edit-modal')" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl transition active:scale-95">取消</button>
-                <button onclick="saveInvReqEdit()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest active:scale-95">儲存修改</button>
             </div>
         </div>
     </div>
@@ -237,25 +454,46 @@
 
     <script src="shared.js"></script>
     <script>
-        let html5QrcodeScanner = null; let currentItemPackQty = 1; let allItems = []; window.inventoryData = []; window.latestChecks = {}; let reqCart = new Set(); let isScanning = false;
-        let currentInvType = '全部'; let currentInvCat = '全部';
+        let html5QrcodeScanner = null; 
+        let currentItemPackQty = 1; 
+        let allItems = []; 
+        window.inventoryData = []; 
+        window.latestChecks = {}; 
+        let reqCart = new Set(); 
+        let isScanning = false;
+        let currentInvType = '全部'; 
+        let currentInvCat = '全部';
 
-        // 🚨 絕對防彈：防止 JSON 崩潰
         function getSafeArray(data) { 
             if (!data) return []; 
             if (Array.isArray(data)) return data; 
-            try { let parsed = (typeof data === 'string') ? JSON.parse(data) : data; return Array.isArray(parsed) ? parsed : []; } catch(e) { return []; } 
+            try { 
+                let parsed = (typeof data === 'string') ? JSON.parse(data) : data; 
+                return Array.isArray(parsed) ? parsed : []; 
+            } catch(e) { return []; } 
         }
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
         async function bootInventory() {
-            const isAuth = await authGuard('inv'); 
-            if(isAuth) { 
+            try {
+                const isAuth = await authGuard('inv'); 
+                if(!isAuth) return;
+
                 document.getElementById('user-badge').innerText = window.currentUser?.full_name || '使用者'; 
+                
+                document.getElementById('loading-screen').classList.add('opacity-0');
+                setTimeout(() => { 
+                    document.getElementById('loading-screen').style.display = 'none'; 
+                    document.getElementById('app-container').classList.remove('hidden'); 
+                }, 500);
+
                 await loadItems();
                 renderBomTable('bom-table-body'); 
+            } catch(e) {
+                console.error("載入異常", e);
+                alert("系統初始化失敗");
             }
         }
 
@@ -265,14 +503,21 @@
             toast.className = 'toast-msg bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-lg border border-emerald-400 font-black text-sm flex items-center';
             toast.innerHTML = `<span class="mr-2 text-xl">✅</span>${msg}`;
             container.appendChild(toast);
-            setTimeout(() => { toast.style.animation = 'slideInLeft 0.4s ease-in reverse forwards'; setTimeout(() => toast.remove(), 400); }, 5000);
+            setTimeout(() => { 
+                toast.style.animation = 'slideInLeft 0.4s ease-in reverse forwards'; 
+                setTimeout(() => toast.remove(), 400); 
+            }, 5000);
         }
 
         function openView(viewId, title) {
             document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active')); 
             document.getElementById('view-' + viewId).classList.add('active');
             document.getElementById('header-title').innerText = title; 
-            document.getElementById('btn-back').classList.remove('hidden'); 
+            if(viewId === 'dashboard') {
+                document.getElementById('btn-back').classList.add('hidden');
+            } else {
+                document.getElementById('btn-back').classList.remove('hidden');
+            }
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
@@ -289,7 +534,9 @@
         function openSearchPrintView() {
             openView('search-print', '料號紀錄標籤列印');
             const searchCatSel = document.getElementById('search-cat-filter');
-            if(searchCatSel && Array.from(searchCatSel.options).some(o=>o.value==='汽車冷氣濾網')) { searchCatSel.value = '汽車冷氣濾網'; }
+            if(searchCatSel && Array.from(searchCatSel.options).some(o=>o.value==='汽車冷氣濾網')) { 
+                searchCatSel.value = '汽車冷氣濾網'; 
+            }
             renderItemSearch();
         }
 
@@ -319,14 +566,17 @@
             container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">載入中...</p>';
 
             const reqs = await fetchSafeReqsForInv();
-            if(!reqs || reqs.length === 0) { container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">尚無任何請購紀錄</p>'; return; }
+            if(!reqs || reqs.length === 0) { 
+                container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">尚無任何請購紀錄</p>'; 
+                return; 
+            }
 
             container.innerHTML = reqs.map(r => {
                 let stCol = r.status === '已完成' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (r.status === '取消' ? 'text-red-600 bg-red-50 border-red-200' : (r.status === '採購中' ? 'text-sky-700 bg-sky-100 border-sky-200' : 'text-amber-700 bg-amber-100 border-amber-200'));
                 let safeReqItems = getSafeArray(r.items_json);
                 
                 return `
-                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center mb-3">
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center mb-3 hover:bg-slate-50 transition">
                     <div>
                         <div class="flex items-center mb-1">
                             <span class="text-[10px] font-mono font-black text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 mr-2">${r.req_no.replace('REQ-','')}</span>
@@ -336,17 +586,20 @@
                         <div class="text-[9px] text-slate-400 font-bold mt-1">${new Date(r.created_at).toLocaleDateString('zh-TW')} ${new Date(r.created_at).toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'})}</div>
                     </div>
                     <div class="flex flex-col space-y-1.5">
-                        <button onclick="openInvEditReq('${r.id}', ${r.is_legacy?true:false}, '${r.status}')" class="text-[10px] bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg font-bold shadow-sm active:scale-95 transition">✏️ 編輯狀態</button>
+                        <button onclick="openInvEditReq('${r.id}', ${r.is_legacy?true:false}, '${r.status}', '${r.note||''}', '${r.expected_date||''}')" class="text-[10px] bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg font-bold shadow-sm active:scale-95 transition">✏️ 編輯</button>
                         <button onclick="delInvReq('${r.id}', ${r.is_legacy?true:false})" class="text-[10px] bg-white border border-red-200 text-red-600 px-3 py-1.5 rounded-lg font-bold shadow-sm active:scale-95 transition hover:bg-red-50">🗑️ 刪除</button>
                     </div>
                 </div>`;
             }).join('');
         }
 
-        function openInvEditReq(id, isLegacy, currentStatus) {
+        // 🌟 進階版編輯 Modal
+        function openInvEditReq(id, isLegacy, currentStatus, note, expected_date) {
             document.getElementById('inv-req-edit-id').value = id;
             document.getElementById('inv-req-edit-islegacy').value = isLegacy ? 'true' : 'false';
             document.getElementById('inv-req-edit-status').value = currentStatus === '請購待處理' ? '待處理' : currentStatus;
+            document.getElementById('inv-req-edit-note').value = note && note !== 'undefined' ? note : '';
+            document.getElementById('inv-req-edit-date').value = expected_date && expected_date !== 'undefined' ? expected_date : '';
             openModal('inv-req-edit-modal');
         }
 
@@ -354,23 +607,39 @@
             const id = document.getElementById('inv-req-edit-id').value;
             const st = document.getElementById('inv-req-edit-status').value;
             const isLegacy = document.getElementById('inv-req-edit-islegacy').value === 'true';
+            const note = document.getElementById('inv-req-edit-note').value;
+            const ed = document.getElementById('inv-req-edit-date').value;
             
+            let payload = { status: st, note: note };
+            if(ed) payload.expected_date = ed;
+
             try {
-                if(isLegacy) { await window._sb.from('purchase_orders').update({ status: st }).eq('id', id); } 
-                else { await window._sb.from('requisitions').update({ status: st }).eq('id', id); }
-                alert('✅ 狀態已更新，並同步至後台與採購中心！'); 
+                if(isLegacy) { 
+                    await window._sb.from('purchase_orders').update(payload).eq('id', id); 
+                } else { 
+                    await window._sb.from('requisitions').update(payload).eq('id', id); 
+                }
+                showSysToast('✅ 狀態已更新，並同步至後台與採購系統！'); 
                 closeModal('inv-req-edit-modal'); 
                 openInvReqHistory(); 
-            } catch(e) { alert('更新失敗: ' + e.message); }
+            } catch(e) { 
+                alert('更新失敗: ' + e.message); 
+            }
         }
 
         async function delInvReq(id, isLegacy) { 
-            if(confirm('⚠️ 確定要刪除這筆請購單嗎？\n此動作會同步刪除後台與採購中心的紀錄。')){ 
+            if(confirm('⚠️ 確定要刪除這筆請購單嗎？\n此動作會同步刪除後台與採購系統的紀錄。')){ 
                 try {
-                    if(isLegacy) await window._sb.from('purchase_orders').delete().eq('id', id);
-                    else await window._sb.from('requisitions').delete().eq('id', id);
+                    if(isLegacy) {
+                        await window._sb.from('purchase_orders').delete().eq('id', id);
+                    } else {
+                        await window._sb.from('requisitions').delete().eq('id', id);
+                    }
+                    showSysToast('✅ 成功刪除！');
                     openInvReqHistory(); 
-                } catch(e) { alert('刪除失敗: ' + e.message); }
+                } catch(e) { 
+                    alert('刪除失敗: ' + e.message); 
+                }
             } 
         }
 
@@ -378,18 +647,30 @@
             try {
                 const { data, error: itemErr } = await window._sb.from('items').select('*').order('created_at', {ascending: false}); 
                 if(itemErr) {
-                    const statusTable = document.getElementById('ui-filter-status-table');
+                    const statusTable = document.getElementById('ui-latest-status-table');
                     if(statusTable) statusTable.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500 font-bold">讀取失敗，請確認已執行 SQL 解除 RLS</td></tr>`;
                     return;
                 }
                 allItems = data || [];
                 
                 const { data: ledgers } = await window._sb.from('inventory_ledgers').select('item_id, change_qty');
-                let stockMap = {}; if(ledgers) ledgers.forEach(l => { if(!stockMap[l.item_id]) stockMap[l.item_id] = 0; stockMap[l.item_id] += l.change_qty; });
+                let stockMap = {}; 
+                if(ledgers) {
+                    ledgers.forEach(l => { 
+                        if(!stockMap[l.item_id]) stockMap[l.item_id] = 0; 
+                        stockMap[l.item_id] += l.change_qty; 
+                    });
+                }
                 
                 const { data: checks } = await window._sb.from('inventory_ledgers').select('item_id, created_at, employees(full_name)').eq('action_type', '盤點').order('created_at', {ascending: false});
                 window.latestChecks = {}; 
-                if(checks) { checks.forEach(c => { if(!window.latestChecks[c.item_id]) { window.latestChecks[c.item_id] = { rawDate: c.created_at, date: new Date(c.created_at).toLocaleDateString('zh-TW'), emp: c.employees?.full_name || '未知' }; } }); }
+                if(checks) { 
+                    checks.forEach(c => { 
+                        if(!window.latestChecks[c.item_id]) { 
+                            window.latestChecks[c.item_id] = { rawDate: c.created_at, date: new Date(c.created_at).toLocaleDateString('zh-TW'), emp: c.employees?.full_name || '未知' }; 
+                        } 
+                    }); 
+                }
 
                 let pendingReqs_FG = {};
                 let pendingReqs_RAW = {};
@@ -400,8 +681,12 @@
                     const { data: reqs } = await window._sb.from('requisitions').select('target_items, items_json').in('status', ['待處理', '採購中']);
                     if (reqs) { 
                         reqs.forEach(req => { 
-                            getSafeArray(req.target_items).forEach(t => { if(t.id) pendingReqs_FG[t.id] = (pendingReqs_FG[t.id] || 0) + (parseInt(t.qty) || 0); });
-                            getSafeArray(req.items_json).forEach(r => { if(r.name) pendingReqs_RAW[r.name] = (pendingReqs_RAW[r.name] || 0) + (parseFloat(r.qty) || 0); });
+                            getSafeArray(req.target_items).forEach(t => { 
+                                if(t.id) pendingReqs_FG[t.id] = (pendingReqs_FG[t.id] || 0) + (parseInt(t.qty) || 0); 
+                            });
+                            getSafeArray(req.items_json).forEach(r => { 
+                                if(r.name) pendingReqs_RAW[r.name] = (pendingReqs_RAW[r.name] || 0) + (parseFloat(r.qty) || 0); 
+                            });
                         }); 
                     }
                 } catch(e) {}
@@ -410,8 +695,12 @@
                     const { data: reqs2 } = await window._sb.from('purchase_orders').select('target_items, raw_materials').in('status', ['請購待處理', '待處理', '採購中']);
                     if (reqs2) { 
                         reqs2.forEach(req => { 
-                            getSafeArray(req.target_items).forEach(t => { if(t.id) pendingReqs_FG[t.id] = (pendingReqs_FG[t.id] || 0) + (parseInt(t.qty) || 0); });
-                            getSafeArray(req.raw_materials).forEach(r => { if(r.name) pendingReqs_RAW[r.name] = (pendingReqs_RAW[r.name] || 0) + (parseFloat(r.qty) || 0); });
+                            getSafeArray(req.target_items).forEach(t => { 
+                                if(t.id) pendingReqs_FG[t.id] = (pendingReqs_FG[t.id] || 0) + (parseInt(t.qty) || 0); 
+                            });
+                            getSafeArray(req.raw_materials).forEach(r => { 
+                                if(r.name) pendingReqs_RAW[r.name] = (pendingReqs_RAW[r.name] || 0) + (parseFloat(r.qty) || 0); 
+                            });
                         }); 
                     }
                 } catch(e) {}
@@ -423,7 +712,9 @@
                             getSafeArray(po.items_json).forEach(p => { 
                                 if(p.name) {
                                     pendingPOs_RAW[p.name] = (pendingPOs_RAW[p.name] || 0) + (parseFloat(p.qty) || 0);
-                                    if(po.expected_date && (!pendingPOs_ETA[p.name] || po.expected_date < pendingPOs_ETA[p.name])) { pendingPOs_ETA[p.name] = po.expected_date; }
+                                    if(po.expected_date && (!pendingPOs_ETA[p.name] || po.expected_date < pendingPOs_ETA[p.name])) { 
+                                        pendingPOs_ETA[p.name] = po.expected_date; 
+                                    }
                                 }
                             }); 
                         }); 
@@ -437,7 +728,9 @@
                             getSafeArray(po.raw_materials).forEach(p => { 
                                 if(p.name) {
                                     pendingPOs_RAW[p.name] = (pendingPOs_RAW[p.name] || 0) + (parseFloat(p.qty) || 0);
-                                    if(po.expected_date && (!pendingPOs_ETA[p.name] || po.expected_date < pendingPOs_ETA[p.name])) { pendingPOs_ETA[p.name] = po.expected_date; }
+                                    if(po.expected_date && (!pendingPOs_ETA[p.name] || po.expected_date < pendingPOs_ETA[p.name])) { 
+                                        pendingPOs_ETA[p.name] = po.expected_date; 
+                                    }
                                 }
                             }); 
                         }); 
@@ -449,7 +742,11 @@
                 const catOptions = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
                 
                 const searchCatFilter = document.getElementById('search-cat-filter');
-                if(searchCatFilter) { const currentSearchCat = searchCatFilter.value; searchCatFilter.innerHTML = catOptions; if(currentSearchCat) searchCatFilter.value = currentSearchCat; }
+                if(searchCatFilter) { 
+                    const currentSearchCat = searchCatFilter.value; 
+                    searchCatFilter.innerHTML = catOptions; 
+                    if(currentSearchCat) searchCatFilter.value = currentSearchCat; 
+                }
 
                 const feItemCat = document.getElementById('fe-item-cat');
                 if(feItemCat) feItemCat.innerHTML = catOptions;
@@ -463,7 +760,10 @@
                     let isOverdue = true;
                     let chk = window.latestChecks[i.id];
                     
-                    if(chk && chk.rawDate) { let diffDays = (nowD - new Date(chk.rawDate)) / (1000 * 60 * 60 * 24); isOverdue = diffDays >= cycle; }
+                    if(chk && chk.rawDate) { 
+                        let diffDays = (nowD - new Date(chk.rawDate)) / (1000 * 60 * 60 * 24); 
+                        isOverdue = diffDays >= cycle; 
+                    }
                     if(current_stock <= (i.safe_stock_level || 0)) { lowCount++; }
                     
                     let safeBom = getSafeArray(i.bom_data);
@@ -481,17 +781,28 @@
                         remBlock.classList.remove('hidden');
                         document.getElementById('friday-overdue-count').innerText = `待盤: ${overdueItems.length} 件`;
                         if (overdueItems.length > 0) {
-                            let odHtml = overdueItems.map(i => `<div class="bg-white/20 p-2.5 rounded-xl border border-white/20 text-xs flex justify-between items-center shadow-inner"><div class="flex-1 truncate pr-2"><span class="font-mono font-black text-amber-200 mr-1 bg-black/20 px-1.5 py-0.5 rounded">${i.item_code}</span><span class="font-black text-white truncate inline-block ml-1">${i.item_name}</span></div><button onclick="openCountViewFromId('${i.id}')" class="bg-white text-red-700 px-3 py-1.5 rounded-lg text-xs font-black shadow-md shrink-0 active:scale-95 transition">盤點 ➔</button></div>`).join('');
+                            let odHtml = overdueItems.map(i => `
+                                <div class="bg-white/20 p-2.5 rounded-xl border border-white/20 text-xs flex justify-between items-center shadow-inner">
+                                    <div class="flex-1 truncate pr-2">
+                                        <span class="font-mono font-black text-amber-200 mr-1 bg-black/20 px-1.5 py-0.5 rounded">${i.item_code}</span>
+                                        <span class="font-black text-white truncate inline-block ml-1">${i.item_name}</span>
+                                    </div>
+                                    <button onclick="openCountViewFromId('${i.id}')" class="bg-white text-red-700 px-3 py-1.5 rounded-lg text-xs font-black shadow-md shrink-0 active:scale-95 transition">盤點 ➔</button>
+                                </div>
+                            `).join('');
                             document.getElementById('friday-overdue-list').innerHTML = odHtml;
                         } else {
                             document.getElementById('friday-overdue-list').innerHTML = '<p class="text-xs text-center py-4 bg-white/10 rounded-xl text-amber-50 font-bold border border-white/10">🎉 太棒了！本週無逾期未盤點項目！</p>';
                         }
-                    } else { remBlock.classList.add('hidden'); }
+                    } else { 
+                        remBlock.classList.add('hidden'); 
+                    }
                 }
 
-                // 🌟 渲染汽車濾網戰情表
-                let finishedGoods = window.inventoryData.filter(i => i.item_type === '成品' && i.category === '汽車冷氣濾網');
-                finishedGoods.sort((a, b) => {
+                // 🌟 整合版：庫存最新狀況大盤 (包含成品與原料，低水位優先)
+                let allGoods = [...window.inventoryData];
+
+                allGoods.sort((a, b) => {
                     let safeA = a.safe_stock_level || 0; let safeB = b.safe_stock_level || 0;
                     let pA = a.current_stock <= safeA ? 1 : (a.current_stock <= safeA * 1.5 ? 2 : 3);
                     let pB = b.current_stock <= safeB ? 1 : (b.current_stock <= safeB * 1.5 ? 2 : 3);
@@ -499,110 +810,63 @@
                     return a.current_stock - b.current_stock;
                 });
 
-                let filterHtml = '';
-                if (finishedGoods.length === 0) {
-                    filterHtml = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無資料</td></tr>';
+                let statusHtml = '';
+                if (allGoods.length === 0) {
+                    statusHtml = '<tr><td colspan="4" class="p-4 text-center text-emerald-600 font-bold">尚無庫存資料</td></tr>';
                 } else {
-                    filterHtml = finishedGoods.map(i => {
+                    statusHtml = allGoods.map(i => {
                         let qtyHtml = '<span class="text-slate-300">0</span>'; let etaHtml = '<span class="text-slate-300">--</span>';
-                        let rQty = pendingReqs_FG[i.item_code] || 0;
-                        if(rQty > 0) {
-                            qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${rQty}</span>`;
-                            etaHtml = `<span class="text-[9px] font-black text-sky-700 bg-sky-100 px-2 py-0.5 rounded border border-sky-200">待生產</span>`;
+                        let rQty = 0;
+
+                        if (i.item_type === '原料') {
+                            let poQty = pendingPOs_RAW[i.item_name] || 0;
+                            let reqQtyRaw = pendingReqs_RAW[i.item_name] || 0;
+                            if(poQty > 0) {
+                                qtyHtml = `<span class="font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded shadow-sm border border-amber-100">${poQty.toFixed(0)}</span>`;
+                                let dStr = pendingPOs_ETA[i.item_name];
+                                etaHtml = (dStr && dStr !== '未定' && dStr !== null) ? `<span class="text-amber-600 font-bold">${String(dStr).slice(5)}</span>` : `<span class="text-slate-400 font-bold">採購中</span>`;
+                            } else if(reqQtyRaw > 0) {
+                                qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${reqQtyRaw.toFixed(0)}</span>`;
+                                etaHtml = `<span class="text-[9px] font-black text-sky-700 bg-sky-100 px-2 py-0.5 rounded border border-sky-200">請購中</span>`;
+                            }
+                        } else {
+                            rQty = pendingReqs_FG[i.item_code] || 0;
+                            if(rQty > 0) {
+                                qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${rQty}</span>`;
+                                etaHtml = `<span class="text-[9px] font-black text-sky-700 bg-sky-100 px-2 py-0.5 rounded border border-sky-200">待生產</span>`;
+                            }
                         }
                         
-                        let safe = i.safe_stock_level || 0; let isLow = i.current_stock <= safe; let isWarn = !isLow && i.current_stock <= (safe * 1.5);
-                        let stockClass = 'text-emerald-600'; 
-                        if(isLow) stockClass = 'text-red-600 animate-pulse'; else if(isWarn) stockClass = 'text-amber-500';
+                        let safe = i.safe_stock_level || 0; 
+                        let isLow = i.current_stock <= safe; 
+                        let isWarn = !isLow && i.current_stock <= (safe * 1.5);
+                        let stockClass = 'text-emerald-600';
+                        if(isLow) stockClass = 'text-red-600 animate-pulse';
+                        else if(isWarn) stockClass = 'text-amber-500';
 
-                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="p-2.5 font-mono font-black text-slate-700 truncate max-w-[120px]">${i.item_code}</td><td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="p-2.5 text-right">${qtyHtml}</td><td class="p-2.5 text-center text-[10px]">${etaHtml}</td></tr>`;
+                        let displayName = i.item_type === '原料' ? i.item_name : i.item_code;
+
+                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="p-2.5 font-black text-slate-700 truncate max-w-[140px]"><span class="text-[9px] bg-slate-100 text-slate-500 px-1 rounded mr-1">${i.item_type==='原料'?'🏭':'📦'}</span>${displayName}</td><td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="p-2.5 text-right">${qtyHtml}</td><td class="p-2.5 text-center text-[10px]">${etaHtml}</td></tr>`;
                     }).join('');
                 }
-                const uiFilterStatusTable = document.getElementById('ui-filter-status-table');
-                if (uiFilterStatusTable) uiFilterStatusTable.innerHTML = filterHtml;
-
-                // 🌟 渲染 VESTA 戰情表
-                let vestaGoods = window.inventoryData.filter(i => i.item_type === '成品' && i.category === 'VESTA系列產品');
-                vestaGoods.sort((a, b) => {
-                    let safeA = a.safe_stock_level || 0; let safeB = b.safe_stock_level || 0;
-                    let pA = a.current_stock <= safeA ? 1 : (a.current_stock <= safeA * 1.5 ? 2 : 3);
-                    let pB = b.current_stock <= safeB ? 1 : (b.current_stock <= safeB * 1.5 ? 2 : 3);
-                    if(pA !== pB) return pA - pB;
-                    return a.current_stock - b.current_stock;
-                });
-
-                let vestaHtml = '';
-                if (vestaGoods.length === 0) {
-                    vestaHtml = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無資料</td></tr>';
-                } else {
-                    vestaHtml = vestaGoods.map(i => {
-                        let qtyHtml = '<span class="text-slate-300">0</span>'; let etaHtml = '<span class="text-slate-300">--</span>';
-                        let rQty = pendingReqs_FG[i.item_code] || 0;
-                        if(rQty > 0) {
-                            qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${rQty}</span>`;
-                            etaHtml = `<span class="text-[9px] font-black text-sky-700 bg-sky-100 px-2 py-0.5 rounded border border-sky-200">待生產</span>`;
-                        }
-                        
-                        let safe = i.safe_stock_level || 0; let isLow = i.current_stock <= safe; let isWarn = !isLow && i.current_stock <= (safe * 1.5);
-                        let stockClass = 'text-emerald-600'; 
-                        if(isLow) stockClass = 'text-red-600 animate-pulse'; else if(isWarn) stockClass = 'text-amber-500';
-
-                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="p-2.5 font-mono font-black text-slate-700 truncate max-w-[120px]">${i.item_code}</td><td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="p-2.5 text-right">${qtyHtml}</td><td class="p-2.5 text-center text-[10px]">${etaHtml}</td></tr>`;
-                    }).join('');
-                }
-                const uiVestaTable = document.getElementById('ui-filter-status-table-vesta');
-                if (uiVestaTable) uiVestaTable.innerHTML = vestaHtml;
-
-                // 🌟 新增原料戰情表
-                let rawTopGoods = window.inventoryData.filter(i => i.item_type === '原料');
-                rawTopGoods.sort((a, b) => {
-                    let safeA = a.safe_stock_level || 0; let safeB = b.safe_stock_level || 0;
-                    let pA = a.current_stock <= safeA ? 1 : (a.current_stock <= safeA * 1.5 ? 2 : 3);
-                    let pB = b.current_stock <= safeB ? 1 : (b.current_stock <= safeB * 1.5 ? 2 : 3);
-                    if(pA !== pB) return pA - pB;
-                    return a.current_stock - b.current_stock;
-                });
-
-                let rawHtml = '';
-                if (rawTopGoods.length === 0) {
-                    rawHtml = '<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">無資料</td></tr>';
-                } else {
-                    rawHtml = rawTopGoods.map(i => {
-                        let qtyHtml = '<span class="text-slate-300">0</span>'; let etaHtml = '<span class="text-slate-300">--</span>';
-                        let poQty = pendingPOs_RAW[i.item_name] || 0;
-                        let reqQty = pendingReqs_RAW[i.item_name] || 0;
-
-                        if(poQty > 0) {
-                            qtyHtml = `<span class="font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded shadow-sm border border-amber-100">${poQty.toFixed(0)}</span>`;
-                            let dStr = pendingPOs_ETA[i.item_name];
-                            etaHtml = (dStr && dStr !== '未定' && dStr !== null) ? `<span class="text-amber-600 font-bold">${String(dStr).slice(5)}</span>` : `<span class="text-slate-400 font-bold">採購中</span>`;
-                        } else if(reqQty > 0) {
-                            qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${reqQty.toFixed(0)}</span>`;
-                            etaHtml = `<span class="text-[9px] font-black text-sky-700 bg-sky-100 px-2 py-0.5 rounded border border-sky-200">請購中</span>`;
-                        }
-                        
-                        let safe = i.safe_stock_level || 0; let isLow = i.current_stock <= safe; let isWarn = !isLow && i.current_stock <= (safe * 1.5);
-                        let stockClass = 'text-emerald-600'; 
-                        if(isLow) stockClass = 'text-red-600 animate-pulse'; else if(isWarn) stockClass = 'text-amber-500';
-
-                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="p-2.5 font-mono font-black text-slate-700 truncate max-w-[120px]">${i.item_name}</td><td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="p-2.5 text-right">${qtyHtml}</td><td class="p-2.5 text-center text-[10px]">${etaHtml}</td></tr>`;
-                    }).join('');
-                }
-                const uiRawTable = document.getElementById('ui-filter-status-table-raw');
-                if (uiRawTable) uiRawTable.innerHTML = rawHtml;
+                const uiLatestStatusTable = document.getElementById('ui-latest-status-table');
+                if (uiLatestStatusTable) uiLatestStatusTable.innerHTML = statusHtml;
 
                 if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
-                if(document.getElementById('view-inventory-list').classList.contains('active')) renderFilteredInventory();
+                if(document.getElementById('view-catalog').classList.contains('active')) renderFilteredInventory();
 
             } catch(fatalError) {
                 console.error("UI 渲染失敗", fatalError);
             }
         }
 
-        function openCountViewFromId(id) { const item = window.inventoryData.find(x => x.id === id); if(item) openCountView(item); }
+        function openCountViewFromId(id) { 
+            const item = window.inventoryData.find(x => x.id === id); 
+            if(item) openCountView(item); 
+        }
 
         async function openInventoryList() { 
-            openView('inventory-list', '庫存清單大盤'); 
+            openView('catalog', '庫存清單大盤'); 
             await loadItems(); 
             renderFilteredInventory(); 
             updateTopReqBar(); 
@@ -651,7 +915,7 @@
         }
 
         function renderFilteredInventory() {
-            let searchEl = document.getElementById('inv-search');
+            let searchEl = document.getElementById('cat-search');
             let keyword = searchEl ? searchEl.value.toLowerCase() : '';
             let filtered = window.inventoryData.filter(i => {
                 let matchType = (currentInvType === '全部') ? true : (i.item_type === currentInvType);
@@ -666,7 +930,6 @@
                 return matchType && matchCat && matchSearch;
             });
 
-            // 🌟 核心修復：低水位庫存優先排序
             filtered.sort((a, b) => {
                 let safeA = a.safe_stock_level || 0;
                 let safeB = b.safe_stock_level || 0;
@@ -680,14 +943,18 @@
             renderInventoryListUI(filtered);
         }
 
-        // 🌟 已優化：直接輸入修改版位
         function renderInventoryListUI(data) {
-            const container = document.getElementById('ui-inventory-list');
+            const container = document.getElementById('catalog-list');
             if(!container) return; 
-            if(!data || data.length === 0) { container.innerHTML = '<div class="text-center text-sm text-slate-400 font-bold py-10">無資料</div>'; return; }
+            if(!data || data.length === 0) { 
+                container.innerHTML = '<div class="text-center text-sm text-slate-400 font-bold py-10">無資料</div>'; 
+                return; 
+            }
             
             container.innerHTML = data.map(i => {
-                const safe = i.safe_stock_level || 0; let isLow = i.current_stock <= safe; let isWarn = !isLow && i.current_stock <= (safe * 1.5);
+                const safe = i.safe_stock_level || 0; 
+                let isLow = i.current_stock <= safe; 
+                let isWarn = !isLow && i.current_stock <= (safe * 1.5);
                 
                 let borderClass = 'border-slate-200 bg-white'; 
                 let stockColor = 'text-emerald-600';
@@ -703,7 +970,8 @@
                     statusBadge = '<span class="text-[9px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-lg font-black border border-amber-300 shadow-sm">⚠️ 庫存警示</span>';
                 }
 
-                const chk = window.latestChecks[i.id]; const inCart = reqCart.has(i.id) ? 'checked' : '';
+                const chk = window.latestChecks[i.id]; 
+                const inCart = reqCart.has(i.id) ? 'checked' : '';
                 let lastCheckText = chk ? `${chk.date} (${chk.emp})` : `<span class="text-red-500">從未盤點過</span>`;
 
                 return `
@@ -759,14 +1027,62 @@
             }).join('');
         }
 
-        async function inlineUpdateSafeStock(id, newValStr, oldVal) { const newVal = parseInt(newValStr) || 0; if(newVal === oldVal) return; const { error } = await window._sb.from('items').update({ safe_stock_level: newVal }).eq('id', id); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderFilteredInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
-        async function inlineUpdateCurrentStock(id, oldQty, newValStr) { const newQty = parseInt(newValStr) || 0; if(newQty === oldQty) return; const diff = newQty - oldQty; const { error } = await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: `總表快速校正 (原:${oldQty} -> 新:${newQty})` }]); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderFilteredInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
-        async function inlineUpdateCycle(id, newVal) { const val = parseInt(newVal) || 30; const { error } = await window._sb.from('items').update({ stocktake_cycle: val }).eq('id', id); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderFilteredInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
-        async function inlineUpdateLeadTime(id, newVal) { const val = parseInt(newVal) || 15; const { error } = await window._sb.from('items').update({ lead_time_days: val }).eq('id', id); if(!error) { const scrollPos = document.getElementById('ui-inventory-list').scrollTop; await loadItems(); renderFilteredInventory(); setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); } }
+        async function inlineUpdateSafeStock(id, newValStr, oldVal) { 
+            const newVal = parseInt(newValStr) || 0; 
+            if(newVal === oldVal) return; 
+            const { error } = await window._sb.from('items').update({ safe_stock_level: newVal }).eq('id', id); 
+            if(!error) { 
+                const scrollPos = document.getElementById('catalog-list').scrollTop; 
+                await loadItems(); 
+                renderFilteredInventory(); 
+                setTimeout(()=> { document.getElementById('catalog-list').scrollTop = scrollPos; }, 10); 
+            } 
+        }
+
+        async function inlineUpdateCurrentStock(id, oldQty, newValStr) { 
+            const newQty = parseInt(newValStr) || 0; 
+            if(newQty === oldQty) return; 
+            const diff = newQty - oldQty; 
+            const { error } = await window._sb.from('inventory_ledgers').insert([{ 
+                item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: `總表快速校正 (原:${oldQty} -> 新:${newQty})` 
+            }]); 
+            if(!error) { 
+                const scrollPos = document.getElementById('catalog-list').scrollTop; 
+                await loadItems(); 
+                renderFilteredInventory(); 
+                setTimeout(()=> { document.getElementById('catalog-list').scrollTop = scrollPos; }, 10); 
+            } 
+        }
+
+        async function inlineUpdateCycle(id, newVal) { 
+            const val = parseInt(newVal) || 30; 
+            const { error } = await window._sb.from('items').update({ stocktake_cycle: val }).eq('id', id); 
+            if(!error) { 
+                const scrollPos = document.getElementById('catalog-list').scrollTop; 
+                await loadItems(); 
+                renderFilteredInventory(); 
+                setTimeout(()=> { document.getElementById('catalog-list').scrollTop = scrollPos; }, 10); 
+            } 
+        }
+
+        async function inlineUpdateLeadTime(id, newVal) { 
+            const val = parseInt(newVal) || 15; 
+            const { error } = await window._sb.from('items').update({ lead_time_days: val }).eq('id', id); 
+            if(!error) { 
+                const scrollPos = document.getElementById('catalog-list').scrollTop; 
+                await loadItems(); 
+                renderFilteredInventory(); 
+                setTimeout(()=> { document.getElementById('catalog-list').scrollTop = scrollPos; }, 10); 
+            } 
+        }
 
         function filterInventory() { renderFilteredInventory(); }
 
-        function toggleReq(id, el) { if(el.checked) reqCart.add(id); else reqCart.delete(id); updateTopReqBar(); }
+        function toggleReq(id, el) { 
+            if(el.checked) reqCart.add(id); 
+            else reqCart.delete(id); 
+            updateTopReqBar(); 
+        }
         
         function updateTopReqBar() { 
             const countBadge = document.getElementById('list-req-count');
@@ -788,19 +1104,34 @@
             let html = '';
             reqCart.forEach(id => {
                 const i = window.inventoryData.find(x => x.id === id); 
-                if(i) html += `<div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between shadow-inner req-target-row mb-2" data-id="${i.id}"><div class="flex-1 pr-2"><span class="text-[9px] font-mono font-black text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded">${i.item_code}</span><h4 class="font-black text-sm text-slate-800 leading-tight mt-1 truncate">${i.item_name}</h4></div><div class="w-20 shrink-0"><input type="number" min="1" class="w-full p-2 border border-sky-300 rounded-lg text-sm font-black text-center text-sky-900 focus:border-sky-500 req-target-qty shadow-sm" placeholder="產量"></div></div>`;
+                if(i) {
+                    html += `
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between shadow-inner req-target-row mb-2" data-id="${i.id}">
+                        <div class="flex-1 pr-2">
+                            <span class="text-[9px] font-mono font-black text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded">${i.item_code}</span>
+                            <h4 class="font-black text-sm text-slate-800 leading-tight mt-1 truncate">${i.item_name}</h4>
+                        </div>
+                        <div class="w-20 shrink-0">
+                            <input type="number" min="1" class="w-full p-2 border border-sky-300 rounded-lg text-sm font-black text-center text-sky-900 focus:border-sky-500 req-target-qty shadow-sm" placeholder="數量">
+                        </div>
+                    </div>`;
+                }
             });
             container.innerHTML = html;
             openModal('req-qty-modal');
         }
 
-        // 🌟 核心防護：成品請購時，自動產生「扣除原料」的動作
+        // 🌟 核心防護：請購單寫入邏輯並自動跳轉至請購單紀錄表
         async function confirmGenerateReq() {
-            let isValid = true; document.querySelectorAll('.req-target-qty').forEach(inp => { if((parseInt(inp.value)||0) <= 0) isValid = false; });
+            let isValid = true; 
+            document.querySelectorAll('.req-target-qty').forEach(inp => { 
+                if((parseInt(inp.value)||0) <= 0) isValid = false; 
+            });
             if(!isValid) { alert('請確保所有項目都有輸入大於 0 的數量！'); return; }
 
             const btn = document.getElementById('btn-run-req');
-            btn.innerText = '處理中...'; btn.disabled = true;
+            btn.innerText = '處理中...'; 
+            btn.disabled = true;
 
             let requestItems = []; 
             let ledgerEntries = [];
@@ -813,11 +1144,8 @@
                 
                 if(item && qty > 0) { 
                     let unit = item.item_type === '原料' ? (item.qty_per_pack > 1 ? '箱' : '件') : '件';
-                    
-                    // 1. 將成品或原料加入請購單 (統一放入 items_json)
                     requestItems.push({ id: item.item_code, name: item.item_name, qty: qty, unit: unit, type: item.item_type });
 
-                    // 2. 如果是成品，自動推算 BOM 並在背景扣除庫存！
                     if (item.item_type === '成品') {
                         let safeBom = getSafeArray(item.bom_data);
                         safeBom.forEach(b => {
@@ -827,7 +1155,7 @@
                                 ledgerEntries.push({
                                     item_id: rawItem.id,
                                     employee_id: window.currentUser?.id || null,
-                                    change_qty: -deductQty, // 🚨 負數代表扣除
+                                    change_qty: -deductQty, 
                                     action_type: '生產領料',
                                     note: `生產請購自動扣料: ${item.item_name} * ${qty}`
                                 });
@@ -838,79 +1166,292 @@
                 } 
             });
 
-            if(requestItems.length === 0) { alert('無效的請購需求！'); btn.innerText = '確定生成請購單'; btn.disabled = false; return; }
+            if(requestItems.length === 0) { 
+                alert('無效的請購需求！'); 
+                btn.innerText = '確定生成請購單'; 
+                btn.disabled = false; 
+                return; 
+            }
 
-            const reqNo = 'REQ-' + new Date().getFullYear() + String(new Date().getMonth()+1).padStart(2,'0') + String(new Date().getDate()).padStart(2,'0') + '-' + Math.floor(Math.random()*1000).toString().padStart(3,'0');
-            const userName = window.currentUser?.full_name || '系統使用者';
-            
-            // 🚨 下載 CSV
+            const reqNo = 'REQ-' + new Date().toISOString().replace(/[-:T]/g,'').slice(0,14) + Math.floor(Math.random()*100).toString().padStart(2,'0');
+            const expectedDate = new Date(Date.now() + 7*86400000).toISOString().split('T')[0];
+
             try {
-                let csv = "\uFEFF請購單號,申請日期,申請人,請購項目,數量,單位,類型\n";
-                const dateStr = new Date().toLocaleDateString('zh-TW');
-                requestItems.forEach(t => { csv += `="${reqNo}",${dateStr},${userName},${t.name},${t.qty},${t.unit},${t.type}\n`; });
-
-                const link = document.createElement("a"); 
-                link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); 
-                link.download = `HYPASS_請購單_${reqNo}.csv`; 
-                document.body.appendChild(link); link.click(); document.body.removeChild(link);
-            } catch(csvErr) { console.error('CSV:', csvErr); }
-
-            // 🚨 背景寫入
-            try {
-                // 執行庫存扣料
                 if (ledgerEntries.length > 0) {
                     await window._sb.from('inventory_ledgers').insert(ledgerEntries);
                 }
 
-                // 執行請購單建立
-                const payload = { req_no: reqNo, employee_id: window.currentUser?.id || null, items_json: requestItems, status: '待處理' };
+                // 🚨 核心防護：強迫轉為 JSON 字串，並寫入正確欄位
+                const reqJsonStr = JSON.stringify(requestItems);
+                const payload = { 
+                    req_no: reqNo, 
+                    employee_id: window.currentUser?.id || null, 
+                    items_json: reqJsonStr,
+                    status: '待處理',
+                    expected_date: expectedDate,
+                    note: '庫存大盤手動生成'
+                };
+                
                 try {
                     const { error } = await window._sb.from('requisitions').insert([payload]);
                     if(error) throw error;
                 } catch(e) {
-                    await window._sb.from('purchase_orders').insert([{ employee_id: window.currentUser?.id || null, raw_materials: requestItems, status: '請購待處理', note: reqNo }]);
+                    await window._sb.from('purchase_orders').insert([{ 
+                        employee_id: window.currentUser?.id || null, 
+                        raw_materials: reqJsonStr,
+                        status: '請購待處理', 
+                        note: reqNo 
+                    }]);
                 }
                 
-                let successMsg = `已生成請購單：${reqNo}`;
-                if(deductionMsgs.length > 0) { successMsg += `\n\n系統已於背景自動扣除原料：\n` + deductionMsgs.join('\n'); }
-                alert(successMsg);
+                let successMsg = `✅ 已成功生成請購單：${reqNo}\n採購系統已同步更新！`;
+                if(deductionMsgs.length > 0) { 
+                    successMsg += `\n\n系統已於背景自動扣除原料：\n` + deductionMsgs.join('\n'); 
+                }
+                showSysToast(successMsg);
 
-            } catch (dbErr) { console.error('資料庫同步失敗:', dbErr); }
+            } catch (dbErr) { 
+                console.error('資料庫同步失敗:', dbErr); 
+                alert('生成失敗，請確認資料庫狀態：' + dbErr.message);
+            }
 
             closeModal('req-qty-modal');
             reqCart.clear();
             updateTopReqBar();
             document.querySelectorAll('.inv-item input[type="checkbox"]').forEach(cb => cb.checked = false);
 
-            btn.innerText = '確定生成請購單'; btn.disabled = false;
-            loadItems(); 
+            btn.innerText = '確定生成請購單'; 
+            btn.disabled = false;
+            
+            await loadItems();
+            openInvReqHistory(); // 🚨 生成後自動跳轉至紀錄表
         }
 
-        function openScanner() { openView('scanner', '相機掃描盤點'); isScanning = true; setTimeout(() => { if (!html5QrcodeScanner) { html5QrcodeScanner = new Html5Qrcode("reader"); } if (html5QrcodeScanner.isScanning) return; html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScanSuccess).catch((e)=>{ alert('相機啟動失敗，請確認已給予鏡頭權限！'); backToDash(); }); }, 300); }
-        function stopScanner(callback) { isScanning = false; if(html5QrcodeScanner && html5QrcodeScanner.isScanning) { html5QrcodeScanner.stop().then(() => { if(callback) callback(); }).catch(() => { if(callback) callback(); }); } else { if(callback) callback(); } }
-        function onScanSuccess(decodedText) { if(!isScanning) return; isScanning = false; const beep = document.getElementById('beep-sound'); if(beep) { beep.currentTime = 0; beep.play().catch(()=>{}); } const code = decodedText.trim().toUpperCase(); const item = allItems.find(i => i.item_code.toUpperCase() === code || i.id === code); stopScanner(() => { if(item) { openCountView(item); } else { alert('❌ 系統中查無此料號條碼：' + code); backToDash(); } }); }
-        function openCountView(item) { openView('count', '輸入盤點數量'); document.getElementById('c-item-code').innerText = item.item_code; document.getElementById('c-item-name').innerText = item.item_name; document.getElementById('c-item-spec').innerText = item.specification || '無'; document.getElementById('c-item-id').value = item.id; currentItemPackQty = item.qty_per_pack || 1; document.getElementById('c-pack-num').innerText = currentItemPackQty; document.getElementById('c-box-count').value = '0'; document.getElementById('c-fraction-count').value = '0'; document.getElementById('c-custom-box').value = ''; document.getElementById('c-custom-box').classList.add('hidden'); document.getElementById('c-total-qty').value = '0'; calcTotal(); }
-        function calcTotal() { let box = document.getElementById('c-box-count').value; if(box==='custom'){ document.getElementById('c-custom-box').classList.remove('hidden'); }else{ document.getElementById('c-custom-box').classList.add('hidden'); } let boxes = box === 'custom' ? parseInt(document.getElementById('c-custom-box').value) || 0 : parseInt(box); let frac = parseFloat(document.getElementById('c-fraction-count').value); document.getElementById('c-total-qty').value = Math.round((boxes + frac) * currentItemPackQty); }
-        function adjustTotal(val) { document.getElementById('c-total-qty').value = Math.max(0, parseInt(document.getElementById('c-total-qty').value) + val); }
-        async function submitCount() { const id = document.getElementById('c-item-id').value; const newVal = parseInt(document.getElementById('c-total-qty').value); const item = window.inventoryData.find(x => x.id === id); const diff = newVal - (item?.current_stock || 0); const btn = document.getElementById('btn-submit-count'); btn.innerText = '💾 紀錄中...'; btn.disabled = true; await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: '相機掃碼校正' }]); const beep = document.getElementById('beep-sound'); if(beep) { beep.currentTime = 0; beep.play().catch(()=>{}); } if(item) { item.current_stock = newVal; window.latestChecks[id] = { rawDate: new Date().toISOString(), date: new Date().toLocaleDateString('zh-TW'), emp: window.currentUser.full_name }; } btn.innerText = '💾 確認並盤點下一個'; btn.disabled = false; openScanner(); }
+        async function generateRequisition() {
+            const checks = document.querySelectorAll('.req-chk:checked');
+            if(checks.length === 0) { alert('⚠️ 請先勾選需要請購的品項！'); return; }
+            
+            const btn = document.getElementById('btn-gen-req');
+            btn.innerText = '生成並寫入中...'; 
+            btn.disabled = true;
+
+            let items = [];
+            checks.forEach(c => {
+                const id = c.value;
+                const name = c.dataset.name;
+                const qty = parseInt(document.getElementById(`req-qty-${id}`).value) || 1;
+                items.push({ id: id, name: name, qty: qty, unit: '件' });
+            });
+
+            const reqNo = 'REQ-' + new Date().toISOString().replace(/[-:T]/g,'').slice(0,14) + Math.floor(Math.random()*100).toString().padStart(2,'0');
+            const expectedDate = new Date(Date.now() + 7*86400000).toISOString().split('T')[0];
+
+            // 🚨 核心防護：強迫轉為 JSON 字串
+            const payload = {
+                req_no: reqNo,
+                employee_id: window.currentUser.id,
+                items_json: JSON.stringify(items), 
+                status: '待處理',
+                expected_date: expectedDate,
+                note: '庫存低水位警報生成'
+            };
+
+            try {
+                const { error } = await window._sb.from('requisitions').insert([payload]);
+                if(error) throw error;
+                showSysToast('✅ 請購單已成功生成！採購系統已同步更新');
+                await loadItems(); 
+                openInvReqHistory(); // 🚨 生成後自動跳轉至紀錄表
+            } catch(e) {
+                alert('生成失敗，請確認資料庫：\n' + e.message);
+            }
+            btn.innerText = '🛒 勾選並生成內部請購單'; 
+            btn.disabled = false;
+        }
+
+        function openScanner() { 
+            openView('scanner', '相機掃描盤點'); 
+            isScanning = true; 
+            setTimeout(() => { 
+                if (!html5QrcodeScanner) { 
+                    html5QrcodeScanner = new Html5Qrcode("reader"); 
+                } 
+                if (html5QrcodeScanner.isScanning) return; 
+                html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScanSuccess).catch((e)=>{ 
+                    alert('相機啟動失敗，請確認已給予鏡頭權限！'); 
+                    backToDash(); 
+                }); 
+            }, 300); 
+        }
+
+        function stopScanner(callback) { 
+            isScanning = false; 
+            if(html5QrcodeScanner && html5QrcodeScanner.isScanning) { 
+                html5QrcodeScanner.stop().then(() => { if(callback) callback(); }).catch(() => { if(callback) callback(); }); 
+            } else { 
+                if(callback) callback(); 
+            } 
+        }
+
+        function onScanSuccess(decodedText) { 
+            if(!isScanning) return; 
+            isScanning = false; 
+            const beep = document.getElementById('beep-sound'); 
+            if(beep) { beep.currentTime = 0; beep.play().catch(()=>{}); } 
+            
+            const code = decodedText.trim().toUpperCase(); 
+            const item = allItems.find(i => i.item_code.toUpperCase() === code || i.id === code); 
+            
+            stopScanner(() => { 
+                if(item) { 
+                    openCountView(item); 
+                } else { 
+                    alert('❌ 系統中查無此料號條碼：' + code); 
+                    backToDash(); 
+                } 
+            }); 
+        }
+
+        function openCountView(item) { 
+            openView('count', '輸入盤點數量'); 
+            document.getElementById('c-item-code').innerText = item.item_code; 
+            document.getElementById('c-item-name').innerText = item.item_name; 
+            document.getElementById('c-item-spec').innerText = item.specification || '無'; 
+            document.getElementById('c-item-id').value = item.id; 
+            currentItemPackQty = item.qty_per_pack || 1; 
+            document.getElementById('c-pack-num').innerText = currentItemPackQty; 
+            document.getElementById('c-box-count').value = '0'; 
+            document.getElementById('c-fraction-count').value = '0'; 
+            document.getElementById('c-custom-box').value = ''; 
+            document.getElementById('c-custom-box').classList.add('hidden'); 
+            document.getElementById('c-total-qty').value = '0'; 
+            calcTotal(); 
+        }
+
+        function calcTotal() { 
+            let box = document.getElementById('c-box-count').value; 
+            if(box==='custom'){ 
+                document.getElementById('c-custom-box').classList.remove('hidden'); 
+            } else { 
+                document.getElementById('c-custom-box').classList.add('hidden'); 
+            } 
+            let boxes = box === 'custom' ? parseInt(document.getElementById('c-custom-box').value) || 0 : parseInt(box); 
+            let frac = parseFloat(document.getElementById('c-fraction-count').value); 
+            document.getElementById('c-total-qty').value = Math.round((boxes + frac) * currentItemPackQty); 
+        }
+
+        function adjustTotal(val) { 
+            document.getElementById('c-total-qty').value = Math.max(0, parseInt(document.getElementById('c-total-qty').value) + val); 
+        }
+
+        async function submitCount() { 
+            const id = document.getElementById('c-item-id').value; 
+            const newVal = parseInt(document.getElementById('c-total-qty').value); 
+            const item = window.inventoryData.find(x => x.id === id); 
+            const diff = newVal - (item?.current_stock || 0); 
+            
+            const btn = document.getElementById('btn-submit-count'); 
+            btn.innerText = '💾 紀錄中...'; 
+            btn.disabled = true; 
+            
+            await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: '相機掃碼校正' }]); 
+            
+            const beep = document.getElementById('beep-sound'); 
+            if(beep) { beep.currentTime = 0; beep.play().catch(()=>{}); } 
+            
+            if(item) { 
+                item.current_stock = newVal; 
+                window.latestChecks[id] = { rawDate: new Date().toISOString(), date: new Date().toLocaleDateString('zh-TW'), emp: window.currentUser.full_name }; 
+            } 
+            
+            btn.innerText = '💾 確認並盤點下一個'; 
+            btn.disabled = false; 
+            openScanner(); 
+        }
         
         function renderBomTable(tbodyId, existingData = []) {
-            let rawItems = window.inventoryData.filter(i => i.item_type === '原料'); let html = ''; 
+            let rawItems = window.inventoryData.filter(i => i.item_type === '原料'); 
+            let html = ''; 
             let safeData = getSafeArray(existingData);
+            
             for(let i=0; i<6; i++) {
                 let r = safeData[i] || { material: '', usage: '', unit: '米平方', total_qty: '' };
                 let opts = '<option value="">(請選擇原料...)</option>' + rawItems.map(rm => `<option value="${rm.item_name}" ${r.material===rm.item_name?'selected':''}>[${rm.item_code}] ${rm.item_name}</option>`).join('');
-                if(r.material && !rawItems.some(rm => rm.item_name === r.material)) opts += `<option value="${r.material}" selected>${r.material} (舊資料)</option>`;
-                html += `<tr><td class="p-2 text-slate-300 text-center font-black">${i+1}</td><td class="p-1"><select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold bom-mat select-arrow truncate text-slate-700 focus:border-sky-500 outline-none shadow-inner">${opts}</select></td><td class="p-1"><input type="number" step="any" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-black text-sky-700 text-center bom-qty outline-none focus:border-sky-500 shadow-inner" value="${r.usage}" oninput="calcBomLoss(this)"></td><td class="p-1"><select class="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold select-arrow bom-unit outline-none focus:border-sky-500 shadow-sm"><option value="米平方" ${r.unit==='米平方'?'selected':''}>米平方</option><option value="米" ${r.unit==='米'?'selected':''}>米</option><option value="個" ${r.unit==='個'?'selected':''}>個</option><option value="袋" ${r.unit==='袋'?'selected':''}>袋</option><option value="條" ${r.unit==='條'?'selected':''}>條</option></select></td><td class="p-1"><input type="number" class="w-full p-2 bg-slate-100 border border-transparent rounded-lg text-xs font-black text-sky-900 text-center bom-total shadow-inner" value="${r.total_qty}" readonly></td></tr>`;
+                if(r.material && !rawItems.some(rm => rm.item_name === r.material)) {
+                    opts += `<option value="${r.material}" selected>${r.material} (舊資料)</option>`;
+                }
+                
+                html += `
+                <tr>
+                    <td class="p-2 text-slate-300 text-center font-black">${i+1}</td>
+                    <td class="p-1"><select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold bom-mat select-arrow truncate text-slate-700 focus:border-sky-500 outline-none shadow-inner">${opts}</select></td>
+                    <td class="p-1"><input type="number" step="any" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-black text-sky-700 text-center bom-qty outline-none focus:border-sky-500 shadow-inner" value="${r.usage}" oninput="calcBomLoss(this)"></td>
+                    <td class="p-1">
+                        <select class="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold select-arrow bom-unit outline-none focus:border-sky-500 shadow-sm">
+                            <option value="米平方" ${r.unit==='米平方'?'selected':''}>米平方</option>
+                            <option value="米" ${r.unit==='米'?'selected':''}>米</option>
+                            <option value="個" ${r.unit==='個'?'selected':''}>個</option>
+                            <option value="袋" ${r.unit==='袋'?'selected':''}>袋</option>
+                            <option value="條" ${r.unit==='條'?'selected':''}>條</option>
+                        </select>
+                    </td>
+                    <td class="p-1"><input type="number" class="w-full p-2 bg-slate-100 border border-transparent rounded-lg text-xs font-black text-sky-900 text-center bom-total shadow-inner" value="${r.total_qty}" readonly></td>
+                </tr>`;
             }
             document.getElementById(tbodyId).innerHTML = html;
         }
-        function calcBomLoss(el) { const tr = el.closest('tr'); const usage = parseFloat(el.value) || 0; tr.querySelector('.bom-total').value = usage > 0 ? (usage * 1.1).toFixed(2) : ''; }
-        function checkCustomCategory() { const v = document.getElementById('i-category').value; document.getElementById('i-custom-category').classList.toggle('hidden', v !== 'custom'); }
-        function extractBomData(tbodyId) { let data = []; document.querySelectorAll(`#${tbodyId} tr`).forEach(tr => { const mat = tr.querySelector('.bom-mat').value; if(mat) data.push({ material: mat, usage: parseFloat(tr.querySelector('.bom-qty').value) || 0, unit: tr.querySelector('.bom-unit').value, total_qty: parseFloat(tr.querySelector('.bom-total').value) || 0 }); }); return data; }
-        async function saveItem(e) { e.preventDefault(); let cat = document.getElementById('i-category').value === 'custom' ? document.getElementById('i-custom-category').value : document.getElementById('i-category').value; const p = { item_name: document.getElementById('i-name').value, item_code: document.getElementById('i-code').value.toUpperCase(), item_type: document.getElementById('i-type').value, category: cat, specification: document.getElementById('i-spec').value, qty_per_pack: parseInt(document.getElementById('i-qty').value) || 1, safe_stock_level: 0, lead_time_days: parseInt(document.getElementById('i-lead').value) || 15, stocktake_cycle: parseInt(document.getElementById('i-cycle').value) || 30, bom_data: extractBomData('bom-table-body') }; const { error } = await window._sb.from('items').insert([p]); if(!error) { alert('✅ 成功！'); e.target.reset(); await loadItems(); renderBomTable('bom-table-body'); } }
+
+        function calcBomLoss(el) { 
+            const tr = el.closest('tr'); 
+            const usage = parseFloat(el.value) || 0; 
+            tr.querySelector('.bom-total').value = usage > 0 ? (usage * 1.1).toFixed(2) : ''; 
+        }
+
+        function checkCustomCategory() { 
+            const v = document.getElementById('i-category').value; 
+            document.getElementById('i-custom-category').classList.toggle('hidden', v !== 'custom'); 
+        }
+
+        function extractBomData(tbodyId) { 
+            let data = []; 
+            document.querySelectorAll(`#${tbodyId} tr`).forEach(tr => { 
+                const mat = tr.querySelector('.bom-mat').value; 
+                if(mat) {
+                    data.push({ 
+                        material: mat, 
+                        usage: parseFloat(tr.querySelector('.bom-qty').value) || 0, 
+                        unit: tr.querySelector('.bom-unit').value, 
+                        total_qty: parseFloat(tr.querySelector('.bom-total').value) || 0 
+                    }); 
+                }
+            }); 
+            return data; 
+        }
+
+        async function saveItem(e) { 
+            e.preventDefault(); 
+            let cat = document.getElementById('i-category').value === 'custom' ? document.getElementById('i-custom-category').value : document.getElementById('i-category').value; 
+            const p = { 
+                item_name: document.getElementById('i-name').value, 
+                item_code: document.getElementById('i-code').value.toUpperCase(), 
+                item_type: document.getElementById('i-type').value, 
+                category: cat, 
+                specification: document.getElementById('i-spec').value, 
+                qty_per_pack: parseInt(document.getElementById('i-qty').value) || 1, 
+                safe_stock_level: 0, 
+                lead_time_days: parseInt(document.getElementById('i-lead').value) || 15, 
+                stocktake_cycle: parseInt(document.getElementById('i-cycle').value) || 30, 
+                bom_data: extractBomData('bom-table-body') 
+            }; 
+            const { error } = await window._sb.from('items').insert([p]); 
+            if(!error) { 
+                alert('✅ 成功！'); 
+                e.target.reset(); 
+                await loadItems(); 
+                renderBomTable('bom-table-body'); 
+            } 
+        }
         
-        // 🌟 標籤圖片下載引擎
         function renderItemSearch() {
             const searchEl = document.getElementById('item-search-input');
             const kw = searchEl ? searchEl.value.toLowerCase() : ''; 
@@ -918,8 +1459,12 @@
             const cat = catSel ? catSel.value : '';
             const res = window.inventoryData.filter(i => (i.item_code.toLowerCase().includes(kw) || i.item_name.toLowerCase().includes(kw)) && (cat === '' || i.category === cat));
             const container = document.getElementById('item-search-results');
+            
             if(!container) return;
-            if(res.length === 0) { container.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 italic">無符合結果。</div>'; return; }
+            if(res.length === 0) { 
+                container.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 italic">無符合結果。</div>'; 
+                return; 
+            }
 
             container.innerHTML = res.map(i => {
                 let safeBom = getSafeArray(i.bom_data);
@@ -963,7 +1508,9 @@
                 </div>`;
             }).join('');
             
-            document.querySelectorAll('.item-barcode').forEach(svg => { JsBarcode(svg, svg.getAttribute('data-value'), { format: "CODE128", width: 2, height: 40, displayValue: true, fontSize: 14, margin: 0, background: "transparent", lineColor: "#1e293b" }); });
+            document.querySelectorAll('.item-barcode').forEach(svg => { 
+                JsBarcode(svg, svg.getAttribute('data-value'), { format: "CODE128", width: 2, height: 40, displayValue: true, fontSize: 14, margin: 0, background: "transparent", lineColor: "#1e293b" }); 
+            });
         }
 
         function downloadBarcode(code) {
@@ -988,10 +1535,63 @@
             img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
         }
 
-        function openFrontEdit(id) { const i = window.inventoryData.find(x => x.id === id); if(!i) return; document.getElementById('fe-item-id').value = i.id; document.getElementById('fe-item-name').value = i.item_name; const catSel = document.getElementById('fe-item-cat'); if(catSel) catSel.value = i.category || '未分類'; document.getElementById('fe-item-lead').value = i.lead_time_days || 15; document.getElementById('fe-item-cycle').value = i.stocktake_cycle || 30; renderBomTable('fe-bom-table-body', i.bom_data || []); document.getElementById('front-item-edit-modal').classList.add('active'); }
-        async function saveFrontEditItem() { const id = document.getElementById('fe-item-id').value; if(!id) { alert('系統無法讀取 ID！'); return; } const feItemCat = document.getElementById('fe-item-cat'); const p = { item_name: document.getElementById('fe-item-name').value, category: feItemCat ? feItemCat.value : '未分類', lead_time_days: parseInt(document.getElementById('fe-item-lead').value) || 15, stocktake_cycle: parseInt(document.getElementById('fe-item-cycle').value) || 30, bom_data: extractBomData('fe-bom-table-body') }; const { error } = await window._sb.from('items').update(p).eq('id', id); if(error) alert('失敗'); else { alert('✅ 已儲存修改！'); closeModal('front-item-edit-modal'); loadItems(); } }
+        function openFrontEdit(id) { 
+            const i = window.inventoryData.find(x => x.id === id); 
+            if(!i) return; 
+            
+            document.getElementById('fe-item-id').value = i.id; 
+            document.getElementById('fe-item-name').value = i.item_name; 
+            
+            const catSel = document.getElementById('fe-item-cat'); 
+            if(catSel) catSel.value = i.category || '未分類'; 
+            
+            document.getElementById('fe-item-lead').value = i.lead_time_days || 15; 
+            document.getElementById('fe-item-cycle').value = i.stocktake_cycle || 30; 
+            
+            renderBomTable('fe-bom-table-body', i.bom_data || []); 
+            document.getElementById('front-item-edit-modal').classList.add('active'); 
+        }
+
+        async function saveFrontEditItem() { 
+            const id = document.getElementById('fe-item-id').value; 
+            if(!id) { alert('系統無法讀取 ID！'); return; } 
+            
+            const feItemCat = document.getElementById('fe-item-cat'); 
+            const p = { 
+                item_name: document.getElementById('fe-item-name').value, 
+                category: feItemCat ? feItemCat.value : '未分類', 
+                lead_time_days: parseInt(document.getElementById('fe-item-lead').value) || 15, 
+                stocktake_cycle: parseInt(document.getElementById('fe-item-cycle').value) || 30, 
+                bom_data: extractBomData('fe-bom-table-body') 
+            }; 
+            
+            const { error } = await window._sb.from('items').update(p).eq('id', id); 
+            if(error) {
+                alert('失敗'); 
+            } else { 
+                alert('✅ 已儲存修改！'); 
+                closeModal('front-item-edit-modal'); 
+                loadItems(); 
+            } 
+        }
         
-        function printInlineBarcode(id) { const item = allItems.find(i => i.id === id); if(!item) return; const printZone = document.getElementById('print-zone'); printZone.innerHTML = `<div style="text-align:center; font-family:sans-serif; margin-bottom:10px;"><h2 style="margin:0 0 5px 0; font-size:24px;">${item.item_name}</h2><p style="margin:0 0 15px 0; font-size:16px; color:#555;">${item.specification || ''}</p><svg id="print-barcode-svg"></svg></div>`; JsBarcode("#print-barcode-svg", item.item_code, { format: "CODE128", width: 2.5, height: 80, displayValue: true, fontSize: 24, fontOptions: "bold", margin: 10 }); setTimeout(() => { window.print(); }, 150); }
+        function printInlineBarcode(id) { 
+            const item = allItems.find(i => i.id === id); 
+            if(!item) return; 
+            
+            const printZone = document.getElementById('print-zone'); 
+            printZone.innerHTML = `
+                <div style="text-align:center; font-family:sans-serif; margin-bottom:10px;">
+                    <h2 style="margin:0 0 5px 0; font-size:24px;">${item.item_name}</h2>
+                    <p style="margin:0 0 15px 0; font-size:16px; color:#555;">${item.specification || ''}</p>
+                    <svg id="print-barcode-svg"></svg>
+                </div>
+            `; 
+            
+            JsBarcode("#print-barcode-svg", item.item_code, { format: "CODE128", width: 2.5, height: 80, displayValue: true, fontSize: 24, fontOptions: "bold", margin: 10 }); 
+            
+            setTimeout(() => { window.print(); }, 150); 
+        }
 
         window.onload = bootInventory;
 
