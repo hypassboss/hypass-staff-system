@@ -76,13 +76,13 @@
                         <span class="text-[9px] bg-red-100 text-red-700 px-2 py-1 rounded-md font-black border border-red-200 shadow-sm">低水位與警示</span>
                     </h3>
                     <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
-                        <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[280px]">
+                        <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[320px]">
                             <thead class="text-slate-500 border-b border-slate-200">
                                 <tr>
                                     <th class="p-2 font-bold text-left">料號/品名</th>
                                     <th class="p-2 font-bold text-right text-emerald-700">最新庫存</th>
                                     <th class="p-2 font-bold text-right text-sky-600">採購量</th>
-                                    <th class="p-2 font-bold text-center">採購交期</th>
+                                    <th class="p-2 font-bold text-center">交期與狀態</th>
                                 </tr>
                             </thead>
                             <tbody id="ui-filter-status-table-alert" class="divide-y divide-slate-100 bg-white rounded-lg">
@@ -99,11 +99,11 @@
                     </button>
                     <button onclick="openInventoryList()" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-indigo-200 hover:bg-indigo-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">📋</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">庫存採購</span>
+                        <span class="font-black text-slate-700 text-[11px] tracking-widest leading-tight text-center">庫存紀錄<br>低庫存採購</span>
                     </button>
                     <button onclick="openView('register', '新增料號與 BOM')" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-sky-200 hover:bg-sky-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">➕</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">新增料號</span>
+                        <span class="font-black text-slate-700 text-[11px] tracking-widest leading-tight text-center">建立<br>新增料號</span>
                     </button>
                     <button onclick="openSearchPrintView()" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50 col-span-2">
                         <span class="text-3xl mb-1.5 drop-shadow-md">🖨️</span>
@@ -115,7 +115,7 @@
             <div id="view-inventory-list" class="view-panel relative">
                 <div class="sticky top-14 z-30 bg-[#f1f5f9] pt-2 pb-3 border-b border-slate-300 shadow-sm -mx-4 px-4 mb-4">
                     <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1.5">🚨</span> 庫存採購 <span class="text-[10px] text-slate-400 font-bold ml-2">(可勾選快速生成採購單)</span></h3>
+                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1.5">🚨</span> 庫存紀錄 <span class="text-[10px] text-slate-400 font-bold ml-2">(可快速採購)</span></h3>
                         <button onclick="openPOModal()" class="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-md active:scale-95 transition flex items-center">
                             生成採購單 <span id="list-req-count" class="ml-1.5 bg-white text-sky-600 px-2 py-0.5 rounded text-[11px] transition-all duration-300 shadow-sm">0</span>
                         </button>
@@ -498,24 +498,23 @@
                 let pendingPOs_RAW = {};
                 let pendingPOs_FG = {};
                 let pendingPOs_ETA = {};
+                let pendingPOs_STATUS = {};
 
                 // 🌟 追蹤採購單 (po_documents)
                 try {
-                    const { data: pos } = await window._sb.from('po_documents').select('items_json, expected_date').in('status', ['待審核', '已發送', '已下單', '異常(遲交)']);
+                    const { data: pos } = await window._sb.from('po_documents').select('items_json, expected_date, status').in('status', ['待審核', '已發送', '已下單', '異常(遲交)']);
                     if (pos) { 
                         pos.forEach(po => { 
                             getSafeArray(po.items_json).forEach(p => { 
-                                if (p.type === '成品') {
-                                    pendingPOs_FG[p.id] = (pendingPOs_FG[p.id] || 0) + (parseFloat(p.qty) || 0);
-                                    if(po.expected_date && (!pendingPOs_ETA[p.id] || po.expected_date < pendingPOs_ETA[p.id])) { 
-                                        pendingPOs_ETA[p.id] = po.expected_date; 
-                                    }
-                                } else {
-                                    if(p.name) {
-                                        pendingPOs_RAW[p.name] = (pendingPOs_RAW[p.name] || 0) + (parseFloat(p.qty) || 0);
-                                        if(po.expected_date && (!pendingPOs_ETA[p.name] || po.expected_date < pendingPOs_ETA[p.name])) { 
-                                            pendingPOs_ETA[p.name] = po.expected_date; 
-                                        }
+                                let key = p.type === '成品' ? p.id : p.name;
+                                let targetObj = p.type === '成品' ? pendingPOs_FG : pendingPOs_RAW;
+                                if(key) {
+                                    targetObj[key] = (targetObj[key] || 0) + (parseFloat(p.qty) || 0);
+                                    if(po.expected_date && (!pendingPOs_ETA[key] || po.expected_date < pendingPOs_ETA[key])) { 
+                                        pendingPOs_ETA[key] = po.expected_date; 
+                                        pendingPOs_STATUS[key] = po.status;
+                                    } else if (!pendingPOs_ETA[key]) {
+                                        pendingPOs_STATUS[key] = po.status;
                                     }
                                 }
                             }); 
@@ -525,21 +524,23 @@
                 
                 // 🌟 追蹤舊版採購單 (purchase_orders)
                 try {
-                    const { data: pos2 } = await window._sb.from('purchase_orders').select('raw_materials, expected_date').in('status', ['待處理', '採購中', 'PO已發送', '已發送', '異常(遲交)', 'PO異常(遲交)']);
+                    const { data: pos2 } = await window._sb.from('purchase_orders').select('raw_materials, expected_date, status').in('status', ['待處理', '採購中', 'PO已發送', '已發送', '異常(遲交)', 'PO異常(遲交)']);
                     if (pos2) { 
                         pos2.forEach(po => { 
                             getSafeArray(po.raw_materials).forEach(p => { 
-                                if (p.type === '成品') {
-                                    pendingPOs_FG[p.id] = (pendingPOs_FG[p.id] || 0) + (parseFloat(p.qty) || 0);
-                                    if(po.expected_date && (!pendingPOs_ETA[p.id] || po.expected_date < pendingPOs_ETA[p.id])) { 
-                                        pendingPOs_ETA[p.id] = po.expected_date; 
-                                    }
-                                } else {
-                                    if(p.name) {
-                                        pendingPOs_RAW[p.name] = (pendingPOs_RAW[p.name] || 0) + (parseFloat(p.qty) || 0);
-                                        if(po.expected_date && (!pendingPOs_ETA[p.name] || po.expected_date < pendingPOs_ETA[p.name])) { 
-                                            pendingPOs_ETA[p.name] = po.expected_date; 
-                                        }
+                                let key = p.type === '成品' ? p.id : p.name;
+                                let targetObj = p.type === '成品' ? pendingPOs_FG : pendingPOs_RAW;
+                                if(key) {
+                                    targetObj[key] = (targetObj[key] || 0) + (parseFloat(p.qty) || 0);
+                                    let st = po.status;
+                                    if (st === 'PO已發送') st = '已發送';
+                                    if (st === 'PO異常(遲交)') st = '異常(遲交)';
+                                    
+                                    if(po.expected_date && (!pendingPOs_ETA[key] || po.expected_date < pendingPOs_ETA[key])) { 
+                                        pendingPOs_ETA[key] = po.expected_date; 
+                                        pendingPOs_STATUS[key] = st;
+                                    } else if (!pendingPOs_ETA[key]) {
+                                        pendingPOs_STATUS[key] = st;
                                     }
                                 }
                             }); 
@@ -631,29 +632,31 @@
                         let qtyHtml = '<span class="text-slate-300">0</span>'; 
                         let etaHtml = '<span class="text-slate-400 font-bold">--</span>';
                         let pQty = 0;
+                        let dStr = null;
+                        let pStatus = null;
 
                         if (i.item_type === '原料') {
                             pQty = pendingPOs_RAW[i.item_name] || 0;
-                            if(pQty > 0) {
-                                qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${pQty.toFixed(0)}</span>`;
-                                let dStr = pendingPOs_ETA[i.item_name];
-                                if (dStr && dStr !== '未定' && dStr !== null) {
-                                    etaHtml = `<span class="text-slate-700 font-bold">${String(dStr).slice(5)}</span>`;
-                                } else {
-                                    etaHtml = `<span class="text-slate-400 font-bold">待確認</span>`;
-                                }
-                            }
+                            dStr = pendingPOs_ETA[i.item_name];
+                            pStatus = pendingPOs_STATUS[i.item_name];
                         } else {
                             pQty = pendingPOs_FG[i.id] || pendingPOs_FG[i.item_code] || 0;
-                            if(pQty > 0) {
-                                qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${pQty}</span>`;
-                                let dStr = pendingPOs_ETA[i.id] || pendingPOs_ETA[i.item_code];
-                                if (dStr && dStr !== '未定' && dStr !== null) {
-                                    etaHtml = `<span class="text-slate-700 font-bold">${String(dStr).slice(5)}</span>`;
-                                } else {
-                                    etaHtml = `<span class="text-slate-400 font-bold">待確認</span>`;
-                                }
-                            }
+                            dStr = pendingPOs_ETA[i.id] || pendingPOs_ETA[i.item_code];
+                            pStatus = pendingPOs_STATUS[i.id] || pendingPOs_STATUS[i.item_code];
+                        }
+
+                        if(pQty > 0) {
+                            qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${pQty.toFixed(0)}</span>`;
+                            let dateText = (dStr && dStr !== '未定' && dStr !== null) ? String(dStr).slice(5) : '未定';
+                            let stText = pStatus || '待處理';
+                            let stColor = stText.includes('異常') || stText.includes('遲交') ? 'text-red-600 bg-red-100' : 'text-sky-700 bg-sky-100';
+                            
+                            etaHtml = `
+                                <div class="flex flex-col items-center justify-center space-y-0.5">
+                                    <span class="text-[10px] font-bold text-slate-700">${dateText}</span>
+                                    <span class="text-[8px] font-black px-1.5 rounded-sm ${stColor}">${stText}</span>
+                                </div>
+                            `;
                         }
                         
                         let safe = i.safe_stock_level || 0; let isLow = i.current_stock <= safe;
@@ -690,7 +693,7 @@
         }
 
         async function openInventoryList() { 
-            openView('inventory-list', '庫存採購'); 
+            openView('inventory-list', '庫存紀錄 / 低庫存採購'); 
             await loadItems(); 
             renderFilteredInventory(); 
             updateTopReqBar(); 
@@ -800,21 +803,22 @@
 
                 return `
                 <div class="p-4 rounded-[1.5rem] border-2 ${borderClass} flex flex-col mb-4 shadow-sm transition-all relative">
-                    <label class="absolute top-4 right-4 flex items-center space-x-1 cursor-pointer bg-sky-600 px-3 py-1.5 rounded-xl shadow-md z-10 hover:bg-sky-700 transition active:scale-95">
-                        <input type="checkbox" class="w-4 h-4 accent-white" onchange="togglePO('${i.id}', this)" ${inCart}>
-                        <span class="text-[11px] font-black text-white tracking-widest">採購</span>
-                    </label>
-
-                    <div class="flex flex-wrap items-center gap-2 mb-2 pr-20">
-                        <span class="text-[12px] font-mono font-black text-indigo-800 bg-indigo-100 px-2 py-0.5 rounded-lg border border-indigo-200 shadow-sm tracking-wider">${i.item_code}</span>
-                        <span class="text-[9px] font-black text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200 shadow-sm">${i.item_type} / ${i.category || '未分類'}</span>
-                        ${statusBadge}
+                    <div class="flex justify-between items-start mb-3 border-b border-slate-100/60 pb-3">
+                        <div class="flex flex-col pr-2 min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                                <span class="text-[12px] font-mono font-black text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-200 shadow-sm tracking-wider">${i.item_code}</span>
+                                ${statusBadge}
+                            </div>
+                            <h4 class="font-black text-base text-slate-800 leading-tight mb-1 truncate">${i.item_name}</h4>
+                            <p class="text-[10px] text-slate-500 font-bold truncate">分類: ${i.item_type} / ${i.category || '未分類'} | 規格: ${i.specification || '無'}</p>
+                        </div>
+                        <label class="flex flex-col items-center space-y-1 cursor-pointer bg-slate-50 border border-slate-200 p-2 rounded-xl shadow-sm z-10 hover:bg-sky-50 hover:border-sky-200 transition active:scale-95 shrink-0">
+                            <span class="text-[9px] font-black text-slate-600 tracking-widest">勾選採購</span>
+                            <input type="checkbox" class="w-5 h-5 accent-sky-600" onchange="togglePO('${i.id}', this)" ${inCart}>
+                        </label>
                     </div>
                     
-                    <h4 class="font-black text-lg text-slate-800 leading-tight mb-1">${i.item_name}</h4>
-                    <p class="text-[11px] text-slate-500 font-bold mb-4">規格: ${i.specification || '無'}</p>
-                    
-                    <div class="grid grid-cols-4 gap-2 text-center bg-white/80 p-2.5 rounded-xl mb-3 border border-slate-100 shadow-inner">
+                    <div class="grid grid-cols-4 gap-2 text-center bg-white p-2.5 rounded-xl mb-3 border border-slate-200 shadow-inner">
                         <div class="flex flex-col justify-center">
                             <span class="text-[9px] text-slate-500 font-bold mb-0.5">現有庫存</span>
                             <input type="number" value="${i.current_stock}" onchange="inlineUpdateCurrentStock('${i.id}', ${i.current_stock}, this.value)" class="w-full bg-transparent border-b border-emerald-300 text-center font-black text-xl ${stockColor} outline-none focus:border-emerald-600">
@@ -844,8 +848,9 @@
                         </div>
                     </div>
 
-                    <div class="text-[10px] text-slate-400 font-bold border-t border-slate-200/50 pt-2.5 flex items-center">
-                        <span class="mr-1">🕒 最新盤點:</span> ${lastCheckText}
+                    <div class="text-[10px] font-bold bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center justify-between">
+                        <span class="text-slate-500 flex items-center"><span class="mr-1 text-sm">🕒</span> 最新盤點</span>
+                        <span class="text-slate-700" id="last-check-${i.id}">${lastCheckText}</span>
                     </div>
                 </div>`;
             }).join('');
@@ -872,10 +877,25 @@
             }]); 
             if(!error) { 
                 showSysToast('✅ 庫存已更新，並記錄為最新盤點！');
+                
+                // 🌟 即時 UI 更新最新盤點時間與人員
+                let item = window.inventoryData.find(x => x.id === id);
+                if (item) {
+                    item.current_stock = newQty;
+                    let newDate = new Date().toLocaleDateString('zh-TW');
+                    let newEmp = window.currentUser.full_name;
+                    window.latestChecks[id] = { rawDate: new Date().toISOString(), date: newDate, emp: newEmp };
+                    
+                    const checkEl = document.getElementById(`last-check-${id}`);
+                    if (checkEl) checkEl.innerHTML = `${newDate} (${newEmp})`;
+                }
+
                 const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
-                await loadItems(); 
                 renderFilteredInventory(); 
                 setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
+                
+                // 背景刷新保持資料同步
+                loadItems(); 
             } else {
                 alert('庫存更新失敗');
             }
