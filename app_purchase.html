@@ -56,25 +56,11 @@
             
             <div id="view-dashboard" class="view-panel active space-y-4">
                 
-                <div class="glass-card p-4 rounded-[1.5rem] shadow-sm border-t-4 border-sky-500 relative overflow-hidden">
-                    <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
-                        <h3 class="font-black text-slate-800 text-sm flex items-center"><span class="mr-1.5 text-lg">📥</span>內部請購最新狀況</h3>
-                        <span class="text-[9px] text-slate-400 font-bold bg-slate-50 px-2 py-1 rounded border border-slate-200 shadow-sm">近 30 天</span>
-                    </div>
-                    <div id="ui-dash-req-status" class="space-y-3 max-h-[40vh] overflow-y-auto no-scrollbar pr-1">
-                        <div class="text-center text-xs text-slate-400 py-4 font-bold">資料讀取中...</div>
-                    </div>
-                </div>
-
                 <div class="glass-card p-4 rounded-[1.5rem] shadow-sm border-t-4 border-amber-500 relative overflow-hidden">
                     <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
-                        <h3 class="font-black text-slate-800 text-sm flex items-center"><span class="mr-1.5 text-lg">📤</span>對外採購最新狀況</h3>
-                        <div class="flex items-center space-x-1 text-[8px] font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded-md border border-slate-200 shadow-sm">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>正常</span>
-                            <span class="w-2 h-2 rounded-full bg-red-500 ml-1 animate-pulse"></span><span>遲交</span>
-                        </div>
+                        <h3 class="font-black text-slate-800 text-sm flex items-center"><span class="mr-1.5 text-lg">📤</span>最新採購狀況</h3>
                     </div>
-                    <div id="ui-dash-po-status" class="space-y-3 max-h-[40vh] overflow-y-auto no-scrollbar pr-1">
+                    <div id="ui-dash-po-status" class="space-y-3 max-h-[50vh] overflow-y-auto no-scrollbar pr-1">
                         <div class="text-center text-xs text-slate-400 py-4 font-bold">資料讀取中...</div>
                     </div>
                 </div>
@@ -82,18 +68,18 @@
                 <div class="grid grid-cols-2 gap-3 mt-4">
                     <button onclick="openReqManagement()" class="glass-card p-5 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-amber-200 hover:bg-amber-50 col-span-2 bg-amber-50/50">
                         <span class="text-3xl mb-2 drop-shadow-md">📝</span>
-                        <span class="font-black text-amber-800 tracking-wider text-base mb-0.5">請購單管理 (處理需求)</span>
+                        <span class="font-black text-amber-800 tracking-wider text-base mb-0.5">新增採購單</span>
                         <span class="font-bold text-amber-600/70 text-[10px] tracking-wider">獨立原料與成品指派 / 產出 PDF</span>
                     </button>
                     
                     <button onclick="openSupplierList()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-indigo-200 hover:bg-indigo-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">🏢</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">新增供應商與紀錄</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">供應商管理</span>
                     </button>
 
                     <button onclick="openHistory()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">🗂️</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">請/採購紀錄中心</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">採購紀錄</span>
                     </button>
                 </div>
             </div>
@@ -135,7 +121,7 @@
             <div id="view-req-management" class="view-panel space-y-4">
                 <div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-amber-600 relative pb-16">
                     <div class="flex flex-col mb-4 border-b border-slate-100 pb-3">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center mb-1"><span class="mr-2 text-xl">📝</span>請購單管理</h3>
+                        <h3 class="font-black text-slate-800 text-lg flex items-center mb-1"><span class="mr-2 text-xl">📝</span>新增採購單</h3>
                         <p class="text-[10px] text-slate-500 font-bold">勾選待處理項目，<strong class="text-amber-600">指派供應商</strong>後可產出 PDF 採購單。</p>
                     </div>
                     
@@ -154,16 +140,16 @@
             <div id="view-history" class="view-panel space-y-4">
                 <div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-slate-700 relative pb-10">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">🗂️</span>請/採購紀錄中心</h3>
+                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">🗂️</span>採購紀錄</h3>
                     </div>
                     
                     <div class="mb-6">
-                        <h4 class="text-[11px] font-black text-sky-700 border-b border-sky-200 pb-1 mb-3 flex items-center"><span class="mr-1">📥</span> 內部請購單紀錄</h4>
+                        <h4 class="text-[11px] font-black text-sky-700 border-b border-sky-200 pb-1 mb-3 flex items-center"><span class="mr-1">📥</span> 採購需求紀錄 (草稿)</h4>
                         <div id="ui-hist-req" class="space-y-3 max-h-64 overflow-y-auto no-scrollbar pr-1"></div>
                     </div>
 
                     <div>
-                        <h4 class="text-[11px] font-black text-amber-700 border-b border-amber-200 pb-1 mb-3 flex items-center"><span class="mr-1">📤</span> 對外採購單紀錄</h4>
+                        <h4 class="text-[11px] font-black text-amber-700 border-b border-amber-200 pb-1 mb-3 flex items-center"><span class="mr-1">📤</span> 正式採購單紀錄</h4>
                         <div id="ui-hist-po" class="space-y-3 max-h-64 overflow-y-auto no-scrollbar pr-1"></div>
                     </div>
                 </div>
@@ -198,6 +184,37 @@
         </div>
     </div>
 
+    <div id="inv-req-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[9990]">
+        <div class="bg-white w-full max-w-sm m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl">
+            <h3 class="font-black text-lg border-b border-slate-100 pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2 text-xl">✏️</span> 編輯需求單狀態</h3>
+            <input type="hidden" id="inv-req-edit-id">
+            <input type="hidden" id="inv-req-edit-islegacy">
+            <div class="space-y-3 mb-5">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">修改狀態</label>
+                    <select id="inv-req-edit-status" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-amber-500">
+                        <option value="待處理">待處理</option>
+                        <option value="採購中">採購中</option>
+                        <option value="已完成">✅ 已完成</option>
+                        <option value="取消">取消作廢</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">期望到貨日</label>
+                    <input type="date" id="inv-req-edit-date" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">備註說明</label>
+                    <textarea id="inv-req-edit-note" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 h-20 resize-none" placeholder="輸入備註..."></textarea>
+                </div>
+            </div>
+            <div class="flex space-x-3 mt-2">
+                <button onclick="closeModal('inv-req-edit-modal')" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl transition active:scale-95">取消</button>
+                <button onclick="saveInvReqEdit()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest active:scale-95">儲存修改</button>
+            </div>
+        </div>
+    </div>
+
     <nav id="core-bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9990] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <div onclick="event.stopPropagation(); window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
         <div onclick="event.stopPropagation(); window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></div>
@@ -210,7 +227,7 @@
     <script>
         window.supplierData = []; let pendingMats = [];
 
-        // 🚨 終極防彈寫入引擎：雙重型態測試 + 降級寫入
+        // 🚨 終極防彈寫入引擎
         async function safeInsertRequisition(payload) {
             let { error: e1 } = await window._sb.from('requisitions').insert([payload]);
             if (!e1) return;
@@ -281,8 +298,8 @@
             loadDashboardData();
         }
 
-        // 🌟 防彈級紀錄撈取引擎：採購系統版
-        async function fetchSafeReqs() {
+        // 🌟 防彈級紀錄撈取引擎
+        async function fetchSafeReqsForInv() {
             let reqData = [];
             try { 
                 const { data: r1, error: e1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false}); 
@@ -303,10 +320,10 @@
                 } else {
                     safeR2 = r2 || [];
                 }
-
+                
                 if (safeR2.length > 0) {
                     let oldReqs = safeR2.filter(x => x.note && x.note.startsWith('REQ-')).map(x => ({
-                        id: x.id, req_no: x.note, employee_id: x.employee_id, employees: x.employees || { full_name: '未知' }, items_json: x.raw_materials, target_items: x.target_items, status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status, created_at: x.created_at, is_legacy: true, expected_date: x.expected_date || '', note: x.note || ''
+                        id: x.id, req_no: x.note, employee_id: x.employee_id, employees: x.employees || { full_name: '未知' }, items_json: x.raw_materials, status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status, created_at: x.created_at, is_legacy: true, expected_date: x.expected_date || '', note: x.note || ''
                     }));
                     reqData = [...reqData, ...oldReqs];
                 }
@@ -346,43 +363,9 @@
             return poData;
         }
 
-        // 🌟 儀表板：詳細並簡單化
+        // 🌟 儀表板資料載入 (移除請購大盤，僅留採購)
         async function loadDashboardData() {
             try {
-                const reqs = await fetchSafeReqs();
-                const reqContainer = document.getElementById('ui-dash-req-status');
-                const thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000);
-                const recentReqs = reqs.filter(r => new Date(r.created_at) >= thirtyDaysAgo);
-
-                if(!recentReqs || recentReqs.length === 0) { reqContainer.innerHTML = '<div class="text-center text-slate-400 font-bold py-4 border border-dashed border-slate-200 rounded-xl">近期無請購單</div>'; }
-                else {
-                    reqContainer.innerHTML = recentReqs.map(r => {
-                        let stCol = r.status === '已完成' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (r.status === '取消' ? 'text-red-600 bg-red-50 border-red-200' : (r.status === '採購中' ? 'text-sky-700 bg-sky-100 border-sky-200' : 'text-amber-700 bg-amber-100 border-amber-200'));
-                        
-                        let safeReqItems = getSafeArray(r.items_json);
-                        let itemsStr = safeReqItems.map(i => `<div class="flex justify-between items-center mb-1 border-b border-slate-100/50 pb-1 last:border-0 last:mb-0 last:pb-0"><span class="text-slate-700 truncate pr-2">${i.name}</span><span class="text-sky-700 font-black shrink-0">x${parseFloat(i.qty).toFixed(0)} <span class="text-[9px] text-slate-400">${i.unit||'件'}</span></span></div>`).join('');
-                        
-                        return `
-                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm transition-all hover:bg-slate-50 mb-3">
-                            <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
-                                <div>
-                                    <h4 class="text-xs font-black text-slate-800">${r.req_no.replace('REQ-','')}</h4>
-                                    <span class="text-[9px] text-slate-400 font-bold">${new Date(r.created_at).toLocaleDateString('zh-TW')}</span>
-                                </div>
-                                <div class="text-right">
-                                    <span class="text-[10px] font-black px-2 py-0.5 rounded-md border ${stCol} shadow-sm">${r.status}</span>
-                                </div>
-                            </div>
-                            <div class="text-[11px] font-bold text-slate-700 mb-2 flex items-center">
-                                <span class="mr-1">👤</span> ${r.employees?.full_name||'未知'}
-                            </div>
-                            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-inner text-[11px] font-bold">
-                                ${itemsStr || '<span class="text-slate-400 italic">無明細資料</span>'}
-                            </div>
-                        </div>`;
-                    }).join('');
-                }
-
                 const pos = await fetchSafePOs();
                 const poContainer = document.getElementById('ui-dash-po-status');
                 
@@ -422,15 +405,15 @@
                         <div class="bg-white p-4 rounded-[1rem] border border-slate-200 shadow-sm transition-all hover:bg-slate-50 mb-3">
                             <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
                                 <div>
-                                    <h4 class="text-xs font-black text-slate-800">${po.po_no.replace('PO-','')}</h4>
-                                    <span class="text-[9px] text-slate-400 font-bold">${new Date(po.created_at).toLocaleDateString('zh-TW')}</span>
-                                </div>
-                                <div class="text-right flex flex-col items-end">
+                                    <span class="text-[10px] font-mono font-black text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 tracking-wider">${po.po_no.replace('PO-','')}</span>
                                     ${statusBadge}
-                                    <span class="text-[9px] font-bold text-amber-600 mt-1">交期: ${dateText}</span>
                                 </div>
+                                <span class="text-[9px] text-slate-400 font-bold">${new Date(po.created_at).toLocaleDateString('zh-TW')}</span>
                             </div>
-                            <div class="text-xs font-black ${textClass} mb-2 truncate">🏢 ${po.supplier_name}</div>
+                            <div class="text-xs font-black ${textClass} mb-2 flex justify-between items-center">
+                                <span class="truncate pr-2">🏢 ${po.supplier_name}</span>
+                                <span class="text-amber-600 text-[10px] shrink-0">交期: ${dateText}</span>
+                            </div>
                             <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-inner text-[11px] font-bold">
                                 ${itemsStr || '<span class="text-slate-400 italic">無明細資料</span>'}
                             </div>
@@ -531,24 +514,22 @@
 
         // 🌟 獨立抽出成品與原料需求
         async function openReqManagement() {
-            openView('req-management', '📝 請購單管理');
+            openView('req-management', '📝 新增採購單');
             const container = document.getElementById('ui-pending-materials');
             container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">讀取中...</p>';
             
-            const reqs = await fetchSafeReqs();
+            const reqs = await fetchSafeReqsForInv();
             const pending = reqs.filter(r => r.status === '待處理' || r.status === '採購中');
 
-            if(pending.length === 0) { container.innerHTML = '<p class="text-center text-sm font-bold text-slate-400 py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">目前無待處理的請購需求</p>'; return; }
+            if(pending.length === 0) { container.innerHTML = '<p class="text-center text-sm font-bold text-slate-400 py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">目前無待處理的採購需求</p>'; return; }
 
             pendingMats = [];
             pending.forEach(req => {
-                // 1. 原料
                 let itemsArr = getSafeArray(req.items_json);
                 itemsArr.forEach((rm, idx) => {
-                    pendingMats.push({ uid: `${req.id}_raw_${idx}`, req_id: req.id, req_no: req.req_no, name: rm.name, qty: rm.qty, unit: rm.unit || '件', is_legacy: req.is_legacy, type: '原料' });
+                    pendingMats.push({ uid: `${req.id}_raw_${idx}`, req_id: req.id, req_no: req.req_no, name: rm.name, qty: rm.qty, unit: rm.unit || '件', is_legacy: req.is_legacy, type: rm.type || '原料' });
                 });
                 
-                // 2. 🌟 成品獨立採購 (防呆確保有數量)
                 let fgArr = getSafeArray(req.target_items);
                 fgArr.forEach((fg, idx) => {
                     if (fg.name && parseInt(fg.qty) > 0) {
@@ -641,29 +622,27 @@
             } catch(e) { console.log('Update req error', e); }
 
             if(savedPoId) {
-                alert('✅ 正式採購單已產生並存檔！即將為您打開預覽。'); 
+                showSysToast('✅ 正式採購單已產生並存檔！即將打開預覽。'); 
                 processAdminPO_PDF(savedPoId, savedIsLegacy, 'view');
             } else {
                 backToDash();
             }
         }
 
-        // 🌟 歷史紀錄中心：詳細並簡單化的排版
         async function openHistory() {
-            openView('history', '🗂️ 請/採購紀錄中心');
+            openView('history', '🗂️ 採購紀錄');
             const elReq = document.getElementById('ui-hist-req');
             const elPo = document.getElementById('ui-hist-po');
             elReq.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">載入中...</p>'; 
             elPo.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">載入中...</p>';
 
-            const reqs = await fetchSafeReqs();
+            const reqs = await fetchSafeReqsForInv();
             if(reqs && reqs.length > 0) {
                 elReq.innerHTML = reqs.map(r => {
                     let safeReqItems = getSafeArray(r.items_json);
                     let itemsStr = safeReqItems.map(i => `<div class="flex justify-between items-center mb-1 border-b border-slate-100/50 pb-1 last:border-0 last:mb-0 last:pb-0"><span class="text-slate-700 truncate pr-2">${i.name}</span><span class="text-sky-700 font-black shrink-0">x${parseFloat(i.qty).toFixed(0)} <span class="text-[9px] text-slate-400">${i.unit||'件'}</span></span></div>`).join('');
                     
                     let stCol = r.status === '已完成' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (r.status === '取消' ? 'text-red-600 bg-red-50 border-red-200' : 'text-sky-700 bg-sky-50 border-sky-200');
-
                     let safeNote = (r.note || '').replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n");
                     let safeDate = r.expected_date || '';
 
@@ -687,17 +666,17 @@
                         </div>
                         ${r.note ? `<p class="text-[10px] text-slate-500 font-bold bg-amber-50 p-2 rounded-lg border border-amber-100 mb-3">備註: ${r.note}</p>` : ''}
                         <div class="grid grid-cols-2 gap-2">
-                            <button onclick="openInvEditReq('${r.id}', ${r.is_legacy?true:false}, '${r.status}', '${safeNote}', '${safeDate}')" class="text-[11px] bg-sky-100 hover:bg-sky-500 hover:text-white text-sky-700 py-2.5 rounded-xl font-black shadow-sm transition active:scale-95">✏️ 編輯</button>
+                            <button onclick="openInvEditReq('${r.id}', ${r.is_legacy?true:false}, '${r.status}', '${safeNote}', '${safeDate}')" class="text-[11px] bg-sky-100 hover:bg-sky-500 hover:text-white text-sky-700 py-2.5 rounded-xl font-black shadow-sm transition active:scale-95">✏️ 編輯草稿</button>
                             <button onclick="delInvReq('${r.id}', ${r.is_legacy?true:false})" class="text-[11px] bg-white border border-red-200 text-red-600 hover:bg-red-50 py-2.5 rounded-xl font-black shadow-sm transition active:scale-95">🗑️ 刪除</button>
                         </div>
                     </div>
                 `;}).join('');
-            } else { elReq.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center border border-dashed border-slate-200 rounded-xl">無紀錄</p>'; }
+            } else { elReq.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center border border-dashed border-slate-200 rounded-xl bg-white">無草稿紀錄</p>'; }
 
             const pos = await fetchSafePOs();
             if(pos && pos.length > 0) {
                 elPo.innerHTML = pos.map(p => {
-                    let stCol = p.status === '完成' || p.status === 'PO完成' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (p.status.includes('異常') ? 'text-white bg-red-500 shadow-sm animate-pulse' : 'text-amber-700 bg-amber-50 border-amber-200');
+                    let stCol = p.status === '完成' || p.status === 'PO完成' || p.status === '已到貨' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (p.status.includes('異常') || p.status.includes('遲交') || p.status.includes('拒收') ? 'text-white bg-red-500 shadow-sm animate-pulse border-red-600' : 'text-amber-700 bg-amber-50 border-amber-200');
                     let dateText = (p.expected_date && p.expected_date !== '未定' && p.expected_date !== null) ? String(p.expected_date).slice(5) : '未定';
 
                     let safePoItems = getSafeArray(p.items_json);
@@ -726,20 +705,76 @@
                         ${p.note ? `<p class="text-[10px] text-slate-500 font-bold bg-amber-50 p-2 rounded-lg border border-amber-100 mb-3 line-clamp-2">備註: ${p.note}</p>` : ''}
                         
                         <div class="grid grid-cols-2 gap-2 mt-1">
-                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'view')" class="text-[11px] bg-slate-800 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition">👁️ 預覽單據</button>
-                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'download')" class="text-[11px] bg-indigo-600 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition">📥 下載 PDF</button>
-                            <button onclick="openAdminPOEdit('${p.id}', ${p.is_legacy?true:false}, '${p.status}', '${safeNote}', '${dateText}')" class="text-[11px] bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 py-2.5 rounded-xl font-black shadow-sm transition active:scale-95">✏️ 編輯狀態</button>
-                            <button onclick="delPO('${p.id}', ${p.is_legacy?true:false})" class="text-[11px] text-red-600 bg-white border border-red-200 hover:bg-red-50 py-2.5 rounded-xl font-black shadow-sm active:scale-95 transition">🗑️ 刪除</button>
+                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'view')" class="text-[11px] bg-slate-800 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm">👁️</span> 預覽單據</button>
+                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'download')" class="text-[11px] bg-indigo-600 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm">📥</span> 下載 PDF</button>
+                            <button onclick="openAdminPOEdit('${p.id}', ${p.is_legacy?true:false}, '${p.status}', '${safeNote}', '${p.expected_date||''}')" class="text-[11px] bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 py-2.5 rounded-xl font-black shadow-sm transition active:scale-95">✏️ 編輯狀態</button>
+                            <button onclick="delPO('${p.id}', ${p.is_legacy?true:false})" class="text-[11px] text-red-600 bg-white border border-red-200 hover:bg-red-50 py-2.5 rounded-xl font-black shadow-sm active:scale-95 transition">🗑️ 刪除採購單</button>
                         </div>
                     </div>
                 `;}).join('');
-            } else { elPo.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center border border-dashed border-slate-200 rounded-xl">無紀錄</p>'; }
+            } else { elPo.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center border border-dashed border-slate-200 rounded-xl bg-white">無正式採購單</p>'; }
         }
 
-        async function updateReqStatus(id, st, isLegacy) { try{if(isLegacy) await safeUpdate('purchase_orders', {status:st}, id); else await safeUpdate('requisitions', {status:st}, id); showSysToast('✅ 狀態已更新'); loadDashboardData();}catch(e){} }
-        async function delReq(id, isLegacy) { if(confirm('⚠️ 確定刪除這筆請購單?')) { try{if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('requisitions', id); openHistory(); loadDashboardData();}catch(e){} } }
-        async function updatePOStatus(id, st, isLegacy) { try{if(isLegacy) await safeUpdate('purchase_orders', {status:'PO'+st}, id); else await safeUpdate('po_documents', {status:st}, id); showSysToast('✅ 狀態已更新'); loadDashboardData();}catch(e){} }
-        async function delPO(id, isLegacy) { if(confirm('⚠️ 確定刪除這筆採採購單?')) { try{if(isLegacy) await safeDelete('purchase_orders', id); else await safeDelete('po_documents', id); openHistory(); loadDashboardData();}catch(e){} } }
+        async function saveInvReqEdit() {
+            const id = document.getElementById('inv-req-edit-id').value;
+            const st = document.getElementById('inv-req-edit-status').value;
+            const isLegacy = document.getElementById('inv-req-edit-islegacy').value === 'true';
+            const note = document.getElementById('inv-req-edit-note').value;
+            const ed = document.getElementById('inv-req-edit-date').value;
+            
+            let payload = { status: st, note: note };
+            if(ed) payload.expected_date = ed;
+
+            try {
+                if(isLegacy) { 
+                    await window._sb.from('purchase_orders').update(payload).eq('id', id); 
+                } else { 
+                    await window._sb.from('requisitions').update(payload).eq('id', id); 
+                }
+                showSysToast('✅ 狀態已更新！'); 
+                closeModal('inv-req-edit-modal'); 
+                openHistory(); 
+            } catch(e) { 
+                alert('更新失敗: ' + e.message); 
+            }
+        }
+
+        async function delInvReq(id, isLegacy) { 
+            if(confirm('⚠️ 確定要刪除這筆草稿嗎？')){ 
+                try {
+                    if(isLegacy) {
+                        await window._sb.from('purchase_orders').delete().eq('id', id);
+                    } else {
+                        await window._sb.from('requisitions').delete().eq('id', id);
+                    }
+                    showSysToast('✅ 成功刪除！');
+                    openHistory(); 
+                } catch(e) { 
+                    alert('刪除失敗: ' + e.message); 
+                }
+            } 
+        }
+
+        function openAdminPOEdit(id, isLegacy, st, note, expected_date) { 
+            document.getElementById('admin-po-edit-id').value = id; 
+            document.getElementById('admin-po-edit-status').value = st; 
+            document.getElementById('admin-po-edit-note').value = note ? note.replace(/\\n/g, '\n') : ''; 
+            document.getElementById('admin-po-edit-date').value = expected_date || ''; 
+            openModal('admin-edit-po-modal'); 
+        }
+        
+        async function saveAdminPOEdit() { 
+            const id = document.getElementById('admin-po-edit-id').value; 
+            const st = document.getElementById('admin-po-edit-status').value; 
+            const note = document.getElementById('admin-po-edit-note').value; 
+            const ed = document.getElementById('admin-po-edit-date').value; 
+            let payload = { status: st, note: note };
+            if(ed) payload.expected_date = ed;
+            await safeUpdate('po_documents', payload, id); 
+            showSysToast('✅ 採購單已成功更新'); closeModal('admin-edit-po-modal'); openHistory(); 
+        }
+        
+        async function delPO(id, isLegacy) { if(confirm('⚠️ 確定要刪除此採購單嗎？')) { await safeDelete('po_documents', id); showSysToast('✅ 採購單已刪除'); openHistory(); } }
 
         // 🌟 終極引擎：全螢幕檢視與下載 PDF
         let currentViewingPoNo = '';
@@ -752,7 +787,7 @@
                     const { data } = await window._sb.from('purchase_orders').select('*').eq('id', id).single(); 
                     if(data) {
                         let parts = (data.note||'').split('|||');
-                        poData = { po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', expected_date: data.expected_date, items_json: data.raw_materials, created_at: data.created_at };
+                        poData = { po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', expected_date: data.expected_date, items_json: data.raw_materials, created_at: data.created_at, note: parts[2] || '' };
                     }
                 }
                 else { 
@@ -777,7 +812,7 @@
                 </tr>
             `).join('');
 
-            currentViewingHtml = `
+            const html = `
                 <div class="print-break" style="width: 100%; font-family: sans-serif; background: white;">
                     <div style="text-align: center; border-bottom: 4px solid #0f172a; padding-bottom: 15px; margin-bottom: 20px;">
                         <h1 style="font-size: 28px; font-weight: 900; margin: 0; letter-spacing: 2px;">HYPASS 採購單</h1>
@@ -815,7 +850,8 @@
                         <strong>備註說明：</strong><br>
                         1. 煩請於指定到貨日前完成交貨，若有延遲請提前告知。<br>
                         2. 請於出貨單/發票上註明本採購單號：${poData.po_no}。<br>
-                        3. 約定付款方式：${supInfo.payment_method||'依原合約'}。
+                        3. 約定付款方式：${supInfo.payment_method||'依原合約'}。<br>
+                        <span style="color: #334155; margin-top: 4px; display: block;">附加備註：${poData.note||'無'}</span>
                     </div>
 
                     <div style="display: flex; justify-content: space-between; border-top: 2px solid #1e293b; padding-top: 15px;">
@@ -850,31 +886,27 @@
         }
 
         document.getElementById('btn-modal-download').addEventListener('click', () => {
-            executePdfDownload(currentViewingHtml, currentViewingPoNo);
+            const htmlContent = document.getElementById('pdf-preview-content').innerHTML;
+            if(!htmlContent) return;
+            showSysToast('PDF 檔案生成中，請稍候...');
+            const opt = { margin: [0.5, 0.5], filename: `HYPASS_採購單.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+            const tempDiv = document.createElement('div'); tempDiv.innerHTML = htmlContent; tempDiv.style.padding = '20px';
+            html2pdf().set(opt).from(tempDiv).save().then(() => { showSysToast('PDF 下載完成！'); });
         });
 
-        function executePdfDownload(htmlContent, poNo) {
-            showSysToast('PDF 檔案生成中，請稍候...');
-            const opt = {
-                margin:       [0.5, 0.5],
-                filename:     `${poNo}_採購單.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = htmlContent;
-            // 這裡必須加上 padding 來確保匯出的 PDF 不會貼邊
-            tempDiv.style.padding = '20px';
-            html2pdf().set(opt).from(tempDiv).save().then(() => {
-                showSysToast('PDF 下載完成！');
-            });
+        window.onload = function() {
+            if(localStorage.getItem('admin_logged')==='true') {
+                document.getElementById('login-box').style.display='none'; 
+                document.getElementById('dashboard-ui').classList.remove('hidden'); 
+                document.getElementById('dashboard-ui').classList.add('flex');
+                document.getElementById('att-date').value = new Date().toLocaleDateString('en-CA');
+                const now = new Date();
+                document.getElementById('p-mon').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+                document.getElementById('export-mon').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+                
+                setTimeout(() => { loadAll(); }, 300);
+            }
         }
-
-        window.onload = bootPurchase;
-
-        const enforceNavObserver = new MutationObserver(() => { const oldNav = document.querySelector('nav:not(#core-bottom-nav)'); if (oldNav) oldNav.remove(); });
-        enforceNavObserver.observe(document.body, { childList: true, subtree: true });
     </script>
 </body>
 </html>
