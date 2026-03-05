@@ -570,7 +570,7 @@
                 
                 if (safeR2.length > 0) {
                     let oldReqs = safeR2.filter(x => x.note && x.note.startsWith('REQ-')).map(x => ({
-                        id: x.id, req_no: x.note, employee_id: x.employee_id, employees: x.employees || { full_name: '未知' }, items_json: x.raw_materials, target_items: x.target_items, status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status, created_at: x.created_at, is_legacy: true, expected_date: x.expected_date || '', note: x.note || ''
+                        id: x.id, req_no: x.note, employee_id: x.employee_id, employees: x.employees || { full_name: '未知' }, items_json: x.raw_materials, status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status, created_at: x.created_at, is_legacy: true, expected_date: x.expected_date || '', note: x.note || ''
                     }));
                     reqData = [...reqData, ...oldReqs];
                 }
@@ -911,7 +911,7 @@
                 if (uiAlertTable) uiAlertTable.innerHTML = filterHtml;
 
                 if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
-                if(document.getElementById('view-inventory-list').classList.contains('active')) renderFilteredInventory();
+                if(document.getElementById('view-catalog').classList.contains('active')) renderFilteredInventory();
 
             } catch(fatalError) {
                 console.error("UI 渲染失敗", fatalError);
@@ -924,7 +924,7 @@
         }
 
         async function openInventoryList() { 
-            openView('inventory-list', '庫存請購'); 
+            openView('catalog', '庫存清單大盤'); 
             await loadItems(); 
             renderFilteredInventory(); 
             updateTopReqBar(); 
@@ -1002,7 +1002,7 @@
         }
 
         function renderInventoryListUI(data) {
-            const container = document.getElementById('ui-inventory-list');
+            const container = document.getElementById('catalog-list');
             if(!container) return; 
             if(!data || data.length === 0) { 
                 container.innerHTML = '<div class="text-center text-sm text-slate-400 font-bold py-10">無資料</div>'; 
@@ -1239,10 +1239,12 @@
                     await window._sb.from('inventory_ledgers').insert(ledgerEntries);
                 }
 
+                // 🚨 核心防護：強迫轉為 JSON 字串，並寫入正確欄位
+                const reqJsonStr = JSON.stringify(requestItems);
                 const payload = { 
                     req_no: reqNo, 
                     employee_id: window.currentUser?.id || null, 
-                    items_json: requestItems,
+                    items_json: reqJsonStr,
                     status: '待處理',
                     expected_date: expectedDate,
                     note: '' // 🌟 備註淨空
