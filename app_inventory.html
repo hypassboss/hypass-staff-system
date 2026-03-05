@@ -459,12 +459,10 @@
             let { error: e1 } = await window._sb.from('requisitions').insert([payload]);
             if (!e1) return;
 
-            console.warn('Type array failed, trying stringified...');
             let strPayload = { ...payload, items_json: JSON.stringify(payload.items_json) };
             let { error: e2 } = await window._sb.from('requisitions').insert([strPayload]);
             if (!e2) return;
 
-            console.warn('Requisitions table failed, fallback to purchase_orders...');
             let poPayload = { employee_id: payload.employee_id, raw_materials: payload.items_json, status: '請購待處理', note: payload.req_no, expected_date: payload.expected_date };
             let { error: e3 } = await window._sb.from('purchase_orders').insert([poPayload]);
             if (!e3) return;
@@ -477,10 +475,7 @@
         function getSafeArray(data) { 
             if (!data) return []; 
             if (Array.isArray(data)) return data; 
-            try { 
-                let parsed = (typeof data === 'string') ? JSON.parse(data) : data; 
-                return Array.isArray(parsed) ? parsed : []; 
-            } catch(e) { return []; } 
+            try { let p = (typeof data === 'string') ? JSON.parse(data) : data; return Array.isArray(p) ? p : []; } catch(e) { return []; } 
         }
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
@@ -575,7 +570,7 @@
                 
                 if (safeR2.length > 0) {
                     let oldReqs = safeR2.filter(x => x.note && x.note.startsWith('REQ-')).map(x => ({
-                        id: x.id, req_no: x.note, employee_id: x.employee_id, employees: x.employees || { full_name: '未知' }, items_json: x.raw_materials, status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status, created_at: x.created_at, is_legacy: true, expected_date: x.expected_date || '', note: x.note || ''
+                        id: x.id, req_no: x.note, employee_id: x.employee_id, employees: x.employees || { full_name: '未知' }, items_json: x.raw_materials, target_items: x.target_items, status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status, created_at: x.created_at, is_legacy: true, expected_date: x.expected_date || '', note: x.note || ''
                     }));
                     reqData = [...reqData, ...oldReqs];
                 }
@@ -592,7 +587,7 @@
 
             const reqs = await fetchSafeReqsForInv();
             if(!reqs || reqs.length === 0) { 
-                container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">尚無任何請購紀錄</p>'; 
+                container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl bg-white">尚無任何請購紀錄</p>'; 
                 return; 
             }
 
@@ -864,7 +859,7 @@
 
                 let filterHtml = '';
                 if (alertGoods.length === 0) {
-                    filterHtml = '<tr><td colspan="4" class="p-4 text-center text-emerald-600 font-bold">✅ 庫存皆在安全水位之上</td></tr>';
+                    filterHtml = '<tr><td colspan="4" class="p-4 text-center text-emerald-600 font-bold">✅ 庫存皆在安全水位</td></tr>';
                 } else {
                     filterHtml = alertGoods.map(i => {
                         let qtyHtml = '<span class="text-slate-300">0</span>'; 
@@ -896,9 +891,20 @@
                         
                         let safe = i.safe_stock_level || 0; let isLow = i.current_stock <= safe;
                         let stockClass = isLow ? 'text-red-600 animate-pulse' : 'text-amber-500';
-                        let displayName = i.item_type === '原料' ? i.item_name : i.item_code;
+                        
+                        // 🌟 雙行顯示：料號在上，品名在下
+                        let typeIcon = i.item_type === '原料' ? '🏭' : '📦';
+                        let displayHtml = `
+                            <div class="flex flex-col max-w-[140px]">
+                                <div class="flex items-center">
+                                    <span class="text-[9px] bg-slate-100 text-slate-500 px-1 rounded mr-1 shrink-0">${typeIcon}</span>
+                                    <span class="font-mono font-black text-slate-700 text-xs truncate">${i.item_code}</span>
+                                </div>
+                                <div class="text-[9px] font-bold text-slate-500 truncate mt-0.5">${i.item_name}</div>
+                            </div>
+                        `;
 
-                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="p-2.5 font-black text-slate-700 truncate max-w-[140px]"><span class="text-[9px] bg-slate-100 text-slate-500 px-1 rounded mr-1">${i.item_type==='原料'?'🏭':'📦'}</span>${displayName}</td><td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="p-2.5 text-right">${qtyHtml}</td><td class="p-2.5 text-center text-[10px]">${etaHtml}</td></tr>`;
+                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="p-2.5">${displayHtml}</td><td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="p-2.5 text-right">${qtyHtml}</td><td class="p-2.5 text-center text-[10px]">${etaHtml}</td></tr>`;
                     }).join('');
                 }
                 const uiAlertTable = document.getElementById('ui-filter-status-table-alert');
@@ -1233,12 +1239,10 @@
                     await window._sb.from('inventory_ledgers').insert(ledgerEntries);
                 }
 
-                // 🚨 核心防護：強迫轉為 JSON 字串，並寫入正確欄位
-                const reqJsonStr = JSON.stringify(requestItems);
                 const payload = { 
                     req_no: reqNo, 
                     employee_id: window.currentUser?.id || null, 
-                    items_json: reqJsonStr,
+                    items_json: requestItems,
                     status: '待處理',
                     expected_date: expectedDate,
                     note: '' // 🌟 備註淨空
