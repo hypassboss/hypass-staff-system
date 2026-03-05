@@ -81,7 +81,7 @@
                                 <tr>
                                     <th class="p-2 font-bold text-left">料號/品名</th>
                                     <th class="p-2 font-bold text-right text-emerald-700">最新庫存</th>
-                                    <th class="p-2 font-bold text-right text-sky-600">採購量</th>
+                                    <th class="p-2 font-bold text-right text-sky-600">採購</th>
                                     <th class="p-2 font-bold text-center">採購交期</th>
                                 </tr>
                             </thead>
@@ -115,7 +115,7 @@
             <div id="view-inventory-list" class="view-panel relative">
                 <div class="sticky top-14 z-30 bg-[#f1f5f9] pt-2 pb-3 border-b border-slate-300 shadow-sm -mx-4 px-4 mb-4">
                     <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1.5">🚨</span> 庫存採購 <span class="text-[10px] text-slate-400 font-bold ml-2">(可勾選快速生成採購單)</span></h3>
+                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1.5">🚨</span> 庫存採購 <span class="text-[10px] text-slate-400 font-bold ml-2">(可快速採購)</span></h3>
                         <button onclick="openPOModal()" class="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-md active:scale-95 transition flex items-center">
                             生成採購單 <span id="list-req-count" class="ml-1.5 bg-white text-sky-600 px-2 py-0.5 rounded text-[11px] transition-all duration-300 shadow-sm">0</span>
                         </button>
@@ -319,10 +319,10 @@
     </div>
 
     <div id="po-qty-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-sm items-center justify-center p-4 z-[9990]">
-        <div class="bg-white w-full max-w-sm m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl">
-            <h3 class="font-black text-lg border-b border-slate-100 pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2 text-xl">✍️</span> 輸入採購數量</h3>
-            <div id="po-qty-list" class="space-y-3 max-h-[50vh] overflow-y-auto no-scrollbar pr-1 mb-5"></div>
-            <div class="flex space-x-3 mt-2">
+        <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
+            <h3 class="font-black text-lg border-b border-slate-100 pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2 text-xl">🛒</span> 建立正式採購單</h3>
+            <div id="po-qty-list" class="space-y-3 mb-5"></div>
+            <div class="flex space-x-3 mt-2 shrink-0">
                 <button onclick="closeModal('po-qty-modal')" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl transition active:scale-95">取消</button>
                 <button id="btn-run-po" onclick="confirmGeneratePO()" class="flex-1 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest active:scale-95">確定生成採購單</button>
             </div>
@@ -351,16 +351,6 @@
         let currentInvType = '全部'; 
         let currentInvCat = '全部';
 
-        // 🚨 終極防彈寫入引擎：直接寫入 purchase_orders 草稿
-        async function safeInsertPO_Draft(payload) {
-            const { error } = await window._sb.from('purchase_orders').insert([payload]);
-            if (error) {
-                payload.raw_materials = JSON.stringify(payload.raw_materials);
-                const { error: e2 } = await window._sb.from('purchase_orders').insert([payload]);
-                if (e2) throw e2;
-            }
-        }
-
         function getSafeArray(data) { 
             if (!data) return []; 
             if (Array.isArray(data)) return data; 
@@ -380,6 +370,11 @@
 
                 document.getElementById('user-badge').innerText = window.currentUser?.full_name || '使用者'; 
                 
+                try {
+                    const { data: sups } = await window._sb.from('suppliers').select('*');
+                    window.supplierData = sups || [];
+                } catch(e) { window.supplierData = []; }
+
                 document.getElementById('loading-screen').classList.add('opacity-0');
                 setTimeout(() => { 
                     document.getElementById('loading-screen').style.display = 'none'; 
@@ -466,48 +461,31 @@
                     }); 
                 }
 
-                let pendingPurchases_FG = {};
-                let pendingPurchases_RAW = {};
+                let pendingPOs_RAW = {};
+                let pendingPOs_FG = {};
                 let pendingPOs_ETA = {};
 
-                try {
-                    const { data: pos1 } = await window._sb.from('purchase_orders').select('target_items, raw_materials, expected_date').in('status', ['待處理', '採購中', 'PO已發送', '已發送', '異常(遲交)', 'PO異常(遲交)']);
-                    if (pos1) {
-                        pos1.forEach(po => {
-                            getSafeArray(po.target_items).forEach(t => { 
-                                if(t.id) pendingPurchases_FG[t.id] = (pendingPurchases_FG[t.id] || 0) + (parseInt(t.qty) || 0); 
-                            });
-                            getSafeArray(po.raw_materials).forEach(r => { 
-                                if (r.type === '成品') {
-                                    pendingPurchases_FG[r.id] = (pendingPurchases_FG[r.id] || 0) + (parseInt(r.qty) || 0);
-                                } else {
-                                    if(r.name) {
-                                        pendingPurchases_RAW[r.name] = (pendingPurchases_RAW[r.name] || 0) + (parseFloat(r.qty) || 0); 
-                                        if(po.expected_date && (!pendingPOs_ETA[r.name] || po.expected_date < pendingPOs_ETA[r.name])) {
-                                            pendingPOs_ETA[r.name] = po.expected_date;
-                                        }
-                                    }
+                // 🌟 追蹤採購單 (po_documents)
+                const { data: pos } = await window._sb.from('po_documents').select('items_json, expected_date').in('status', ['待審核', '已發送', '已下單', '異常(遲交)']);
+                if (pos) { 
+                    pos.forEach(po => { 
+                        getSafeArray(po.items_json).forEach(p => { 
+                            if (p.type === '成品') {
+                                pendingPOs_FG[p.id] = (pendingPOs_FG[p.id] || 0) + (parseFloat(p.qty) || 0);
+                                if(po.expected_date && (!pendingPOs_ETA[p.id] || po.expected_date < pendingPOs_ETA[p.id])) { 
+                                    pendingPOs_ETA[p.id] = po.expected_date; 
                                 }
-                            });
-                        });
-                    }
-                } catch(e) {}
-
-                try {
-                    const { data: pos2 } = await window._sb.from('po_documents').select('items_json, expected_date').in('status', ['已發送', '已下單', '異常(遲交)']);
-                    if (pos2) {
-                        pos2.forEach(po => {
-                            getSafeArray(po.items_json).forEach(p => {
+                            } else {
                                 if(p.name) {
-                                    pendingPurchases_RAW[p.name] = (pendingPurchases_RAW[p.name] || 0) + (parseFloat(p.qty) || 0);
-                                    if(po.expected_date && (!pendingPOs_ETA[p.name] || po.expected_date < pendingPOs_ETA[p.name])) {
-                                        pendingPOs_ETA[p.name] = po.expected_date;
+                                    pendingPOs_RAW[p.name] = (pendingPOs_RAW[p.name] || 0) + (parseFloat(p.qty) || 0);
+                                    if(po.expected_date && (!pendingPOs_ETA[p.name] || po.expected_date < pendingPOs_ETA[p.name])) { 
+                                        pendingPOs_ETA[p.name] = po.expected_date; 
                                     }
                                 }
-                            });
-                        });
-                    }
-                } catch(e) {}
+                            }
+                        }); 
+                    }); 
+                }
                 
                 let lowCount = 0;
                 const cats = [...new Set(allItems.map(i => i.category || '未分類'))];
@@ -571,7 +549,7 @@
                     }
                 }
 
-                // 🌟 整合版：統一所有警示項目 (低水位優先)
+                // 🌟 整合版：統一所有警示項目 (低水位與警示優先)
                 let alertGoods = window.inventoryData.filter(i => {
                     let safe = i.safe_stock_level || 0;
                     return i.current_stock <= (safe * 1.5);
@@ -587,17 +565,17 @@
 
                 let filterHtml = '';
                 if (alertGoods.length === 0) {
-                    filterHtml = '<tr><td colspan="4" class="p-4 text-center text-emerald-600 font-bold">✅ 庫存皆在安全水位之上</td></tr>';
+                    filterHtml = '<tr><td colspan="4" class="p-4 text-center text-emerald-600 font-bold">✅ 所有庫存皆在安全水位之上</td></tr>';
                 } else {
                     filterHtml = alertGoods.map(i => {
                         let qtyHtml = '<span class="text-slate-300">0</span>'; 
                         let etaHtml = '<span class="text-slate-400 font-bold">--</span>';
-                        let rQty = 0;
+                        let pQty = 0;
 
                         if (i.item_type === '原料') {
-                            rQty = pendingPurchases_RAW[i.item_name] || 0;
-                            if(rQty > 0) {
-                                qtyHtml = `<span class="font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded shadow-sm border border-amber-100">${rQty.toFixed(0)}</span>`;
+                            pQty = pendingPOs_RAW[i.item_name] || 0;
+                            if(pQty > 0) {
+                                qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${pQty.toFixed(0)}</span>`;
                                 let dStr = pendingPOs_ETA[i.item_name];
                                 if (dStr && dStr !== '未定' && dStr !== null) {
                                     etaHtml = `<span class="text-slate-700 font-bold">${String(dStr).slice(5)}</span>`;
@@ -606,16 +584,22 @@
                                 }
                             }
                         } else {
-                            rQty = pendingPurchases_FG[i.id] || 0;
-                            if(rQty > 0) {
-                                qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${rQty}</span>`;
-                                etaHtml = `<span class="text-[9px] font-black text-slate-400">待生產</span>`;
+                            pQty = pendingPOs_FG[i.item_code] || 0;
+                            if(pQty > 0) {
+                                qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${pQty.toFixed(0)}</span>`;
+                                let dStr = pendingPOs_ETA[i.item_code];
+                                if (dStr && dStr !== '未定' && dStr !== null) {
+                                    etaHtml = `<span class="text-slate-700 font-bold">${String(dStr).slice(5)}</span>`;
+                                } else {
+                                    etaHtml = `<span class="text-slate-400 font-bold">待確認</span>`;
+                                }
                             }
                         }
                         
                         let safe = i.safe_stock_level || 0; let isLow = i.current_stock <= safe;
                         let stockClass = isLow ? 'text-red-600 animate-pulse' : 'text-amber-500';
                         
+                        // 🌟 雙行顯示：料號在上，品名在下
                         let typeIcon = i.item_type === '原料' ? '🏭' : '📦';
                         let displayHtml = `
                             <div class="flex flex-col max-w-[140px]">
@@ -630,8 +614,8 @@
                         return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="p-2.5">${displayHtml}</td><td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="p-2.5 text-right">${qtyHtml}</td><td class="p-2.5 text-center text-[10px]">${etaHtml}</td></tr>`;
                     }).join('');
                 }
-                const uiAlertTable = document.getElementById('ui-filter-status-table-alert');
-                if (uiAlertTable) uiAlertTable.innerHTML = filterHtml;
+                const uiFilterStatusTableAll = document.getElementById('ui-filter-status-table-alert');
+                if (uiFilterStatusTableAll) uiFilterStatusTableAll.innerHTML = filterHtml;
 
                 if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
                 if(document.getElementById('view-inventory-list').classList.contains('active')) renderFilteredInventory();
@@ -886,17 +870,28 @@
             if(poCart.size === 0) { alert('請先勾選要採購的項目！'); return; }
             const container = document.getElementById('po-qty-list');
             let html = '';
+            
+            const supOptions = '<option value="">選擇供應商...</option>' + window.supplierData.map(s => `<option value="${s.supplier_name}">${s.supplier_name}</option>`).join('');
+
             poCart.forEach(id => {
                 const i = window.inventoryData.find(x => x.id === id); 
                 if(i) {
                     html += `
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between shadow-inner req-target-row mb-2" data-id="${i.id}">
-                        <div class="flex-1 pr-2">
-                            <span class="text-[9px] font-mono font-black text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded">${i.item_code}</span>
-                            <h4 class="font-black text-sm text-slate-800 leading-tight mt-1 truncate">${i.item_name}</h4>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-inner po-target-row mb-3" data-id="${i.id}">
+                        <div class="flex justify-between items-center mb-2 border-b border-slate-200 pb-2">
+                            <div class="flex-1 pr-2">
+                                <span class="text-[9px] font-mono font-black text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded">${i.item_code}</span>
+                                <h4 class="font-black text-sm text-slate-800 leading-tight mt-1 truncate">${i.item_name}</h4>
+                            </div>
+                            <div class="w-20 shrink-0">
+                                <input type="number" min="1" class="w-full p-2 border border-sky-300 rounded-lg text-sm font-black text-center text-sky-900 focus:border-sky-500 po-target-qty shadow-sm" placeholder="數量">
+                            </div>
                         </div>
-                        <div class="w-20 shrink-0">
-                            <input type="number" min="1" class="w-full p-2 border border-sky-300 rounded-lg text-sm font-black text-center text-sky-900 focus:border-sky-500 req-target-qty shadow-sm" placeholder="數量">
+                        <div class="grid grid-cols-2 gap-2">
+                            <select class="w-full p-2 border border-slate-300 rounded-lg text-[10px] font-bold text-slate-700 focus:border-sky-500 po-target-sup select-arrow">
+                                ${supOptions}
+                            </select>
+                            <input type="date" class="w-full p-2 border border-slate-300 rounded-lg text-[10px] font-bold text-slate-700 focus:border-sky-500 po-target-date">
                         </div>
                     </div>`;
                 }
@@ -907,27 +902,35 @@
 
         async function confirmGeneratePO() {
             let isValid = true; 
-            document.querySelectorAll('.req-target-qty').forEach(inp => { 
-                if((parseInt(inp.value)||0) <= 0) isValid = false; 
+            let missingData = false;
+            let requestItems = []; 
+            
+            document.querySelectorAll('.po-target-row').forEach(row => { 
+                let qty = parseInt(row.querySelector('.po-target-qty').value) || 0; 
+                let sup = row.querySelector('.po-target-sup').value;
+                let date = row.querySelector('.po-target-date').value;
+                if(qty <= 0 || !sup || !date) missingData = true;
             });
-            if(!isValid) { alert('請確保所有項目都有輸入大於 0 的數量！'); return; }
+            
+            if(missingData) { alert('請確保所有項目皆已輸入數量、選擇供應商並設定交期！'); return; }
 
             const btn = document.getElementById('btn-run-po');
             btn.innerText = '處理中...'; 
             btn.disabled = true;
 
-            let purchaseItems = []; 
             let ledgerEntries = [];
             let deductionMsgs = [];
 
-            document.querySelectorAll('.req-target-row').forEach(row => { 
+            document.querySelectorAll('.po-target-row').forEach(row => { 
                 let id = row.getAttribute('data-id'); 
-                let qty = parseInt(row.querySelector('.req-target-qty').value) || 0; 
+                let qty = parseInt(row.querySelector('.po-target-qty').value) || 0; 
+                let sup = row.querySelector('.po-target-sup').value;
+                let date = row.querySelector('.po-target-date').value;
                 let item = window.inventoryData.find(x => x.id === id); 
                 
                 if(item && qty > 0) { 
                     let unit = item.item_type === '原料' ? (item.qty_per_pack > 1 ? '箱' : '件') : '件';
-                    purchaseItems.push({ id: item.id, name: item.item_name, qty: qty, unit: unit, type: item.item_type });
+                    requestItems.push({ id: item.item_code, name: item.item_name, qty: qty, unit: unit, type: item.item_type, supplier: sup, expected_date: date });
 
                     if (item.item_type === '成品') {
                         let safeBom = getSafeArray(item.bom_data);
@@ -949,39 +952,47 @@
                 } 
             });
 
-            if(purchaseItems.length === 0) { 
+            if(requestItems.length === 0) { 
                 alert('無效的採購需求！'); 
                 btn.innerText = '確定生成採購單'; 
                 btn.disabled = false; 
                 return; 
             }
 
-            const poNo = 'PO-' + new Date().toISOString().replace(/[-:T]/g,'').slice(0,14) + Math.floor(Math.random()*100).toString().padStart(2,'0');
-            const expectedDate = new Date(Date.now() + 7*86400000).toISOString().split('T')[0];
+            let groupedPO = {};
+            requestItems.forEach(s => {
+                if(!groupedPO[s.supplier]) groupedPO[s.supplier] = { items: [], maxDate: s.expected_date };
+                groupedPO[s.supplier].items.push(s);
+                if(s.expected_date > groupedPO[s.supplier].maxDate) groupedPO[s.supplier].maxDate = s.expected_date;
+            });
 
             try {
                 if (ledgerEntries.length > 0) {
                     await window._sb.from('inventory_ledgers').insert(ledgerEntries);
                 }
 
-                const payload = { 
-                    employee_id: window.currentUser?.id || null, 
-                    raw_materials: purchaseItems,
-                    status: '待處理',
-                    expected_date: expectedDate,
-                    note: poNo + '|||未指定供應商|||'
-                };
+                for (const [supName, data] of Object.entries(groupedPO)) {
+                    const poNo = 'PO-' + new Date().toISOString().replace(/[-:T]/g,'').slice(0,14) + Math.floor(Math.random()*1000).toString().padStart(3,'0');
+                    const payload = { 
+                        po_no: poNo, 
+                        supplier_name: supName, 
+                        expected_date: data.maxDate, 
+                        items_json: data.items, 
+                        status: '待審核',
+                        note: '由庫存大盤直接生成'
+                    };
+                    const { error } = await window._sb.from('po_documents').insert([payload]);
+                    if (error) throw error;
+                }
                 
-                await safeInsertPO_Draft(payload);
-                
-                let successMsg = `✅ 已成功生成草稿採購單：${poNo}\n請至「採購管理中心」進行供應商指派！`;
+                let successMsg = `✅ 採購單已成功生成，狀態為「待審核」！\n請通知老闆至後台進行核准。`;
                 if(deductionMsgs.length > 0) { 
                     successMsg += `\n\n系統已於背景自動扣除原料：\n` + deductionMsgs.join('\n'); 
                 }
                 alert(successMsg);
 
             } catch (dbErr) { 
-                console.error('資料庫同步失敗:', dbErr); 
+                console.error('生成採購單失敗:', dbErr); 
                 alert('生成失敗，請確認資料庫狀態：' + dbErr.message);
             }
 
