@@ -70,19 +70,19 @@
 
             <div id="view-dashboard" class="view-panel active space-y-4">
                 
-                <div class="glass-card p-4 rounded-[2rem] shadow-sm border-t-4 border-red-500 relative overflow-hidden">
-                    <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between">
+                <div class="glass-card p-3 rounded-[2rem] shadow-sm border-t-4 border-red-500 relative overflow-hidden">
+                    <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between px-1">
                         <span class="flex items-center"><span class="mr-1.5 text-lg">🚨</span> 庫存警示狀況</span>
                         <span class="text-[9px] bg-red-100 text-red-700 px-2 py-1 rounded-md font-black border border-red-200 shadow-sm">低水位與警示</span>
                     </h3>
-                    <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
-                        <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[320px]">
+                    <div class="border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
+                        <table class="w-full text-left text-[10px] table-fixed">
                             <thead class="text-slate-500 border-b border-slate-200">
                                 <tr>
-                                    <th class="p-2 font-bold text-left">料號/品名</th>
-                                    <th class="p-2 font-bold text-right text-emerald-700">最新庫存</th>
-                                    <th class="p-2 font-bold text-right text-sky-600">採購量</th>
-                                    <th class="p-2 font-bold text-center">交期與狀態</th>
+                                    <th class="p-1 font-bold text-left w-[40%]">料號/品名</th>
+                                    <th class="p-1 font-bold text-center text-emerald-700 w-[18%]">庫存</th>
+                                    <th class="p-1 font-bold text-center text-sky-600 w-[16%]">採購</th>
+                                    <th class="p-1 font-bold text-center w-[26%]">狀態</th>
                                 </tr>
                             </thead>
                             <tbody id="ui-filter-status-table-alert" class="divide-y divide-slate-100 bg-white rounded-lg">
@@ -664,16 +664,16 @@
                         
                         let typeIcon = i.item_type === '原料' ? '🏭' : '📦';
                         let displayHtml = `
-                            <div class="flex flex-col max-w-[140px]">
+                            <div class="flex flex-col overflow-hidden">
                                 <div class="flex items-center">
-                                    <span class="text-[9px] bg-slate-100 text-slate-500 px-1 rounded mr-1 shrink-0">${typeIcon}</span>
-                                    <span class="font-mono font-black text-slate-700 text-xs truncate">${i.item_code}</span>
+                                    <span class="text-[8px] bg-slate-100 text-slate-500 px-1 rounded mr-1 shrink-0">${typeIcon}</span>
+                                    <span class="font-mono font-black text-slate-700 text-[10px] truncate">${i.item_code}</span>
                                 </div>
                                 <div class="text-[9px] font-bold text-slate-500 truncate mt-0.5">${i.item_name}</div>
                             </div>
                         `;
 
-                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="p-2.5">${displayHtml}</td><td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="p-2.5 text-right">${qtyHtml}</td><td class="p-2.5 text-center text-[10px]">${etaHtml}</td></tr>`;
+                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="p-1.5 truncate">${displayHtml}</td><td class="p-1.5 text-center font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="p-1.5 text-center">${qtyHtml}</td><td class="p-1.5 text-center text-[10px]">${etaHtml}</td></tr>`;
                     }).join('');
                 }
                 const uiFilterStatusTableAll = document.getElementById('ui-filter-status-table-alert');
@@ -862,7 +862,8 @@
             const { error } = await window._sb.from('items').update({ safe_stock_level: newVal }).eq('id', id); 
             if(!error) { 
                 const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
-                await loadItems(); 
+                let item = window.inventoryData.find(x => x.id === id);
+                if(item) item.safe_stock_level = newVal;
                 renderFilteredInventory(); 
                 setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
             } 
@@ -878,24 +879,20 @@
             if(!error) { 
                 showSysToast('✅ 庫存已更新，並記錄為最新盤點！');
                 
-                // 🌟 即時 UI 更新最新盤點時間與人員
                 let item = window.inventoryData.find(x => x.id === id);
                 if (item) {
                     item.current_stock = newQty;
                     let newDate = new Date().toLocaleDateString('zh-TW');
                     let newEmp = window.currentUser.full_name;
                     window.latestChecks[id] = { rawDate: new Date().toISOString(), date: newDate, emp: newEmp };
-                    
-                    const checkEl = document.getElementById(`last-check-${id}`);
-                    if (checkEl) checkEl.innerHTML = `${newDate} (${newEmp})`;
                 }
 
                 const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
                 renderFilteredInventory(); 
                 setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
                 
-                // 背景刷新保持資料同步
-                loadItems(); 
+                // 延遲背景刷新
+                setTimeout(() => { loadItems(); }, 3000); 
             } else {
                 alert('庫存更新失敗');
             }
@@ -906,7 +903,8 @@
             const { error } = await window._sb.from('items').update({ stocktake_cycle: val }).eq('id', id); 
             if(!error) { 
                 const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
-                await loadItems(); 
+                let item = window.inventoryData.find(x => x.id === id);
+                if(item) item.stocktake_cycle = val;
                 renderFilteredInventory(); 
                 setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
             } 
@@ -917,7 +915,8 @@
             const { error } = await window._sb.from('items').update({ lead_time_days: val }).eq('id', id); 
             if(!error) { 
                 const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
-                await loadItems(); 
+                let item = window.inventoryData.find(x => x.id === id);
+                if(item) item.lead_time_days = val;
                 renderFilteredInventory(); 
                 setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
             } 
