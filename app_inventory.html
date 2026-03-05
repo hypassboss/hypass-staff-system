@@ -70,32 +70,17 @@
 
             <div id="view-dashboard" class="view-panel active space-y-4">
                 
-                <div class="grid grid-cols-3 gap-3 mb-4">
-                    <button onclick="openView('catalog', '庫存清單大盤')" class="glass-card p-4 rounded-2xl flex flex-col items-center justify-center shadow-sm border border-emerald-100 hover:bg-emerald-50 transition active:scale-95">
-                        <span class="text-3xl mb-2 drop-shadow-sm">📊</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest">庫存大盤</span>
-                    </button>
-                    <button onclick="openView('ledger', '進出庫作業')" class="glass-card p-4 rounded-2xl flex flex-col items-center justify-center shadow-sm border border-emerald-100 hover:bg-emerald-50 transition active:scale-95">
-                        <span class="text-3xl mb-2 drop-shadow-sm">📥</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest">進出庫作業</span>
-                    </button>
-                    <button onclick="openView('stocktake', '實體盤點作業')" class="glass-card p-4 rounded-2xl flex flex-col items-center justify-center shadow-sm border border-emerald-100 hover:bg-emerald-50 transition active:scale-95">
-                        <span class="text-3xl mb-2 drop-shadow-sm">📋</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest">實體盤點</span>
-                    </button>
-                </div>
-
-                <div class="glass-card p-4 rounded-[2rem] shadow-sm border-t-4 border-sky-500 relative overflow-hidden">
+                <div class="glass-card p-4 rounded-[2rem] shadow-sm border-t-4 border-red-500 relative overflow-hidden">
                     <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between">
-                        <span class="flex items-center"><span class="mr-1.5 text-lg">📊</span> 庫存最新狀況</span>
-                        <span class="text-[9px] bg-sky-100 text-sky-700 px-2 py-1 rounded-md font-black border border-sky-200 shadow-sm">包含成品與原料</span>
+                        <span class="flex items-center"><span class="mr-1.5 text-lg">🚨</span> 庫存警示狀況</span>
+                        <span class="text-[9px] bg-red-100 text-red-700 px-2 py-1 rounded-md font-black border border-red-200 shadow-sm">低水位與警示</span>
                     </h3>
                     <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
                         <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[280px]">
                             <thead class="text-slate-500 border-b border-slate-200">
-                                <tr><th class="p-2 font-bold text-left">料號/品名</th><th class="p-2 font-bold text-right text-emerald-700">最新庫存</th><th class="p-2 font-bold text-right text-sky-600">請/採購量</th><th class="p-2 font-bold text-center">狀態/交期</th></tr>
+                                <tr><th class="p-2 font-bold text-left">料號/品名</th><th class="p-2 font-bold text-right text-emerald-700">最新庫存</th><th class="p-2 font-bold text-right text-sky-600">採購</th><th class="p-2 font-bold text-center">狀態/交期</th></tr>
                             </thead>
-                            <tbody id="ui-latest-status-table" class="divide-y divide-slate-100 bg-white rounded-lg">
+                            <tbody id="ui-filter-status-table-alert" class="divide-y divide-slate-100 bg-white rounded-lg">
                                 <tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">系統連線中...</td></tr>
                             </tbody>
                         </table>
@@ -121,7 +106,7 @@
                     </button>
                     <button onclick="openSearchPrintView()" class="glass-card p-4 rounded-3xl flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">🖨️</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">標籤列印</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">料號紀錄標籤列印</span>
                     </button>
                 </div>
             </div>
@@ -146,7 +131,7 @@
             <div id="view-inventory-list" class="view-panel relative">
                 <div class="sticky top-14 z-30 bg-[#f1f5f9] pt-2 pb-3 border-b border-slate-300 shadow-sm -mx-4 px-4 mb-4">
                     <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1.5">🚨</span> 低水位警報 <span class="text-[10px] text-slate-400 font-bold ml-2">(可快速請購)</span></h3>
+                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1.5">🚨</span> 庫存請購 <span class="text-[10px] text-slate-400 font-bold ml-2">(可快速請購)</span></h3>
                         <button onclick="openReqModal()" class="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-md active:scale-95 transition flex items-center">
                             生成請購單 <span id="list-req-count" class="ml-1.5 bg-white text-sky-600 px-2 py-0.5 rounded text-[11px] transition-all duration-300 shadow-sm">0</span>
                         </button>
@@ -358,37 +343,6 @@
         </main>
     </div>
 
-    <div id="inv-req-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[9990]">
-        <div class="bg-white w-full max-w-sm m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl">
-            <h3 class="font-black text-lg border-b border-slate-100 pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2 text-xl">✏️</span> 編輯請購單</h3>
-            <input type="hidden" id="inv-req-edit-id">
-            <input type="hidden" id="inv-req-edit-islegacy">
-            <div class="space-y-3 mb-5">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">修改狀態</label>
-                    <select id="inv-req-edit-status" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-amber-500">
-                        <option value="待處理">待處理</option>
-                        <option value="採購中">採購中</option>
-                        <option value="已完成">✅ 已完成</option>
-                        <option value="取消">取消作廢</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">期望到貨日</label>
-                    <input type="date" id="inv-req-edit-date" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">備註說明</label>
-                    <textarea id="inv-req-edit-note" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 h-20 resize-none" placeholder="輸入備註..."></textarea>
-                </div>
-            </div>
-            <div class="flex space-x-3 mt-2">
-                <button onclick="closeModal('inv-req-edit-modal')" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl transition active:scale-95">取消</button>
-                <button onclick="saveInvReqEdit()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest active:scale-95">儲存修改</button>
-            </div>
-        </div>
-    </div>
-
     <div id="front-item-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
         <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-5 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
             <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯基本資料與 BOM</h3>
@@ -442,6 +396,37 @@
         </div>
     </div>
 
+    <div id="inv-req-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[9990]">
+        <div class="bg-white w-full max-w-sm m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl">
+            <h3 class="font-black text-lg border-b border-slate-100 pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2 text-xl">✏️</span> 編輯請購單</h3>
+            <input type="hidden" id="inv-req-edit-id">
+            <input type="hidden" id="inv-req-edit-islegacy">
+            <div class="space-y-3 mb-5">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">修改狀態</label>
+                    <select id="inv-req-edit-status" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-amber-500">
+                        <option value="待處理">待處理</option>
+                        <option value="採購中">採購中</option>
+                        <option value="已完成">✅ 已完成</option>
+                        <option value="取消">取消作廢</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">期望到貨日</label>
+                    <input type="date" id="inv-req-edit-date" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">備註說明</label>
+                    <textarea id="inv-req-edit-note" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 h-20 resize-none" placeholder="輸入備註..."></textarea>
+                </div>
+            </div>
+            <div class="flex space-x-3 mt-2">
+                <button onclick="closeModal('inv-req-edit-modal')" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl transition active:scale-95">取消</button>
+                <button onclick="saveInvReqEdit()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest active:scale-95">儲存修改</button>
+            </div>
+        </div>
+    </div>
+
     <nav id="core-bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9990] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <div onclick="event.stopPropagation(); window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
         <div onclick="event.stopPropagation(); window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-emerald-600"><span class="text-xl mb-1">📦</span><span class="scale-90">庫存</span></div>
@@ -464,6 +449,7 @@
         let currentInvType = '全部'; 
         let currentInvCat = '全部';
 
+        // 🚨 絕對防彈：防止 JSON 崩潰
         function getSafeArray(data) { 
             if (!data) return []; 
             if (Array.isArray(data)) return data; 
@@ -593,7 +579,6 @@
             }).join('');
         }
 
-        // 🌟 進階版編輯 Modal
         function openInvEditReq(id, isLegacy, currentStatus, note, expected_date) {
             document.getElementById('inv-req-edit-id').value = id;
             document.getElementById('inv-req-edit-islegacy').value = isLegacy ? 'true' : 'false';
@@ -647,7 +632,7 @@
             try {
                 const { data, error: itemErr } = await window._sb.from('items').select('*').order('created_at', {ascending: false}); 
                 if(itemErr) {
-                    const statusTable = document.getElementById('ui-latest-status-table');
+                    const statusTable = document.getElementById('ui-filter-status-table-alert');
                     if(statusTable) statusTable.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500 font-bold">讀取失敗，請確認已執行 SQL 解除 RLS</td></tr>`;
                     return;
                 }
@@ -799,22 +784,25 @@
                     }
                 }
 
-                // 🌟 整合版：庫存最新狀況大盤 (包含成品與原料，低水位優先)
-                let allGoods = [...window.inventoryData];
+                // 🌟 整合版：統一所有警示項目 (低水位優先)
+                let alertGoods = window.inventoryData.filter(i => {
+                    let safe = i.safe_stock_level || 0;
+                    return i.current_stock <= (safe * 1.5); // 只抓取等於小於 1.5 倍水位的項目
+                });
 
-                allGoods.sort((a, b) => {
+                alertGoods.sort((a, b) => {
                     let safeA = a.safe_stock_level || 0; let safeB = b.safe_stock_level || 0;
-                    let pA = a.current_stock <= safeA ? 1 : (a.current_stock <= safeA * 1.5 ? 2 : 3);
-                    let pB = b.current_stock <= safeB ? 1 : (b.current_stock <= safeB * 1.5 ? 2 : 3);
+                    let pA = a.current_stock <= safeA ? 1 : 2;
+                    let pB = b.current_stock <= safeB ? 1 : 2;
                     if(pA !== pB) return pA - pB;
                     return a.current_stock - b.current_stock;
                 });
 
-                let statusHtml = '';
-                if (allGoods.length === 0) {
-                    statusHtml = '<tr><td colspan="4" class="p-4 text-center text-emerald-600 font-bold">尚無庫存資料</td></tr>';
+                let filterHtml = '';
+                if (alertGoods.length === 0) {
+                    filterHtml = '<tr><td colspan="4" class="p-4 text-center text-emerald-600 font-bold">✅ 庫存皆在安全水位</td></tr>';
                 } else {
-                    statusHtml = allGoods.map(i => {
+                    filterHtml = alertGoods.map(i => {
                         let qtyHtml = '<span class="text-slate-300">0</span>'; let etaHtml = '<span class="text-slate-300">--</span>';
                         let rQty = 0;
 
@@ -837,20 +825,15 @@
                             }
                         }
                         
-                        let safe = i.safe_stock_level || 0; 
-                        let isLow = i.current_stock <= safe; 
-                        let isWarn = !isLow && i.current_stock <= (safe * 1.5);
-                        let stockClass = 'text-emerald-600';
-                        if(isLow) stockClass = 'text-red-600 animate-pulse';
-                        else if(isWarn) stockClass = 'text-amber-500';
-
+                        let safe = i.safe_stock_level || 0; let isLow = i.current_stock <= safe;
+                        let stockClass = isLow ? 'text-red-600 animate-pulse' : 'text-amber-500';
                         let displayName = i.item_type === '原料' ? i.item_name : i.item_code;
 
                         return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="p-2.5 font-black text-slate-700 truncate max-w-[140px]"><span class="text-[9px] bg-slate-100 text-slate-500 px-1 rounded mr-1">${i.item_type==='原料'?'🏭':'📦'}</span>${displayName}</td><td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="p-2.5 text-right">${qtyHtml}</td><td class="p-2.5 text-center text-[10px]">${etaHtml}</td></tr>`;
                     }).join('');
                 }
-                const uiLatestStatusTable = document.getElementById('ui-latest-status-table');
-                if (uiLatestStatusTable) uiLatestStatusTable.innerHTML = statusHtml;
+                const uiAlertTable = document.getElementById('ui-filter-status-table-alert');
+                if (uiAlertTable) uiAlertTable.innerHTML = filterHtml;
 
                 if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
                 if(document.getElementById('view-catalog').classList.contains('active')) renderFilteredInventory();
@@ -866,7 +849,7 @@
         }
 
         async function openInventoryList() { 
-            openView('catalog', '庫存清單大盤'); 
+            openView('inventory-list', '庫存請購'); 
             await loadItems(); 
             renderFilteredInventory(); 
             updateTopReqBar(); 
@@ -944,7 +927,7 @@
         }
 
         function renderInventoryListUI(data) {
-            const container = document.getElementById('catalog-list');
+            const container = document.getElementById('ui-inventory-list');
             if(!container) return; 
             if(!data || data.length === 0) { 
                 container.innerHTML = '<div class="text-center text-sm text-slate-400 font-bold py-10">無資料</div>'; 
@@ -1032,10 +1015,10 @@
             if(newVal === oldVal) return; 
             const { error } = await window._sb.from('items').update({ safe_stock_level: newVal }).eq('id', id); 
             if(!error) { 
-                const scrollPos = document.getElementById('catalog-list').scrollTop; 
+                const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
                 await loadItems(); 
                 renderFilteredInventory(); 
-                setTimeout(()=> { document.getElementById('catalog-list').scrollTop = scrollPos; }, 10); 
+                setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
             } 
         }
 
@@ -1047,10 +1030,10 @@
                 item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: `總表快速校正 (原:${oldQty} -> 新:${newQty})` 
             }]); 
             if(!error) { 
-                const scrollPos = document.getElementById('catalog-list').scrollTop; 
+                const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
                 await loadItems(); 
                 renderFilteredInventory(); 
-                setTimeout(()=> { document.getElementById('catalog-list').scrollTop = scrollPos; }, 10); 
+                setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
             } 
         }
 
@@ -1058,10 +1041,10 @@
             const val = parseInt(newVal) || 30; 
             const { error } = await window._sb.from('items').update({ stocktake_cycle: val }).eq('id', id); 
             if(!error) { 
-                const scrollPos = document.getElementById('catalog-list').scrollTop; 
+                const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
                 await loadItems(); 
                 renderFilteredInventory(); 
-                setTimeout(()=> { document.getElementById('catalog-list').scrollTop = scrollPos; }, 10); 
+                setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
             } 
         }
 
@@ -1069,10 +1052,10 @@
             const val = parseInt(newVal) || 15; 
             const { error } = await window._sb.from('items').update({ lead_time_days: val }).eq('id', id); 
             if(!error) { 
-                const scrollPos = document.getElementById('catalog-list').scrollTop; 
+                const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
                 await loadItems(); 
                 renderFilteredInventory(); 
-                setTimeout(()=> { document.getElementById('catalog-list').scrollTop = scrollPos; }, 10); 
+                setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
             } 
         }
 
