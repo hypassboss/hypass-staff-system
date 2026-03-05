@@ -106,7 +106,13 @@
             <section id="boss" class="tab-content active space-y-5 max-w-6xl">
                 <h3 class="font-black text-slate-800 border-l-4 border-slate-900 pl-3 text-lg mb-4 flex justify-between items-center"><span>👑 企業異常戰情室</span><button onclick="loadBossDashboard()" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg shadow-sm font-bold transition">重新掃描</button></h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="glass-panel p-5 shadow-sm border-t-4 border-red-500 bg-white"><h4 class="font-black text-slate-800 mb-3 flex items-center"><span class="text-xl mr-1.5">🚨</span> 今日考勤異常</h4><div id="boss-att-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">掃描中...</p></div></div>
+                    <div class="glass-panel p-5 shadow-sm border-t-4 border-red-500 bg-white">
+                        <h4 class="font-black text-slate-800 mb-3 flex items-center justify-between">
+                            <span class="flex items-center"><span class="text-xl mr-1.5">🚨</span> 今日考勤異常</span>
+                            <span class="text-[9px] bg-red-50 text-red-600 px-2 py-1 rounded-lg border border-red-100">即時監控</span>
+                        </h4>
+                        <div id="boss-att-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">掃描中...</p></div>
+                    </div>
                     <div class="glass-panel p-5 shadow-sm border-t-4 border-sky-500 bg-white"><h4 class="font-black text-slate-800 mb-3 flex items-center"><span class="text-xl mr-1.5">📝</span> 待簽核單據</h4><div id="boss-leave-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">掃描中...</p></div></div>
                     <div class="glass-panel p-5 shadow-sm border-t-4 border-emerald-500 bg-white"><h4 class="font-black text-slate-800 mb-3 flex items-center"><span class="text-xl mr-1.5">📦</span> 庫存低水位警報</h4><div id="boss-inv-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">掃描中...</p></div></div>
                     <div class="glass-panel p-5 shadow-sm border-t-4 border-amber-500 bg-white"><h4 class="font-black text-slate-800 mb-3 flex items-center"><span class="text-xl mr-1.5">🛒</span> 採購異常/遲交警報</h4><div id="boss-po-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">掃描中...</p></div></div>
@@ -121,21 +127,11 @@
             
             <section id="att" class="tab-content space-y-5 max-w-full overflow-hidden">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-black text-slate-800 border-l-4 border-slate-500 pl-3 text-lg">全體出勤狀態大盤</h3>
+                    <h3 class="font-black text-slate-800 border-l-4 border-slate-500 pl-3 text-lg">全體出勤狀態五日大盤</h3>
                     <input type="date" id="att-date" onchange="loadAttendance()" class="p-2 border border-slate-300 rounded-lg text-sm font-black bg-white shadow-sm outline-none focus:border-slate-500 w-40">
                 </div>
-                <p class="text-[10px] text-slate-500 font-bold mb-2">📌 顯示所選日期及其前後 2 天。點擊異常狀態可快速發送警告通知至員工前台。</p>
-                <div class="w-full overflow-x-auto no-scrollbar pb-6">
-                    <div class="min-w-[800px]">
-                        <table class="w-full text-left text-sm whitespace-nowrap bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                            <thead class="bg-slate-800 border-b border-slate-700 text-white font-bold text-[11px]" id="att-desktop-head"></thead>
-                            <tbody id="list-attendance-desktop" class="divide-y divide-slate-100 text-xs">
-                                <tr><td colspan="6" class="text-center py-10 text-slate-400">請選擇中心日期</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div id="list-attendance-mobile" class="md:hidden space-y-3 pb-8"></div>
+                <p class="text-[10px] text-slate-500 font-bold mb-4">📌 顯示所選日期及其前後 2 天。點擊異常狀態可快速發送警告通知至員工前台。</p>
+                <div id="list-attendance-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-8"></div>
             </section>
             
             <section id="inv" class="tab-content space-y-5 max-w-6xl">
@@ -147,40 +143,49 @@
                         </select>
                         <input type="text" id="admin-inv-search" placeholder="🔍 搜尋料號/品名..." class="w-2/3 p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold shadow-sm focus:border-emerald-500 outline-none" onkeyup="filterAdminInventory()">
                     </div>
-                    <div id="list-inv-mobile" class="space-y-3 md:hidden">載入中...</div>
-                    <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                        <table class="w-full text-left text-sm whitespace-nowrap">
-                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
-                                <tr><th class="px-6 py-4">料號 / 品名 / 規格</th><th class="px-6 py-4 text-right">當前庫存</th><th class="px-6 py-4 text-right">安全低水位</th><th class="px-6 py-4 text-center">生產週期</th><th class="px-6 py-4 text-center">操作</th></tr>
-                            </thead>
-                            <tbody id="list-inv-desktop" class="divide-y divide-slate-100"></tbody>
-                        </table>
-                    </div>
+                    <div id="list-inv-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-10">載入中...</div>
                 </div>
             </section>
             
             <section id="pur" class="tab-content space-y-6 max-w-6xl">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="glass-panel p-5 shadow-sm border-t-4 border-sky-500 bg-sky-50/30">
-                        <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2 text-xl">📝</span> 內部採購需求單 (草稿)</h3>
-                        <p class="text-[10px] font-bold text-slate-500 mb-3">此處顯示由庫存端提出之採購需求。請核准後轉為正式採購單。</p>
-                        <div id="list-admin-po-drafts" class="space-y-3 max-h-[60vh] overflow-y-auto no-scrollbar pr-1">載入中...</div>
+                <div class="glass-panel p-5 md:p-8 shadow-sm border-t-4 border-amber-500 bg-amber-50/30">
+                    <div class="flex items-center justify-between mb-6 border-b border-slate-200 pb-4">
+                        <div>
+                            <h3 class="font-black text-slate-800 text-xl flex items-center mb-1"><span class="mr-2 text-2xl">📤</span> 採購單 (PO) 總管理大盤</h3>
+                            <p class="text-xs font-bold text-slate-500">包含所有正式發送給供應商之採購單，可進行預覽、下載、狀態修改與刪除。</p>
+                        </div>
                     </div>
-                    <div class="glass-panel p-5 shadow-sm border-t-4 border-amber-500 bg-amber-50/30">
-                        <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2 text-xl">📤</span> 正式採購單 (PO) 管理</h3>
-                        <p class="text-[10px] font-bold text-slate-500 mb-3">正式發送給供應商之採購單，可預覽並下載 PDF。</p>
-                        <div id="list-admin-po-docs" class="space-y-3 max-h-[60vh] overflow-y-auto no-scrollbar pr-1">載入中...</div>
-                    </div>
+                    <div id="list-admin-po-docs" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">載入中...</div>
                 </div>
             </section>
 
-            <section id="fin" class="tab-content space-y-5 max-w-6xl"><h3 class="font-black text-slate-800 border-l-4 border-blue-500 pl-3 text-lg mb-4">財務對帳大盤</h3><div class="glass-panel p-5 md:p-8 shadow-sm"><div id="list-admin-fin" class="space-y-4">載入中...</div></div></section>
+            <section id="fin" class="tab-content space-y-5 max-w-6xl"><h3 class="font-black text-slate-800 border-l-4 border-blue-500 pl-3 text-lg mb-4">財務對帳大盤</h3><div class="glass-panel p-10 text-center shadow-sm rounded-3xl mt-10"><span class="text-6xl mb-4 block">💵</span><h4 class="text-xl font-black text-slate-700">財務模組即將上線</h4><p class="text-sm text-slate-500 mt-2 font-bold">目前前台財務功能正在籌備開發中，此大盤將於後續開放，敬請期待！</p></div></section>
             <section id="sal" class="tab-content space-y-5 max-w-6xl"><h3 class="font-black text-slate-800 border-l-4 border-indigo-500 pl-3 text-lg mb-4">業務管理總表</h3><div class="glass-panel p-10 text-center shadow-sm rounded-3xl mt-10"><span class="text-6xl mb-4 block">💼</span><h4 class="text-xl font-black text-slate-700">業務模組即將上線</h4><p class="text-sm text-slate-500 mt-2 font-bold">目前前台業務功能正在籌備開發中，此大盤將於後續開放，敬請期待！</p></div></section>
             <section id="brs" class="tab-content space-y-5 max-w-4xl"><div class="glass-panel p-6 shadow-sm mb-4"><h3 class="font-black text-slate-800 border-l-4 border-emerald-500 pl-3 text-lg mb-4" id="br-form-title">新增打卡據點</h3><input type="hidden" id="b-id"><div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3"><input type="text" id="b-n" placeholder="分店名稱" class="admin-input font-bold"><input type="text" id="b-a" placeholder="地址" class="admin-input bg-white"></div><div class="grid grid-cols-2 gap-3 mb-5"><input type="number" step="any" id="b-la" placeholder="緯度" class="admin-input bg-slate-50 font-mono text-sm shadow-inner" required><input type="number" step="any" id="b-ln" placeholder="經度" class="admin-input bg-slate-50 font-mono text-sm shadow-inner" required></div><div class="flex space-x-2"><button type="button" onclick="cancelEditBr()" id="btn-cancel-br" class="hidden w-1/3 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition">取消</button><button onclick="saveBr()" id="btn-save-br" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl shadow-md transition">儲存據點</button></div></div><div id="list-brs" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div></section>
             <section id="forms" class="tab-content space-y-5 max-w-4xl"><h3 class="font-black text-slate-800 border-l-4 border-indigo-600 pl-3 text-lg mb-4">📋 公司管理表格 (合約更新)</h3><p class="text-[10px] text-slate-500 font-bold mb-4 bg-indigo-50 p-3 rounded-xl border border-indigo-100">📌 在此編輯公司勞動契約的內容與版本。只要您更新版本號，全體員工下次登入時就會被要求重新簽署新版合約！</p><div class="glass-panel p-6 shadow-sm"><input type="hidden" id="form-edit-id"><div class="grid grid-cols-2 gap-4 mb-4"><div class="col-span-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">合約名稱</label><input type="text" id="form-edit-title" class="admin-input font-bold"></div><div class="col-span-2 sm:col-span-1"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">版本號</label><input type="text" id="form-edit-version" class="admin-input font-black text-indigo-700 bg-indigo-50 border-indigo-200"></div></div><div class="mb-5"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">合約詳細內容 (支援 HTML)</label><textarea id="form-edit-content" class="admin-input h-80 font-mono text-xs leading-relaxed resize-y bg-slate-50"></textarea></div><button onclick="saveAdminForm()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl shadow-md transition text-lg tracking-widest">發布新版合約</button></div></section>
             <section id="rules" class="tab-content space-y-5 max-w-4xl"><h3 class="font-black text-slate-800 border-l-4 border-rose-500 pl-3 text-lg mb-4">🎯 考勤與異常計點規定管理</h3><p class="text-[10px] text-slate-500 font-bold mb-4 bg-rose-50 p-3 rounded-xl border border-rose-100">📌 系統將依據下方設定的點數，在員工發生異常時自動扣點並發送警告。</p><div id="list-rules" class="space-y-3 max-w-2xl"><div class="text-center py-6 text-slate-400">讀取中...</div></div></section>
+            
             <section id="bull" class="tab-content space-y-5 max-w-4xl"><div class="glass-panel p-6 shadow-sm"><h3 class="font-black text-slate-800 border-l-4 border-amber-500 pl-3 text-lg mb-4" id="blt-form-title">發布公司最新公告</h3><input type="hidden" id="blt-edit-id"><input type="text" id="blt-title" placeholder="主旨標題" class="admin-input mb-3 font-bold text-lg"><textarea id="blt-content" placeholder="請輸入詳細公告內容..." class="admin-input mb-5 h-40 resize-none leading-relaxed shadow-inner"></textarea><div class="flex space-x-2"><button type="button" onclick="cancelEditBlt()" id="btn-cancel-blt" class="hidden w-1/3 bg-slate-200 text-slate-700 font-bold py-4 rounded-xl shadow-sm transition">取消</button><button onclick="postBlt()" id="btn-post-blt" class="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black py-4 rounded-xl shadow-lg transition">立即推播</button></div></div><div class="glass-panel p-6 shadow-sm"><h3 class="font-black text-slate-600 text-sm mb-3">公司最新公告歷史紀錄</h3><div id="list-admin-blt" class="space-y-3"></div></div></section>
-            <section id="pbull" class="tab-content space-y-5 max-w-4xl"><div class="glass-card p-6 shadow-sm border-t-4 border-red-500"><h3 class="font-black text-slate-800 text-lg mb-4" id="pbull-form-title">發送員工最新通知 (個人警告)</h3><input type="hidden" id="pbull-edit-id"><div class="space-y-3 mb-5"><select id="pbull-emp" class="admin-input font-bold bg-slate-50 select-arrow" required></select><input type="text" id="pbull-title" placeholder="主旨標題 (必填)" class="admin-input font-bold text-lg" required><textarea id="pbull-content" placeholder="請輸入詳細內容..." class="admin-input h-32 resize-none leading-relaxed shadow-inner" required></textarea></div><div class="flex space-x-2"><button type="button" onclick="cancelEditPBull()" id="btn-cancel-pbull" class="hidden w-1/3 bg-slate-200 text-slate-700 font-bold py-4 rounded-xl shadow-sm transition">取消</button><button onclick="postPBull()" id="btn-post-pbull" class="flex-1 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-black py-4 rounded-xl shadow-lg transition tracking-widest text-base">立即發送</button></div></div><div class="glass-panel p-6 shadow-sm"><h3 class="font-black text-slate-600 text-sm mb-3">通知發送紀錄</h3><div id="list-admin-pbull" class="space-y-3 max-h-[60vh] overflow-y-auto no-scrollbar pr-1"></div></div></section>
+            
+            <section id="pbull" class="tab-content space-y-5 max-w-4xl">
+                <div class="glass-card p-6 shadow-sm border-t-4 border-red-500">
+                    <h3 class="font-black text-slate-800 text-lg mb-4" id="pbull-form-title">發送員工最新通知 (個人警告)</h3>
+                    <input type="hidden" id="pbull-edit-id">
+                    <div class="space-y-3 mb-5">
+                        <select id="pbull-emp" class="admin-input font-bold bg-slate-50 select-arrow" required></select>
+                        <input type="text" id="pbull-title" placeholder="主旨標題 (必填)" class="admin-input font-black text-lg text-slate-800" required>
+                        <textarea id="pbull-content" placeholder="請輸入詳細內容..." class="admin-input h-32 resize-none leading-relaxed shadow-inner font-bold text-sm text-slate-600" required></textarea>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button type="button" onclick="cancelEditPBull()" id="btn-cancel-pbull" class="hidden w-1/3 bg-slate-200 text-slate-700 font-bold py-4 rounded-xl shadow-sm transition">取消</button>
+                        <button onclick="postPBull()" id="btn-post-pbull" class="flex-1 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-black py-4 rounded-xl shadow-lg transition tracking-widest text-base">立即發送</button>
+                    </div>
+                </div>
+                <div class="glass-panel p-6 shadow-sm">
+                    <h3 class="font-black text-slate-800 text-lg mb-4 border-b border-slate-100 pb-2">通知發送紀錄</h3>
+                    <div id="list-admin-pbull" class="space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar pr-1"></div>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -229,13 +234,16 @@
 
     <script src="shared.js"></script>
     <script>
-        // 🌟 核心變數與防彈函數區
+        // 🌟 核心變數與函數安全區 (無極端壓縮)
         let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = []; window.pBulletins = []; window.adminInvData = []; window.currentPayrollRecords = []; window.supplierData = []; window.adminPoData = []; window.adminReqData = []; window.allLeaves = []; let currentTempPayrollStats = null; 
 
-        function getSafeArray(data) {
-            if (!data) return [];
-            if (Array.isArray(data)) return data;
-            try { let parsed = (typeof data === 'string') ? JSON.parse(data) : data; return Array.isArray(parsed) ? parsed : []; } catch(e) { return []; }
+        // 確保 loadAdminBlt 是全域可用
+        window.loadAdminBlt = async function() { 
+            try {
+                const { data: blt } = await window._sb.from('bulletin_board').select('*').order('created_at', {ascending: false}); 
+                window.bulletins = blt || []; 
+                document.getElementById('list-admin-blt').innerHTML = window.bulletins.map(b => `<div class="p-4 bg-white rounded-xl border border-slate-200 flex justify-between items-center shadow-sm mb-2"><div><div class="text-[10px] text-amber-600 font-black mb-1">${new Date(b.created_at).toISOString().split('T')[0]}</div><div class="font-black text-sm text-slate-800 truncate w-48">${b.title}</div></div><div class="flex space-x-2"><button onclick="editBlt('${b.id}')" class="text-xs bg-sky-50 text-sky-700 font-bold px-3 py-2 rounded-lg border border-sky-100">✏️</button><button onclick="delBlt('${b.id}')" class="text-xs bg-red-50 text-red-600 font-bold px-3 py-2 rounded-lg border border-red-100">🗑️</button></div></div>`).join('') || '<div class="text-center text-xs text-slate-400 py-3">無公告</div>'; 
+            } catch(e) { console.error(e); }
         }
 
         function showSysToast(msg) {
@@ -245,6 +253,12 @@
             toast.innerHTML = `<span class="mr-2 text-xl">✅</span>${msg}`;
             container.appendChild(toast);
             setTimeout(() => { toast.style.animation = 'slideInLeft 0.4s ease-in reverse forwards'; setTimeout(() => toast.remove(), 400); }, 5000);
+        }
+
+        function getSafeArray(data) {
+            if (!data) return [];
+            if (Array.isArray(data)) return data;
+            try { let parsed = JSON.parse(data); return Array.isArray(parsed) ? parsed : []; } catch(e) { return []; }
         }
 
         async function safeUpdate(table, payload, id) { try { await window._sb.from(table).update(payload).eq('id', id); } catch(e) { console.error(`Update failed`, e); } }
@@ -323,7 +337,11 @@
                 
                 try { const { data: sups } = await window._sb.from('suppliers').select('*'); window.supplierData = sups || []; } catch(e) {}
 
-                await loadAdminBlt();
+                // 預先載入庫存與採購大盤，確保頁籤切換時有資料
+                await loadAdminInventory();
+                await loadAdminPurchase();
+                
+                await window.loadAdminBlt();
                 await loadBossDashboard();
 
             } catch (error) {
@@ -342,6 +360,8 @@
                 const eT = new Date(); eT.setHours(23,59,59,999);
 
                 let attHtml = '';
+                
+                // 1. 抓取全體在職員工，並比對今日打卡與請假狀況
                 const activeEmps = window.allEmps.filter(e => e.employment_status === '在職');
                 
                 const { data: logs } = await window._sb.from('attendance_logs').select('*').gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString());
@@ -391,6 +411,7 @@
                             }
                         }
                     } else {
+                        // 當前時間已經超過他的上班時間，且沒有請假、沒有打卡，視為尚未出勤 (可能潛在曠職)
                         const nowTimeStr = new Date().toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
                         if(nowTimeStr > eStart) {
                             statusHtml = `<span class="text-[10px] font-black text-slate-500 bg-slate-200 px-2 py-0.5 rounded animate-pulse">尚未出勤</span>`;
