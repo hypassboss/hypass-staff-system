@@ -764,7 +764,7 @@
 
         window.onload = function() {
             // 🌟 修復登入檢查與啟動邏輯，呼叫專用啟動函數
-            window.onload = bootPurchase;
+            bootPurchase();
             
             const enforceNavObserver = new MutationObserver(() => { const oldNav = document.querySelector('nav:not(#core-bottom-nav)'); if (oldNav) oldNav.remove(); });
             enforceNavObserver.observe(document.body, { childList: true, subtree: true });
