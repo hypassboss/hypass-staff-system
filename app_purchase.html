@@ -228,12 +228,6 @@
             try { let p = (typeof data === 'string') ? JSON.parse(data) : data; return Array.isArray(p) ? p : []; } catch(e) { return []; } 
         }
 
-        function getItemSummary(items) {
-            let arr = getSafeArray(items);
-            if(arr.length === 0) return '<span class="text-slate-400 italic">無項目</span>';
-            return arr.map(i => `${i.name} * ${parseFloat(i.qty).toFixed(0)}`).join('、');
-        }
-
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -251,6 +245,7 @@
 
         async function bootPurchase() {
             try {
+                // 🌟 正確使用採購權限驗證
                 const isAuth = await authGuard('purchase'); 
                 if(!isAuth) return; 
 
@@ -768,16 +763,14 @@
         });
 
         window.onload = function() {
+            // 🌟 修復登入檢查與啟動邏輯
             if(localStorage.getItem('admin_logged')==='true') {
                 document.getElementById('login-box').style.display='none'; 
                 document.getElementById('dashboard-ui').classList.remove('hidden'); 
                 document.getElementById('dashboard-ui').classList.add('flex');
-                document.getElementById('att-date').value = new Date().toLocaleDateString('en-CA');
-                const now = new Date();
-                document.getElementById('p-mon').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-                document.getElementById('export-mon').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
                 
-                setTimeout(() => { loadAll(); }, 300);
+                // 初始化與驗證採購系統
+                bootPurchase();
             }
         }
     </script>
