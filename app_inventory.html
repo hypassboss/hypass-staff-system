@@ -70,7 +70,7 @@
 
             <div id="view-dashboard" class="view-panel active space-y-4">
                 
-                <div class="glass-card p-3 rounded-[1.5rem] shadow-sm border-t-4 border-red-500 relative overflow-hidden">
+                <div class="glass-card p-3 rounded-[2rem] shadow-sm border-t-4 border-red-500 relative overflow-hidden">
                     <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between px-1">
                         <span class="flex items-center"><span class="mr-1.5 text-lg">🚨</span> 庫存警示狀況</span>
                         <span class="text-[9px] bg-red-100 text-red-700 px-2 py-1 rounded-md font-black border border-red-200 shadow-sm">低水位與警示</span>
@@ -79,10 +79,10 @@
                         <table class="w-full text-left text-[10px] table-fixed">
                             <thead class="text-slate-500 border-b border-slate-200 bg-slate-100/50">
                                 <tr>
-                                    <th class="py-2 px-1 font-bold text-left w-[44%]">料號/品名</th>
-                                    <th class="py-2 px-1 font-bold text-center text-emerald-700 w-[16%]">庫存</th>
-                                    <th class="py-2 px-1 font-bold text-center text-sky-600 w-[16%]">採購</th>
-                                    <th class="py-2 px-1 font-bold text-center w-[24%]">狀態</th>
+                                    <th class="py-1.5 px-1 font-bold text-left w-[42%]">料號/品名</th>
+                                    <th class="py-1.5 px-1 font-bold text-center text-emerald-700 w-[16%]">現庫</th>
+                                    <th class="py-1.5 px-1 font-bold text-center text-sky-600 w-[16%]">採購</th>
+                                    <th class="py-1.5 px-1 font-bold text-center w-[26%]">狀態</th>
                                 </tr>
                             </thead>
                             <tbody id="ui-filter-status-table-alert" class="divide-y divide-slate-100 bg-white rounded-lg">
@@ -354,7 +354,6 @@
         // 🚨 終極防彈寫入引擎：移除 note，直接寫入 po_documents 或 purchase_orders
         async function safeInsertPO_Draft(payload) {
             try {
-                // 第一層防禦：嘗試寫入 po_documents (移除可能報錯的 note)
                 let safePayload1 = { ...payload };
                 delete safePayload1.note;
                 const { error: e1 } = await window._sb.from('po_documents').insert([safePayload1]);
@@ -362,7 +361,6 @@
             } catch(e) {}
 
             try {
-                // 第二層防禦：如果失敗，轉向 purchase_orders (帶完整資訊)
                 let legacyPayload = { 
                     employee_id: window.currentUser?.id || null, 
                     status: payload.status, 
@@ -374,7 +372,6 @@
                 if (!e2) return;
             } catch(e) {}
 
-            // 第三層極限防禦：如果連 note 都報錯，強行拔掉 note 再寫一次
             let finalPayload = { 
                 employee_id: window.currentUser?.id || null, 
                 status: payload.status, 
@@ -486,21 +483,30 @@
                 }
                 
                 const { data: checks } = await window._sb.from('inventory_ledgers').select('item_id, created_at, employees(full_name)').eq('action_type', '盤點').order('created_at', {ascending: false});
-                window.latestChecks = {}; 
+                
+                // 🌟 黑科技：不直接清空 latestChecks，保留剛剛發生的樂觀更新！
+                let nextChecks = { ...window.latestChecks }; 
                 if(checks) { 
-                    checks.forEach(c => { 
-                        if(!window.latestChecks[c.item_id]) { 
-                            window.latestChecks[c.item_id] = { rawDate: c.created_at, date: new Date(c.created_at).toLocaleDateString('zh-TW'), emp: c.employees?.full_name || '未知' }; 
-                        } 
+                    checks.forEach(c => {
+                        let dbDate = new Date(c.created_at);
+                        let local = nextChecks[c.item_id];
+                        // 只有當 DB 的資料比較新，或是本地還沒有資料時，才允許覆蓋本地資料
+                        if (!local || dbDate > new Date(local.rawDate)) {
+                            nextChecks[c.item_id] = { 
+                                rawDate: c.created_at, 
+                                date: dbDate.toLocaleDateString('zh-TW'), 
+                                emp: c.employees?.full_name || '未知' 
+                            };
+                        }
                     }); 
                 }
+                window.latestChecks = nextChecks;
 
                 let pendingPOs_RAW = {};
                 let pendingPOs_FG = {};
                 let pendingPOs_ETA = {};
                 let pendingPOs_STATUS = {};
 
-                // 🌟 追蹤採購單 (po_documents)
                 try {
                     const { data: pos } = await window._sb.from('po_documents').select('items_json, expected_date, status').in('status', ['待審核', '已發送', '已下單', '異常(遲交)']);
                     if (pos) { 
@@ -522,7 +528,6 @@
                     }
                 } catch(e){}
                 
-                // 🌟 追蹤舊版採購單 (purchase_orders)
                 try {
                     const { data: pos2 } = await window._sb.from('purchase_orders').select('raw_materials, expected_date, status').in('status', ['待處理', '採購中', 'PO已發送', '已發送', '異常(遲交)', 'PO異常(遲交)']);
                     if (pos2) { 
@@ -653,8 +658,8 @@
                             
                             etaHtml = `
                                 <div class="flex flex-col items-center justify-center space-y-0.5">
-                                    <span class="text-[10px] font-bold text-slate-700">${dateText}</span>
-                                    <span class="text-[8px] font-black px-1.5 rounded-sm ${stColor}">${stText}</span>
+                                    <span class="text-[9px] font-bold text-slate-700 leading-none">${dateText}</span>
+                                    <span class="text-[8px] font-black px-1.5 py-0.5 rounded-sm ${stColor} leading-none whitespace-nowrap">${stText}</span>
                                 </div>
                             `;
                         }
@@ -666,23 +671,26 @@
                         
                         // 🌟 優化縮排設計，絕不超出畫面
                         let displayHtml = `
-                            <div class="flex flex-col overflow-hidden pr-1">
+                            <div class="flex flex-col overflow-hidden pr-0.5">
                                 <div class="flex items-center mb-0.5">
-                                    <span class="text-[8px] bg-slate-200 text-slate-600 px-1 rounded-sm mr-1.5 shrink-0 shadow-sm">${typeIcon}</span>
-                                    <span class="font-mono font-black text-slate-800 text-[11px] truncate tracking-wider">${i.item_code}</span>
+                                    <span class="text-[8px] bg-slate-200 text-slate-600 px-1 rounded-sm mr-1 shrink-0 shadow-sm">${typeIcon}</span>
+                                    <span class="font-mono font-black text-slate-800 text-[10px] truncate tracking-wider">${i.item_code}</span>
                                 </div>
-                                <div class="text-[10px] font-bold text-slate-500 truncate pl-[22px]">${i.item_name}</div>
+                                <div class="text-[9px] font-bold text-slate-500 truncate pl-[18px] leading-tight">${i.item_name}</div>
                             </div>
                         `;
 
-                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0"><td class="py-2 px-1 align-middle">${displayHtml}</td><td class="py-2 px-1 text-center align-middle font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="py-2 px-1 text-center align-middle">${qtyHtml}</td><td class="py-2 px-1 text-center align-middle text-[10px]">${etaHtml}</td></tr>`;
+                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0"><td class="py-2 px-1 align-middle overflow-hidden">${displayHtml}</td><td class="py-2 px-1 text-center align-middle font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="py-2 px-1 text-center align-middle">${qtyHtml}</td><td class="py-2 px-1 text-center align-middle text-[10px]">${etaHtml}</td></tr>`;
                     }).join('');
                 }
                 const uiFilterStatusTableAll = document.getElementById('ui-filter-status-table-alert');
                 if (uiFilterStatusTableAll) uiFilterStatusTableAll.innerHTML = filterHtml;
 
                 if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
-                if(document.getElementById('view-inventory-list').classList.contains('active')) renderFilteredInventory();
+                // 如果在清單頁面，也刷新，但如果剛做完本地更新，不要重繪以免游標丟失
+                if(document.getElementById('view-inventory-list').classList.contains('active') && !window.suppressListRender) {
+                    renderFilteredInventory();
+                }
 
             } catch(fatalError) {
                 console.error("UI 渲染失敗", fatalError);
@@ -696,6 +704,7 @@
 
         async function openInventoryList() { 
             openView('inventory-list', '庫存紀錄 / 低庫存採購'); 
+            window.suppressListRender = false;
             await loadItems(); 
             renderFilteredInventory(); 
             updateTopReqBar(); 
@@ -808,31 +817,31 @@
                 <div class="p-4 rounded-[1.5rem] border-2 ${borderClass} flex flex-col mb-4 shadow-sm transition-all relative bg-white">
                     <div class="flex justify-between items-start mb-3 border-b border-slate-100/80 pb-3">
                         <div class="flex flex-col pr-3 min-w-0 flex-1">
-                            <div class="flex flex-wrap items-center gap-2 mb-2">
+                            <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
                                 <span class="text-[11px] font-mono font-black text-white bg-slate-800 px-2 py-0.5 rounded-md shadow-sm tracking-widest">${i.item_code}</span>
                                 ${statusBadge}
                             </div>
-                            <h4 class="font-black text-[15px] text-slate-800 leading-snug mb-1">${i.item_name}</h4>
-                            <p class="text-[10px] text-slate-400 font-bold truncate">分類: ${i.item_type} / ${i.category || '未分類'} <span class="mx-1 text-slate-300">|</span> 規格: ${i.specification || '無'}</p>
+                            <h4 class="font-black text-[15px] text-slate-800 leading-snug mb-1 truncate">${i.item_name}</h4>
+                            <p class="text-[10px] text-slate-500 font-bold truncate">分類: ${i.item_type} / ${i.category || '未分類'} <span class="mx-1 text-slate-300">|</span> 規格: ${i.specification || '無'}</p>
                         </div>
-                        <label class="flex flex-col items-center justify-center cursor-pointer bg-slate-50 border border-slate-200 p-2.5 rounded-2xl shadow-sm z-10 hover:bg-sky-50 hover:border-sky-300 transition active:scale-95 shrink-0 w-16 h-16">
-                            <input type="checkbox" class="w-5 h-5 accent-sky-600 mb-1" onchange="togglePO('${i.id}', this)" ${inCart}>
-                            <span class="text-[9px] font-black text-slate-600 tracking-widest">採購</span>
+                        <label class="flex flex-col items-center justify-center cursor-pointer bg-slate-50 border border-slate-200 p-2.5 rounded-xl shadow-sm z-10 hover:bg-sky-50 hover:border-sky-300 transition active:scale-95 shrink-0 h-14 w-14">
+                            <input type="checkbox" class="w-4 h-4 accent-sky-600 mb-1" onchange="togglePO('${i.id}', this)" ${inCart}>
+                            <span class="text-[8px] font-black text-slate-600 tracking-widest">採購</span>
                         </label>
                     </div>
                     
-                    <div class="grid grid-cols-4 gap-1.5 text-center bg-slate-50/50 p-2 rounded-xl mb-3 border border-slate-100">
+                    <div class="grid grid-cols-4 gap-1.5 text-center bg-slate-50 p-2 rounded-xl mb-3 border border-slate-100">
                         <div class="flex flex-col justify-center bg-white rounded-lg p-1.5 shadow-sm border border-slate-100">
                             <span class="text-[9px] text-slate-400 font-bold mb-1">現有庫存</span>
-                            <input type="number" value="${i.current_stock}" onchange="inlineUpdateCurrentStock('${i.id}', ${i.current_stock}, this.value)" class="w-full bg-transparent text-center font-black text-xl ${stockClass} outline-none focus:border-b-2 focus:border-emerald-500 transition-all">
+                            <input type="number" value="${i.current_stock}" onchange="inlineUpdateCurrentStock('${i.id}', ${i.current_stock}, this.value, this)" class="w-full bg-transparent text-center font-black text-lg ${stockClass} outline-none focus:border-b-2 focus:border-emerald-500 transition-all p-0">
                         </div>
                         <div class="flex flex-col justify-center bg-white rounded-lg p-1.5 shadow-sm border border-slate-100">
                             <span class="text-[9px] text-slate-400 font-bold mb-1">低水位</span>
-                            <input type="number" value="${safe}" onchange="inlineUpdateSafeStock('${i.id}', this.value, ${safe})" class="w-full bg-transparent text-center font-black text-sm text-red-500 mt-1 outline-none focus:border-b-2 focus:border-red-400 transition-all">
+                            <input type="number" value="${safe}" onchange="inlineUpdateSafeStock('${i.id}', this.value, ${safe}, this)" class="w-full bg-transparent text-center font-black text-sm text-red-500 outline-none focus:border-b-2 focus:border-red-400 transition-all p-0">
                         </div>
                         <div class="flex flex-col justify-center bg-white rounded-lg p-1.5 shadow-sm border border-slate-100">
                             <span class="text-[9px] text-slate-400 font-bold mb-1">生產週期</span>
-                            <select onchange="inlineUpdateLeadTime('${i.id}', this.value)" class="w-full bg-transparent font-black text-sm text-slate-700 mt-1 outline-none text-center-last appearance-none">
+                            <select onchange="inlineUpdateLeadTime('${i.id}', this.value)" class="w-full bg-transparent font-black text-xs text-slate-700 outline-none text-center-last appearance-none p-0">
                                 <option value="15" ${i.lead_time_days==15?'selected':''}>15天</option>
                                 <option value="30" ${i.lead_time_days==30?'selected':''}>30天</option>
                                 <option value="45" ${i.lead_time_days==45?'selected':''}>45天</option>
@@ -842,7 +851,7 @@
                         </div>
                         <div class="flex flex-col justify-center bg-white rounded-lg p-1.5 shadow-sm border border-slate-100">
                             <span class="text-[9px] text-slate-400 font-bold mb-1">盤點頻率</span>
-                            <select onchange="inlineUpdateCycle('${i.id}', this.value)" class="w-full bg-transparent font-black text-sm text-slate-700 mt-1 outline-none text-center-last appearance-none">
+                            <select onchange="inlineUpdateCycle('${i.id}', this.value)" class="w-full bg-transparent font-black text-xs text-slate-700 outline-none text-center-last appearance-none p-0">
                                 <option value="7" ${i.stocktake_cycle==7?'selected':''}>7天</option>
                                 <option value="30" ${i.stocktake_cycle==30?'selected':''}>30天</option>
                                 <option value="60" ${i.stocktake_cycle==60?'selected':''}>60天</option>
@@ -851,7 +860,7 @@
                         </div>
                     </div>
 
-                    <div class="text-[10px] font-bold bg-slate-100/80 px-3 py-2 rounded-xl text-slate-500 flex items-center justify-between border border-slate-200/50">
+                    <div class="text-[10px] font-bold bg-slate-100/80 px-3 py-2 rounded-lg text-slate-500 flex items-center justify-between border border-slate-200/50">
                         <span class="flex items-center tracking-widest"><span class="mr-1 text-sm">🕒</span> 最新盤點紀錄</span>
                         <span class="text-slate-800 font-black" id="last-check-${i.id}">${lastCheckText}</span>
                     </div>
@@ -859,73 +868,79 @@
             }).join('');
         }
 
-        async function inlineUpdateSafeStock(id, newValStr, oldVal) { 
+        async function inlineUpdateSafeStock(id, newValStr, oldVal, inputEl) { 
             const newVal = parseInt(newValStr) || 0; 
             if(newVal === oldVal) return; 
-            const { error } = await window._sb.from('items').update({ safe_stock_level: newVal }).eq('id', id); 
-            if(!error) { 
-                const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
-                let item = window.inventoryData.find(x => x.id === id);
-                if(item) item.safe_stock_level = newVal;
-                renderFilteredInventory(); 
-                setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
-            } 
+
+            // 本地瞬間更新
+            let item = window.inventoryData.find(x => x.id === id);
+            if(item) item.safe_stock_level = newVal;
+            if(inputEl) inputEl.setAttribute('onchange', `inlineUpdateSafeStock('${id}', this.value, ${newVal}, this)`);
+            
+            showSysToast('✅ 低水位已更新！');
+            await window._sb.from('items').update({ safe_stock_level: newVal }).eq('id', id); 
         }
 
-        async function inlineUpdateCurrentStock(id, oldQty, newValStr) { 
+        // 🌟 樂觀更新黑科技：不再調用全畫面渲染，直接更新 DOM
+        async function inlineUpdateCurrentStock(id, oldQty, newValStr, inputEl) { 
             const newQty = parseInt(newValStr) || 0; 
             if(newQty === oldQty) return; 
             const diff = newQty - oldQty; 
             
-            // 🌟 1. 立刻更新本地資料 (黑科技防回跳)
+            // 🌟 1. 瞬間更新本地資料與指定 DOM (絕對不回跳！)
             let item = window.inventoryData.find(x => x.id === id);
             if (item) {
                 item.current_stock = newQty;
-                let newDate = new Date().toLocaleDateString('zh-TW');
-                let newEmp = window.currentUser.full_name;
-                window.latestChecks[id] = { rawDate: new Date().toISOString(), date: newDate, emp: newEmp };
                 
-                // 瞬間重新渲染卡片
-                const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
-                renderFilteredInventory(); 
-                setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
+                let nowIso = new Date().toISOString();
+                let newDate = new Date().toLocaleDateString('zh-TW');
+                let newEmp = window.currentUser?.full_name || '使用者';
+                window.latestChecks[id] = { rawDate: nowIso, date: newDate, emp: newEmp };
+                
+                // 僅更新該卡片的日期欄位
+                const checkEl = document.getElementById(`last-check-${id}`);
+                if (checkEl) checkEl.innerHTML = `${newDate} (${newEmp})`;
+
+                // 重新綁定 onchange，讓下次計算 diff 正確
+                if (inputEl) inputEl.setAttribute('onchange', `inlineUpdateCurrentStock('${id}', ${newQty}, this.value, this)`);
+
+                // 若在法定盤點清單內，自動移除
+                const fridayBtn = document.querySelector(`button[onclick="openCountViewFromId('${id}')"]`);
+                if(fridayBtn) {
+                    const row = fridayBtn.closest('.bg-white\\/20');
+                    if(row) {
+                        row.remove();
+                        const countSpan = document.getElementById('friday-overdue-count');
+                        if(countSpan) {
+                            let c = parseInt(countSpan.innerText.replace(/[^0-9]/g, '')) || 0;
+                            if(c > 0) countSpan.innerText = `待盤: ${c - 1} 件`;
+                        }
+                    }
+                }
             }
             
-            // 🌟 2. 背景非同步寫入資料庫
-            const { error } = await window._sb.from('inventory_ledgers').insert([{ 
+            showSysToast('✅ 庫存已更新，並記錄為最新盤點！');
+            
+            // 🌟 2. 背景安靜寫入資料庫，不觸發全畫面重刷
+            await window._sb.from('inventory_ledgers').insert([{ 
                 item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: `列表快速校正 (原:${oldQty} -> 新:${newQty})` 
             }]); 
-            
-            if(!error) { 
-                showSysToast('✅ 庫存已更新，並記錄為最新盤點！');
-                // 移除強迫的 reload，改用靜默狀態，保證絕不回跳。
-            } else {
-                alert('庫存更新失敗，請檢查網路連線。');
-            }
         }
 
-        async function inlineUpdateCycle(id, newVal) { 
-            const val = parseInt(newVal) || 30; 
-            const { error } = await window._sb.from('items').update({ stocktake_cycle: val }).eq('id', id); 
-            if(!error) { 
-                const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
-                let item = window.inventoryData.find(x => x.id === id);
-                if(item) item.stocktake_cycle = val;
-                renderFilteredInventory(); 
-                setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
-            } 
+        async function inlineUpdateCycle(id, newValStr) { 
+            const val = parseInt(newValStr) || 30; 
+            let item = window.inventoryData.find(x => x.id === id);
+            if(item) item.stocktake_cycle = val;
+            showSysToast('✅ 盤點頻率已更新！');
+            await window._sb.from('items').update({ stocktake_cycle: val }).eq('id', id); 
         }
 
-        async function inlineUpdateLeadTime(id, newVal) { 
-            const val = parseInt(newVal) || 15; 
-            const { error } = await window._sb.from('items').update({ lead_time_days: val }).eq('id', id); 
-            if(!error) { 
-                const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
-                let item = window.inventoryData.find(x => x.id === id);
-                if(item) item.lead_time_days = val;
-                renderFilteredInventory(); 
-                setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
-            } 
+        async function inlineUpdateLeadTime(id, newValStr) { 
+            const val = parseInt(newValStr) || 15; 
+            let item = window.inventoryData.find(x => x.id === id);
+            if(item) item.lead_time_days = val;
+            showSysToast('✅ 生產週期已更新！');
+            await window._sb.from('items').update({ lead_time_days: val }).eq('id', id); 
         }
 
         function filterInventory() { renderFilteredInventory(); }
@@ -1086,6 +1101,7 @@
             btn.innerText = '確定生成採購單'; 
             btn.disabled = false;
             
+            window.suppressListRender = false;
             await loadItems();
             backToDash();
         }
@@ -1175,18 +1191,33 @@
             btn.innerText = '💾 紀錄中...'; 
             btn.disabled = true; 
             
-            const { error } = await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: '相機掃碼校正' }]); 
+            if (item) {
+                item.current_stock = newVal; 
+                let nowIso = new Date().toISOString();
+                let newDate = new Date().toLocaleDateString('zh-TW');
+                let newEmp = window.currentUser?.full_name || '使用者';
+                window.latestChecks[id] = { rawDate: nowIso, date: newDate, emp: newEmp }; 
+
+                const fridayBtn = document.querySelector(`button[onclick="openCountViewFromId('${id}')"]`);
+                if(fridayBtn) {
+                    const row = fridayBtn.closest('.bg-white\\/20');
+                    if(row) {
+                        row.remove();
+                        const countSpan = document.getElementById('friday-overdue-count');
+                        if(countSpan) {
+                            let c = parseInt(countSpan.innerText.replace(/[^0-9]/g, '')) || 0;
+                            if(c > 0) countSpan.innerText = `待盤: ${c - 1} 件`;
+                        }
+                    }
+                }
+            }
+
+            await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: '相機掃碼校正' }]); 
             
             const beep = document.getElementById('beep-sound'); 
             if(beep) { beep.currentTime = 0; beep.play().catch(()=>{}); } 
             
-            if(!error) {
-                showSysToast('✅ 盤點紀錄已儲存！');
-                if(item) { 
-                    item.current_stock = newVal; 
-                    window.latestChecks[id] = { rawDate: new Date().toISOString(), date: new Date().toLocaleDateString('zh-TW'), emp: window.currentUser.full_name }; 
-                } 
-            }
+            showSysToast('✅ 盤點紀錄已儲存！');
             
             btn.innerText = '💾 確認並盤點下一個'; 
             btn.disabled = false; 
@@ -1271,6 +1302,7 @@
             if(!error) { 
                 alert('✅ 成功！'); 
                 e.target.reset(); 
+                window.suppressListRender = false;
                 await loadItems(); 
                 renderBomTable('bom-table-body'); 
             } 
@@ -1395,6 +1427,7 @@
             } else { 
                 alert('✅ 已儲存修改！'); 
                 closeModal('front-item-edit-modal'); 
+                window.suppressListRender = false;
                 loadItems(); 
             } 
         }
