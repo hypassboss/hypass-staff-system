@@ -73,7 +73,7 @@
                 <button onclick="st('emps')" id="dt-emps" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">👥</span> 員工總表/離職</button>
                 <button onclick="st('att')" id="dt-att" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">📋</span> 出勤紀錄大盤</button>
                 <button onclick="st('inv')" id="dt-inv" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">📦</span> 庫存清單管理</button>
-                <button onclick="st('pur')" id="dt-pur" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">🛒</span> 採購與請購中心</button>
+                <button onclick="st('pur')" id="dt-pur" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">🛒</span> 採購與審核中心</button>
                 <button onclick="st('fin')" id="dt-fin" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">💵</span> 財務對帳大盤</button>
                 <button onclick="st('sal')" id="dt-sal" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">💼</span> 業務管理中心</button>
                 <button onclick="st('brs')" id="dt-brs" class="dt-btn w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl">📍</span> 企業據點管理</button>
@@ -106,32 +106,29 @@
             <section id="boss" class="tab-content active space-y-5 max-w-6xl">
                 <h3 class="font-black text-slate-800 border-l-4 border-slate-900 pl-3 text-lg mb-4 flex justify-between items-center"><span>👑 企業異常戰情室</span><button onclick="loadBossDashboard()" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg shadow-sm font-bold transition">重新掃描</button></h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="glass-panel p-5 shadow-sm border-t-4 border-red-500 bg-white">
-                        <h4 class="font-black text-slate-800 mb-3 flex items-center justify-between">
-                            <span class="flex items-center"><span class="text-xl mr-1.5">🚨</span> 今日考勤狀況</span>
-                            <span class="text-[9px] bg-red-50 text-red-600 px-2 py-1 rounded-lg border border-red-100">即時監控</span>
-                        </h4>
-                        <div id="boss-att-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">掃描中...</p></div>
-                    </div>
+                    <div class="glass-panel p-5 shadow-sm border-t-4 border-red-500 bg-white"><h4 class="font-black text-slate-800 mb-3 flex items-center"><span class="text-xl mr-1.5">🚨</span> 今日考勤異常</h4><div id="boss-att-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">掃描中...</p></div></div>
                     <div class="glass-panel p-5 shadow-sm border-t-4 border-sky-500 bg-white"><h4 class="font-black text-slate-800 mb-3 flex items-center"><span class="text-xl mr-1.5">📝</span> 待簽核單據</h4><div id="boss-leave-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">掃描中...</p></div></div>
                     <div class="glass-panel p-5 shadow-sm border-t-4 border-emerald-500 bg-white"><h4 class="font-black text-slate-800 mb-3 flex items-center"><span class="text-xl mr-1.5">📦</span> 庫存低水位警報</h4><div id="boss-inv-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">掃描中...</p></div></div>
                     <div class="glass-panel p-5 shadow-sm border-t-4 border-amber-500 bg-white"><h4 class="font-black text-slate-800 mb-3 flex items-center"><span class="text-xl mr-1.5">🛒</span> 採購異常/遲交警報</h4><div id="boss-po-alerts" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"><p class="text-xs text-slate-400">掃描中...</p></div></div>
                 </div>
             </section>
+            
             <section id="pend" class="tab-content space-y-6 max-w-4xl"><div><h3 class="font-black text-slate-800 border-l-4 border-blue-500 pl-3 text-lg mb-3">新進員工審核</h3><div id="list-pend" class="space-y-3"></div></div><div><h3 class="font-black text-slate-800 border-l-4 border-amber-500 pl-3 text-lg mb-3">簽核中心 (含補登申請)</h3><div id="list-leaves" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div></section>
-            <section id="pay" class="tab-content space-y-6 max-w-4xl"><div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-[1.5rem] shadow-lg text-white relative overflow-hidden"><div class="absolute -right-4 -bottom-4 text-7xl opacity-20">🏦</div><h3 class="font-black text-lg mb-1 relative z-10">銀行薪資轉帳檔 (CSV)</h3><p class="text-xs text-emerald-100 mb-4 relative z-10 font-medium">支援銀行代碼，匯入網銀批次轉帳</p><div class="flex space-x-2 relative z-10"><input type="month" id="export-mon" class="admin-input bg-white/20 border-white/30 text-white placeholder-white/50 flex-1" style="color-scheme: dark;"><button onclick="exportBankCSV()" class="bg-white text-emerald-700 font-black px-5 py-3 rounded-xl shadow-md active:scale-95 transition">下載</button></div></div><div class="glass-panel p-6 space-y-4 border-t-4 border-indigo-500"><h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">💰</span>綜合薪資與年終發放中心</h3><div class="grid grid-cols-2 gap-3 mb-2"><select id="p-emp" class="admin-input bg-slate-50 font-bold select-arrow" onchange="onEmpChange()"></select><input type="month" id="p-mon" class="admin-input bg-slate-50 font-bold" onchange="updateAttendanceRate()"></div><div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4"><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">當月本薪</label><input type="number" id="p-base" oninput="calcPayroll()" class="admin-input font-black text-slate-800 bg-white"></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">獎金津貼</label><select id="p-bonus" onchange="calcPayroll()" class="admin-input font-black text-emerald-600 bg-white select-arrow"><option value="0">0</option><option value="1000">1,000</option><option value="3000">3,000</option><option value="5000">5,000</option><option value="7000">7,000</option><option value="10000">10000</option></select></div></div><div class="border-t border-slate-200 pt-4"><label class="flex items-center space-x-2 cursor-pointer text-sm font-black text-amber-700 mb-2 p-2 hover:bg-amber-50 rounded-lg transition select-none"><input type="checkbox" id="toggle-yeb" class="w-5 h-5 accent-amber-500" onchange="handleYebToggle()"><span>🎁 啟用年終與特休結算</span></label><div id="yeb-section" class="hidden grid grid-cols-2 gap-3 bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-inner"><div><label id="lbl-yeb" class="text-[11px] font-black text-amber-800 ml-1">預設年終</label><input type="number" id="p-yeb" oninput="calcPayroll()" class="admin-input font-black text-amber-600 bg-white border-amber-300 text-lg mt-1" placeholder="金額"></div><div><label id="lbl-ulp-text" class="text-[11px] font-black text-emerald-700 ml-1">特休結算</label><input type="number" id="p-ulp" oninput="calcPayroll()" class="admin-input font-black text-emerald-600 bg-white border-emerald-300 text-lg mt-1" placeholder="自動換算"></div></div></div></div><div class="p-4 bg-indigo-50 rounded-xl border border-indigo-200"><div class="flex justify-between items-center mb-2"><h4 class="text-[10px] font-black text-indigo-800 tracking-widest">🤖 當月出勤分析 (將寫入明細)</h4><button onclick="updateAttendanceRate()" class="text-[9px] bg-indigo-200 text-indigo-800 px-2 py-1 rounded font-bold hover:bg-indigo-300 transition">刷新</button></div><div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-600 bg-white p-2 rounded-lg border border-indigo-100 shadow-sm mb-3"><div>病假<br><span id="sd-sick" class="text-indigo-600 text-sm font-black">0</span>h</div><div>事假<br><span id="sd-per" class="text-indigo-600 text-sm font-black">0</span>h</div><div>曠職<br><span id="sd-abs" class="text-red-600 text-sm font-black">0</span>日</div><div>遲到<br><span id="sd-lat" class="text-indigo-600 text-sm font-black">0</span>次</div><div>早退<br><span id="sd-ear" class="text-amber-600 text-sm font-black">0</span>次</div><div>計點<br><span id="sd-pnt" class="text-red-600 text-sm font-black">0</span>點</div></div><div class="flex space-x-3"><div class="flex-1"><label class="text-[10px] font-bold text-indigo-800 ml-1">請假/曠職扣薪總額</label><input type="number" id="p-lvd" oninput="calcNet()" class="admin-input font-black text-indigo-600 border-indigo-200 bg-white" value="0"></div></div></div><div class="p-4 bg-amber-50 rounded-xl border border-amber-200 shadow-sm space-y-4"><div><h4 id="lbl-eval-prev" class="text-[10px] font-black text-amber-800 tracking-widest mb-2 border-b border-amber-200 pb-1">上年度</h4><div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-500 bg-white p-2 rounded-lg border border-amber-100 shadow-inner"><div>特休<br><span id="sy-prev-ann" class="text-amber-600 text-sm font-black">0</span></div><div>事假<br><span id="sy-prev-per" class="text-amber-600 text-sm font-black">0</span>h</div><div>病假<br><span id="sy-prev-sic" class="text-amber-600 text-sm font-black">0</span>h</div><div>遲/早<br><span id="sy-prev-lat" class="text-amber-600 text-sm font-black">0</span>次</div><div>曠職<br><span id="sy-prev-abs" class="text-red-600 text-sm font-black">0</span>日</div><div>計點<br><span id="sy-prev-pnt" class="text-red-600 text-sm font-black">0</span>點</div></div></div></div><div class="p-4 bg-red-50 rounded-xl border border-red-100 grid grid-cols-2 gap-3 relative"><button onclick="calcPayroll()" class="absolute -top-3 right-3 text-[9px] bg-slate-800 text-white font-bold px-2 py-1 rounded shadow-sm">🤖 重算</button><div><label class="text-[10px] font-bold text-red-800 ml-1">勞健保</label><input type="number" id="p-ins" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200 bg-white"></div><div><label class="text-[10px] font-bold text-red-800 ml-1">二代健保</label><input type="number" id="p-2nd" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200 bg-white"></div></div><div class="flex justify-between items-center p-5 mt-2 bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl border border-sky-200 shadow-inner"><span class="text-sm font-black text-slate-700">綜合結算實領</span><span class="text-4xl font-black text-sky-600 tracking-tighter" id="p-net-display">NT$ 0</span><input type="hidden" id="p-net"><input type="hidden" id="p-pen"></div><button onclick="issuePayroll()" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-all mt-2 tracking-widest text-lg">🚀 正式發送薪資單</button></div><div class="glass-panel p-6 space-y-4 border-t-4 border-slate-600"><h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">📜</span>歷史薪資單管理</h3><select id="hist-emp" class="admin-input bg-slate-50 font-bold mb-4 select-arrow" onchange="loadPayrollHistory()"></select><div id="ui-payroll-hist" class="space-y-3 max-h-[400px] overflow-y-auto pr-1 no-scrollbar"><div class="text-center text-xs text-slate-400 py-6 bg-slate-50 rounded-xl border border-dashed border-slate-300">請先選擇員工</div></div></div></section>
+            
+            <section id="pay" class="tab-content space-y-6 max-w-4xl"><div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-[1.5rem] shadow-lg text-white relative overflow-hidden"><div class="absolute -right-4 -bottom-4 text-7xl opacity-20">🏦</div><h3 class="font-black text-lg mb-1 relative z-10">銀行薪資轉帳檔 (CSV)</h3><p class="text-xs text-emerald-100 mb-4 relative z-10 font-medium">支援銀行代碼，匯入網銀批次轉帳</p><div class="flex space-x-2 relative z-10"><input type="month" id="export-mon" class="admin-input bg-white/20 border-white/30 text-white placeholder-white/50 flex-1" style="color-scheme: dark;"><button onclick="exportBankCSV()" class="bg-white text-emerald-700 font-black px-5 py-3 rounded-xl shadow-md active:scale-95 transition">下載</button></div></div><div class="glass-panel p-6 space-y-4 border-t-4 border-indigo-500"><h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">💰</span>綜合薪資與年終發放中心</h3><div class="grid grid-cols-2 gap-3 mb-2"><select id="p-emp" class="admin-input bg-slate-50 font-bold select-arrow" onchange="onEmpChange()"></select><input type="month" id="p-mon" class="admin-input bg-slate-50 font-bold" onchange="updateAttendanceRate()"></div><div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4"><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">當月本薪</label><input type="number" id="p-base" oninput="calcPayroll()" class="admin-input font-black text-slate-800 bg-white"></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">獎金津貼</label><select id="p-bonus" onchange="calcPayroll()" class="admin-input font-black text-emerald-600 bg-white select-arrow"><option value="0">0</option><option value="1000">1,000</option><option value="3000">3,000</option><option value="5000">5,000</option><option value="7000">7,000</option><option value="10000">10,000</option></select></div></div><div class="border-t border-slate-200 pt-4"><label class="flex items-center space-x-2 cursor-pointer text-sm font-black text-amber-700 mb-2 p-2 hover:bg-amber-50 rounded-lg transition select-none"><input type="checkbox" id="toggle-yeb" class="w-5 h-5 accent-amber-500" onchange="handleYebToggle()"><span>🎁 啟用年終與特休結算</span></label><div id="yeb-section" class="hidden grid grid-cols-2 gap-3 bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-inner"><div><label id="lbl-yeb" class="text-[11px] font-black text-amber-800 ml-1">預設年終</label><input type="number" id="p-yeb" oninput="calcPayroll()" class="admin-input font-black text-amber-600 bg-white border-amber-300 text-lg mt-1" placeholder="金額"></div><div><label id="lbl-ulp-text" class="text-[11px] font-black text-emerald-700 ml-1">特休結算</label><input type="number" id="p-ulp" oninput="calcPayroll()" class="admin-input font-black text-emerald-600 bg-white border-emerald-300 text-lg mt-1" placeholder="自動換算"></div></div></div></div><div class="p-4 bg-indigo-50 rounded-xl border border-indigo-200"><div class="flex justify-between items-center mb-2"><h4 class="text-[10px] font-black text-indigo-800 tracking-widest">🤖 當月出勤分析 (將寫入明細)</h4><button onclick="updateAttendanceRate()" class="text-[9px] bg-indigo-200 text-indigo-800 px-2 py-1 rounded font-bold hover:bg-indigo-300 transition">刷新</button></div><div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-600 bg-white p-2 rounded-lg border border-indigo-100 shadow-sm mb-3"><div>病假<br><span id="sd-sick" class="text-indigo-600 text-sm font-black">0</span>h</div><div>事假<br><span id="sd-per" class="text-indigo-600 text-sm font-black">0</span>h</div><div>曠職<br><span id="sd-abs" class="text-red-600 text-sm font-black">0</span>日</div><div>遲到<br><span id="sd-lat" class="text-indigo-600 text-sm font-black">0</span>次</div><div>早退<br><span id="sd-ear" class="text-amber-600 text-sm font-black">0</span>次</div><div>計點<br><span id="sd-pnt" class="text-red-600 text-sm font-black">0</span>點</div></div><div class="flex space-x-3"><div class="flex-1"><label class="text-[10px] font-bold text-indigo-800 ml-1">請假/曠職扣薪總額</label><input type="number" id="p-lvd" oninput="calcNet()" class="admin-input font-black text-indigo-600 border-indigo-200 bg-white" value="0"></div></div></div><div class="p-4 bg-amber-50 rounded-xl border border-amber-200 shadow-sm space-y-4"><div><h4 id="lbl-eval-prev" class="text-[10px] font-black text-amber-800 tracking-widest mb-2 border-b border-amber-200 pb-1">上年度</h4><div class="grid grid-cols-6 gap-1 text-center text-[10px] font-bold text-slate-500 bg-white p-2 rounded-lg border border-amber-100 shadow-inner"><div>特休<br><span id="sy-prev-ann" class="text-amber-600 text-sm font-black">0</span></div><div>事假<br><span id="sy-prev-per" class="text-amber-600 text-sm font-black">0</span>h</div><div>病假<br><span id="sy-prev-sic" class="text-amber-600 text-sm font-black">0</span>h</div><div>遲/早<br><span id="sy-prev-lat" class="text-amber-600 text-sm font-black">0</span>次</div><div>曠職<br><span id="sy-prev-abs" class="text-red-600 text-sm font-black">0</span>日</div><div>計點<br><span id="sy-prev-pnt" class="text-red-600 text-sm font-black">0</span>點</div></div></div></div><div class="p-4 bg-red-50 rounded-xl border border-red-100 grid grid-cols-2 gap-3 relative"><button onclick="calcPayroll()" class="absolute -top-3 right-3 text-[9px] bg-slate-800 text-white font-bold px-2 py-1 rounded shadow-sm">🤖 重算</button><div><label class="text-[10px] font-bold text-red-800 ml-1">勞健保</label><input type="number" id="p-ins" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200 bg-white"></div><div><label class="text-[10px] font-bold text-red-800 ml-1">二代健保</label><input type="number" id="p-2nd" oninput="calcNet()" class="admin-input font-black text-red-600 border-red-200 bg-white"></div></div><div class="flex justify-between items-center p-5 mt-2 bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl border border-sky-200 shadow-inner"><span class="text-sm font-black text-slate-700">綜合結算實領</span><span class="text-4xl font-black text-sky-600 tracking-tighter" id="p-net-display">NT$ 0</span><input type="hidden" id="p-net"><input type="hidden" id="p-pen"></div><button onclick="issuePayroll()" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition-all mt-2 tracking-widest text-lg">🚀 正式發送薪資單</button></div><div class="glass-panel p-6 space-y-4 border-t-4 border-slate-600"><h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">📜</span>歷史薪資單管理</h3><select id="hist-emp" class="admin-input bg-slate-50 font-bold mb-4 select-arrow" onchange="loadPayrollHistory()"></select><div id="ui-payroll-hist" class="space-y-3 max-h-[400px] overflow-y-auto pr-1 no-scrollbar"><div class="text-center text-xs text-slate-400 py-6 bg-slate-50 rounded-xl border border-dashed border-slate-300">請先選擇員工</div></div></div></section>
+            
             <section id="emps" class="tab-content space-y-5 max-w-6xl"><div><h3 class="font-black text-slate-800 border-l-4 border-sky-500 pl-3 text-lg mb-4">員工資料總表與管理</h3><div id="list-emps-mobile" class="space-y-3 md:hidden">載入中...</div><div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-left text-sm whitespace-nowrap"><thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold"><tr><th class="px-6 py-4">編號</th><th class="px-6 py-4">姓名 / 據點</th><th class="px-6 py-4">聯絡電話</th><th class="px-6 py-4">核定底薪</th><th class="px-6 py-4 text-center">操作</th></tr></thead><tbody id="list-emps-desktop" class="divide-y divide-slate-100"></tbody></table></div></div></section>
             
             <section id="att" class="tab-content space-y-5 max-w-full overflow-hidden">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-black text-slate-800 border-l-4 border-slate-500 pl-3 text-lg">全體出勤狀態五日大盤</h3>
+                    <h3 class="font-black text-slate-800 border-l-4 border-slate-500 pl-3 text-lg">全體出勤狀態大盤</h3>
                     <input type="date" id="att-date" onchange="loadAttendance()" class="p-2 border border-slate-300 rounded-lg text-sm font-black bg-white shadow-sm outline-none focus:border-slate-500 w-40">
                 </div>
-                <p class="text-[10px] text-slate-500 font-bold mb-2">📌 顯示所選日期及其前後 2 天。若有異常可直接發送警告通知至員工前台。</p>
+                <p class="text-[10px] text-slate-500 font-bold mb-2">📌 顯示所選日期及其前後 2 天。點擊異常狀態可快速發送警告通知至員工前台。</p>
                 <div class="w-full overflow-x-auto no-scrollbar pb-6">
                     <div class="min-w-[800px]">
                         <table class="w-full text-left text-sm whitespace-nowrap bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold text-[11px]" id="att-desktop-head"></thead>
+                            <thead class="bg-slate-800 border-b border-slate-700 text-white font-bold text-[11px]" id="att-desktop-head"></thead>
                             <tbody id="list-attendance-desktop" class="divide-y divide-slate-100 text-xs">
                                 <tr><td colspan="6" class="text-center py-10 text-slate-400">請選擇中心日期</td></tr>
                             </tbody>
@@ -141,16 +138,39 @@
                 <div id="list-attendance-mobile" class="md:hidden space-y-3 pb-8"></div>
             </section>
             
-            <section id="inv" class="tab-content space-y-5 max-w-6xl"><div><h3 class="font-black text-slate-800 border-l-4 border-emerald-500 pl-3 text-lg mb-4">庫存清單與料號管理</h3><div class="glass-panel p-5 shadow-sm mb-4 flex space-x-2"><select id="admin-inv-cat-filter" class="w-1/3 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none select-arrow shadow-inner" onchange="filterAdminInventory()"><option value="">全部分類</option></select><input type="text" id="admin-inv-search" placeholder="🔍 搜尋料號/品名..." class="w-2/3 admin-input bg-slate-50 font-bold shadow-inner" onkeyup="filterAdminInventory()"></div><div id="list-inv-mobile" class="space-y-3 md:hidden">載入中...</div><div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-left text-sm whitespace-nowrap"><thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold"><tr><th class="px-6 py-4">料號 / 品名 / 規格</th><th class="px-6 py-4 text-right">當前庫存</th><th class="px-6 py-4 text-right">安全低水位</th><th class="px-6 py-4 text-center">生產週期</th><th class="px-6 py-4 text-center">操作</th></tr></thead><tbody id="list-inv-desktop" class="divide-y divide-slate-100"></tbody></table></div></div></section>
+            <section id="inv" class="tab-content space-y-5 max-w-6xl">
+                <div>
+                    <h3 class="font-black text-slate-800 border-l-4 border-emerald-500 pl-3 text-lg mb-4">庫存清單與料號管理</h3>
+                    <div class="glass-panel p-4 shadow-sm mb-4 flex space-x-2 bg-emerald-50/50 border border-emerald-100">
+                        <select id="admin-inv-cat-filter" class="w-1/3 p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none select-arrow shadow-sm focus:border-emerald-500" onchange="filterAdminInventory()">
+                            <option value="">全部分類</option>
+                        </select>
+                        <input type="text" id="admin-inv-search" placeholder="🔍 搜尋料號/品名..." class="w-2/3 p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold shadow-sm focus:border-emerald-500 outline-none" onkeyup="filterAdminInventory()">
+                    </div>
+                    <div id="list-inv-mobile" class="space-y-3 md:hidden">載入中...</div>
+                    <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
+                                <tr><th class="px-6 py-4">料號 / 品名 / 規格</th><th class="px-6 py-4 text-right">當前庫存</th><th class="px-6 py-4 text-right">安全低水位</th><th class="px-6 py-4 text-center">生產週期</th><th class="px-6 py-4 text-center">操作</th></tr>
+                            </thead>
+                            <tbody id="list-inv-desktop" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
             
             <section id="pur" class="tab-content space-y-6 max-w-6xl">
-                <div>
-                    <h3 class="font-black text-slate-800 border-l-4 border-amber-500 pl-3 text-lg mb-4">📄 正式採購單 (PDF) 管理大盤</h3>
-                    <div class="glass-panel p-5 shadow-sm bg-amber-50/20"><div id="list-admin-po-docs" class="space-y-3">載入中...</div></div>
-                </div>
-                <div>
-                    <h3 class="font-black text-slate-800 border-l-4 border-sky-500 pl-3 text-lg mb-4">📝 內部請購單紀錄大盤</h3>
-                    <div class="glass-panel p-5 shadow-sm bg-sky-50/20"><div id="list-admin-po-drafts" class="space-y-3">載入中...</div></div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-panel p-5 shadow-sm border-t-4 border-sky-500 bg-sky-50/30">
+                        <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2 text-xl">📝</span> 內部採購需求單 (草稿)</h3>
+                        <p class="text-[10px] font-bold text-slate-500 mb-3">此處顯示由庫存端提出之採購需求。請核准後轉為正式採購單。</p>
+                        <div id="list-admin-po-drafts" class="space-y-3 max-h-[60vh] overflow-y-auto no-scrollbar pr-1">載入中...</div>
+                    </div>
+                    <div class="glass-panel p-5 shadow-sm border-t-4 border-amber-500 bg-amber-50/30">
+                        <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2 text-xl">📤</span> 正式採購單 (PO) 管理</h3>
+                        <p class="text-[10px] font-bold text-slate-500 mb-3">正式發送給供應商之採購單，可預覽並下載 PDF。</p>
+                        <div id="list-admin-po-docs" class="space-y-3 max-h-[60vh] overflow-y-auto no-scrollbar pr-1">載入中...</div>
+                    </div>
                 </div>
             </section>
 
@@ -164,69 +184,59 @@
         </main>
     </div>
 
-    <div id="emp-detail-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-end justify-center pb-0 z-[100] md:items-center"><div class="bg-slate-50 w-full max-w-3xl md:max-w-4xl rounded-t-[2rem] md:rounded-3xl h-[92vh] flex flex-col shadow-2xl relative overflow-hidden"><div class="bg-white flex justify-between items-center p-5 md:p-6 border-b border-slate-200 shrink-0 shadow-sm z-10"><h3 class="font-black text-xl text-slate-800 flex items-center"><span class="text-2xl mr-2">🪪</span>檔案管理中心</h3><div class="flex space-x-2"><button id="btn-edit-emp" class="bg-sky-50 text-sky-700 hover:bg-sky-100 px-4 py-2 rounded-full font-black text-xs shadow-sm transition">✏️ 編輯</button><button onclick="closeModal('emp-detail-modal')" class="bg-slate-100 text-slate-600 hover:bg-slate-200 px-4 py-2 rounded-full font-black text-xs transition">✕ 關閉</button></div></div><div class="overflow-y-auto p-5 md:p-8 space-y-6 flex-1 no-scrollbar"><div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-200 shadow-sm flex justify-between items-center" id="ui-emp-contract-dl-section"><div><h4 class="font-black text-indigo-800 text-sm mb-1">📝 員工勞動契約</h4><p class="text-[10px] font-bold text-indigo-600" id="ui-emp-contract-status">已簽署版本: 載入中...</p></div><button onclick="downloadEmpContractPDF()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-md hover:bg-indigo-700 transition active:scale-95">📄 檢視/下載合約 (PDF)</button></div><div id="ui-emp-full-info"></div><div class="bg-white p-6 rounded-2xl border border-red-200 shadow-sm" id="ui-emp-offboard-section"><h4 class="font-black text-red-700 mb-3 border-l-4 border-red-500 pl-2 text-lg">⚖️ 離職與結算</h4><div class="grid grid-cols-2 gap-4 mb-5"><div><label class="text-[10px] font-bold text-slate-500 ml-1 block">離職類別</label><select id="modal-off-type" class="admin-input bg-slate-50"><option value="自願離職">自願離職</option><option value="非自願離職(資遣)">非自願資遣</option></select></div><div><label class="text-[10px] font-bold text-slate-500 ml-1 block">最後工作日</label><input type="date" id="modal-off-date" class="admin-input bg-slate-50"></div></div><button onclick="calculateSettlement()" class="w-full border-2 border-slate-800 text-slate-800 font-black py-3 rounded-xl hover:bg-slate-800 hover:text-white transition shadow-sm">⚙️ 產生結算報表</button><div id="modal-off-result" class="hidden mt-6 border-t border-slate-200 pt-5 space-y-2"><div class="flex justify-between text-sm px-2"><span class="font-bold text-slate-500">核算底薪</span><span id="res-base" class="font-black text-slate-700">0</span></div><div class="flex justify-between text-sm px-2"><span class="font-bold text-slate-500">破月薪資</span><span id="res-pro" class="font-black text-emerald-600">0</span></div><div class="flex justify-between text-sm px-2"><span class="font-bold text-slate-500">特休換現</span><span id="res-lvp" class="font-black text-emerald-600">0</span></div><div class="flex justify-between text-sm px-2"><span class="font-bold text-slate-500">資遣費</span><span id="res-sev" class="font-black text-amber-600">0</span></div><div class="flex justify-between text-base items-end pt-2 px-2"><span class="font-black text-slate-800">總計發放</span><span id="res-total" class="text-2xl font-black text-red-600">0</span></div><button onclick="confirmOffboarding()" class="w-full bg-red-600 text-white font-black py-4 rounded-xl mt-4 hover:bg-red-700 shadow-md transition">⚠️ 確認結算並停權</button></div></div></div></div></div>
-    
-    <div id="admin-edit-po-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-5 z-[100]">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 relative flex flex-col shadow-2xl">
-            <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800">✏️ 編輯正式採購單</h3>
-            <input type="hidden" id="admin-po-edit-id">
-            <div class="space-y-3">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 ml-1">採購單狀態</label>
-                    <select id="admin-po-edit-status" class="admin-input font-bold bg-slate-50 select-arrow outline-none focus:border-amber-500">
-                        <option value="已發送">已發送</option><option value="已下單">已下單</option><option value="完成">✅ 完成</option><option value="異常(遲交)">🚨 異常 (遲交)</option><option value="異常(拒收)">❌ 異常 (拒收)</option><option value="異常(其他)">⚠️ 異常 (其他)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 ml-1">預計到貨日</label>
-                    <input type="date" id="admin-po-edit-date" class="admin-input font-bold bg-slate-50">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 ml-1">備註與異常說明</label>
-                    <textarea id="admin-po-edit-note" class="admin-input font-bold bg-slate-50 border-slate-200 outline-none focus:border-amber-500 h-20 resize-none" placeholder="輸入備註或異常細節..."></textarea>
+    <div id="emp-detail-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-end justify-center pb-0 z-[100] md:items-center">
+        <div class="bg-slate-50 w-full max-w-3xl md:max-w-4xl rounded-t-[2rem] md:rounded-3xl h-[92vh] flex flex-col shadow-2xl relative overflow-hidden">
+            <div class="bg-white flex justify-between items-center p-5 md:p-6 border-b border-slate-200 shrink-0 shadow-sm z-10">
+                <h3 class="font-black text-xl text-slate-800 flex items-center"><span class="text-2xl mr-2">🪪</span>檔案管理中心</h3>
+                <div class="flex space-x-2">
+                    <button id="btn-edit-emp" class="bg-sky-50 text-sky-700 hover:bg-sky-100 px-4 py-2 rounded-full font-black text-xs shadow-sm transition">✏️ 編輯</button>
+                    <button onclick="closeModal('emp-detail-modal')" class="bg-slate-100 text-slate-600 hover:bg-slate-200 px-4 py-2 rounded-full font-black text-xs transition">✕ 關閉</button>
                 </div>
             </div>
-            <div class="flex space-x-3 mt-6">
-                <button onclick="closeModal('admin-edit-po-modal')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition">取消</button>
-                <button onclick="saveAdminPOEdit()" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-black py-3.5 rounded-xl shadow-md transition">儲存修改</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="admin-edit-req-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-5 z-[100]">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 relative flex flex-col shadow-2xl">
-            <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800">✏️ 編輯內部請購單</h3>
-            <input type="hidden" id="admin-req-edit-id">
-            <div class="space-y-3">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 ml-1">請購單狀態</label>
-                    <select id="admin-req-edit-status" class="admin-input font-bold bg-sky-50 select-arrow outline-none focus:border-sky-500 text-sky-900">
-                        <option value="待處理">待處理</option><option value="採購中">採購中</option><option value="已完成">✅ 已完成</option><option value="取消">取消作廢</option>
-                    </select>
+            <div class="overflow-y-auto p-5 md:p-8 space-y-6 flex-1 no-scrollbar">
+                <div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-200 shadow-sm flex justify-between items-center" id="ui-emp-contract-dl-section">
+                    <div>
+                        <h4 class="font-black text-indigo-800 text-sm mb-1">📝 員工勞動契約</h4>
+                        <p class="text-[10px] font-bold text-indigo-600" id="ui-emp-contract-status">已簽署版本: 載入中...</p>
+                    </div>
+                    <button onclick="downloadEmpContractPDF()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-md hover:bg-indigo-700 transition active:scale-95">📄 檢視/下載合約 (PDF)</button>
                 </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 ml-1">期望到貨日</label>
-                    <input type="date" id="admin-req-edit-date" class="admin-input font-bold bg-slate-50">
+                <div id="ui-emp-full-info"></div>
+                <div class="bg-white p-6 rounded-2xl border border-red-200 shadow-sm" id="ui-emp-offboard-section">
+                    <h4 class="font-black text-red-700 mb-3 border-l-4 border-red-500 pl-2 text-lg">⚖️ 離職與結算</h4>
+                    <div class="grid grid-cols-2 gap-4 mb-5">
+                        <div><label class="text-[10px] font-bold text-slate-500 ml-1 block">離職類別</label><select id="modal-off-type" class="admin-input bg-slate-50"><option value="自願離職">自願離職</option><option value="非自願離職(資遣)">非自願資遣</option></select></div>
+                        <div><label class="text-[10px] font-bold text-slate-500 ml-1 block">最後工作日</label><input type="date" id="modal-off-date" class="admin-input bg-slate-50"></div>
+                    </div>
+                    <button onclick="calculateSettlement()" class="w-full border-2 border-slate-800 text-slate-800 font-black py-3 rounded-xl hover:bg-slate-800 hover:text-white transition shadow-sm">⚙️ 產生結算報表</button>
+                    <div id="modal-off-result" class="hidden mt-6 border-t border-slate-200 pt-5 space-y-2">
+                        <div class="flex justify-between text-sm px-2"><span class="font-bold text-slate-500">核算底薪</span><span id="res-base" class="font-black text-slate-700">0</span></div>
+                        <div class="flex justify-between text-sm px-2"><span class="font-bold text-slate-500">破月薪資</span><span id="res-pro" class="font-black text-emerald-600">0</span></div>
+                        <div class="flex justify-between text-sm px-2"><span class="font-bold text-slate-500">特休換現</span><span id="res-lvp" class="font-black text-emerald-600">0</span></div>
+                        <div class="flex justify-between text-sm px-2"><span class="font-bold text-slate-500">資遣費</span><span id="res-sev" class="font-black text-amber-600">0</span></div>
+                        <div class="flex justify-between text-base items-end pt-2 px-2"><span class="font-black text-slate-800">總計發放</span><span id="res-total" class="text-2xl font-black text-red-600">0</span></div>
+                        <button onclick="confirmOffboarding()" class="w-full bg-red-600 text-white font-black py-4 rounded-xl mt-4 hover:bg-red-700 shadow-md transition">⚠️ 確認結算並停權</button>
+                    </div>
                 </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 ml-1">備註說明</label>
-                    <textarea id="admin-req-edit-note" class="admin-input font-bold bg-slate-50 border-slate-200 outline-none focus:border-sky-500 h-20 resize-none" placeholder="輸入備註..."></textarea>
-                </div>
-            </div>
-            <div class="flex space-x-3 mt-6">
-                <button onclick="closeModal('admin-edit-req-modal')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition">取消</button>
-                <button onclick="saveAdminReqEdit()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-3.5 rounded-xl shadow-md transition">儲存修改</button>
             </div>
         </div>
     </div>
 
+    <div id="admin-edit-po-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-5 z-[100]"><div class="bg-white w-full max-w-sm rounded-3xl p-6 relative flex flex-col shadow-2xl"><h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800">✏️ 編輯正式採購單</h3><input type="hidden" id="admin-po-edit-id"><div class="space-y-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">採購單狀態</label><select id="admin-po-edit-status" class="admin-input font-bold bg-slate-50 select-arrow outline-none focus:border-amber-500"><option value="已發送">已發送</option><option value="已下單">已下單</option><option value="完成">✅ 完成</option><option value="異常(遲交)">🚨 異常 (遲交)</option><option value="異常(拒收)">❌ 異常 (拒收)</option><option value="異常(其他)">⚠️ 異常 (其他)</option></select></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">預計到貨日</label><input type="date" id="admin-po-edit-date" class="admin-input font-bold bg-slate-50"></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">備註與異常說明</label><textarea id="admin-po-edit-note" class="admin-input font-bold bg-slate-50 border-slate-200 outline-none focus:border-amber-500 h-20 resize-none" placeholder="輸入備註或異常細節..."></textarea></div></div><div class="flex space-x-3 mt-6"><button onclick="closeModal('admin-edit-po-modal')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition">取消</button><button onclick="saveAdminPOEdit()" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-black py-3.5 rounded-xl shadow-md transition">儲存修改</button></div></div></div>
+    <div id="admin-edit-req-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-5 z-[100]"><div class="bg-white w-full max-w-sm rounded-3xl p-6 relative flex flex-col shadow-2xl"><h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800">✏️ 編輯採購需求草稿</h3><input type="hidden" id="admin-req-edit-id"><div class="space-y-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">狀態</label><select id="admin-req-edit-status" class="admin-input font-bold bg-sky-50 select-arrow outline-none focus:border-sky-500 text-sky-900"><option value="待處理">待處理</option><option value="採購中">採購中</option><option value="已完成">✅ 已完成</option><option value="取消">取消作廢</option></select></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">期望到貨日</label><input type="date" id="admin-req-edit-date" class="admin-input font-bold bg-slate-50"></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">備註說明</label><textarea id="admin-req-edit-note" class="admin-input font-bold bg-slate-50 border-slate-200 outline-none focus:border-sky-500 h-20 resize-none" placeholder="輸入備註..."></textarea></div></div><div class="flex space-x-3 mt-6"><button onclick="closeModal('admin-edit-req-modal')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition">取消</button><button onclick="saveAdminReqEdit()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-3.5 rounded-xl shadow-md transition">儲存修改</button></div></div></div>
     <div id="payroll-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-5 z-[100]"><div class="bg-white w-full max-w-md rounded-3xl p-6 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto"><h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800">✏️ 編輯歷史薪資單</h3><input type="hidden" id="edit-pr-id"><div class="space-y-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">月份</label><input type="text" id="edit-pr-month" class="admin-input font-bold bg-slate-100" disabled></div><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">本薪</label><input type="number" id="edit-pr-base" class="admin-input font-black bg-slate-50" oninput="calcEditPayrollNet()"></div><div><label class="text-[10px] font-bold text-emerald-600 ml-1">獎金津貼</label><input type="number" id="edit-pr-bonus" class="admin-input font-black text-emerald-600 bg-emerald-50 border-emerald-200" oninput="calcEditPayrollNet()"></div><div class="col-span-2"><label class="text-[10px] font-bold text-amber-600 ml-1">年終</label><input type="number" id="edit-pr-yeb" class="admin-input font-black text-amber-600 bg-amber-50" oninput="calcEditPayrollNet()"></div><div class="col-span-2"><label class="text-[10px] font-bold text-sky-600 ml-1">特休結算</label><input type="number" id="edit-pr-ulp" class="admin-input font-black text-sky-600 bg-sky-50" oninput="calcEditPayrollNet()"></div><div><label class="text-[10px] font-bold text-red-600 ml-1">勞健保</label><input type="number" id="edit-pr-ins" class="admin-input font-black text-red-600 bg-red-50" oninput="calcEditPayrollNet()"></div><div><label class="text-[10px] font-bold text-red-600 ml-1">二代健保</label><input type="number" id="edit-pr-2nd" class="admin-input font-black text-red-600 bg-red-50" oninput="calcEditPayrollNet()"></div><div class="col-span-2"><label class="text-[10px] font-bold text-red-600 ml-1">請假扣薪</label><input type="number" id="edit-pr-lvd" class="admin-input font-black text-red-600 bg-red-50" oninput="calcEditPayrollNet()"></div></div><div class="flex justify-between items-center bg-slate-100 p-4 rounded-xl mt-3 shadow-inner"><span class="font-bold text-slate-600">重算實領</span><span id="edit-pr-net" class="text-2xl font-black text-sky-600">NT$ 0</span></div></div><div class="flex space-x-3 mt-6"><button onclick="closeModal('payroll-edit-modal')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl">取消</button><button onclick="saveEditPayroll()" class="flex-1 bg-indigo-600 text-white font-black py-3.5 rounded-xl">儲存</button></div></div></div>
     <div id="item-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]"><div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-5 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar"><h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex justify-between"><span>✏️ 修改料號</span><button onclick="deleteAdminItem()" class="text-xs bg-red-50 text-red-600 px-3 py-1 rounded-lg">🗑️ 刪除</button></h3><input type="hidden" id="edit-item-id"><div class="space-y-3"><div class="grid grid-cols-2 gap-3"><div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">品名</label><input type="text" id="edit-item-name" class="admin-input font-bold bg-slate-50"></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">料號</label><input type="text" id="edit-item-code" class="admin-input font-mono uppercase bg-slate-50"></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">屬性</label><select id="edit-item-type" class="admin-input bg-white select-arrow"><option value="原料">原料</option><option value="成品">成品</option></select></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">類別</label><select id="edit-item-cat" class="admin-input bg-white select-arrow"><option value="汽車冷氣濾網">汽車冷氣濾網</option><option value="VESTA系列產品">VESTA系列產品</option><option value="未分類">未分類</option></select></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">包裝量</label><input type="number" id="edit-item-qty" class="admin-input bg-slate-50 text-center"></div><div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">規格</label><input type="text" id="edit-item-spec" class="admin-input bg-slate-50"></div><div><label class="text-[10px] font-bold text-red-600 ml-1">低水位</label><input type="number" id="edit-item-safe" class="admin-input text-red-600 bg-red-50 border-red-200"></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">生產週期</label><select id="edit-item-lead" class="admin-input bg-white select-arrow"><option value="15">15天</option><option value="30">30天</option><option value="60">60天</option><option value="90">90天</option></select></div><div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">盤點週期</label><select id="edit-item-cycle" class="admin-input bg-sky-50 text-sky-900 select-arrow font-black"><option value="7">7天 (每週)</option><option value="30">30天 (每月)</option><option value="60">60天 (雙月)</option><option value="90">90天 (一季)</option></select></div></div><div class="border-t border-slate-200 pt-3 mt-2"><h5 class="text-[10px] font-black text-sky-700 mb-2">⚙️ BOM 修正 (最多 6 項)</h5><div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl bg-slate-50 p-1"><table class="w-full text-left text-[10px] whitespace-nowrap min-w-[400px]"><thead class="text-slate-500 border-b border-slate-200"><tr><th class="p-1 font-bold w-32">原料名稱</th><th class="p-1 font-bold w-16">用量</th><th class="p-1 font-bold w-16">單位</th><th class="p-1 font-bold text-sky-700">總用量(+10%損耗)</th></tr></thead><tbody id="admin-bom-table-body" class="divide-y divide-slate-100"></tbody></table></div></div></div><div class="flex space-x-3 mt-6"><button onclick="closeModal('item-edit-modal')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl">取消</button><button onclick="saveAdminItem()" class="flex-1 bg-emerald-600 text-white font-black py-3.5 rounded-xl shadow-md">儲存</button></div></div></div>
 
     <script src="shared.js"></script>
     <script>
-        // 🌟 核心變數與函數安全區 (無極端壓縮)
+        // 🌟 核心變數與防彈函數區
         let globalOffboardData = null; window.empData = {}; window.allEmps = []; window.branches = []; window.bulletins = []; window.pBulletins = []; window.adminInvData = []; window.currentPayrollRecords = []; window.supplierData = []; window.adminPoData = []; window.adminReqData = []; window.allLeaves = []; let currentTempPayrollStats = null; 
+
+        function getSafeArray(data) {
+            if (!data) return [];
+            if (Array.isArray(data)) return data;
+            try { let parsed = (typeof data === 'string') ? JSON.parse(data) : data; return Array.isArray(parsed) ? parsed : []; } catch(e) { return []; }
+        }
 
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
@@ -235,12 +245,6 @@
             toast.innerHTML = `<span class="mr-2 text-xl">✅</span>${msg}`;
             container.appendChild(toast);
             setTimeout(() => { toast.style.animation = 'slideInLeft 0.4s ease-in reverse forwards'; setTimeout(() => toast.remove(), 400); }, 5000);
-        }
-
-        function getSafeArray(data) {
-            if (!data) return [];
-            if (Array.isArray(data)) return data;
-            try { let parsed = JSON.parse(data); return Array.isArray(parsed) ? parsed : []; } catch(e) { return []; }
         }
 
         async function safeUpdate(table, payload, id) { try { await window._sb.from(table).update(payload).eq('id', id); } catch(e) { console.error(`Update failed`, e); } }
@@ -293,12 +297,12 @@
                     document.getElementById('list-emps-mobile').innerHTML = aEmps.map(e => {
                         let mgrTag = e.is_inventory_manager ? '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1 rounded ml-1">盤點員</span>' : '';
                         let pntTag = e.penalty_points > 0 ? `<span class="text-[9px] bg-red-100 text-red-700 px-1 rounded ml-1">計點:${e.penalty_points}點</span>` : '';
-                        return `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><div class="w-10 h-10 bg-slate-100 border border-slate-200 rounded-full flex items-center justify-center text-slate-500 font-black mr-3">${e.full_name.charAt(0)}</div><div><h4 class="font-black text-sm text-slate-800">${e.full_name} <span class="text-[9px] text-emerald-700 border border-emerald-200 bg-emerald-50 px-1 rounded">${(e.base_salary/1000).toFixed(0)}k</span>${mgrTag}${pntTag}</h4><p class="text-[10px] text-slate-500 mt-1">${e.employee_no||'未編號'} | ${e.branch_locations?.branch_name||'未綁定'}</p></div></div><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl">管理</button></div>`;
+                        return `<div class="glass-panel p-4 flex justify-between items-center"><div class="flex items-center"><div class="w-10 h-10 bg-slate-100 border border-slate-200 rounded-full flex items-center justify-center text-slate-500 font-black mr-3">${e.full_name.charAt(0)}</div><div><h4 class="font-black text-sm text-slate-800">${e.full_name} <span class="text-[9px] text-emerald-700 border border-emerald-200 bg-emerald-50 px-1 rounded">${((e.base_salary||0)/1000).toFixed(0)}k</span>${mgrTag}${pntTag}</h4><p class="text-[10px] text-slate-500 mt-1">${e.employee_no||'未編號'} | ${e.branch_locations?e.branch_locations.branch_name:'未綁定'}</p></div></div><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl">管理</button></div>`;
                     }).join('');
                     document.getElementById('list-emps-desktop').innerHTML = aEmps.map(e => {
                         let mgrTag = e.is_inventory_manager ? '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1 rounded block mt-1 w-max">盤點負責人</span>' : '';
                         let pntTag = e.penalty_points > 0 ? `<span class="text-[9px] bg-red-100 text-red-700 px-1 rounded block mt-1 w-max">計點:${e.penalty_points}點</span>` : '';
-                        return `<tr class="hover:bg-slate-50 transition"><td class="px-6 py-4 font-black text-sky-700 text-xs">${e.employee_no||'--'}</td><td class="px-6 py-4 font-black text-slate-800">${e.full_name}${mgrTag}${pntTag}</td><td class="px-6 py-4 text-slate-600 font-mono text-xs">${e.phone}</td><td class="px-6 py-4 text-emerald-600 font-black">NT$ ${e.base_salary.toLocaleString()}</td><td class="px-6 py-4 text-center"><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">管理</button></td></tr>`;
+                        return `<tr class="hover:bg-slate-50 transition"><td class="px-6 py-4 font-black text-sky-700 text-xs">${e.employee_no||'--'}</td><td class="px-6 py-4 font-black text-slate-800">${e.full_name}${mgrTag}${pntTag}</td><td class="px-6 py-4 text-slate-600 font-mono text-xs">${e.phone}</td><td class="px-6 py-4 text-emerald-600 font-black">NT$ ${(e.base_salary||0).toLocaleString()}</td><td class="px-6 py-4 text-center"><button onclick="openEmpDetail('${e.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">管理</button></td></tr>`;
                     }).join('');
                 } else {
                     document.getElementById('list-emps-mobile').innerHTML = '<p class="text-center text-xs text-slate-400 py-4">無在職員工</p>';
@@ -338,8 +342,6 @@
                 const eT = new Date(); eT.setHours(23,59,59,999);
 
                 let attHtml = '';
-                
-                // 1. 抓取全體在職員工，並比對今日打卡與請假狀況
                 const activeEmps = window.allEmps.filter(e => e.employment_status === '在職');
                 
                 const { data: logs } = await window._sb.from('attendance_logs').select('*').gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString());
@@ -389,7 +391,6 @@
                             }
                         }
                     } else {
-                        // 當前時間已經超過他的上班時間，且沒有請假、沒有打卡，視為尚未出勤 (可能潛在曠職)
                         const nowTimeStr = new Date().toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
                         if(nowTimeStr > eStart) {
                             statusHtml = `<span class="text-[10px] font-black text-slate-500 bg-slate-200 px-2 py-0.5 rounded animate-pulse">尚未出勤</span>`;
@@ -424,13 +425,15 @@
                 document.getElementById('boss-inv-alerts').innerHTML = invHtml || '<p class="text-xs text-slate-400">✅ 庫存皆在安全水位</p>';
 
                 let poHtml = '';
-                const { data: pos } = await window._sb.from('po_documents').select('*').in('status', ['已發送', '已下單', '異常(遲交)']);
+                const { data: pos } = await window._sb.from('po_documents').select('*').in('status', ['待審核', '已發送', '已下單', '異常(遲交)']);
                 if(pos) {
                     pos.forEach(po => {
                         let expDate = new Date(po.expected_date);
                         let diffDays = isNaN(expDate.getTime()) ? 999 : Math.ceil((expDate - new Date(sT)) / (1000 * 60 * 60 * 24));
-                        if(diffDays < 0 || po.status.includes('異常')) {
-                            poHtml += `<div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-amber-100"><div class="flex flex-col w-32"><span class="font-bold text-xs text-slate-700 truncate">${po.supplier_name}</span><span class="text-[9px] text-slate-500">${po.po_no.replace('PO-','')}</span></div><span class="text-[10px] font-black text-amber-700 bg-amber-100 px-2 py-0.5 rounded">${diffDays < 0 ? '已遲交' : '異常'}</span></div>`;
+                        if(diffDays < 0 || po.status.includes('異常') || po.status === '待審核') {
+                            let badge = diffDays < 0 ? '已遲交' : po.status;
+                            let bCol = po.status === '待審核' ? 'text-sky-700 bg-sky-100' : 'text-amber-700 bg-amber-100';
+                            poHtml += `<div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-slate-200"><div class="flex flex-col w-32"><span class="font-bold text-xs text-slate-700 truncate">${po.supplier_name}</span><span class="text-[9px] text-slate-500">${po.po_no.replace('PO-','')}</span></div><span class="text-[10px] font-black ${bCol} px-2 py-0.5 rounded">${badge}</span></div>`;
                         }
                     });
                 }
@@ -439,7 +442,7 @@
         }
 
         // ============================================
-        // 🌟 出勤紀錄五日大盤 (防彈修復連線)
+        // 🌟 出勤紀錄五日大盤 (優化版)
         // ============================================
         async function loadAttendance() {
             const baseDateStr = document.getElementById('att-date').value; 
@@ -496,10 +499,10 @@
                     });
                 }
 
-                let thHtml = `<th class="px-4 py-3 bg-slate-100 sticky left-0 z-10 w-24">員工姓名</th>`;
+                let thHtml = `<th class="px-4 py-3 bg-slate-800 sticky left-0 z-10 w-24">員工姓名</th>`;
                 dates.forEach(d => {
                     let isToday = d.toLocaleDateString('en-CA') === new Date().toLocaleDateString('en-CA');
-                    thHtml += `<th class="px-4 py-3 text-center min-w-[120px] ${isToday?'bg-sky-100 text-sky-800':''}">${d.toLocaleDateString('zh-TW', {month:'short', day:'numeric'})}</th>`;
+                    thHtml += `<th class="px-4 py-3 text-center min-w-[120px] ${isToday?'bg-sky-600 text-white':'bg-slate-700'}">${d.toLocaleDateString('zh-TW', {month:'short', day:'numeric'})}</th>`;
                 });
                 document.getElementById('att-desktop-head').innerHTML = `<tr>${thHtml}</tr>`;
 
@@ -507,7 +510,7 @@
                 
                 Object.keys(empMatrix).forEach(eid => {
                     const emp = empMatrix[eid];
-                    htmlD += `<tr class="hover:bg-slate-50 border-b border-slate-100"><td class="px-4 py-3 font-black text-slate-800 bg-white sticky left-0 z-10 border-r border-slate-100">${emp.name}</td>`;
+                    htmlD += `<tr class="hover:bg-slate-50 border-b border-slate-100"><td class="px-4 py-3 font-black text-slate-800 bg-white sticky left-0 z-10 border-r border-slate-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">${emp.name}</td>`;
                     
                     let mDaysHtml = '';
 
@@ -519,29 +522,31 @@
                         let status = { text: '正常', code: 'NORMAL', col: 'text-emerald-600 bg-emerald-50 border-emerald-200' };
                         
                         if (dayData.leave) { 
-                            status = { text: `請假(${dayData.leave.replace('(補登)','')})`, code: 'LEAVE', col: 'text-sky-600 bg-sky-50 border-sky-200' }; 
+                            status = { text: `${dayData.leave.replace('(補登)','')}`, code: 'LEAVE', col: 'text-sky-700 bg-sky-50 border-sky-200' }; 
                         } else if (!dayData.in && !dayData.out) {
-                            if (dayData.isPast && !isWeekend) status = { text: '曠職', code: 'ABSENT', col: 'text-white bg-red-600 animate-pulse border-red-700' };
+                            if (dayData.isPast && !isWeekend) status = { text: '曠職', code: 'ABSENT', col: 'text-white bg-red-600 animate-pulse border-red-700 shadow-sm' };
                             else status = { text: '--', code: 'NONE', col: 'text-slate-300 border-transparent' };
                         } else if (dayData.in && !dayData.out) {
-                            if (dayData.isPast && dStr !== new Date().toLocaleDateString('en-CA')) status = { text: '忘記打卡', code: 'MISSING', col: 'text-amber-600 bg-amber-50 border-amber-200' };
+                            if (dayData.isPast && dStr !== new Date().toLocaleDateString('en-CA')) status = { text: '忘記打卡', code: 'MISSING', col: 'text-amber-700 bg-amber-50 border-amber-200' };
                             else status = { text: '上班中', code: 'WORKING', col: 'text-indigo-600 bg-indigo-50 border-indigo-200' };
                         } else {
-                            if (dayData.in > emp.start.slice(0,5)) status = { text: '遲到', code: 'LATE', col: 'text-red-600 bg-red-50 border-red-200' };
-                            if (dayData.out < emp.end.slice(0,5)) status = { text: '早退', code: 'EARLY', col: 'text-red-600 bg-red-50 border-red-200' };
+                            if (dayData.in > emp.start.slice(0,5)) status = { text: '遲到', code: 'LATE', col: 'text-red-700 bg-red-50 border-red-200' };
+                            if (dayData.out < emp.end.slice(0,5)) status = { text: '早退', code: 'EARLY', col: 'text-red-700 bg-red-50 border-red-200' };
                         }
 
-                        let alertBtn = (status.code !== 'NORMAL' && status.code !== 'NONE' && status.code !== 'WORKING' && status.code !== 'LEAVE') ? `<button onclick="notifyAbnormal('${eid}', '${dStr}', '${status.text}')" class="ml-1 text-[10px] bg-red-100 hover:bg-red-500 hover:text-white text-red-600 px-1.5 rounded transition shadow-sm">🚨通知</button>` : '';
+                        let alertBtn = (status.code !== 'NORMAL' && status.code !== 'NONE' && status.code !== 'WORKING' && status.code !== 'LEAVE') ? `<button onclick="notifyAbnormal('${eid}', '${dStr}', '${status.text}')" class="ml-1 text-[10px] bg-red-500 hover:bg-red-600 text-white px-1.5 py-0.5 rounded transition shadow-sm font-bold">警告</button>` : '';
                         let timeText = (dayData.in||'--') + ' - ' + (dayData.out||'--');
                         
-                        htmlD += `<td class="px-4 py-3 text-center border-r border-slate-50 last:border-0"><div class="flex flex-col items-center justify-center"><span class="font-mono text-[10px] text-slate-500 mb-1">${timeText}</span><div class="flex items-center"><span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${status.col}">${status.text}</span>${alertBtn}</div></div></td>`;
+                        let cellBg = (status.code === 'ABSENT' || status.code === 'LATE' || status.code === 'EARLY') ? 'bg-red-50/30' : '';
+
+                        htmlD += `<td class="px-4 py-3 text-center border-r border-slate-50 last:border-0 ${cellBg}"><div class="flex flex-col items-center justify-center"><span class="font-mono text-[11px] font-bold text-slate-600 mb-1.5">${timeText}</span><div class="flex items-center"><span class="text-[10px] font-black px-2 py-0.5 rounded border ${status.col}">${status.text}</span>${alertBtn}</div></div></td>`;
 
                         if (status.code !== 'NONE' || dStr === new Date().toLocaleDateString('en-CA')) {
-                            mDaysHtml += `<div class="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100 mb-1.5"><div class="flex items-center"><span class="text-[10px] font-bold text-slate-500 mr-2 w-10">${d.getDate()}日</span><span class="font-mono text-xs text-slate-700">${timeText}</span></div><div class="flex items-center"><span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${status.col}">${status.text}</span>${alertBtn}</div></div>`;
+                            mDaysHtml += `<div class="flex justify-between items-center bg-white p-2.5 rounded-lg border border-slate-100 mb-2 shadow-sm"><div class="flex items-center"><span class="text-[10px] font-black text-slate-500 mr-2 w-10">${d.getDate()}日</span><span class="font-mono text-xs font-bold text-slate-700">${timeText}</span></div><div class="flex items-center"><span class="text-[10px] font-black px-2 py-0.5 rounded border ${status.col}">${status.text}</span>${alertBtn}</div></div>`;
                         }
                     });
                     htmlD += `</tr>`;
-                    htmlM += `<div class="glass-panel p-4 shadow-sm border-l-4 border-slate-400 mb-3"><h4 class="font-black text-slate-800 text-sm mb-2">${emp.name}</h4><div class="bg-slate-50 p-2 rounded-xl border border-slate-100">${mDaysHtml}</div></div>`;
+                    htmlM += `<div class="glass-panel p-4 shadow-sm border-t-4 border-slate-700 mb-4"><h4 class="font-black text-slate-800 text-sm mb-3 flex items-center"><span class="mr-1">👤</span> ${emp.name}</h4><div class="bg-slate-50 p-2 rounded-xl border border-slate-200 shadow-inner">${mDaysHtml}</div></div>`;
                 });
 
                 document.getElementById('list-attendance-desktop').innerHTML = htmlD;
@@ -559,13 +564,11 @@
                 const { error } = await window._sb.from('personal_bulletins').insert([{ employee_id: empId, title: title, content: content }]);
                 if(error) throw error;
                 showSysToast('已成功發送異常通知至該員工前台！');
-            } catch(e) { 
-                alert('發送失敗: ' + (e.message || '請確認資料表')); 
-            }
+            } catch(e) { alert('發送失敗: ' + (e.message || '請確認資料表')); }
         }
 
         // ============================================
-        // 員工詳細資料與離職結算 (確保不被截斷)
+        // 🌟 員工詳細資料與離職結算 (滿血修復版)
         // ============================================
         function calculateSettlement() {
             const base = parseFloat(document.getElementById('edit-base').value) || 0;
@@ -603,6 +606,83 @@
             } catch(e) { alert('操作失敗'); }
         }
 
+        async function appr(id) {
+            if(!confirm('確定要開通此員工權限嗎？')) return;
+            try {
+                const empNo = 'HY' + Math.floor(Math.random()*1000).toString().padStart(3, '0');
+                await window._sb.from('employees').update({ is_approved: true, employee_no: empNo, employment_status: '在職' }).eq('id', id);
+                alert(`✅ 員工權限已開通！\n系統已配發專屬編號：${empNo}`);
+                loadAll();
+            } catch(e) { alert('開通失敗'); }
+        }
+
+        function openEmpDetail(empId) { 
+            const e = window.allEmps.find(x => x.id === empId); 
+            if(!e) return; 
+            
+            window.currentOffboardEmpId = empId; 
+            document.getElementById('modal-off-result').classList.add('hidden'); 
+            document.getElementById('modal-off-date').value = ''; 
+            document.getElementById('ui-emp-offboard-section').style.display = 'block'; 
+            
+            const editBtn = document.getElementById('btn-edit-emp'); 
+            editBtn.onclick = () => renderEditEmpForm(empId); 
+            editBtn.style.display = 'block'; 
+            
+            document.getElementById('ui-emp-contract-status').innerText = `已簽署版本: ${e.signed_contract_version || '未簽署'}`;
+            document.getElementById('ui-emp-contract-dl-section').style.display = 'flex';
+            
+            let mgrTag = e.is_inventory_manager ? `<span class="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200">盤點負責人</span>` : ''; 
+            let pntTag = e.penalty_points > 0 ? `<span class="text-[10px] font-black text-red-700 bg-red-50 px-2 py-1 rounded-md border border-red-200">計點: ${e.penalty_points}點</span>` : ''; 
+            let poApprTag = e.perm_purchase_approve ? `<span class="text-[10px] font-black text-amber-700 bg-amber-50 px-2 py-1 rounded-md border border-amber-200">採購核准權限</span>` : '';
+
+            let permTags = []; 
+            if(e.perm_inventory) permTags.push('<span class="text-[10px] font-black text-slate-600 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">📦庫存</span>'); 
+            if(e.perm_purchase) permTags.push('<span class="text-[10px] font-black text-slate-600 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">🛒採購</span>'); 
+            if(e.perm_sales) permTags.push('<span class="text-[10px] font-black text-slate-600 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">💼業務</span>'); 
+            if(e.perm_finance) permTags.push('<span class="text-[10px] font-black text-slate-600 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">💰財務</span>'); 
+            
+            let permsHtml = permTags.length > 0 ? `<div class="flex gap-1.5 mt-2 flex-wrap">${permTags.join('')}</div>` : '<div class="mt-2 text-[10px] text-slate-400 font-bold">未開啟任何模組權限</div>'; 
+            
+            const html = `
+            <div class="space-y-4 mt-4">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-5">
+                    <div class="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center text-white text-3xl font-black shadow-inner shrink-0">${e.full_name.charAt(0)}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center flex-wrap gap-2 mb-2"><h4 class="text-2xl font-black text-slate-800 tracking-tight leading-none">${e.full_name}</h4><span class="text-[11px] font-bold text-sky-700 bg-sky-100 px-2.5 py-1 rounded-md mt-1">${e.employment_status}</span><div class="mt-1">${mgrTag}</div><div class="mt-1">${pntTag}</div><div class="mt-1">${poApprTag}</div></div>
+                        <p class="text-sm text-slate-500 font-bold tracking-wider">${e.job_title||'未指派職位'}</p>
+                        ${permsHtml}
+                    </div>
+                </div>
+                
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <h5 class="text-sm font-black text-blue-800 mb-4 border-l-4 border-blue-500 pl-2">🏢 基本與考勤資訊</h5>
+                    <div class="grid grid-cols-2 gap-3 md:gap-4">
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">員工編號</p><p class="font-black text-sky-700 text-lg leading-none mt-0.5">${e.employee_no||'未設定'}</p></div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">入職日期</p><p class="font-black text-slate-700 text-lg leading-none mt-0.5">${e.onboarding_date}</p></div>
+                        <div class="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">打卡據點</p><p class="font-black text-slate-800 text-lg leading-none mt-0.5">${e.branch_locations?e.branch_locations.branch_name:'未綁定'}</p></div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">上班時間</p><p class="font-black text-slate-700 text-lg leading-none mt-0.5">${(e.work_start_time||'09:00').slice(0,5)}</p></div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">下班時間</p><p class="font-black text-slate-700 text-lg leading-none mt-0.5">${(e.work_end_time||'18:00').slice(0,5)}</p></div>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <h5 class="text-sm font-black text-slate-700 mb-4 border-l-4 border-slate-500 pl-2">📞 聯絡通訊資料</h5>
+                    <div class="grid grid-cols-2 gap-3 md:gap-4">
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">聯絡電話</p><p class="font-black text-slate-800 text-sm mt-0.5">${e.phone||'未設定'}</p></div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">身分證字號</p><p class="font-black text-slate-800 text-sm mt-0.5">${e.id_number}</p></div>
+                        <div class="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-bold text-slate-400 mb-1">通訊送達地址</p><p class="font-black text-slate-800 text-sm leading-relaxed mt-0.5">${e.address||'未設定'}</p></div>
+                        <div class="bg-red-50 p-3 rounded-xl border border-red-100"><p class="text-[10px] font-bold text-red-500 mb-1">緊急聯絡人</p><p class="font-black text-red-800 text-sm mt-0.5">${e.emergency_contact||'未設定'}</p></div>
+                        <div class="bg-red-50 p-3 rounded-xl border border-red-100"><p class="text-[10px] font-bold text-red-500 mb-1">緊急聯絡電話</p><p class="font-black text-red-800 text-sm mt-0.5">${e.emergency_phone||'未設定'}</p></div>
+                    </div>
+                </div>
+            </div>`; 
+            
+            document.getElementById('ui-emp-full-info').innerHTML = html; 
+            document.getElementById('emp-detail-modal').classList.add('active'); 
+        }
+
+        // 🌟 員工編輯畫面 (新增採購核准權限)
         function renderEditEmpForm(empId) { 
             const e = window.allEmps.find(x => x.id === empId); 
             if(!e) return; 
@@ -624,11 +704,24 @@
                         <div><label class="text-[10px] font-bold text-slate-500 ml-1">聯絡電話</label><input type="text" id="edit-phone" value="${e.phone||''}" class="admin-input bg-white" required></div>
                         <div><label class="text-[10px] font-bold text-slate-500 ml-1">職位</label><select id="edit-job-title" class="admin-input bg-white font-bold select-arrow"><option value="主管" ${e.job_title==='主管'?'selected':''}>主管</option><option value="業務" ${e.job_title==='業務'?'selected':''}>業務</option><option value="助理" ${e.job_title==='助理'?'selected':''}>助理</option></select></div>
                         <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">通訊送達地址</label><input type="text" id="edit-address" value="${e.address||''}" class="admin-input bg-white" required></div>
-                        <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-slate-700 mb-2">🔐 系統模組存取權限</h5><div class="grid grid-cols-4 gap-2 bg-white p-3 rounded-xl border border-slate-200 shadow-sm"><label class="flex items-center space-x-1.5 cursor-pointer"><input type="checkbox" id="edit-perm-inv" class="w-4 h-4 accent-emerald-600" ${e.perm_inventory?'checked':''}> <span class="text-[11px] font-black text-slate-600">庫存</span></label><label class="flex items-center space-x-1.5 cursor-pointer"><input type="checkbox" id="edit-perm-pur" class="w-4 h-4 accent-amber-600" ${e.perm_purchase?'checked':''}> <span class="text-[11px] font-black text-slate-600">採購</span></label><label class="flex items-center space-x-1.5 cursor-pointer"><input type="checkbox" id="edit-perm-sal" class="w-4 h-4 accent-indigo-600" ${e.perm_sales?'checked':''}> <span class="text-[11px] font-black text-slate-600">業務</span></label><label class="flex items-center space-x-1.5 cursor-pointer"><input type="checkbox" id="edit-perm-fin" class="w-4 h-4 accent-blue-600" ${e.perm_finance?'checked':''}> <span class="text-[11px] font-black text-slate-600">財務</span></label></div></div>
+                        
+                        <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-slate-700 mb-2">🔐 系統模組存取權限</h5>
+                            <div class="grid grid-cols-4 gap-2 bg-white p-3 rounded-xl border border-slate-200 shadow-sm mb-2">
+                                <label class="flex items-center space-x-1.5 cursor-pointer"><input type="checkbox" id="edit-perm-inv" class="w-4 h-4 accent-emerald-600" ${e.perm_inventory?'checked':''}> <span class="text-[11px] font-black text-slate-600">庫存</span></label>
+                                <label class="flex items-center space-x-1.5 cursor-pointer"><input type="checkbox" id="edit-perm-pur" class="w-4 h-4 accent-amber-600" ${e.perm_purchase?'checked':''}> <span class="text-[11px] font-black text-slate-600">採購</span></label>
+                                <label class="flex items-center space-x-1.5 cursor-pointer"><input type="checkbox" id="edit-perm-sal" class="w-4 h-4 accent-indigo-600" ${e.perm_sales?'checked':''}> <span class="text-[11px] font-black text-slate-600">業務</span></label>
+                                <label class="flex items-center space-x-1.5 cursor-pointer"><input type="checkbox" id="edit-perm-fin" class="w-4 h-4 accent-blue-600" ${e.perm_finance?'checked':''}> <span class="text-[11px] font-black text-slate-600">財務</span></label>
+                            </div>
+                            <div class="bg-red-50 p-3 rounded-xl border border-red-200 shadow-sm flex items-center justify-between">
+                                <span class="text-[10px] font-black text-red-800">授權該員工核准採購單並產出 PDF：</span>
+                                <label class="flex items-center space-x-1.5 cursor-pointer"><input type="checkbox" id="edit-perm-po-appr" class="w-5 h-5 accent-red-600" ${e.perm_purchase_approve?'checked':''}> <span class="text-xs font-black text-red-600 tracking-widest">核准權限</span></label>
+                            </div>
+                        </div>
+                        
                         <div class="col-span-2 border-t border-sky-200 pt-3 mt-1"><h5 class="text-[10px] font-black text-red-700 mb-2">⚙️ 考勤與紀律設定</h5><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500 ml-1">庫存盤點員</label><select id="edit-inv-mgr" class="admin-input bg-white select-arrow"><option value="false" ${!e.is_inventory_manager?'selected':''}>否</option><option value="true" ${e.is_inventory_manager?'selected':''}>是</option></select></div><div><label class="text-[10px] font-bold text-slate-500 ml-1">修改計點絕對值 (單位:點)</label><input type="number" id="edit-penalty" value="${e.penalty_points||0}" class="admin-input bg-white font-black text-red-600" required></div></div></div>
                         <div><label class="text-[10px] font-bold text-slate-500 ml-1">入職日</label><input type="date" id="edit-onboard" value="${e.onboarding_date}" class="admin-input bg-white" required></div>
                         <div><label class="text-[10px] font-bold text-slate-500 ml-1">據點</label><select id="edit-branch" class="admin-input bg-white select-arrow">${brOptions}</select></div>
-                        <div><label class="text-[10px] font-bold text-emerald-600 ml-1">底薪</label><input type="number" id="edit-base" value="${e.base_salary}" class="admin-input bg-white font-black text-emerald-600" required></div>
+                        <div><label class="text-[10px] font-bold text-emerald-600 ml-1">底薪</label><input type="number" id="edit-base" value="${e.base_salary||0}" class="admin-input bg-white font-black text-emerald-600" required></div>
                     </div>
                     <div class="flex space-x-3 pt-5">
                         <button type="button" onclick="openEmpDetail('${e.id}')" class="flex-1 bg-white border-2 border-slate-200 text-slate-600 py-4 rounded-xl font-bold transition">取消</button>
@@ -657,705 +750,103 @@
                 perm_inventory: document.getElementById('edit-perm-inv').checked, 
                 perm_purchase: document.getElementById('edit-perm-pur').checked, 
                 perm_sales: document.getElementById('edit-perm-sal').checked, 
-                perm_finance: document.getElementById('edit-perm-fin').checked
+                perm_finance: document.getElementById('edit-perm-fin').checked,
+                perm_purchase_approve: document.getElementById('edit-perm-po-appr').checked
             }; 
             await safeUpdate('employees', p, empId); 
+            showSysToast('✅ 員工資料與權限已成功更新！');
             loadAll(); setTimeout(() => openEmpDetail(empId), 500); 
         }
 
-        async function updLeave(id, st) { 
-            try { 
-                await window._sb.from('leave_requests').update({ status: st }).eq('id', id); 
-                showSysToast(`✅ 假單已${st}`); 
-                loadAll(); 
-            } catch(e) { alert('核准錯誤'); } 
-        }
+        async function downloadEmpContractPDF() {
+            const empId = window.currentOffboardEmpId;
+            const e = window.allEmps.find(x => x.id === empId);
+            if(!e) return;
+            if(!e.signature_data || e.signed_contract_version === '未簽署') { alert('該員工尚未完成數位簽署！無法產出 PDF。'); return; }
 
-        // ============================================
-        // 🌟 庫存與料號管理 (滿血復活)
-        // ============================================
-        async function loadAdminInventory() {
+            showSysToast('📄 合約 PDF 生成中，請稍候...');
             try {
-                const { data: items } = await window._sb.from('items').select('*').order('created_at', {ascending: false});
-                const { data: ledgers } = await window._sb.from('inventory_ledgers').select('item_id, change_qty');
-                
-                window.adminInvData = items || [];
-                let stockMap = {};
-                if(ledgers) ledgers.forEach(l => { stockMap[l.item_id] = (stockMap[l.item_id] || 0) + l.change_qty; });
-                
-                window.adminInvData.forEach(i => { i.current_stock = stockMap[i.id] || 0; });
-                
-                const cats = [...new Set(window.adminInvData.map(i => i.category || '未分類'))];
-                const catSel = document.getElementById('admin-inv-cat-filter');
-                const currCat = catSel.value;
-                catSel.innerHTML = '<option value="">全部分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
-                if(currCat) catSel.value = currCat;
+                const { data: form } = await window._sb.from('company_forms').select('*').eq('form_type', 'employment_contract').single();
+                const content = form ? form.content : '合約內容已遺失。';
+                const version = e.signed_contract_version;
+                const signDate = new Date(e.nda_signed_at).toLocaleString('zh-TW');
 
-                filterAdminInventory();
-            } catch(e) {
-                console.error(e);
-            }
-        }
-
-        function filterAdminInventory() {
-            const kw = document.getElementById('admin-inv-search').value.toLowerCase();
-            const cat = document.getElementById('admin-inv-cat-filter').value;
-            
-            let filtered = window.adminInvData.filter(i => {
-                let mCat = cat === '' || i.category === cat;
-                let mKw = i.item_code.toLowerCase().includes(kw) || i.item_name.toLowerCase().includes(kw);
-                return mCat && mKw;
-            });
-
-            const mContainer = document.getElementById('list-inv-mobile');
-            const dContainer = document.getElementById('list-inv-desktop');
-
-            if(filtered.length === 0) {
-                mContainer.innerHTML = '<p class="text-center py-4 text-slate-400 text-xs border border-dashed border-slate-200 rounded-xl">無資料</p>';
-                dContainer.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">無資料</td></tr>';
-                return;
-            }
-
-            mContainer.innerHTML = filtered.map(i => `
-                <div class="glass-panel p-4 mb-3 shadow-sm relative transition hover:bg-slate-50">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <span class="text-[10px] font-mono font-black text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 mr-1">${i.item_code}</span>
-                            <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">${i.item_type} / ${i.category}</span>
+                const html = `
+                    <div style="padding: 30px; font-family: sans-serif; color: #1e293b;">
+                        <h2 style="text-align: center; border-bottom: 2px solid #1e293b; padding-bottom: 10px; margin-bottom: 20px;">HYPASS 勞動契約與管理規章 (${version})</h2>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px; font-weight: bold; background: #f8fafc; padding: 10px; border-radius: 8px;">
+                            <span>姓名：${e.full_name}</span><span>身分證：${e.id_number}</span><span>到職日：${e.onboarding_date}</span>
                         </div>
-                        <button onclick="openAdminItemEdit('${i.id}')" class="text-[10px] bg-slate-800 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm active:scale-95 transition">編輯</button>
+                        <div style="font-size: 11px; line-height: 1.6; margin-bottom: 40px; text-align: justify;">${content}</div>
+                        <div style="border-top: 1px dashed #cbd5e1; padding-top: 20px; width: 50%; float: right; text-align: center;">
+                            <p style="font-weight: bold; margin-bottom: 10px; color: #475569;">乙方 (員工) 簽署確認：</p>
+                            <img src="${e.signature_data}" style="max-height: 80px; margin: 0 auto; display: block; mix-blend-mode: multiply;">
+                            <p style="font-size: 10px; color: #94a3b8; margin-top: 10px;">簽署時間：${signDate}</p>
+                        </div>
+                        <div style="clear: both;"></div>
                     </div>
-                    <h4 class="font-black text-slate-800 text-sm mb-1">${i.item_name}</h4>
-                    <p class="text-[10px] text-slate-500 mb-3 font-bold truncate">規格: ${i.specification || '無'}</p>
-                    <div class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-inner">
-                        <div><p class="text-[9px] font-bold text-slate-400 mb-0.5">庫存</p><p class="font-black text-emerald-600 text-sm">${i.current_stock}</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-400 mb-0.5">低水位</p><p class="font-black text-red-500 text-sm">${i.safe_stock_level||0}</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-400 mb-0.5">週期</p><p class="font-black text-slate-700 text-sm">${i.lead_time_days||0}天</p></div>
-                    </div>
-                </div>
-            `).join('');
+                `;
 
-            dContainer.innerHTML = filtered.map(i => `
-                <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                    <td class="px-6 py-4">
-                        <div class="font-mono text-xs font-black text-sky-700 mb-1">${i.item_code} <span class="text-[9px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded ml-1">${i.item_type}</span></div>
-                        <div class="font-black text-slate-800 text-sm">${i.item_name}</div>
-                        <div class="text-[10px] font-bold text-slate-500 mt-1">${i.specification || '無規格'}</div>
-                    </td>
-                    <td class="px-6 py-4 text-right font-black text-lg text-emerald-600">${i.current_stock}</td>
-                    <td class="px-6 py-4 text-right font-black text-red-500">${i.safe_stock_level||0}</td>
-                    <td class="px-6 py-4 text-center font-bold text-slate-700">${i.lead_time_days||0} 天</td>
-                    <td class="px-6 py-4 text-center">
-                        <button onclick="openAdminItemEdit('${i.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition active:scale-95">編輯 / BOM</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function openAdminItemEdit(id) {
-            const i = window.adminInvData.find(x => x.id === id); if(!i) return;
-            document.getElementById('edit-item-id').value = i.id;
-            document.getElementById('edit-item-name').value = i.item_name;
-            document.getElementById('edit-item-code').value = i.item_code;
-            document.getElementById('edit-item-type').value = i.item_type;
-            
-            const catSel = document.getElementById('edit-item-cat');
-            let catOptions = `<option value="汽車冷氣濾網">汽車冷氣濾網</option><option value="VESTA系列產品">VESTA系列產品</option><option value="卡卡吸管">卡卡吸管</option><option value="空氣瓶子">空氣瓶子</option><option value="標籤貼紙">標籤貼紙</option><option value="車用濾布">車用濾布</option><option value="未分類">未分類</option>`;
-            if(!catOptions.includes(`value="${i.category}"`)) catOptions += `<option value="${i.category}">${i.category}</option>`;
-            catSel.innerHTML = catOptions;
-            catSel.value = i.category || '未分類';
-            
-            document.getElementById('edit-item-qty').value = i.qty_per_pack || 1;
-            document.getElementById('edit-item-spec').value = i.specification || '';
-            document.getElementById('edit-item-safe').value = i.safe_stock_level || 0;
-            document.getElementById('edit-item-lead').value = i.lead_time_days || 15;
-            document.getElementById('edit-item-cycle').value = i.stocktake_cycle || 30;
-
-            let safeData = getSafeArray(i.bom_data);
-            let rawItems = window.adminInvData.filter(x => x.item_type === '原料');
-            let html = '';
-            for(let j=0; j<6; j++) {
-                let r = safeData[j] || { material: '', usage: '', unit: '米平方', total_qty: '' };
-                let opts = '<option value="">(選擇原料...)</option>' + rawItems.map(rm => `<option value="${rm.item_name}" ${r.material===rm.item_name?'selected':''}>[${rm.item_code}] ${rm.item_name}</option>`).join('');
-                if(r.material && !rawItems.some(rm => rm.item_name === r.material)) opts += `<option value="${r.material}" selected>${r.material}</option>`;
-                html += `<tr>
-                    <td class="p-1"><select class="w-full p-2 bg-white border border-slate-200 rounded text-[10px] font-bold admin-bom-mat select-arrow truncate text-slate-700 outline-none focus:border-emerald-500">${opts}</select></td>
-                    <td class="p-1"><input type="number" step="any" class="w-full p-2 border border-slate-200 rounded text-[10px] font-black text-center admin-bom-qty outline-none focus:border-emerald-500" value="${r.usage}" oninput="calcAdminBomLoss(this)"></td>
-                    <td class="p-1"><input type="text" class="w-full p-2 border border-slate-200 rounded text-[10px] font-bold text-center admin-bom-unit outline-none focus:border-emerald-500" value="${r.unit||'米平方'}"></td>
-                    <td class="p-1"><input type="number" class="w-full p-2 bg-slate-50 border border-transparent rounded text-[10px] text-center admin-bom-total text-sky-700 font-black shadow-inner" value="${r.total_qty}" readonly></td>
-                </tr>`;
-            }
-            document.getElementById('admin-bom-table-body').innerHTML = html;
-
-            openModal('item-edit-modal');
-        }
-
-        function calcAdminBomLoss(el) {
-            const tr = el.closest('tr');
-            const usage = parseFloat(el.value) || 0;
-            tr.querySelector('.admin-bom-total').value = usage > 0 ? (usage * 1.1).toFixed(2) : '';
-        }
-
-        async function saveAdminItem() {
-            const id = document.getElementById('edit-item-id').value;
-            let bom_data = [];
-            document.querySelectorAll('#admin-bom-table-body tr').forEach(tr => {
-                const mat = tr.querySelector('.admin-bom-mat').value;
-                if(mat) {
-                    bom_data.push({
-                        material: mat,
-                        usage: parseFloat(tr.querySelector('.admin-bom-qty').value) || 0,
-                        unit: tr.querySelector('.admin-bom-unit').value,
-                        total_qty: parseFloat(tr.querySelector('.admin-bom-total').value) || 0
-                    });
-                }
-            });
-
-            const p = {
-                item_name: document.getElementById('edit-item-name').value,
-                item_code: document.getElementById('edit-item-code').value.toUpperCase(),
-                item_type: document.getElementById('edit-item-type').value,
-                category: document.getElementById('edit-item-cat').value,
-                specification: document.getElementById('edit-item-spec').value,
-                qty_per_pack: parseInt(document.getElementById('edit-item-qty').value) || 1,
-                safe_stock_level: parseInt(document.getElementById('edit-item-safe').value) || 0,
-                lead_time_days: parseInt(document.getElementById('edit-item-lead').value) || 15,
-                stocktake_cycle: parseInt(document.getElementById('edit-item-cycle').value) || 30,
-                bom_data: bom_data
-            };
-
-            try {
-                await window._sb.from('items').update(p).eq('id', id);
-                showSysToast('✅ 料號資料已更新！');
-                closeModal('item-edit-modal');
-                loadAdminInventory();
-            } catch(e) { alert('儲存失敗'); }
-        }
-
-        async function deleteAdminItem() {
-            const id = document.getElementById('edit-item-id').value;
-            if(!confirm('⚠️ 確定要刪除此料號嗎？此操作無法還原！')) return;
-            try {
-                await window._sb.from('items').delete().eq('id', id);
-                showSysToast('✅ 料號已成功刪除！');
-                closeModal('item-edit-modal');
-                loadAdminInventory();
-            } catch(e) { alert('刪除失敗'); }
+                const opt = { margin: [0.5, 0.5], filename: `HYPASS_聘僱合約_${e.full_name}_${version}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+                const tempDiv = document.createElement('div'); tempDiv.innerHTML = html; tempDiv.style.padding = '20px';
+                html2pdf().set(opt).from(tempDiv).save().then(() => { showSysToast('合約 PDF 下載完成！'); });
+            } catch(err) { alert('下載失敗，無法讀取系統合約內容。'); }
         }
 
         // ============================================
-        // 🌟 採購中心 (滿血復活)
+        // 🌟 公司公告與權限控制 (滿血恢復)
         // ============================================
-        async function loadAdminPurchase() {
-            const elPo = document.getElementById('list-admin-po-docs');
-            const elReq = document.getElementById('list-admin-po-drafts');
-            elPo.innerHTML = '<p class="text-center py-6 text-xs text-slate-400">載入中...</p>';
-            elReq.innerHTML = '<p class="text-center py-6 text-xs text-slate-400">載入中...</p>';
-            
+        window.loadAdminBlt = async function() { 
             try {
-                let reqData = [];
-                try {
-                    const { data: r1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false});
-                    if (r1) reqData = r1;
-                } catch(e) {}
-
-                let poData = [];
-                try {
-                    const { data: p1 } = await window._sb.from('po_documents').select('*').order('created_at', {ascending: false});
-                    if (p1) poData = p1.map(x => ({...x, is_legacy: false}));
-                } catch(e) {}
-
-                if (poData.length > 0) {
-                    elPo.innerHTML = poData.map(p => {
-                        let stCol = p.status.includes('異常') ? 'text-red-600 bg-red-50 border-red-200 animate-pulse' : (p.status === '完成' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200');
-                        let itemsStr = getSafeArray(p.items_json).map(i => `<div class="flex justify-between items-center border-b border-slate-100/50 pb-1 mb-1 last:border-0 last:pb-0 last:mb-0"><span class="text-slate-700 font-bold truncate pr-2">${i.name}</span><span class="text-amber-700 font-black">x${parseFloat(i.qty).toFixed(0)} <span class="text-[9px] text-slate-400">${i.unit}</span></span></div>`).join('');
-                        let dateText = p.expected_date ? String(p.expected_date).slice(5) : '未定';
-                        let safeNote = (p.note || '').replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n");
-
-                        return `
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-3 transition hover:bg-slate-50">
-                            <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
-                                <div>
-                                    <span class="text-[10px] font-mono font-black text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 mr-2">${p.po_no.replace('PO-','')}</span>
-                                    <span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${stCol}">${p.status}</span>
-                                </div>
-                                <span class="text-[9px] text-slate-400 font-bold">${new Date(p.created_at).toLocaleDateString('zh-TW')}</span>
-                            </div>
-                            <div class="text-xs font-black text-slate-800 mb-2 flex justify-between items-center">
-                                <span class="truncate pr-2">🏢 ${p.supplier_name}</span>
-                                <span class="text-amber-600 text-[10px] shrink-0">交期: ${dateText}</span>
-                            </div>
-                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100 shadow-inner text-[10px] mb-3">${itemsStr}</div>
-                            <div class="flex space-x-2">
-                                <button onclick="processAdminPO_PDF('${p.id}', false, 'view')" class="flex-1 text-[10px] bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg shadow-sm transition active:scale-95">👁️ 預覽</button>
-                                <button onclick="openAdminPOEdit('${p.id}', false, '${p.status}', '${safeNote}', '${p.expected_date||''}')" class="flex-1 text-[10px] bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold py-2 rounded-lg shadow-sm border border-amber-200 transition active:scale-95">✏️ 狀態</button>
-                                <button onclick="delPO('${p.id}', false)" class="text-[10px] bg-white border border-red-200 text-red-600 hover:bg-red-50 font-bold px-3 py-2 rounded-lg shadow-sm transition active:scale-95">🗑️</button>
-                            </div>
-                        </div>`;
-                    }).join('');
-                } else { elPo.innerHTML = '<p class="text-xs text-slate-400 text-center py-6 border border-dashed border-slate-200 rounded-xl bg-white">無採購紀錄</p>'; }
-
-                if (reqData.length > 0) {
-                    elReq.innerHTML = reqData.map(r => {
-                        let stCol = r.status === '已完成' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-sky-700 bg-sky-50 border-sky-200';
-                        let itemsStr = getSafeArray(r.items_json).map(i => `<div class="flex justify-between items-center border-b border-slate-100/50 pb-1 mb-1 last:border-0 last:pb-0 last:mb-0"><span class="text-slate-700 font-bold truncate pr-2">${i.name}</span><span class="text-sky-700 font-black">x${parseFloat(i.qty).toFixed(0)} <span class="text-[9px] text-slate-400">${i.unit}</span></span></div>`).join('');
-                        let dateText = r.expected_date ? String(r.expected_date).slice(5) : '未定';
-                        let safeNote = (r.note || '').replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n");
-
-                        return `
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-3 transition hover:bg-slate-50">
-                            <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
-                                <div>
-                                    <span class="text-[10px] font-mono font-black text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 mr-2">${r.req_no.replace('REQ-','')}</span>
-                                    <span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${stCol}">${r.status}</span>
-                                </div>
-                                <span class="text-[9px] text-slate-400 font-bold">${new Date(r.created_at).toLocaleDateString('zh-TW')}</span>
-                            </div>
-                            <div class="text-xs font-black text-slate-800 mb-2 flex justify-between items-center">
-                                <span class="truncate pr-2">👤 ${r.employees?.full_name||'系統'}</span>
-                                <span class="text-sky-600 text-[10px] shrink-0">期望: ${dateText}</span>
-                            </div>
-                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100 shadow-inner text-[10px] mb-3">${itemsStr}</div>
-                            <div class="flex space-x-2">
-                                <button onclick="openAdminReqEdit('${r.id}', false, '${r.status}', '${safeNote}', '${r.expected_date||''}')" class="flex-1 text-[11px] bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold py-2 rounded-lg shadow-sm border border-sky-200 transition active:scale-95">✏️ 審核與編輯</button>
-                                <button onclick="delReq('${r.id}', false)" class="text-[11px] bg-white border border-red-200 text-red-600 hover:bg-red-50 font-bold px-3 py-2 rounded-lg shadow-sm transition active:scale-95">🗑️</button>
-                            </div>
-                        </div>`;
-                    }).join('');
-                } else { elReq.innerHTML = '<p class="text-xs text-slate-400 text-center py-6 border border-dashed border-slate-200 rounded-xl bg-white">無請購紀錄</p>'; }
+                const { data: blt } = await window._sb.from('bulletin_board').select('*').order('created_at', {ascending: false}); 
+                window.bulletins = blt || []; 
+                document.getElementById('list-admin-blt').innerHTML = window.bulletins.map(b => `<div class="p-4 bg-white rounded-xl border border-slate-200 flex justify-between items-center shadow-sm mb-2"><div><div class="text-[10px] text-amber-600 font-black mb-1">${new Date(b.created_at).toISOString().split('T')[0]}</div><div class="font-black text-sm text-slate-800 truncate w-48">${b.title}</div></div><div class="flex space-x-2"><button onclick="editBlt('${b.id}')" class="text-xs bg-sky-50 text-sky-700 font-bold px-3 py-2 rounded-lg border border-sky-100">✏️</button><button onclick="delBlt('${b.id}')" class="text-xs bg-red-50 text-red-600 font-bold px-3 py-2 rounded-lg border border-red-100">🗑️</button></div></div>`).join('') || '<div class="text-center text-xs text-slate-400 py-3">無公告</div>'; 
             } catch(e) { console.error(e); }
         }
 
-        function openAdminPOEdit(id, isLegacy, st, note, expected_date) { 
-            document.getElementById('admin-po-edit-id').value = id; 
-            document.getElementById('admin-po-edit-status').value = st; 
-            document.getElementById('admin-po-edit-note').value = note ? note.replace(/\\n/g, '\n') : ''; 
-            document.getElementById('admin-po-edit-date').value = expected_date || ''; 
-            openModal('admin-edit-po-modal'); 
-        }
-        
-        async function saveAdminPOEdit() { 
-            const id = document.getElementById('admin-po-edit-id').value; 
-            const st = document.getElementById('admin-po-edit-status').value; 
-            const note = document.getElementById('admin-po-edit-note').value; 
-            const ed = document.getElementById('admin-po-edit-date').value; 
-            let payload = { status: st, note: note };
-            if(ed) payload.expected_date = ed;
-            await safeUpdate('po_documents', payload, id); 
-            showSysToast('✅ 採購單已成功更新'); closeModal('admin-edit-po-modal'); loadAdminPurchase(); 
-        }
-        
-        async function delPO(id, isLegacy) { if(confirm('⚠️ 確定要刪除此採購單嗎？')) { await safeDelete('po_documents', id); showSysToast('✅ 採購單已刪除'); loadAdminPurchase(); } }
-
-        function openAdminReqEdit(id, isLegacy, st, note, expected_date) { 
-            document.getElementById('admin-req-edit-id').value = id; 
-            document.getElementById('admin-req-edit-status').value = st; 
-            document.getElementById('admin-req-edit-note').value = note ? note.replace(/\\n/g, '\n') : '';
-            document.getElementById('admin-req-edit-date').value = expected_date || '';
-            openModal('admin-edit-req-modal'); 
-        }
-        
-        async function saveAdminReqEdit() { 
-            const id = document.getElementById('admin-req-edit-id').value; 
-            const st = document.getElementById('admin-req-edit-status').value; 
-            const note = document.getElementById('admin-req-edit-note').value;
-            const ed = document.getElementById('admin-req-edit-date').value;
-            let payload = { status: st, note: note };
-            if(ed) payload.expected_date = ed;
-            await safeUpdate('requisitions', payload, id); 
-            showSysToast('✅ 請購單狀態已更新'); closeModal('admin-edit-req-modal'); loadAdminPurchase(); 
-        }
-        
-        async function delReq(id, isLegacy) { if(confirm('⚠️ 確定要刪除此請購單嗎？')) { await safeDelete('requisitions', id); showSysToast('✅ 請購單已刪除'); loadAdminPurchase(); } }
-
-        // ============================================
-        // 🌟 薪資系統與其他 (滿血恢復)
-        // ============================================
-        function loadAdminFinance() {
-            document.getElementById('list-admin-fin').innerHTML = '<div class="text-center p-10"><span class="text-5xl mb-4 block opacity-50">🚧</span><h4 class="font-black text-lg text-slate-700">財務對帳模組建置中</h4><p class="text-xs text-slate-500 font-bold mt-2">將於後續版本開放，敬請期待</p></div>';
-        }
-
-        function calcNet() {
-            const base = parseFloat(document.getElementById('p-base').value) || 0;
-            const bonus = parseFloat(document.getElementById('p-bonus').value) || 0;
-            const yeb = document.getElementById('toggle-yeb').checked ? (parseFloat(document.getElementById('p-yeb').value) || 0) : 0;
-            const ulp = document.getElementById('toggle-yeb').checked ? (parseFloat(document.getElementById('p-ulp').value) || 0) : 0;
-            const lvd = parseFloat(document.getElementById('p-lvd').value) || 0;
-            const ins = parseFloat(document.getElementById('p-ins').value) || 0;
-            const snd = parseFloat(document.getElementById('p-2nd').value) || 0;
-            const net = base + bonus + yeb + ulp - lvd - ins - snd;
-            document.getElementById('p-net').value = net;
-            document.getElementById('p-net-display').innerText = 'NT$ ' + net.toLocaleString();
-        }
-
-        function calcPayroll() { calcNet(); }
-
-        function handleYebToggle() {
-            const chk = document.getElementById('toggle-yeb').checked;
-            document.getElementById('yeb-section').classList.toggle('hidden', !chk);
-            calcNet();
-        }
-
-        async function updateAttendanceRate() {
-            const empId = document.getElementById('p-emp').value;
-            const mStr = document.getElementById('p-mon').value;
-            if(!empId || !mStr) return;
-            
-            const [yStr, moStr] = mStr.split('-');
-            const year = parseInt(yStr); const month = parseInt(moStr);
-            const sT = new Date(year, month - 1, 1);
-            const eT = new Date(year, month, 0, 23, 59, 59);
-
-            try {
-                const { data: logs } = await window._sb.from('attendance_logs').select('*').eq('employee_id', empId).gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString());
-                const { data: leaves } = await window._sb.from('leave_requests').select('*').eq('employee_id', empId).eq('status', '核准').gte('start_time', sT.toISOString()).lte('end_time', eT.toISOString());
-                
-                let late=0, early=0, absent=0, per=0, sic=0, pnt=0;
-                
-                if(leaves) {
-                    leaves.forEach(l => {
-                        let hrs = Math.ceil((new Date(l.end_time) - new Date(l.start_time)) / (1000 * 60 * 60));
-                        if(hrs < 0) hrs = 0;
-                        if(l.leave_type === '事假') per += hrs;
-                        if(l.leave_type === '病假') sic += hrs;
-                    });
-                }
-                
-                // 基礎防呆：有資料才顯示
-                if(window.empData[empId]) {
-                    pnt = window.empData[empId].penalty_points || 0;
-                }
-
-                document.getElementById('sd-late').innerText = late;
-                document.getElementById('sd-early').innerText = early;
-                document.getElementById('sd-abs').innerText = absent;
-                document.getElementById('sd-per').innerText = per;
-                document.getElementById('sd-sick').innerText = sic;
-                document.getElementById('sd-pnt').innerText = pnt;
-                
-                // 自動帶入預估扣薪 (事假=時薪, 病假=半薪)
-                let base = window.empData[empId].base || 0;
-                let hourly = base / 240; // 假設30天*8小時
-                let ded = Math.round((per * hourly) + (sic * hourly * 0.5) + (absent * hourly * 8));
-                document.getElementById('p-lvd').value = ded;
-                
-                currentTempPayrollStats = { late, early, absent, per, sic, pnt };
-                calcNet();
-            } catch(e) { console.log('Attendance calc bypassed'); }
-        }
-
-        async function issuePayroll() {
-            const empId = document.getElementById('p-emp').value;
-            const mStr = document.getElementById('p-mon').value;
-            if(!empId || !mStr) { alert('請選擇員工與月份'); return; }
-            
-            const btn = event.target;
-            btn.innerText = '處理中...'; btn.disabled = true;
-            
-            const base = parseFloat(document.getElementById('p-base').value) || 0;
-            const payload = {
-                employee_id: empId,
-                pay_month: mStr,
-                base_pay: base,
-                bonus: parseFloat(document.getElementById('p-bonus').value) || 0,
-                year_end_bonus: document.getElementById('toggle-yeb').checked ? (parseFloat(document.getElementById('p-yeb').value)||0) : 0,
-                unused_leave_pay: document.getElementById('toggle-yeb').checked ? (parseFloat(document.getElementById('p-ulp').value)||0) : 0,
-                insurance_deduction: parseFloat(document.getElementById('p-ins').value) || 0,
-                second_gen_health: parseFloat(document.getElementById('p-2nd').value) || 0,
-                leave_deduction: parseFloat(document.getElementById('p-lvd').value) || 0,
-                total_net_pay: parseFloat(document.getElementById('p-net').value) || 0,
-                labor_pension: Math.round(base * 0.06),
-                attendance_stats: currentTempPayrollStats || { late:0, early:0, absent:0, per:0, sic:0, pnt:0 }
-            };
-
-            try {
-                // 檢查是否已存在
-                const { data: exist } = await window._sb.from('payroll_records').select('id').eq('employee_id', empId).eq('pay_month', mStr).single();
-                if(exist) {
-                    if(confirm('⚠️ 此員工該月份已有薪資單，是否覆蓋？')) {
-                        await window._sb.from('payroll_records').update(payload).eq('id', exist.id);
-                    } else { btn.innerText = '🚀 正式發送薪資單'; btn.disabled = false; return; }
-                } else {
-                    await window._sb.from('payroll_records').insert([payload]);
-                }
-                showSysToast('✅ 薪資單發放成功！員工可於前台查閱下載。');
-                
-                const empName = window.allEmps.find(x => x.id === empId)?.full_name;
-                const msg = `📢 【薪資發放通知】\n您好，您 ${mStr} 月份的薪資明細已經發放至您的員工中心。\n\n👉 請登入系統至「💰 薪資單」版位查看或下載 PDF。`;
-                window._sb.functions.invoke('line-webhook', { body: { action: 'payroll_issue', name: empName, message: msg } }).catch(e=>{});
-                
-            } catch(e) { alert('發放失敗'); }
-            btn.innerText = '🚀 正式發送薪資單'; btn.disabled = false;
-        }
-
-        async function loadPayrollHistory() {
-            const empId = document.getElementById('hist-emp').value;
-            const container = document.getElementById('ui-payroll-hist');
-            if(!empId) { container.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 bg-slate-50 rounded-xl border border-dashed border-slate-300">請先選擇員工</div>'; return; }
-            
-            container.innerHTML = '<p class="text-center text-xs text-slate-400 py-4">載入中...</p>';
-            try {
-                const { data } = await window._sb.from('payroll_records').select('*').eq('employee_id', empId).order('pay_month', {ascending: false});
-                if(data && data.length > 0) {
-                    window.currentPayrollRecords = data;
-                    container.innerHTML = data.map(pr => `
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center mb-2">
-                            <div>
-                                <h4 class="font-black text-sky-700 text-sm mb-1">${pr.pay_month}</h4>
-                                <span class="text-[10px] font-bold text-slate-500">實領: NT$ ${pr.total_net_pay.toLocaleString()}</span>
-                            </div>
-                            <button onclick="openPayrollEdit('${pr.id}')" class="text-[10px] bg-slate-800 text-white font-bold px-3 py-1.5 rounded-lg active:scale-95 shadow-sm transition">✏️ 編輯</button>
-                        </div>
-                    `).join('');
-                } else {
-                    container.innerHTML = '<p class="text-center text-xs text-slate-400 py-4">該員工無歷史薪資紀錄</p>';
-                }
-            } catch(e) { container.innerHTML = '<p class="text-center text-xs text-red-500 py-4">讀取失敗</p>'; }
-        }
-
-        function openPayrollEdit(id) {
-            const pr = window.currentPayrollRecords.find(x => x.id === id); if(!pr) return;
-            document.getElementById('edit-pr-id').value = pr.id;
-            document.getElementById('edit-pr-month').value = pr.pay_month;
-            document.getElementById('edit-pr-base').value = pr.base_pay;
-            document.getElementById('edit-pr-bonus').value = pr.bonus;
-            document.getElementById('edit-pr-yeb').value = pr.year_end_bonus || 0;
-            document.getElementById('edit-pr-ulp').value = pr.unused_leave_pay || 0;
-            document.getElementById('edit-pr-ins').value = pr.insurance_deduction;
-            document.getElementById('edit-pr-2nd').value = pr.second_gen_health || 0;
-            document.getElementById('edit-pr-lvd').value = pr.leave_deduction || 0;
-            calcEditPayrollNet();
-            openModal('payroll-edit-modal');
-        }
-
-        function calcEditPayrollNet() {
-            const base = parseFloat(document.getElementById('edit-pr-base').value) || 0;
-            const bonus = parseFloat(document.getElementById('edit-pr-bonus').value) || 0;
-            const yeb = parseFloat(document.getElementById('edit-pr-yeb').value) || 0;
-            const ulp = parseFloat(document.getElementById('edit-pr-ulp').value) || 0;
-            const ins = parseFloat(document.getElementById('edit-pr-ins').value) || 0;
-            const snd = parseFloat(document.getElementById('edit-pr-2nd').value) || 0;
-            const lvd = parseFloat(document.getElementById('edit-pr-lvd').value) || 0;
-            const net = base + bonus + yeb + ulp - ins - snd - lvd;
-            document.getElementById('edit-pr-net').innerText = 'NT$ ' + net.toLocaleString();
-        }
-
-        async function saveEditPayroll() {
-            const id = document.getElementById('edit-pr-id').value;
-            const base = parseFloat(document.getElementById('edit-pr-base').value) || 0;
-            const payload = {
-                base_pay: base,
-                bonus: parseFloat(document.getElementById('edit-pr-bonus').value) || 0,
-                year_end_bonus: parseFloat(document.getElementById('edit-pr-yeb').value) || 0,
-                unused_leave_pay: parseFloat(document.getElementById('edit-pr-ulp').value) || 0,
-                insurance_deduction: parseFloat(document.getElementById('edit-pr-ins').value) || 0,
-                second_gen_health: parseFloat(document.getElementById('edit-pr-2nd').value) || 0,
-                leave_deduction: parseFloat(document.getElementById('edit-pr-lvd').value) || 0,
-                total_net_pay: parseFloat(document.getElementById('edit-pr-net').innerText.replace(/[NT$\s,]/g, '')) || 0,
-                labor_pension: Math.round(base * 0.06)
-            };
-            try {
-                await window._sb.from('payroll_records').update(payload).eq('id', id);
-                showSysToast('✅ 薪資單已更新！');
-                closeModal('payroll-edit-modal');
-                loadPayrollHistory();
-            } catch(e) { alert('更新失敗'); }
-        }
-
-        function onEmpChange() {
-            const empId = document.getElementById('p-emp').value;
-            if(empId && window.empData[empId]) {
-                document.getElementById('p-base').value = window.empData[empId].base || 0;
-                calcPayroll();
-            }
-        }
-
-        async function exportBankCSV() { 
-            const m = document.getElementById('export-mon').value;
-            if(!m) { alert('請選擇要匯出的月份'); return; }
-            try {
-                const { data } = await window._sb.from('payroll_records').select('*, employees(full_name, bank_code, bank_account)').eq('pay_month', m);
-                if(!data || data.length === 0) { alert('該月份無薪資發放紀錄！'); return; }
-                
-                let csv = '\uFEFF銀行代碼,銀行帳號,戶名,轉帳金額,備註\n';
-                data.forEach(r => {
-                    const e = r.employees;
-                    if(e && e.bank_code && e.bank_account) {
-                        csv += `="${e.bank_code}",="${e.bank_account}",${e.full_name},${r.total_net_pay},薪資發放\n`;
-                    }
-                });
-                
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-                link.download = `HYPASS_銀行轉帳_${m}.csv`;
-                document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                showSysToast('✅ 銀行轉帳 CSV 下載成功');
-            } catch(e) { alert('匯出失敗'); }
-        }
-
-        function editBr(id) { 
-            const b = window.branches.find(x => x.id === id); if(!b) return;
-            document.getElementById('b-id').value = b.id;
-            document.getElementById('b-n').value = b.branch_name;
-            document.getElementById('b-a').value = b.address;
-            document.getElementById('b-la').value = b.latitude;
-            document.getElementById('b-ln').value = b.longitude;
-            document.getElementById('btn-cancel-br').classList.remove('hidden');
-            document.getElementById('btn-save-br').innerText = '儲存修改';
-            document.getElementById('br-form-title').innerText = '✏️ 編輯據點資料';
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
-        function cancelEditBr() {
-            document.getElementById('b-id').value = '';
-            document.getElementById('b-n').value = '';
-            document.getElementById('b-a').value = '';
-            document.getElementById('b-la').value = '';
-            document.getElementById('b-ln').value = '';
-            document.getElementById('btn-cancel-br').classList.add('hidden');
-            document.getElementById('btn-save-br').innerText = '儲存據點';
-            document.getElementById('br-form-title').innerText = '新增打卡據點';
-        }
-        async function saveBr() {
-            const id = document.getElementById('b-id').value;
-            const p = {
-                branch_name: document.getElementById('b-n').value,
-                address: document.getElementById('b-a').value,
-                latitude: parseFloat(document.getElementById('b-la').value),
-                longitude: parseFloat(document.getElementById('b-ln').value)
-            };
-            if(!p.branch_name || !p.latitude || !p.longitude) { alert('請填寫完整資訊'); return; }
-            
-            try {
-                if(id) await window._sb.from('branch_locations').update(p).eq('id', id);
-                else await window._sb.from('branch_locations').insert([p]);
-                showSysToast('✅ 據點儲存成功！');
-                cancelEditBr(); loadAll();
-            } catch(e) { alert('儲存失敗'); }
-        }
-
-        // PDF Generation for Admin PO
-        async function processAdminPO_PDF(id, isLegacy, action) {
-            let poData = null;
+        function editBlt(id) { const b = window.bulletins.find(x => x.id === id); if(!b) return; document.getElementById('blt-edit-id').value = b.id; document.getElementById('blt-title').value = b.title; document.getElementById('blt-content').value = b.content; document.getElementById('btn-cancel-blt').classList.remove('hidden'); window.scrollTo({top: 0, behavior: 'smooth'}); }
+        function cancelEditBlt() { document.getElementById('blt-edit-id').value = ''; document.getElementById('blt-title').value = ''; document.getElementById('blt-content').value = ''; document.getElementById('btn-cancel-blt').classList.add('hidden'); }
+        async function postBlt() { 
+            const id = document.getElementById('blt-edit-id').value; const title = document.getElementById('blt-title').value; const content = document.getElementById('blt-content').value; 
+            if(!title || !content) return; 
             try { 
-                if (isLegacy) { 
-                    const { data } = await window._sb.from('purchase_orders').select('*').eq('id', id).single(); 
-                    if(data) {
-                        let parts = (data.note||'').split('|||');
-                        poData = { po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', expected_date: data.expected_date, items_json: data.raw_materials, created_at: data.created_at, note: parts[2] || '' };
-                    }
-                }
-                else { 
-                    const { data } = await window._sb.from('po_documents').select('*').eq('id', id).single(); 
-                    poData = data; 
-                }
-            } catch(e){}
-
-            if(!poData) { alert('載入 PDF 資料失敗'); return; }
-
-            const supInfo = window.supplierData.find(x => x.supplier_name === poData.supplier_name) || {};
-            const dateStr = new Date(poData.created_at).toLocaleDateString('zh-TW');
-            let safeItems = getSafeArray(poData.items_json);
-
-            let tableRows = safeItems.map((s, i) => `
-                <tr style="border-bottom: 1px solid #e2e8f0;">
-                    <td style="padding: 12px; text-align: center;">${i+1}</td>
-                    <td style="padding: 12px; font-weight: bold;">${s.name} ${s.type === '成品' ? '<span style="font-size:10px; color:#4f46e5;">(成品)</span>' : ''}</td>
-                    <td style="padding: 12px; text-align: right; color: #d97706; font-weight: bold; font-size: 16px;">${parseFloat(s.qty).toFixed(2)}</td>
-                    <td style="padding: 12px; text-align: center; font-size: 12px; color: #64748b;">${s.unit}</td>
-                    <td style="padding: 12px; text-align: center; color: #ef4444; font-weight: bold;">${s.expected_date || poData.expected_date || '未定'}</td>
-                </tr>
-            `).join('');
-
-            const html = `
-                <div class="print-break" style="width: 100%; font-family: sans-serif; background: white;">
-                    <div style="text-align: center; border-bottom: 4px solid #0f172a; padding-bottom: 15px; margin-bottom: 20px;">
-                        <h1 style="font-size: 28px; font-weight: 900; margin: 0; letter-spacing: 2px;">HYPASS 採購單</h1>
-                        <p style="font-size: 12px; color: #64748b; margin-top: 5px; font-weight: bold; letter-spacing: 1px;">PURCHASE ORDER</p>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px;">
-                        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; width: 48%;">
-                            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">供應商資訊</h3>
-                            <p style="margin: 4px 0;"><strong>名稱：</strong>${poData.supplier_name}</p>
-                            <p style="margin: 4px 0;"><strong>統編：</strong>${supInfo.tax_id||'--'}</p>
-                            <p style="margin: 4px 0;"><strong>聯絡：</strong>${supInfo.contact_name||'--'} / ${supInfo.contact_phone||'--'}</p>
-                        </div>
-                        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; width: 48%;">
-                            <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">單據資訊</h3>
-                            <p style="margin: 4px 0;"><strong>單號：</strong><span style="font-family: monospace; font-weight: bold;">${poData.po_no}</span></p>
-                            <p style="margin: 4px 0;"><strong>日期：</strong>${dateStr}</p>
-                        </div>
-                    </div>
-
-                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
-                        <thead style="background: #1e293b; color: white;">
-                            <tr>
-                                <th style="padding: 10px; text-align: center; width: 40px;">項次</th>
-                                <th style="padding: 10px; text-align: left;">採購品名/規格</th>
-                                <th style="padding: 10px; text-align: right;">數量</th>
-                                <th style="padding: 10px; text-align: center;">單位</th>
-                                <th style="padding: 10px; text-align: center;">指定到貨日</th>
-                            </tr>
-                        </thead>
-                        <tbody>${tableRows}</tbody>
-                    </table>
-
-                    <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 12px; border-radius: 8px; font-size: 11px; color: #92400e; margin-bottom: 30px;">
-                        <strong>備註說明：</strong><br>
-                        1. 煩請於指定到貨日前完成交貨，若有延遲請提前告知。<br>
-                        2. 請於出貨單/發票上註明本採購單號：${poData.po_no}。<br>
-                        3. 約定付款方式：${supInfo.payment_method||'依原合約'}。<br>
-                        <span style="color: #334155; margin-top: 4px; display: block;">附加備註：${poData.note||'無'}</span>
-                    </div>
-
-                    <div style="display: flex; justify-content: space-between; border-top: 2px solid #1e293b; padding-top: 15px;">
-                        <div style="text-align: center; width: 40%;">
-                            <p style="margin-bottom: 30px; color: #64748b; font-size: 12px;">採購主管簽核</p>
-                            <div style="border-bottom: 1px solid #94a3b8;"></div>
-                        </div>
-                        <div style="text-align: center; width: 40%;">
-                            <p style="margin-bottom: 30px; color: #64748b; font-size: 12px;">供應商確認簽回</p>
-                            <div style="border-bottom: 1px solid #94a3b8;"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            if(action === 'view') {
-                document.getElementById('pdf-preview-content').innerHTML = html;
-                const modal = document.getElementById('pdf-preview-modal');
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            } else if(action === 'download') {
-                showSysToast('PDF 檔案生成中，請稍候...');
-                const opt = {
-                    margin:       [0.5, 0.5],
-                    filename:     `${poData.po_no}_採購單.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true },
-                    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-                };
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = html;
-                tempDiv.style.padding = '20px';
-                html2pdf().set(opt).from(tempDiv).save().then(() => { showSysToast('PDF 下載完成！'); });
-            }
+                if(id) { await window._sb.from('bulletin_board').update({ title, content }).eq('id', id); showSysToast('✅ 公告已更新'); } 
+                else { await window._sb.from('bulletin_board').insert([{ title, content }]); showSysToast('✅ 公告已發佈'); } 
+                cancelEditBlt(); loadAdminBlt(); 
+            } catch(e) { alert('發佈失敗'); } 
         }
+        async function delBlt(id) { if(!confirm('刪除這則公告嗎？')) return; await window._sb.from('bulletin_board').delete().eq('id', id); showSysToast('✅ 已刪除'); loadAdminBlt(); }
 
-        function closePdfModal() {
-            const modal = document.getElementById('pdf-preview-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+        async function loadAdminPBull() { 
+            try {
+                const { data } = await window._sb.from('personal_bulletins').select('*').order('created_at', {ascending: false}); 
+                window.pBulletins = data || []; 
+                document.getElementById('list-admin-pbull').innerHTML = window.pBulletins.map(b => {
+                    const empName = window.allEmps.find(x => x.id === b.employee_id)?.full_name || '未知員工';
+                    let readBadge = b.is_read ? '<span class="text-[9px] bg-slate-100 text-slate-500 px-1.5 rounded">已讀</span>' : '<span class="text-[9px] bg-red-100 text-red-600 px-1.5 rounded animate-pulse">未讀</span>';
+                    return `<div class="p-3 bg-white rounded-xl border border-slate-200 flex justify-between items-center shadow-sm mb-2"><div><div class="text-[10px] text-sky-700 font-black mb-1">對象: ${empName} ${readBadge}</div><div class="font-black text-sm text-slate-800 truncate w-48">${b.title}</div><div class="text-[9px] text-slate-400 mt-1">${new Date(b.created_at).toLocaleString('zh-TW')}</div></div><div class="flex space-x-2"><button onclick="editPBull('${b.id}')" class="text-[10px] bg-amber-50 text-amber-700 font-bold px-3 py-1.5 rounded-lg border border-amber-200">✏️</button><button onclick="delPBull('${b.id}')" class="text-[10px] bg-white text-red-600 font-bold px-3 py-1.5 rounded-lg border border-red-200">🗑️</button></div></div>`;
+                }).join('') || '<div class="text-center text-xs text-slate-400 py-3">無紀錄</div>'; 
+            } catch(e) { document.getElementById('list-admin-pbull').innerHTML = '<div class="text-center text-xs text-red-500 py-3">讀取失敗，請確認資料庫。</div>'; }
         }
-
-        document.getElementById('btn-modal-download').addEventListener('click', () => {
-            const htmlContent = document.getElementById('pdf-preview-content').innerHTML;
-            if(!htmlContent) return;
-            showSysToast('PDF 檔案生成中，請稍候...');
-            const opt = { margin: [0.5, 0.5], filename: `HYPASS_採購單.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
-            const tempDiv = document.createElement('div'); tempDiv.innerHTML = htmlContent; tempDiv.style.padding = '20px';
-            html2pdf().set(opt).from(tempDiv).save().then(() => { showSysToast('PDF 下載完成！'); });
-        });
+        function editPBull(id) { 
+            const b = window.pBulletins.find(x => x.id === id); if(!b) return; 
+            document.getElementById('pbull-edit-id').value = b.id; document.getElementById('pbull-emp').value = b.employee_id; document.getElementById('pbull-title').value = b.title; document.getElementById('pbull-content').value = b.content; 
+            document.getElementById('btn-cancel-pbull').classList.remove('hidden'); document.getElementById('btn-post-pbull').innerText = '儲存修改'; window.scrollTo({top: 0, behavior: 'smooth'}); 
+        }
+        function cancelEditPBull() { 
+            document.getElementById('pbull-edit-id').value = ''; document.getElementById('pbull-emp').value = ''; document.getElementById('pbull-title').value = ''; document.getElementById('pbull-content').value = ''; 
+            document.getElementById('btn-cancel-pbull').classList.add('hidden'); document.getElementById('btn-post-pbull').innerText = '立即發送';
+        }
+        async function postPBull() { 
+            const id = document.getElementById('pbull-edit-id').value; const empId = document.getElementById('pbull-emp').value; const title = document.getElementById('pbull-title').value; const content = document.getElementById('pbull-content').value; 
+            if(!empId || !title || !content) { alert('請填寫完整資訊！'); return; }
+            try { 
+                if(id) { await window._sb.from('personal_bulletins').update({ title, content, employee_id: empId, is_read: false }).eq('id', id); showSysToast('已更新通知'); } 
+                else { await window._sb.from('personal_bulletins').insert([{ employee_id: empId, title, content }]); showSysToast('已成功發送通知！'); } 
+                cancelEditPBull(); loadAdminPBull(); 
+            } catch(e) { alert('發佈失敗'); } 
+        }
+        async function delPBull(id) { if(!confirm('刪除這則通知嗎？')) return; await window._sb.from('personal_bulletins').delete().eq('id', id); showSysToast('已刪除'); loadAdminPBull(); }
 
         window.onload = function() {
             if(localStorage.getItem('admin_logged')==='true') {
