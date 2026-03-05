@@ -71,8 +71,8 @@
                         <table class="w-full text-left text-[10px] table-fixed">
                             <thead class="text-slate-500 border-b border-slate-200 bg-slate-100/50">
                                 <tr>
-                                    <th class="py-1.5 px-1 font-bold text-left w-[42%]">單號/供應商</th>
-                                    <th class="py-1.5 px-1 font-bold text-left w-[36%]">摘要</th>
+                                    <th class="py-1.5 px-1 font-bold text-left w-[36%]">單號/供應商</th>
+                                    <th class="py-1.5 px-1 font-bold text-left w-[42%]">摘要 (品名與數量)</th>
                                     <th class="py-1.5 px-1 font-bold text-center w-[22%]">狀態</th>
                                 </tr>
                             </thead>
@@ -241,10 +241,18 @@
             try { let p = (typeof data === 'string') ? JSON.parse(data) : data; return Array.isArray(p) ? p : []; } catch(e) { return []; } 
         }
 
+        // 🌟 縮減單號格式函數
+        function formatPO(no) {
+            if(!no) return '未知單號';
+            let str = String(no).replace('PO-', '');
+            if(str.length > 10) return str.slice(-8); // 取最後 8 碼精簡顯示
+            return str;
+        }
+
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = 'toast-msg bg-amber-600 text-white px-4 py-3 rounded-xl shadow-lg border border-amber-400 font-black text-sm flex items-center';
+            toast.className = 'toast-msg bg-amber-600 text-white px-4 py-3 rounded-xl shadow-lg border border-amber-400 font-black text-sm flex items-center z-[9999]';
             toast.innerHTML = `<span class="mr-2 text-xl">✅</span>${msg}`;
             container.appendChild(toast);
             setTimeout(() => { toast.style.animation = 'slideInLeft 0.4s ease-in reverse forwards'; setTimeout(() => toast.remove(), 400); }, 5000);
@@ -258,7 +266,6 @@
 
         async function bootPurchase() {
             try {
-                // 🌟 正確使用採購權限驗證
                 const isAuth = await authGuard('purchase'); 
                 if(!isAuth) return; 
 
@@ -319,13 +326,11 @@
                 }
 
                 if (safePos.length > 0) {
-                    // 過濾出採購單
                     let oldPos = safePos.filter(x => x.note && x.note.startsWith('PO-')).map(x => {
                         let parts = (x.note||'').split('|||');
                         return { id: x.id, po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', status: x.status, expected_date: x.expected_date || '未定', items_json: x.raw_materials, created_at: x.created_at, is_legacy: true, note: parts[2] || '' };
                     });
                     
-                    // 🌟 額外容錯：如果庫存直接寫入但沒有以 PO- 開頭備註的，我們依然抓取它 (以狀態判定)
                     let otherDrafts = safePos.filter(x => x.status === '待審核' && (!x.note || !x.note.startsWith('PO-'))).map(x => {
                         return { id: x.id, po_no: 'PO-DRAFT-' + String(x.id).slice(0,5).toUpperCase(), supplier_name: '未指定供應商', status: x.status, expected_date: x.expected_date || '未定', items_json: x.raw_materials, created_at: x.created_at, is_legacy: true, note: x.note || '' };
                     });
@@ -338,7 +343,7 @@
             return poData;
         }
 
-        // 🌟 儀表板資料載入 (最新採購狀況表格式優化)
+        // 🌟 儀表板資料載入 (最新採購狀況表格式優化、雙行摘要)
         async function loadDashboardData() {
             try {
                 const pos = await fetchSafePOs();
@@ -373,25 +378,32 @@
 
                         let dateText = (po.expected_date && po.expected_date !== '未定' && po.expected_date !== null) ? String(po.expected_date).slice(5) : '未定';
                         let safePoItems = getSafeArray(po.items_json);
-                        let itemsStr = safePoItems.map(i => `${i.name} * ${parseFloat(i.qty).toFixed(0)}`).join('、');
+                        
+                        // 🌟 雙行顯示明細 (品名 + 數量)
+                        let itemsStr = safePoItems.map(i => `
+                            <div class="flex flex-col border-b border-slate-100/50 pb-1 mb-1 last:border-0 last:pb-0 last:mb-0">
+                                <span class="text-slate-800 font-bold truncate text-[10px]">${i.name}</span>
+                                <span class="text-amber-700 font-black text-[9px]">數量: ${parseFloat(i.qty).toFixed(0)} <span class="text-[8px] text-slate-400">${i.unit||'件'}</span></span>
+                            </div>
+                        `).join('');
 
                         let col1Html = `
                             <div class="flex flex-col overflow-hidden pr-0.5">
-                                <div class="font-mono font-black text-slate-800 text-[10px] truncate tracking-wider mb-0.5">${po.po_no.replace('PO-','')}</div>
-                                <div class="text-[10px] font-bold text-slate-500 truncate leading-tight">🏢 ${po.supplier_name}</div>
+                                <div class="font-mono font-black text-slate-800 text-[10px] truncate tracking-wider mb-0.5">${formatPO(po.po_no)}</div>
+                                <div class="text-[9px] font-bold text-slate-500 truncate leading-tight">🏢 ${po.supplier_name}</div>
                             </div>
                         `;
                         
-                        let col2Html = `<div class="text-[9px] text-slate-600 truncate font-bold leading-tight line-clamp-2">${itemsStr || '無明細'}</div>`;
+                        let col2Html = `<div class="pr-1">${itemsStr || '<span class="text-slate-400 italic">無明細</span>'}</div>`;
                         
                         let col3Html = `
-                            <div class="flex flex-col items-center justify-center space-y-0.5">
+                            <div class="flex flex-col items-center justify-center space-y-1">
                                 <span class="text-[9px] font-bold text-slate-700 leading-none">${dateText}</span>
                                 ${statusBadge}
                             </div>
                         `;
 
-                        poHtml += `<tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0"><td class="py-2 px-1 align-middle overflow-hidden">${col1Html}</td><td class="py-2 px-1 align-middle overflow-hidden pl-1">${col2Html}</td><td class="py-2 px-1 text-center align-middle">${col3Html}</td></tr>`;
+                        poHtml += `<tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0"><td class="py-2 px-1 align-middle overflow-hidden">${col1Html}</td><td class="py-2 px-1 align-middle overflow-hidden pl-1 border-l border-slate-100">${col2Html}</td><td class="py-2 px-1 text-center align-middle">${col3Html}</td></tr>`;
                     });
                     poContainer.innerHTML = poHtml;
                 }
@@ -506,7 +518,7 @@
                 return `
                 <div class="bg-white p-4 rounded-2xl border-2 border-amber-200 shadow-sm relative mb-3">
                     <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
-                        <span class="text-[10px] font-mono font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">${p.po_no}</span>
+                        <span class="text-[10px] font-mono font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">${formatPO(p.po_no)}</span>
                         <span class="text-[10px] font-black px-2 py-0.5 rounded-md border text-sky-700 bg-sky-50 border-sky-200 shadow-sm">${p.status}</span>
                     </div>
                     <div class="flex justify-between items-end mb-2">
@@ -520,7 +532,7 @@
                         ${itemsStr || '<span class="text-slate-400 italic">無明細資料</span>'}
                     </div>
                     <button onclick="approveAndSendPO('${p.id}', ${p.is_legacy?true:false})" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-3 rounded-xl shadow-md transition tracking-widest text-sm flex justify-center items-center active:scale-95">
-                        <span class="mr-2 text-lg">✅</span> 核准並生成 PDF
+                        <span class="mr-2 text-lg">✅</span> 核准並發送採購單
                     </button>
                 </div>`;
             }).join('');
@@ -547,7 +559,7 @@
             }
         }
 
-        // 🌟 採購紀錄中心 (加入月份篩選與分享按鈕)
+        // 🌟 採購紀錄中心 (包含月份篩選與分享功能，2x2 網格按鈕)
         async function openHistory() {
             openView('history', '🗂️ 採購紀錄');
             const elPo = document.getElementById('ui-hist-po');
@@ -583,7 +595,7 @@
                     <div class="bg-white p-4 rounded-[1rem] border border-slate-200 shadow-sm flex flex-col mb-3 transition hover:bg-slate-50">
                         <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
                             <div>
-                                <h4 class="text-xs font-black text-slate-800">${p.po_no.replace('PO-','')}</h4>
+                                <h4 class="text-xs font-black text-slate-800 font-mono">${formatPO(p.po_no)}</h4>
                                 <span class="text-[9px] text-slate-400 font-bold">${new Date(p.created_at).toLocaleDateString('zh-TW')}</span>
                             </div>
                             <div class="text-right flex flex-col items-end">
@@ -600,62 +612,15 @@
                         ${p.note ? `<p class="text-[10px] text-slate-500 font-bold bg-amber-50 p-2 rounded-lg border border-amber-100 mb-3 line-clamp-2">備註: ${p.note}</p>` : ''}
                         
                         <div class="grid grid-cols-2 gap-2 mt-1">
-                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'view')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm">👁️</span> 預覽單據</button>
-                            <button onclick="sharePO('${p.id}', ${p.is_legacy?true:false})" class="text-[11px] bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm">📲</span> 分享/複製文字</button>
-                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'download')" class="text-[11px] bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm">📥</span> 下載 PDF</button>
+                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'view')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm">👁️</span> 預覽</button>
+                            <button onclick="sharePO('${p.id}', ${p.is_legacy?true:false})" class="text-[11px] bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm">📲</span> 傳送 LINE (PDF)</button>
+                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'download')" class="text-[11px] bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm">📥</span> 下載檔案</button>
                             <button onclick="openPOEdit('${p.id}', ${p.is_legacy?true:false}, '${p.status}', '${safeNote}', '${p.expected_date||''}')" class="text-[11px] bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 py-2.5 rounded-xl font-black shadow-sm transition active:scale-95 flex justify-center items-center"><span class="mr-1 text-sm">✏️</span> 編輯狀態</button>
                             <button onclick="delPO('${p.id}', ${p.is_legacy?true:false})" class="col-span-2 text-[11px] text-red-600 bg-white border border-red-200 hover:bg-red-50 py-2.5 rounded-xl font-black shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm">🗑️</span> 刪除此採購單</button>
                         </div>
                     </div>
                 `;}).join('');
             } else { elPo.innerHTML = `<p class="text-xs text-slate-400 py-6 text-center border border-dashed border-slate-200 rounded-xl bg-white">此月份無採購單紀錄</p>`; }
-        }
-
-        // 🌟 手機專用：產生文字摘要並呼叫分享 (黑科技)
-        async function sharePO(id, isLegacy) {
-            let poData = null;
-            try { 
-                if (isLegacy) { 
-                    const { data } = await window._sb.from('purchase_orders').select('*').eq('id', id).single(); 
-                    if(data) {
-                        let parts = (data.note||'').split('|||');
-                        poData = { po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', expected_date: data.expected_date, items_json: data.raw_materials, created_at: data.created_at, note: parts[2] || '' };
-                    }
-                } else { 
-                    const { data } = await window._sb.from('po_documents').select('*').eq('id', id).single(); 
-                    poData = data; 
-                }
-            } catch(e){}
-
-            if(!poData) { alert('載入資料失敗'); return; }
-
-            const dateStr = new Date(poData.created_at).toLocaleDateString('zh-TW');
-            let itemsArr = getSafeArray(poData.items_json);
-            let itemsText = itemsArr.map((item, idx) => `${idx+1}. ${item.name} * ${parseFloat(item.qty).toFixed(2)} ${item.unit}`).join('\n');
-            let expDate = poData.expected_date ? String(poData.expected_date).slice(5) : '未定';
-
-            let shareText = `【HYPASS 採購單】\n單號：${poData.po_no}\n日期：${dateStr}\n供應商：${poData.supplier_name}\n要求到貨：${expDate}\n----------------\n[採購明細]\n${itemsText}\n----------------\n備註：${poData.note || '請依約定交貨'}`;
-
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: 'HYPASS 採購單',
-                        text: shareText
-                    });
-                } catch (err) {
-                    copyToClipboard(shareText);
-                }
-            } else {
-                copyToClipboard(shareText);
-            }
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showSysToast('✅ 採購單明細已複製！可直接貼上至 LINE 或郵件');
-            }).catch(err => {
-                alert('複製失敗，請手動輸入');
-            });
         }
 
         // 🌟 進階版編輯 Modal
@@ -718,11 +683,8 @@
             } 
         }
 
-        // 🌟 終極引擎：全螢幕檢視與下載 PDF
-        let currentViewingPoNo = '';
-        let currentViewingHtml = '';
-
-        async function processAdminPO_PDF(id, isLegacy, action) {
+        // 🌟 終極引擎：產生 HTML 內容以供轉 PDF
+        async function getPoHtmlContent(id, isLegacy) {
             let poData = null;
             try { 
                 if (isLegacy) { 
@@ -731,14 +693,13 @@
                         let parts = (data.note||'').split('|||');
                         poData = { po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', expected_date: data.expected_date, items_json: data.raw_materials, created_at: data.created_at, note: parts[2] || '' };
                     }
-                }
-                else { 
+                } else { 
                     const { data } = await window._sb.from('po_documents').select('*').eq('id', id).single(); 
                     poData = data; 
                 }
             } catch(e){}
 
-            if(!poData) { alert('載入 PDF 資料失敗'); return; }
+            if(!poData) throw new Error('載入資料失敗');
 
             const supInfo = window.supplierData.find(x => x.supplier_name === poData.supplier_name) || {};
             const dateStr = new Date(poData.created_at).toLocaleDateString('zh-TW');
@@ -754,7 +715,7 @@
                 </tr>
             `).join('');
 
-            currentViewingHtml = `
+            const html = `
                 <div class="print-break" style="width: 100%; font-family: sans-serif; background: white;">
                     <div style="text-align: center; border-bottom: 4px solid #0f172a; padding-bottom: 15px; margin-bottom: 20px;">
                         <h1 style="font-size: 28px; font-weight: 900; margin: 0; letter-spacing: 2px;">HYPASS 採購單</h1>
@@ -770,7 +731,7 @@
                         </div>
                         <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; width: 48%;">
                             <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #334155; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px;">單據資訊</h3>
-                            <p style="margin: 4px 0;"><strong>單號：</strong><span style="font-family: monospace; font-weight: bold;">${poData.po_no}</span></p>
+                            <p style="margin: 4px 0;"><strong>單號：</strong><span style="font-family: monospace; font-weight: bold;">${formatPO(poData.po_no)}</span></p>
                             <p style="margin: 4px 0;"><strong>日期：</strong>${dateStr}</p>
                         </div>
                     </div>
@@ -791,7 +752,7 @@
                     <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 12px; border-radius: 8px; font-size: 11px; color: #92400e; margin-bottom: 30px;">
                         <strong>備註說明：</strong><br>
                         1. 煩請於指定到貨日前完成交貨，若有延遲請提前告知。<br>
-                        2. 請於出貨單/發票上註明本採購單號：${poData.po_no}。<br>
+                        2. 請於出貨單/發票上註明本採購單號：${formatPO(poData.po_no)}。<br>
                         3. 約定付款方式：${supInfo.payment_method||'依原合約'}。<br>
                         <span style="color: #334155; margin-top: 4px; display: block;">附加備註：${poData.note||'無'}</span>
                     </div>
@@ -808,16 +769,53 @@
                     </div>
                 </div>
             `;
-            
-            currentViewingPoNo = poData.po_no;
+            return { html, poNo: formatPO(poData.po_no) };
+        }
 
-            if(action === 'view') {
-                document.getElementById('pdf-preview-content').innerHTML = currentViewingHtml;
-                const modal = document.getElementById('pdf-preview-modal');
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            } else if(action === 'download') {
-                executePdfDownload(currentViewingHtml, currentViewingPoNo);
+        async function processAdminPO_PDF(id, isLegacy, action) {
+            try {
+                const { html, poNo } = await getPoHtmlContent(id, isLegacy);
+                currentViewingHtml = html;
+                currentViewingPoNo = poNo;
+
+                if(action === 'view') {
+                    document.getElementById('pdf-preview-content').innerHTML = currentViewingHtml;
+                    const modal = document.getElementById('pdf-preview-modal');
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                } else if(action === 'download') {
+                    executePdfDownload(currentViewingHtml, currentViewingPoNo);
+                }
+            } catch(e) { alert(e.message); }
+        }
+
+        // 🌟 黑科技：手機端分享實體 PDF 檔案至 LINE
+        async function sharePO(id, isLegacy) {
+            showSysToast('⏳ 正在產生 PDF 檔案，請稍候...');
+            try {
+                const { html, poNo } = await getPoHtmlContent(id, isLegacy);
+                
+                const opt = { margin: [0.5, 0.5], filename: `HYPASS_採購單_${poNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                tempDiv.style.padding = '20px';
+                
+                const pdfBlob = await html2pdf().set(opt).from(tempDiv).output('blob');
+                const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+                
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'HYPASS 採購單',
+                        text: `您好，附上採購單 ${poNo}，請查收。`
+                    });
+                    showSysToast('✅ 檔案分享成功！');
+                } else {
+                    showSysToast('您的裝置不支援直接分享檔案，改為自動下載...');
+                    executePdfDownload(html, poNo);
+                }
+            } catch(e) {
+                alert('分享中斷或失敗: ' + e.message);
             }
         }
 
@@ -828,6 +826,7 @@
         }
 
         document.getElementById('btn-modal-download').addEventListener('click', () => {
+            if(!currentViewingHtml) return;
             executePdfDownload(currentViewingHtml, currentViewingPoNo);
         });
 
@@ -835,7 +834,7 @@
             showSysToast('PDF 檔案生成中，請稍候...');
             const opt = {
                 margin:       [0.5, 0.5],
-                filename:     `${poNo}_採購單.pdf`,
+                filename:     `HYPASS_採購單_${poNo}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true },
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
@@ -844,12 +843,12 @@
             tempDiv.innerHTML = htmlContent;
             tempDiv.style.padding = '20px';
             html2pdf().set(opt).from(tempDiv).save().then(() => {
-                showSysToast('PDF 下載完成！');
+                showSysToast('✅ PDF 下載完成！');
             });
         }
 
         window.onload = function() {
-            // 🌟 修復登入啟動函數，移除後台殘留
+            // 🌟 完美執行啟動函數
             bootPurchase();
             
             const enforceNavObserver = new MutationObserver(() => { const oldNav = document.querySelector('nav:not(#core-bottom-nav)'); if (oldNav) oldNav.remove(); });
