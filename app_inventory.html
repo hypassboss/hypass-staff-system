@@ -116,23 +116,6 @@
                 </div>
             </div>
 
-            <div id="view-catalog" class="view-panel space-y-4">
-                <div class="glass-card p-5 rounded-2xl shadow-sm border-t-4 border-emerald-500">
-                    <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2">📦</span>庫存即時狀態清單</h3>
-                    
-                    <div class="flex space-x-2 mb-5">
-                        <select id="cat-filter" class="input-field select-arrow w-2/5 p-2.5 text-xs font-bold" onchange="renderCatalog()">
-                            <option value="">全部分類</option>
-                        </select>
-                        <input type="text" id="cat-search" class="input-field w-3/5 p-2.5 text-xs font-bold" placeholder="🔍 搜尋料號或品名..." onkeyup="renderCatalog()">
-                    </div>
-
-                    <div id="catalog-list" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1 no-scrollbar pb-10">
-                        <p class="text-center text-xs font-bold text-slate-400 py-6">載入中...</p>
-                    </div>
-                </div>
-            </div>
-
             <div id="view-inventory-list" class="view-panel relative">
                 <div class="sticky top-14 z-30 bg-[#f1f5f9] pt-2 pb-3 border-b border-slate-300 shadow-sm -mx-4 px-4 mb-4">
                     <div class="flex justify-between items-center mb-3">
@@ -175,45 +158,6 @@
                     <div id="ui-inv-req-hist" class="space-y-3 max-h-[65vh] overflow-y-auto no-scrollbar pr-1">
                         <p class="text-center text-xs text-slate-400 py-6">載入中...</p>
                     </div>
-                </div>
-            </div>
-
-            <div id="view-ledger" class="view-panel space-y-4">
-                <div class="glass-card p-5 rounded-2xl shadow-sm border-t-4 border-emerald-500">
-                    <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2">📥</span>進出庫登記</h3>
-                    <form onsubmit="submitLedger(event)" class="space-y-4">
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">作業類型</label>
-                            <select id="ledger-type" class="input-field select-arrow font-black">
-                                <option value="IN" class="text-emerald-600">📥 入庫 (進貨/退回)</option>
-                                <option value="OUT" class="text-red-600">📤 出庫 (領用/消耗)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">選擇料號/品名</label>
-                            <select id="ledger-item" class="input-field select-arrow" required></select>
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">異動數量</label>
-                            <input type="number" id="ledger-qty" class="input-field font-black text-lg" min="1" required>
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">備註單號或說明</label>
-                            <input type="text" id="ledger-note" class="input-field" placeholder="例如：採購單號、領用人">
-                        </div>
-                        <button type="submit" id="btn-ledger-submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base">確認送出</button>
-                    </form>
-                </div>
-            </div>
-
-            <div id="view-stocktake" class="view-panel space-y-4">
-                <div class="glass-card p-5 rounded-2xl shadow-sm border-t-4 border-indigo-500 relative pb-20">
-                    <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2">📋</span>實體盤點作業</h3>
-                    </div>
-                    <p class="text-[10px] text-slate-500 font-bold mb-4">系統將對比帳面數量與實際盤點數，自動生成盤盈虧紀錄。</p>
-                    <div id="stocktake-list" class="space-y-3 mb-6 max-h-[60vh] overflow-y-auto no-scrollbar"></div>
-                    <button onclick="submitStocktake()" id="btn-stocktake-submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base">確認完成盤點</button>
                 </div>
             </div>
 
@@ -459,10 +403,12 @@
             let { error: e1 } = await window._sb.from('requisitions').insert([payload]);
             if (!e1) return;
 
+            console.warn('Type array failed, trying stringified...');
             let strPayload = { ...payload, items_json: JSON.stringify(payload.items_json) };
             let { error: e2 } = await window._sb.from('requisitions').insert([strPayload]);
             if (!e2) return;
 
+            console.warn('Requisitions table failed, fallback to purchase_orders...');
             let poPayload = { employee_id: payload.employee_id, raw_materials: payload.items_json, status: '請購待處理', note: payload.req_no, expected_date: payload.expected_date };
             let { error: e3 } = await window._sb.from('purchase_orders').insert([poPayload]);
             if (!e3) return;
@@ -475,7 +421,10 @@
         function getSafeArray(data) { 
             if (!data) return []; 
             if (Array.isArray(data)) return data; 
-            try { let p = (typeof data === 'string') ? JSON.parse(data) : data; return Array.isArray(p) ? p : []; } catch(e) { return []; } 
+            try { 
+                let parsed = (typeof data === 'string') ? JSON.parse(data) : data; 
+                return Array.isArray(parsed) ? parsed : []; 
+            } catch(e) { return []; } 
         }
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
@@ -721,6 +670,7 @@
                                 if(t.id) pendingReqs_FG[t.id] = (pendingReqs_FG[t.id] || 0) + (parseInt(t.qty) || 0); 
                             });
                             getSafeArray(req.items_json).forEach(r => { 
+                                // 🌟 強力支援成品與原料請購雙修復
                                 if (r.type === '成品') {
                                     pendingReqs_FG[r.id] = (pendingReqs_FG[r.id] || 0) + (parseInt(r.qty) || 0);
                                 } else {
@@ -843,7 +793,7 @@
                     }
                 }
 
-                // 🌟 整合版：統一所有警示項目 (低水位優先)
+                // 🌟 整合版：統一所有警示項目 (低水位與警示優先)
                 let alertGoods = window.inventoryData.filter(i => {
                     let safe = i.safe_stock_level || 0;
                     return i.current_stock <= (safe * 1.5);
@@ -859,7 +809,7 @@
 
                 let filterHtml = '';
                 if (alertGoods.length === 0) {
-                    filterHtml = '<tr><td colspan="4" class="p-4 text-center text-emerald-600 font-bold">✅ 庫存皆在安全水位</td></tr>';
+                    filterHtml = '<tr><td colspan="4" class="p-4 text-center text-emerald-600 font-bold">✅ 庫存皆在安全水位之上</td></tr>';
                 } else {
                     filterHtml = alertGoods.map(i => {
                         let qtyHtml = '<span class="text-slate-300">0</span>'; 
@@ -911,7 +861,7 @@
                 if (uiAlertTable) uiAlertTable.innerHTML = filterHtml;
 
                 if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
-                if(document.getElementById('view-catalog').classList.contains('active')) renderFilteredInventory();
+                if(document.getElementById('view-inventory-list').classList.contains('active')) renderFilteredInventory();
 
             } catch(fatalError) {
                 console.error("UI 渲染失敗", fatalError);
@@ -924,7 +874,7 @@
         }
 
         async function openInventoryList() { 
-            openView('catalog', '庫存清單大盤'); 
+            openView('inventory-list', '庫存請購'); 
             await loadItems(); 
             renderFilteredInventory(); 
             updateTopReqBar(); 
@@ -1002,7 +952,7 @@
         }
 
         function renderInventoryListUI(data) {
-            const container = document.getElementById('catalog-list');
+            const container = document.getElementById('ui-inventory-list');
             if(!container) return; 
             if(!data || data.length === 0) { 
                 container.innerHTML = '<div class="text-center text-sm text-slate-400 font-bold py-10">無資料</div>'; 
@@ -1105,11 +1055,14 @@
                 item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: `總表快速校正 (原:${oldQty} -> 新:${newQty})` 
             }]); 
             if(!error) { 
+                showSysToast('✅ 庫存已更新，並記錄為最新盤點！');
                 const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
                 await loadItems(); 
                 renderFilteredInventory(); 
                 setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
-            } 
+            } else {
+                alert('庫存更新失敗');
+            }
         }
 
         async function inlineUpdateCycle(id, newVal) { 
@@ -1401,15 +1354,18 @@
             btn.innerText = '💾 紀錄中...'; 
             btn.disabled = true; 
             
-            await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: '相機掃碼校正' }]); 
+            const { error } = await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: '相機掃碼校正' }]); 
             
             const beep = document.getElementById('beep-sound'); 
             if(beep) { beep.currentTime = 0; beep.play().catch(()=>{}); } 
             
-            if(item) { 
-                item.current_stock = newVal; 
-                window.latestChecks[id] = { rawDate: new Date().toISOString(), date: new Date().toLocaleDateString('zh-TW'), emp: window.currentUser.full_name }; 
-            } 
+            if(!error) {
+                showSysToast('✅ 盤點紀錄已儲存！');
+                if(item) { 
+                    item.current_stock = newVal; 
+                    window.latestChecks[id] = { rawDate: new Date().toISOString(), date: new Date().toLocaleDateString('zh-TW'), emp: window.currentUser.full_name }; 
+                } 
+            }
             
             btn.innerText = '💾 確認並盤點下一個'; 
             btn.disabled = false; 
