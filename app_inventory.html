@@ -116,23 +116,6 @@
                 </div>
             </div>
 
-            <div id="view-catalog" class="view-panel space-y-4">
-                <div class="glass-card p-5 rounded-2xl shadow-sm border-t-4 border-emerald-500">
-                    <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2">📦</span>庫存即時狀態清單</h3>
-                    
-                    <div class="flex space-x-2 mb-5">
-                        <select id="cat-filter" class="input-field select-arrow w-2/5 p-2.5 text-xs font-bold" onchange="renderCatalog()">
-                            <option value="">全部分類</option>
-                        </select>
-                        <input type="text" id="cat-search" class="input-field w-3/5 p-2.5 text-xs font-bold" placeholder="🔍 搜尋料號或品名..." onkeyup="renderCatalog()">
-                    </div>
-
-                    <div id="catalog-list" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1 no-scrollbar pb-10">
-                        <p class="text-center text-xs font-bold text-slate-400 py-6">載入中...</p>
-                    </div>
-                </div>
-            </div>
-
             <div id="view-inventory-list" class="view-panel relative">
                 <div class="sticky top-14 z-30 bg-[#f1f5f9] pt-2 pb-3 border-b border-slate-300 shadow-sm -mx-4 px-4 mb-4">
                     <div class="flex justify-between items-center mb-3">
@@ -175,45 +158,6 @@
                     <div id="ui-inv-req-hist" class="space-y-3 max-h-[65vh] overflow-y-auto no-scrollbar pr-1">
                         <p class="text-center text-xs text-slate-400 py-6">載入中...</p>
                     </div>
-                </div>
-            </div>
-
-            <div id="view-ledger" class="view-panel space-y-4">
-                <div class="glass-card p-5 rounded-2xl shadow-sm border-t-4 border-emerald-500">
-                    <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2">📥</span>進出庫登記</h3>
-                    <form onsubmit="submitLedger(event)" class="space-y-4">
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">作業類型</label>
-                            <select id="ledger-type" class="input-field select-arrow font-black">
-                                <option value="IN" class="text-emerald-600">📥 入庫 (進貨/退回)</option>
-                                <option value="OUT" class="text-red-600">📤 出庫 (領用/消耗)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">選擇料號/品名</label>
-                            <select id="ledger-item" class="input-field select-arrow" required></select>
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">異動數量</label>
-                            <input type="number" id="ledger-qty" class="input-field font-black text-lg" min="1" required>
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">備註單號或說明</label>
-                            <input type="text" id="ledger-note" class="input-field" placeholder="例如：採購單號、領用人">
-                        </div>
-                        <button type="submit" id="btn-ledger-submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base">確認送出</button>
-                    </form>
-                </div>
-            </div>
-
-            <div id="view-stocktake" class="view-panel space-y-4">
-                <div class="glass-card p-5 rounded-2xl shadow-sm border-t-4 border-indigo-500 relative pb-20">
-                    <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2">📋</span>實體盤點作業</h3>
-                    </div>
-                    <p class="text-[10px] text-slate-500 font-bold mb-4">系統將對比帳面數量與實際盤點數，自動生成盤盈虧紀錄。</p>
-                    <div id="stocktake-list" class="space-y-3 mb-6 max-h-[60vh] overflow-y-auto no-scrollbar"></div>
-                    <button onclick="submitStocktake()" id="btn-stocktake-submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base">確認完成盤點</button>
                 </div>
             </div>
 
@@ -838,25 +782,22 @@
                     }
                 }
 
-                // 🌟 整合版：統一所有警示項目 (低水位優先)
-                let alertGoods = window.inventoryData.filter(i => {
-                    let safe = i.safe_stock_level || 0;
-                    return i.current_stock <= (safe * 1.5); // 只抓取等於小於 1.5 倍水位的項目
-                });
+                // 🌟 整合版：庫存最新狀況大盤 (包含成品與原料，低水位優先)
+                let allGoods = [...window.inventoryData];
 
-                alertGoods.sort((a, b) => {
+                allGoods.sort((a, b) => {
                     let safeA = a.safe_stock_level || 0; let safeB = b.safe_stock_level || 0;
-                    let pA = a.current_stock <= safeA ? 1 : 2;
-                    let pB = b.current_stock <= safeB ? 1 : 2;
+                    let pA = a.current_stock <= safeA ? 1 : (a.current_stock <= safeA * 1.5 ? 2 : 3);
+                    let pB = b.current_stock <= safeB ? 1 : (b.current_stock <= safeB * 1.5 ? 2 : 3);
                     if(pA !== pB) return pA - pB;
                     return a.current_stock - b.current_stock;
                 });
 
-                let filterHtml = '';
-                if (alertGoods.length === 0) {
-                    filterHtml = '<tr><td colspan="4" class="p-4 text-center text-emerald-600 font-bold">✅ 庫存皆在安全水位</td></tr>';
+                let statusHtml = '';
+                if (allGoods.length === 0) {
+                    statusHtml = '<tr><td colspan="4" class="p-4 text-center text-emerald-600 font-bold">尚無庫存資料</td></tr>';
                 } else {
-                    filterHtml = alertGoods.map(i => {
+                    statusHtml = allGoods.map(i => {
                         let qtyHtml = '<span class="text-slate-300">0</span>'; 
                         let etaHtml = '<span class="text-slate-400 font-bold">--</span>';
                         let rQty = 0;
@@ -884,18 +825,23 @@
                             }
                         }
                         
-                        let safe = i.safe_stock_level || 0; let isLow = i.current_stock <= safe;
-                        let stockClass = isLow ? 'text-red-600 animate-pulse' : 'text-amber-500';
+                        let safe = i.safe_stock_level || 0; 
+                        let isLow = i.current_stock <= safe; 
+                        let isWarn = !isLow && i.current_stock <= (safe * 1.5);
+                        let stockClass = 'text-emerald-600';
+                        if(isLow) stockClass = 'text-red-600 animate-pulse';
+                        else if(isWarn) stockClass = 'text-amber-500';
+
                         let displayName = i.item_type === '原料' ? i.item_name : i.item_code;
 
                         return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="p-2.5 font-black text-slate-700 truncate max-w-[140px]"><span class="text-[9px] bg-slate-100 text-slate-500 px-1 rounded mr-1">${i.item_type==='原料'?'🏭':'📦'}</span>${displayName}</td><td class="p-2.5 text-right font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="p-2.5 text-right">${qtyHtml}</td><td class="p-2.5 text-center text-[10px]">${etaHtml}</td></tr>`;
                     }).join('');
                 }
-                const uiAlertTable = document.getElementById('ui-filter-status-table-alert');
-                if (uiAlertTable) uiAlertTable.innerHTML = filterHtml;
+                const uiLatestStatusTable = document.getElementById('ui-filter-status-table-alert');
+                if (uiLatestStatusTable) uiLatestStatusTable.innerHTML = statusHtml;
 
                 if(document.getElementById('view-search-print').classList.contains('active')) renderItemSearch();
-                if(document.getElementById('view-catalog').classList.contains('active')) renderFilteredInventory();
+                if(document.getElementById('view-inventory-list').classList.contains('active')) renderFilteredInventory();
 
             } catch(fatalError) {
                 console.error("UI 渲染失敗", fatalError);
@@ -986,7 +932,7 @@
         }
 
         function renderInventoryListUI(data) {
-            const container = document.getElementById('catalog-list');
+            const container = document.getElementById('ui-inventory-list');
             if(!container) return; 
             if(!data || data.length === 0) { 
                 container.innerHTML = '<div class="text-center text-sm text-slate-400 font-bold py-10">無資料</div>'; 
@@ -1074,10 +1020,10 @@
             if(newVal === oldVal) return; 
             const { error } = await window._sb.from('items').update({ safe_stock_level: newVal }).eq('id', id); 
             if(!error) { 
-                const scrollPos = document.getElementById('catalog-list').scrollTop; 
+                const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
                 await loadItems(); 
                 renderFilteredInventory(); 
-                setTimeout(()=> { document.getElementById('catalog-list').scrollTop = scrollPos; }, 10); 
+                setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
             } 
         }
 
@@ -1089,10 +1035,10 @@
                 item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: `總表快速校正 (原:${oldQty} -> 新:${newQty})` 
             }]); 
             if(!error) { 
-                const scrollPos = document.getElementById('catalog-list').scrollTop; 
+                const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
                 await loadItems(); 
                 renderFilteredInventory(); 
-                setTimeout(()=> { document.getElementById('catalog-list').scrollTop = scrollPos; }, 10); 
+                setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
             } 
         }
 
@@ -1100,10 +1046,10 @@
             const val = parseInt(newVal) || 30; 
             const { error } = await window._sb.from('items').update({ stocktake_cycle: val }).eq('id', id); 
             if(!error) { 
-                const scrollPos = document.getElementById('catalog-list').scrollTop; 
+                const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
                 await loadItems(); 
                 renderFilteredInventory(); 
-                setTimeout(()=> { document.getElementById('catalog-list').scrollTop = scrollPos; }, 10); 
+                setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
             } 
         }
 
@@ -1111,10 +1057,10 @@
             const val = parseInt(newVal) || 15; 
             const { error } = await window._sb.from('items').update({ lead_time_days: val }).eq('id', id); 
             if(!error) { 
-                const scrollPos = document.getElementById('catalog-list').scrollTop; 
+                const scrollPos = document.getElementById('ui-inventory-list').scrollTop; 
                 await loadItems(); 
                 renderFilteredInventory(); 
-                setTimeout(()=> { document.getElementById('catalog-list').scrollTop = scrollPos; }, 10); 
+                setTimeout(()=> { document.getElementById('ui-inventory-list').scrollTop = scrollPos; }, 10); 
             } 
         }
 
@@ -1223,12 +1169,10 @@
                     await window._sb.from('inventory_ledgers').insert(ledgerEntries);
                 }
 
-                // 🚨 核心防護：強迫轉為 JSON 字串，並寫入正確欄位
-                const reqJsonStr = JSON.stringify(requestItems);
                 const payload = { 
                     req_no: reqNo, 
                     employee_id: window.currentUser?.id || null, 
-                    items_json: reqJsonStr,
+                    items_json: requestItems,
                     status: '待處理',
                     expected_date: expectedDate,
                     note: '庫存大盤手動生成'
@@ -1256,7 +1200,7 @@
             btn.disabled = false;
             
             await loadItems();
-            openInvReqHistory(); // 🚨 生成後自動跳轉至紀錄表
+            openInvReqHistory(); 
         }
 
         async function generateRequisition() {
@@ -1292,7 +1236,7 @@
                 await safeInsertRequisition(payload);
                 showSysToast('✅ 請購單已成功生成！採購系統已同步更新');
                 await loadItems(); 
-                openInvReqHistory(); // 🚨 生成後自動跳轉至紀錄表
+                openInvReqHistory(); 
             } catch(e) {
                 alert('生成失敗，請確認資料庫：\n' + e.message);
             }
