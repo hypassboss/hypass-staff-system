@@ -216,14 +216,12 @@
             try { let p = (typeof data === 'string') ? JSON.parse(data) : data; return Array.isArray(p) ? p : []; } catch(e) { return []; } 
         }
 
-        // 🌟 陣列轉譯摘要引擎
         function getItemSummary(items) {
             let arr = getSafeArray(items);
             if(arr.length === 0) return '<span class="text-slate-400 italic">無項目</span>';
             return arr.map(i => `${i.name} * ${parseFloat(i.qty).toFixed(0)}`).join('、');
         }
 
-        // 🌟 Toast 通知
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -271,35 +269,67 @@
             loadDashboardData();
         }
 
+        // 🌟 終極防彈紀錄撈取引擎：採購系統版
         async function fetchSafeReqs() {
             let reqData = [];
-            try { const { data: r1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false}); if (r1) reqData = r1; } catch(e) {}
+            try { 
+                const { data: r1, error: e1 } = await window._sb.from('requisitions').select('*, employees(full_name)').order('created_at', {ascending: false}); 
+                if (e1) {
+                    const { data: r1_fb } = await window._sb.from('requisitions').select('*').order('created_at', {ascending: false});
+                    if (r1_fb) reqData = r1_fb.map(x => ({...x, employees: {full_name: '未知'}}));
+                } else if (r1) {
+                    reqData = r1;
+                }
+            } catch(e) {}
+            
             try {
-                const { data: r2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中', '請購待處理', '已完成', '取消']).order('created_at', {ascending: false});
-                if (r2 && r2.length > 0) {
-                    let oldReqs = r2.filter(x => x.note && x.note.startsWith('REQ-')).map(x => ({
-                        id: x.id, req_no: x.note, employee_id: x.employee_id, employees: x.employees, items_json: x.raw_materials, target_items: x.target_items, status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status, created_at: x.created_at, is_legacy: true
+                const { data: r2, error: e2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').in('status', ['待處理', '已建檔', '採購中', '請購待處理', '已完成', '取消']).order('created_at', {ascending: false});
+                let safeR2 = [];
+                if (e2) {
+                    const { data: r2_fb } = await window._sb.from('purchase_orders').select('*').in('status', ['待處理', '已建檔', '採購中', '請購待處理', '已完成', '取消']).order('created_at', {ascending: false});
+                    safeR2 = r2_fb ? r2_fb.map(x => ({...x, employees: {full_name: '未知'}})) : [];
+                } else {
+                    safeR2 = r2 || [];
+                }
+
+                if (safeR2.length > 0) {
+                    let oldReqs = safeR2.filter(x => x.note && x.note.startsWith('REQ-')).map(x => ({
+                        id: x.id, req_no: x.note, employee_id: x.employee_id, employees: x.employees || { full_name: '未知' }, items_json: x.raw_materials, target_items: x.target_items, status: (x.status === '已建檔' || x.status === '請購待處理') ? '待處理' : x.status, created_at: x.created_at, is_legacy: true
                     }));
                     reqData = [...reqData, ...oldReqs];
                 }
             } catch(e) {}
+            
             reqData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             return reqData;
         }
 
         async function fetchSafePOs() {
             let poData = [];
-            try { const { data: p1 } = await window._sb.from('po_documents').select('*').order('created_at', {ascending: false}); if (p1) poData = p1.map(x => ({ ...x, is_legacy: false })); } catch(e) {}
+            try { 
+                const { data: p1 } = await window._sb.from('po_documents').select('*').order('created_at', {ascending: false}); 
+                if (p1) poData = p1.map(x => ({ ...x, is_legacy: false })); 
+            } catch(e) {}
+            
             try {
-                const { data: pos } = await window._sb.from('purchase_orders').select('*, employees(full_name)').like('note', 'PO-%').order('created_at', {ascending: false});
-                if (pos && pos.length > 0) {
-                    let oldPos = pos.map(x => {
+                const { data: pos, error: e2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').like('note', 'PO-%').order('created_at', {ascending: false});
+                let safePos = [];
+                if (e2) {
+                    const { data: pos_fb } = await window._sb.from('purchase_orders').select('*').like('note', 'PO-%').order('created_at', {ascending: false});
+                    safePos = pos_fb ? pos_fb.map(x => ({...x, employees: {full_name: '未知'}})) : [];
+                } else {
+                    safePos = pos || [];
+                }
+
+                if (safePos.length > 0) {
+                    let oldPos = safePos.map(x => {
                         let parts = (x.note||'').split('|||');
                         return { id: x.id, po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', status: x.status, expected_date: x.expected_date || '未定', items_json: x.raw_materials, exception_reason: null, created_at: x.created_at, is_legacy: true };
                     });
                     poData = [...poData, ...oldPos];
                 }
             } catch(e) {}
+            
             poData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             return poData;
         }
