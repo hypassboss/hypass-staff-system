@@ -763,15 +763,11 @@
         });
 
         window.onload = function() {
-            // 🌟 修復登入檢查與啟動邏輯
-            if(localStorage.getItem('admin_logged')==='true') {
-                document.getElementById('login-box').style.display='none'; 
-                document.getElementById('dashboard-ui').classList.remove('hidden'); 
-                document.getElementById('dashboard-ui').classList.add('flex');
-                
-                // 初始化與驗證採購系統
-                bootPurchase();
-            }
+            // 🌟 修復登入檢查與啟動邏輯，呼叫專用啟動函數
+            window.onload = bootPurchase;
+            
+            const enforceNavObserver = new MutationObserver(() => { const oldNav = document.querySelector('nav:not(#core-bottom-nav)'); if (oldNav) oldNav.remove(); });
+            enforceNavObserver.observe(document.body, { childList: true, subtree: true });
         }
     </script>
 </body>
