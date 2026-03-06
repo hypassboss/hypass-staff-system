@@ -20,7 +20,7 @@
         #app-wrapper { display: flex; width: 100%; height: 100vh; overflow: hidden; }
         #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; width: 100%; max-width: 28rem; margin: 0 auto; display: flex; flex-direction: column;}
         
-        /* 🌟 核心升級：電腦版滿版解放 */
+        /* 🌟 核心升級：電腦版滿版解放 + 視覺放大 */
         @media (min-width: 768px) { 
             #app-wrapper { align-items: flex-start; justify-content: center; padding: 24px; flex: 1; }
             #app-container { height: 100%; min-height: auto; max-height: none; width: 100%; max-width: 1400px; border-radius: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow-y: auto; background: #f8fafc; margin: 0; }
@@ -1573,7 +1573,7 @@
             return data; 
         }
 
-        // 🌟 防彈儲存機制：如果欄位不存在，自動攔截快取錯誤
+        // 🌟 終極防彈儲存機制：如果遇到快取問題，會跳出友善提示
         async function saveItem(e) { 
             e.preventDefault(); 
             let cat = document.getElementById('i-category').value === 'custom' ? document.getElementById('i-custom-category').value : document.getElementById('i-category').value; 
@@ -1588,7 +1588,7 @@
                 height: parseFloat(document.getElementById('i-height').value) || null,
                 folds: parseInt(document.getElementById('i-folds').value) || null,
                 area: parseFloat(document.getElementById('i-area').value) || null,
-                applicable_models: document.getElementById('i-models-years').value || null, // 🌟 合併後對應此欄位
+                applicable_models: document.getElementById('i-models-years').value || null,
                 qty_per_pack: parseInt(document.getElementById('i-qty').value) || 1, 
                 safe_stock_level: 0, 
                 lead_time_days: parseInt(document.getElementById('i-lead').value) || 15, 
@@ -1601,7 +1601,7 @@
                 if (error.message && error.message.includes('schema cache')) {
                     alert('🚨 資料庫快取尚未更新！\n\n系統已偵測到您在 Supabase 新增了欄位，但伺服器需要幾分鐘來刷新快取。\n\n解決方法：\n1. 請稍等 2~3 分鐘後再試。\n2. 或到 Supabase 後台 -> [Project Settings] -> [API] -> 點擊 [Reload schema cache] 按鈕。');
                 } else {
-                    alert('寫入失敗，請確認資料表是否已新增 length, width, height, folds, area 等欄位。\n' + error.message);
+                    alert('寫入失敗，請確認資料表是否已新增所有欄位。\n' + error.message);
                 }
             } else {
                 alert('✅ 成功！'); 
@@ -1734,7 +1734,7 @@
                 height: parseFloat(document.getElementById('fe-item-height').value) || null,
                 folds: parseInt(document.getElementById('fe-item-folds').value) || null,
                 area: parseFloat(document.getElementById('fe-item-area').value) || null,
-                applicable_models: document.getElementById('fe-item-models-years').value || null, // 🌟 合併後對應此欄位
+                applicable_models: document.getElementById('fe-item-models-years').value || null,
                 lead_time_days: parseInt(document.getElementById('fe-item-lead').value) || 15, 
                 stocktake_cycle: parseInt(document.getElementById('fe-item-cycle').value) || 30, 
                 bom_data: extractBomData('fe-bom-table-body') 
@@ -1745,7 +1745,7 @@
                 if (error.message && error.message.includes('schema cache')) {
                     alert('🚨 資料庫快取尚未更新！\n\n系統已偵測到您在 Supabase 新增了欄位，但伺服器需要幾分鐘來刷新快取。\n\n解決方法：\n1. 請稍等 2~3 分鐘後再試。\n2. 或到 Supabase 後台 -> [Project Settings] -> [API] -> 點擊 [Reload schema cache] 按鈕。');
                 } else {
-                    alert('寫入失敗，請確認資料表是否已新增 length, width, height, folds, area 等欄位。\n' + error.message);
+                    alert('寫入失敗，請確認資料表是否已新增所有欄位。\n' + error.message);
                 }
             } else { 
                 alert('✅ 已儲存修改！'); 
