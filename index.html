@@ -15,12 +15,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            margin: 0;
+            padding: 0;
         }
         .glass-card { 
             background: rgba(255, 255, 255, 0.95); 
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1), 0 10px 20px -5px rgba(0, 0, 0, 0.05); 
             border: 1px solid rgba(255, 255, 255, 0.8); 
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
         .input-field {
             width: 100%;
@@ -62,7 +65,7 @@
     <div id="toast-container" class="fixed top-10 left-1/2 transform -translate-x-1/2 z-[9999] flex flex-col space-y-3 pointer-events-none w-11/12 max-w-sm"></div>
 
     <div class="glass-card p-8 w-full max-w-sm mx-5 md:mx-auto rounded-[2.5rem] relative overflow-hidden z-10">
-        <div class="absolute top-0 right-0 bg-gradient-to-l from-sky-600 to-blue-500 text-white text-[10px] font-black px-4 py-1.5 rounded-bl-2xl shadow-sm tracking-widest">
+        <div onclick="emergencyReset()" class="absolute top-0 right-0 bg-gradient-to-l from-sky-600 to-blue-500 text-white text-[10px] font-black px-4 py-1.5 rounded-bl-2xl shadow-sm tracking-widest cursor-pointer active:scale-95 transition-transform" title="點擊清除系統快取">
             ERP PORTAL
         </div>
 
@@ -107,6 +110,16 @@
                 toast.style.animation = 'slideInLeft 0.4s ease-in reverse forwards'; 
                 setTimeout(() => toast.remove(), 400); 
             }, 3000);
+        }
+
+        // 🌟 緊急強制重置系統快取 (破解當機死迴圈)
+        function emergencyReset() {
+            localStorage.clear();
+            sessionStorage.clear();
+            showSysToast('🧹 系統快取已強制清除！即將重新載入...');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
         }
 
         async function empLogin() {
@@ -159,6 +172,9 @@
                 localStorage.setItem('hypass_emp_id', data.id);
                 localStorage.setItem('hypass_emp_name', data.full_name);
                 
+                // 重置防死迴圈計數器
+                sessionStorage.removeItem('jump_guard');
+                
                 showSysToast('✅ 身分驗證成功，正在進入系統...');
                 
                 // 動態按鈕回饋
@@ -166,7 +182,7 @@
                 btn.classList.remove('bg-slate-900', 'hover:bg-slate-800');
                 btn.classList.add('bg-emerald-600');
                 
-                // 1 秒後跳轉至員工大廳 (雙模態中心)
+                // 1 秒後跳轉至員工大廳
                 setTimeout(() => { 
                     window.location.href = 'app_hr.html'; 
                 }, 1000);
@@ -187,17 +203,26 @@
         // 預留給未來的 LINE LIFF 登入串接
         async function liffLogin() {
             showSysToast('⏳ LINE 登入模組載入中...');
-            // 如果您有提供 LIFF ID，將在此處初始化
-            // 預設提示：
             setTimeout(() => {
                 showSysToast('⚠️ 尚未綁定 LINE 帳號，請先使用手機號碼登入。');
             }, 1500);
         }
 
         window.onload = () => {
-            // 如果已經登入過，自動導向內部系統
+            // 🌟 判斷是否已登入，加入「死迴圈安全鎖」防止不斷來回跳轉當機
             if(localStorage.getItem('hypass_emp_id')) {
-                window.location.href = 'app_hr.html';
+                let jumps = parseInt(sessionStorage.getItem('jump_guard') || '0');
+                if (jumps > 3) {
+                    // 若跳轉超過 3 次，判定為死迴圈，強制清空登入狀態並留在此頁
+                    sessionStorage.removeItem('jump_guard');
+                    localStorage.removeItem('hypass_emp_id');
+                    localStorage.removeItem('hypass_emp_name');
+                    showSysToast('⚠️ 偵測到登入狀態衝突，已為您安全重置，請重新輸入資料。');
+                } else {
+                    // 記錄跳轉次數並放行
+                    sessionStorage.setItem('jump_guard', jumps + 1);
+                    window.location.href = 'app_hr.html';
+                }
             }
         };
     </script>
