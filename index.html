@@ -74,7 +74,7 @@
         </div>
         
         <h2 class="text-2xl font-black mb-1 text-slate-800 text-center tracking-wider">HYPASS 系統入口</h2>
-        <p class="text-[11px] text-slate-500 font-bold mb-8 text-center tracking-widest">請輸入您的專屬資料進行身分驗證</p>
+        <p class="text-[11px] text-slate-500 font-bold mb-8 text-center tracking-widest" id="status-text">請輸入您的專屬資料進行身分驗證</p>
         
         <div class="space-y-4 mb-8">
             <div>
@@ -112,14 +112,12 @@
             }, 3000);
         }
 
-        // 🌟 緊急強制重置系統快取 (破解當機死迴圈)
+        // 🌟 緊急強制重置系統快取
         function emergencyReset() {
             localStorage.clear();
             sessionStorage.clear();
-            showSysToast('🧹 系統快取已強制清除！即將重新載入...');
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1500);
+            showSysToast('🧹 系統快取已強制清除！');
+            setTimeout(() => { window.location.reload(); }, 1000);
         }
 
         async function empLogin() {
@@ -137,10 +135,7 @@
             btn.classList.add('opacity-80');
 
             try {
-                // 檢查是否已正確載入 shared.js 的 Supabase 連線
-                if (!window._sb) {
-                    throw new Error('系統連線模組尚未就緒，請重新整理網頁。');
-                }
+                if (!window._sb) throw new Error('系統連線模組尚未就緒，請重新整理網頁。');
 
                 // 查詢資料庫
                 const { data, error } = await window._sb.from('employees')
@@ -154,13 +149,13 @@
                     return;
                 }
 
-                if(data.employment_status !== '在職') {
-                    showSysToast('🚨 該帳號目前非在職狀態，無法登入');
+                if(data.employment_status !== '在職' || !data.is_approved) {
+                    showSysToast('🚨 該帳號尚未開通或非在職狀態，無法登入');
                     resetBtn(btn);
                     return;
                 }
 
-                // 驗證密碼: 身分證末四碼 (防呆：若輸入完整身分證也算對)
+                // 驗證密碼: 身分證末四碼
                 const idLast4 = data.id_number ? data.id_number.slice(-4) : '';
                 if(idNumInput !== idLast4 && idNumInput !== data.id_number) {
                     showSysToast('❌ 密碼 (身分證末四碼) 錯誤');
@@ -168,24 +163,19 @@
                     return;
                 }
 
-                // 🌟 登入成功：寫入 LocalStorage 並準備跳轉
+                // 🌟 登入成功：寫入 LocalStorage 並跳轉
                 localStorage.setItem('hypass_emp_id', data.id);
                 localStorage.setItem('hypass_emp_name', data.full_name);
                 
-                // 重置防死迴圈計數器
-                sessionStorage.removeItem('jump_guard');
-                
                 showSysToast('✅ 身分驗證成功，正在進入系統...');
                 
-                // 動態按鈕回饋
                 btn.innerHTML = '✔️ 登入成功';
                 btn.classList.remove('bg-slate-900', 'hover:bg-slate-800');
                 btn.classList.add('bg-emerald-600');
                 
-                // 1 秒後跳轉至員工大廳
                 setTimeout(() => { 
                     window.location.href = 'app_hr.html'; 
-                }, 1000);
+                }, 800);
 
             } catch(e) {
                 console.error("Login Error: ", e);
@@ -200,7 +190,6 @@
             btn.classList.remove('opacity-80');
         }
 
-        // 預留給未來的 LINE LIFF 登入串接
         async function liffLogin() {
             showSysToast('⏳ LINE 登入模組載入中...');
             setTimeout(() => {
@@ -208,20 +197,37 @@
             }, 1500);
         }
 
-        window.onload = () => {
-            // 🌟 判斷是否已登入，加入「死迴圈安全鎖」防止不斷來回跳轉當機
-            if(localStorage.getItem('hypass_emp_id')) {
-                let jumps = parseInt(sessionStorage.getItem('jump_guard') || '0');
-                if (jumps > 3) {
-                    // 若跳轉超過 3 次，判定為死迴圈，強制清空登入狀態並留在此頁
-                    sessionStorage.removeItem('jump_guard');
-                    localStorage.removeItem('hypass_emp_id');
-                    localStorage.removeItem('hypass_emp_name');
-                    showSysToast('⚠️ 偵測到登入狀態衝突，已為您安全重置，請重新輸入資料。');
-                } else {
-                    // 記錄跳轉次數並放行
-                    sessionStorage.setItem('jump_guard', jumps + 1);
-                    window.location.href = 'app_hr.html';
+        // 🌟 終極防死迴圈引擎：先向 DB 查水表再放行
+        window.onload = async () => {
+            const empId = localStorage.getItem('hypass_emp_id');
+            const btn = document.getElementById('btn-login');
+            const statusText = document.getElementById('status-text');
+
+            if(empId) {
+                btn.innerHTML = '<span class="animate-pulse tracking-widest">驗證安全憑證中...</span>'; 
+                btn.disabled = true;
+                statusText.innerText = '系統正在自動驗證您的登入狀態...';
+                
+                try {
+                    // 背景靜默檢查該員工是否依然有效
+                    const { data, error } = await window._sb.from('employees').select('is_approved, employment_status').eq('id', empId).single();
+                    
+                    if (data && data.is_approved && data.employment_status === '在職') {
+                        // 驗證通過，直接安全放行
+                        window.location.href = 'app_hr.html';
+                    } else {
+                        // 查無此人或已離職/拔除權限 ➔ 清除快取，留在首頁
+                        localStorage.removeItem('hypass_emp_id');
+                        localStorage.removeItem('hypass_emp_name');
+                        showSysToast('⚠️ 登入狀態已更新或失效，請重新登入。');
+                        resetBtn(btn);
+                        statusText.innerText = '請輸入您的專屬資料進行身分驗證';
+                    }
+                } catch(e) {
+                    // 如果只是單純網路斷線，不清快取，但也不要死迴圈跳轉
+                    console.warn("無法驗證背景狀態", e);
+                    resetBtn(btn);
+                    statusText.innerText = '請輸入您的專屬資料進行身分驗證';
                 }
             }
         };
