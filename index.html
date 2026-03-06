@@ -338,15 +338,18 @@
                     console.warn("LIFF初始化失敗:", e);
                 }
                 
-                // 繞過 LINE 環境直接進入電腦開發測試模式
-                if (!liffInitSuccess || (!liff.isInClient() && window.location.protocol !== 'file:')) {
-                    // 自動生成一個測試用的 ID
-                    globalLineId = "TEST_LOCAL_ID_" + Math.floor(Math.random()*10000);
-                } else {
-                    if (!liff.isLoggedIn()) { liff.login(); return; }
-                    const profile = await liff.getProfile();
-                    globalLineId = profile.userId;
+                // 🌟 改為全面啟動 LINE Web Login，徹底解決電腦版一直要求註冊的問題
+                if (!liffInitSuccess) {
+                    throw new Error("LINE 登入模組載入失敗，請確認網路連線。");
                 }
+                
+                if (!liff.isLoggedIn()) { 
+                    liff.login({ redirectUri: window.location.href }); 
+                    return; 
+                }
+
+                const profile = await liff.getProfile();
+                globalLineId = profile.userId;
 
                 const { data: user, error } = await window._sb.from('employees').select('*').eq('line_id', globalLineId).single();
                 
