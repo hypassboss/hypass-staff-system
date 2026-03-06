@@ -16,13 +16,9 @@
         #loading-screen { transition: opacity 0.5s ease; }
         #canvas-container { position: relative; width: 100%; height: 160px; background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 1rem; overflow: hidden; }
         #signature-pad { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
-        @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-        .toast-msg { animation: slideInLeft 0.4s ease-out forwards; }
     </style>
 </head>
 <body class="text-slate-800 flex items-center justify-center min-h-screen p-4">
-
-    <div id="toast-container" class="fixed top-10 left-1/2 transform -translate-x-1/2 z-[9999] flex flex-col space-y-3 pointer-events-none w-11/12 max-w-sm"></div>
 
     <div id="loading-screen" class="fixed inset-0 bg-slate-900 z-[100] flex flex-col items-center justify-center text-white">
         <div class="text-6xl mb-6 animate-bounce">🛡️</div>
@@ -34,15 +30,15 @@
     <div id="pending-screen" class="hidden glass-panel p-8 w-full max-w-sm text-center relative overflow-hidden z-50">
         <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-4xl mb-6 shadow-inner">⏳</div>
         <h2 class="text-2xl font-black mb-3 text-slate-800">資料審核中</h2>
-        <p class="text-sm font-bold text-slate-500 mb-8 leading-relaxed">您的註冊資料已送出！<br>請等待管理員開通權限後，<br>再次開啟系統即可進入。</p>
-        <button onclick="emergencyReset()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition text-lg tracking-widest">返回首頁</button>
+        <p class="text-sm font-bold text-slate-500 mb-8 leading-relaxed">您的註冊資料已送出！<br>請等待管理員開通權限後，<br>再次開啟此畫面即可進入系統。</p>
+        <button onclick="liff.closeWindow()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition text-lg tracking-widest">關閉視窗</button>
     </div>
 
     <div id="unauthorized-screen" class="fixed inset-0 bg-slate-50 z-[9998] hidden flex-col items-center justify-center p-6 text-center">
         <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center text-5xl mb-6 shadow-inner">🚫</div>
-        <h2 class="text-2xl font-black text-slate-800 mb-2">無權限訪問</h2>
-        <p class="text-sm font-bold text-slate-500 leading-relaxed mb-8">您的帳號目前處於未開通或停權狀態。<br>如有疑問，請聯繫系統管理員。</p>
-        <button onclick="emergencyReset()" class="w-full max-w-xs bg-slate-900 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition">重新驗證</button>
+        <h2 id="unauth-title" class="text-2xl font-black text-slate-800 mb-2">無權限訪問</h2>
+        <p id="unauth-desc" class="text-sm font-bold text-slate-500 leading-relaxed mb-8">您的帳號目前處於未開通或停權狀態。<br>如有疑問，請聯繫系統管理員。</p>
+        <button onclick="clearAndReload()" class="w-full max-w-xs bg-slate-900 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition">重新驗證與清除快取</button>
     </div>
 
     <div id="register-screen" class="hidden w-full max-w-md mx-auto z-40 pb-10">
@@ -52,6 +48,7 @@
         </div>
 
         <form id="reg-form" class="space-y-5" onsubmit="submitRegistration(event)">
+            
             <div class="glass-panel p-6 shadow-sm border-t-4 border-sky-400">
                 <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2 text-xl">👤</span>基本身分資料</h3>
                 <div class="space-y-4">
@@ -72,7 +69,7 @@
                         <input type="email" id="reg-email" class="input-field" placeholder="example@hypass.com" required>
                     </div>
                     <div class="bg-sky-50 p-3 rounded-xl border border-sky-100">
-                        <label class="text-[11px] font-black text-sky-700 ml-1 block mb-1 uppercase tracking-wider">到職日期</label>
+                        <label class="text-[11px] font-black text-sky-700 ml-1 block mb-1 uppercase tracking-wider">到職日期 (舊員工請填原到職日)</label>
                         <input type="date" id="reg-onboard-date" class="input-field border-sky-200 focus:border-sky-500 font-bold" required>
                     </div>
                     <div>
@@ -82,10 +79,24 @@
                                 <option value="" disabled selected>選擇縣市</option>
                             </select>
                             <select id="reg-district" class="input-field select-arrow w-1/2 p-3 text-sm" required>
-                                <option value="" disabled selected>鄉鎮區</option>
+                                <option value="" disabled selected>鄉鎮市區</option>
                             </select>
                         </div>
-                        <input type="text" id="reg-address-detail" class="input-field p-3 text-sm" placeholder="詳細地址" required>
+                        <input type="text" id="reg-address-detail" class="input-field p-3 text-sm" placeholder="詳細地址 (如: 某路某段某號)" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 shadow-sm border-t-4 border-red-400">
+                <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2 text-xl">🚨</span>緊急聯絡人</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[11px] font-black text-red-500 ml-1 block mb-1 uppercase tracking-wider">聯絡人姓名</label>
+                        <input type="text" id="reg-emer-name" class="input-field border-red-100 focus:border-red-400 focus:shadow-[0_0_0_4px_rgba(248,113,113,0.1)]" placeholder="聯絡人姓名與關係" required>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-black text-red-500 ml-1 block mb-1 uppercase tracking-wider">緊急電話</label>
+                        <input type="tel" id="reg-emer-phone" class="input-field border-red-100 focus:border-red-400 focus:shadow-[0_0_0_4px_rgba(248,113,113,0.1)]" placeholder="聯絡人手機" required>
                     </div>
                 </div>
             </div>
@@ -94,72 +105,248 @@
                 <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2 text-xl">🏦</span>撥薪帳戶資料</h3>
                 <div class="space-y-4">
                     <div>
+                        <label class="text-[11px] font-black text-slate-500 ml-1 block mb-1 uppercase tracking-wider">撥款銀行</label>
                         <select id="reg-bank-code" class="input-field select-arrow text-sm" required>
                             <option value="" disabled selected>請選擇您的銀行</option>
-                            <option value="822-中國信託">822 中國信託</option>
-                            <option value="804-中華郵政">804 中華郵政</option>
-                            <option value="013-國泰世華">013 國泰世華</option>
-                            <option value="812-台新銀行">812 台新銀行</option>
+                            <option value="004-臺灣銀行">004 臺灣銀行</option>
+                            <option value="005-土地銀行">005 土地銀行</option>
+                            <option value="006-合作金庫">006 合作金庫</option>
+                            <option value="007-第一銀行">007 第一銀行</option>
+                            <option value="008-華南銀行">008 華南銀行</option>
+                            <option value="009-彰化銀行">009 彰化銀行</option>
+                            <option value="011-上海銀行">011 上海銀行</option>
                             <option value="012-台北富邦">012 台北富邦</option>
+                            <option value="013-國泰世華">013 國泰世華</option>
+                            <option value="016-高雄銀行">016 高雄銀行</option>
+                            <option value="017-兆豐銀行">017 兆豐銀行</option>
+                            <option value="050-臺灣企銀">050 臺灣企銀</option>
+                            <option value="052-渣打銀行">052 渣打銀行</option>
+                            <option value="053-台中銀行">053 台中銀行</option>
+                            <option value="054-京城銀行">054 京城銀行</option>
+                            <option value="081-匯豐銀行">081 匯豐銀行</option>
+                            <option value="102-華泰銀行">102 華泰銀行</option>
+                            <option value="103-新光銀行">103 新光銀行</option>
+                            <option value="108-陽信銀行">108 陽信銀行</option>
+                            <option value="118-板信銀行">118 板信銀行</option>
+                            <option value="147-三信銀行">147 三信銀行</option>
+                            <option value="803-聯邦銀行">803 聯邦銀行</option>
+                            <option value="804-中華郵政">804 中華郵政(郵局)</option>
+                            <option value="805-遠東銀行">805 遠東銀行</option>
+                            <option value="806-元大銀行">806 元大銀行</option>
+                            <option value="807-永豐銀行">807 永豐銀行</option>
+                            <option value="808-玉山銀行">808 玉山銀行</option>
+                            <option value="809-凱基銀行">809 凱基銀行</option>
+                            <option value="810-星展銀行">810 星展銀行</option>
+                            <option value="812-台新銀行">812 台新銀行</option>
+                            <option value="816-安泰銀行">816 安泰銀行</option>
+                            <option value="822-中國信託">822 中國信託</option>
+                            <option value="823-將來銀行">823 將來銀行</option>
+                            <option value="824-連線銀行">824 連線銀行(LINE Bank)</option>
+                            <option value="826-樂天銀行">826 樂天銀行</option>
+                            <option value="399-農漁會信用部">399 台灣各地農漁會</option>
                         </select>
                     </div>
-                    <input type="number" id="reg-bank-acc" class="input-field font-mono text-lg tracking-wider" placeholder="純數字帳號" required>
-                    <input type="text" id="reg-bank-user" class="input-field" placeholder="存摺戶名" required>
+                    <div>
+                        <label class="text-[11px] font-black text-slate-500 ml-1 block mb-1 uppercase tracking-wider">銀行帳號</label>
+                        <input type="number" id="reg-bank-acc" class="input-field font-mono text-lg tracking-wider" placeholder="請輸入純數字帳號" required>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-black text-slate-500 ml-1 block mb-1 uppercase tracking-wider">存摺戶名</label>
+                        <input type="text" id="reg-bank-user" class="input-field" placeholder="須與身分證姓名相符" required>
+                    </div>
                 </div>
             </div>
 
             <div class="glass-panel p-6 shadow-sm border-t-4 border-slate-700">
-                <div class="flex justify-between items-center mb-5 border-b pb-3">
-                    <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">⚖️</span>勞動契約</h3>
-                    <span id="contract-version-badge" class="text-[10px] bg-slate-800 text-white px-2 py-0.5 rounded font-black">載入中</span>
+                <div class="flex justify-between items-end border-b border-slate-100 pb-3 mb-5">
+                    <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">⚖️</span>勞動契約與規章</h3>
+                    <span id="contract-version-badge" class="text-[10px] bg-slate-800 text-white px-2 py-0.5 rounded font-black shadow-sm tracking-widest">載入中</span>
                 </div>
-                <div id="dynamic-contract-content" class="bg-slate-50 p-4 rounded-xl border text-[11px] text-slate-700 mb-6 h-64 overflow-y-auto shadow-inner">
+                
+                <div id="dynamic-contract-content" class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200 text-[11px] text-slate-700 leading-relaxed text-justify mb-6 h-64 overflow-y-auto shadow-inner">
                     <p class="text-center font-bold text-slate-400 py-10">資料連線中...</p>
                 </div>
+
                 <div class="mb-4">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">數位簽名區</span>
-                        <button type="button" onclick="clearSignature()" class="text-[10px] bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg font-bold">清除</button>
+                        <button type="button" onclick="clearSignature()" class="text-[10px] bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg font-bold hover:bg-slate-300 transition">清除重簽</button>
                     </div>
-                    <div id="canvas-container"><canvas id="signature-pad"></canvas></div>
+                    <div id="canvas-container">
+                        <canvas id="signature-pad"></canvas>
+                    </div>
                 </div>
+
                 <label class="flex items-start space-x-3 cursor-pointer bg-slate-50 p-3 rounded-xl border border-slate-200 mb-6 shadow-sm">
                     <input type="checkbox" id="reg-agree" class="w-5 h-5 mt-0.5 accent-slate-900" required>
-                    <span class="text-xs font-bold text-slate-700 leading-relaxed">本人已詳細閱讀並完全同意上述聘僱合約，並確認數位簽章具備法律效力。</span>
+                    <span class="text-xs font-bold text-slate-700 leading-relaxed">本人已詳細閱讀並完全同意上述聘僱合約與管理規章，並確認數位簽章具備法律效力，且所有填寫資料皆屬實。</span>
                 </label>
-                <button type="submit" id="btn-submit-reg" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition text-lg tracking-widest">確認送出並建檔</button>
+
+                <button type="submit" id="btn-submit-reg" class="w-full bg-gradient-to-r from-slate-900 to-slate-800 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition text-lg tracking-widest">確認送出並建檔</button>
             </div>
         </form>
     </div>
 
-    <script src="shared.js?v=1001"></script>
+    <script src="shared.js?v=999"></script>
     <script>
         let sigCanvas, sigCtx, isDrawing = false;
         let globalLineId = "";
-        let currentContractVersion = "V1.0";
+        let currentLoadedContractVersion = "V1.0"; 
 
-        // 🌟 緊急快取清理
-        function emergencyReset() { localStorage.clear(); sessionStorage.clear(); window.location.reload(); }
+        const twCounties = {
+            "基隆市": ["仁愛區", "信義區", "中正區", "中山區", "安樂區", "暖暖區", "七堵區"],
+            "台北市": ["中正區", "大同區", "中山區", "松山區", "大安區", "萬華區", "信義區", "士林區", "北投區", "內湖區", "南港區", "文山區"],
+            "新北市": ["板橋區", "汐止區", "深坑區", "石碇區", "瑞芳區", "平溪區", "雙溪區", "貢寮區", "新店區", "坪林區", "烏來區", "永和區", "中和區", "土城區", "三峽區", "樹林區", "鶯歌區", "三重區", "新莊區", "泰山區", "林口區", "蘆洲區", "五股區", "八里區", "淡水區", "三芝區", "石門區", "金山區", "萬里區"],
+            "桃園市": ["桃園區", "中壢區", "平鎮區", "八德區", "楊梅區", "蘆竹區", "大溪區", "龍潭區", "龜山區", "大園區", "觀音區", "新屋區", "復興區"],
+            "新竹市": ["東區", "北區", "香山區"],
+            "新竹縣": ["竹北市", "竹東鎮", "新埔鎮", "關西鎮", "湖口鄉", "新豐鄉", "芎林鄉", "橫山鄉", "北埔鄉", "寶山鄉", "峨眉鄉", "尖石鄉", "五峰鄉"],
+            "苗栗縣": ["苗栗市", "苑裡鎮", "通霄鎮", "竹南鎮", "頭份市", "後龍鎮", "卓蘭鎮", "大湖鄉", "公館鄉", "銅鑼鄉", "南庄鄉", "頭屋鄉", "三義鄉", "西湖鄉", "造橋鄉", "三灣鄉", "獅潭鄉", "泰安鄉"],
+            "台中市": ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "霧峰區", "烏日區", "豐原區", "后里區", "石岡區", "東勢區", "和平區", "新社區", "潭子區", "大雅區", "神岡區", "大肚區", "沙鹿區", "龍井區", "梧棲區", "清水區", "大甲區", "外埔區", "大安區"],
+            "彰化縣": ["彰化市", "鹿港鎮", "和美鎮", "線西鄉", "伸港鄉", "福興鄉", "秀水鄉", "花壇鄉", "芬園鄉", "員林市", "溪湖鎮", "田中鎮", "大村鄉", "埔鹽鄉", "埔心鄉", "永靖鄉", "社頭鄉", "二水鄉", "北斗鎮", "二林鎮", "田尾鄉", "埤頭鄉", "芳苑鄉", "大城鄉", "竹塘鄉", "溪州鄉"],
+            "南投縣": ["南投市", "埔里鎮", "草屯鎮", "竹山鎮", "集集鎮", "名間鄉", "鹿谷鄉", "中寮鄉", "魚池鄉", "國姓鄉", "水里鄉", "信義鄉", "仁愛鄉"],
+            "雲林縣": ["斗六市", "斗南鎮", "虎尾鎮", "西螺鎮", "土庫鎮", "北港鎮", "古坑鄉", "大埤鄉", "莿桐鄉", "林內鄉", "二崙鄉", "崙背鄉", "麥寮鄉", "東勢鄉", "褒忠鄉", "臺西鄉", "元長鄉", "四湖鄉", "口湖鄉", "水林鄉"],
+            "嘉義市": ["東區", "西區"],
+            "嘉義縣": ["太保市", "朴子市", "布袋鎮", "大林鎮", "民雄鄉", "溪口鄉", "新港鄉", "六腳鄉", "東石鄉", "義竹鄉", "鹿草鄉", "水上鄉", "中埔鄉", "竹崎鄉", "梅山鄉", "番路鄉", "大埔鄉", "阿里山鄉"],
+            "台南市": ["中西區", "東區", "南區", "北區", "安平區", "安南區", "永康區", "歸仁區", "新化區", "左鎮區", "玉井區", "楠西區", "南化區", "仁德區", "關廟區", "龍崎區", "官田區", "麻豆區", "佳里區", "西港區", "七股區", "將軍區", "學甲區", "北門區", "新營區", "後壁區", "白河區", "東山區", "六甲區", "下營區", "柳營區", "鹽水區", "善化區", "大內區", "山上區", "新市區", "安定區"],
+            "高雄市": ["楠梓區", "左營區", "鼓山區", "三民區", "鹽埕區", "前金區", "新興區", "苓雅區", "前鎮區", "旗津區", "小港區", "鳳山區", "林園區", "大寮區", "大樹區", "大社區", "仁武區", "鳥松區", "岡山區", "橋頭區", "燕巢區", "田寮區", "阿蓮區", "路竹區", "湖內區", "茄萣區", "彌陀區", "永安區", "梓官區", "旗山區", "美濃區", "六龜區", "甲仙區", "杉林區", "內門區", "茂林區", "桃源區", "那瑪夏區"],
+            "屏東縣": ["屏東市", "潮州鎮", "東港鎮", "恆春鎮", "萬丹鄉", "長治鄉", "麟洛鄉", "九如鄉", "里港鄉", "鹽埔鄉", "高樹鄉", "萬巒鄉", "內埔鄉", "竹田鄉", "新埤鄉", "枋寮鄉", "新園鄉", "崁頂鄉", "林邊鄉", "南州鄉", "佳冬鄉", "琉球鄉", "車城鄉", "滿州鄉", "枋山鄉", "三地門鄉", "霧臺鄉", "瑪家鄉", "泰武鄉", "來義鄉", "春日鄉", "獅子鄉", "牡丹鄉"],
+            "宜蘭縣": ["宜蘭市", "羅東鎮", "蘇澳鎮", "頭城鎮", "礁溪鄉", "壯圍鄉", "員山鄉", "冬山鄉", "五結鄉", "三星鄉", "大同鄉", "南澳鄉"],
+            "花蓮縣": ["花蓮市", "鳳林鎮", "玉里鎮", "新城鄉", "吉安鄉", "壽豐鄉", "光復鄉", "豐濱鄉", "瑞穗鄉", "富里鄉", "秀林鄉", "萬榮鄉", "卓溪鄉"],
+            "台東縣": ["臺東市", "成功鎮", "關山鎮", "卑南鄉", "大武鄉", "太麻里鄉", "東河鄉", "長濱鄉", "鹿野鄉", "池上鄉", "綠島鄉", "延平鄉", "海端鄉", "達仁鄉", "金峰鄉", "蘭嶼鄉"],
+            "澎湖縣": ["馬公市", "湖西鄉", "白沙鄉", "西嶼鄉", "望安鄉", "七美鄉"],
+            "金門縣": ["金城鎮", "金湖鎮", "金沙鎮", "金寧鄉", "烈嶼鄉", "烏坵鄉"],
+            "連江縣": ["南竿鄉", "北竿鄉", "莒光鄉", "東引鄉"]
+        };
 
-        // 🌟 智能路由路由分發
+        function populateCities() {
+            const citySelect = document.getElementById('reg-city');
+            for (let city in twCounties) {
+                citySelect.innerHTML += `<option value="${city}">${city}</option>`;
+            }
+        }
+
+        function updateDistricts() {
+            const city = document.getElementById('reg-city').value;
+            const distSelect = document.getElementById('reg-district');
+            distSelect.innerHTML = '<option value="" disabled selected>鄉鎮市區</option>';
+            if(twCounties[city]) {
+                twCounties[city].forEach(d => {
+                    distSelect.innerHTML += `<option value="${d}">${d}</option>`;
+                });
+            }
+        }
+
+        function initSignaturePad() {
+            sigCanvas = document.getElementById('signature-pad');
+            if(!sigCanvas) return;
+            sigCtx = sigCanvas.getContext('2d');
+            
+            sigCanvas.width = sigCanvas.offsetWidth;
+            sigCanvas.height = sigCanvas.offsetHeight;
+            sigCtx.lineWidth = 3;
+            sigCtx.lineCap = 'round';
+            sigCtx.strokeStyle = '#0f172a';
+
+            const startPos = (e) => { isDrawing = true; draw(e); };
+            const endPos = () => { isDrawing = false; sigCtx.beginPath(); };
+            const draw = (e) => {
+                if(!isDrawing) return;
+                e.preventDefault();
+                let x = e.clientX || (e.touches && e.touches[0].clientX);
+                let y = e.clientY || (e.touches && e.touches[0].clientY);
+                let rect = sigCanvas.getBoundingClientRect();
+                sigCtx.lineTo(x - rect.left, y - rect.top);
+                sigCtx.stroke();
+                sigCtx.beginPath();
+                sigCtx.moveTo(x - rect.left, y - rect.top);
+            };
+
+            sigCanvas.addEventListener('mousedown', startPos);
+            sigCanvas.addEventListener('mouseup', endPos);
+            sigCanvas.addEventListener('mousemove', draw);
+            sigCanvas.addEventListener('touchstart', startPos, {passive: false});
+            sigCanvas.addEventListener('touchend', endPos);
+            sigCanvas.addEventListener('touchmove', draw, {passive: false});
+        }
+
+        function clearSignature() {
+            if(sigCtx && sigCanvas) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+        }
+
+        async function fetchLatestContract() {
+            try {
+                const { data, error } = await window._sb.from('company_forms').select('*').eq('form_type', 'employment_contract').single();
+                if(data) {
+                    currentLoadedContractVersion = data.form_version;
+                    document.getElementById('contract-version-badge').innerText = data.form_version;
+                    document.getElementById('dynamic-contract-content').innerHTML = `
+                        <p class="font-bold text-sky-800 bg-sky-100 p-2 rounded border border-sky-200 mb-2">${data.title || '勞動契約與管理規章'}</p>
+                        ${data.content}
+                    `;
+                }
+            } catch(e) {
+                console.log("合約抓取失敗，使用預設值", e);
+                document.getElementById('contract-version-badge').innerText = "V1.0";
+                document.getElementById('dynamic-contract-content').innerHTML = "<p>合約載入失敗，請聯繫管理員確認後台設定。</p>";
+            }
+        }
+
+        function clearAndReload() {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.reload();
+        }
+
+        // 🌟 動態智能路由：確保新登入員工依權限分流，絕不踩雷
         function getTargetUrl(empData) {
             if (empData.perm_inventory) return 'app_inventory.html';
             if (empData.perm_purchase) return 'app_purchase.html';
             if (empData.perm_sales) return 'app_sales.html';
             if (empData.perm_finance) return 'app_finance.html';
-            return 'app_hr.html';
+            return 'app_hr.html'; 
         }
 
         async function initApp() {
+            populateCities(); 
+            
+            // 🌟 終極死迴圈物理切斷機制
+            let loopCount = parseInt(sessionStorage.getItem('hypass_loop_guard') || '0');
+            if (loopCount >= 2) {
+                sessionStorage.removeItem('hypass_loop_guard');
+                localStorage.removeItem('hypass_emp_id');
+                localStorage.removeItem('hypass_emp_name');
+                document.getElementById('loading-screen').style.display = 'none';
+                
+                const unauthScreen = document.getElementById('unauthorized-screen');
+                unauthScreen.classList.remove('hidden');
+                unauthScreen.classList.add('flex');
+                document.getElementById('unauth-title').innerText = '系統已攔截異常';
+                document.getElementById('unauth-desc').innerHTML = '偵測到權限異常跳轉迴圈。<br>已安全阻斷並清除快取。<br>請點擊下方按鈕重新驗證。';
+                return; // 🛑 絕對停止所有動作
+            }
+
             try {
-                if(!window._sb) throw new Error("Supabase 未初始化");
+                if(!window._sb) throw new Error("Supabase 尚未初始化，請確認 shared.js 內的金鑰設定是否正確。");
+
+                const LIFF_ID = "2009148826-RoogHmxk"; 
+                let liffInitSuccess = false;
                 
-                const LIFF_ID = "2009148826-RoogHmxk";
-                await liff.init({ liffId: LIFF_ID });
+                try {
+                    await liff.init({ liffId: LIFF_ID });
+                    liffInitSuccess = true;
+                } catch(e) {
+                    console.warn("LIFF初始化失敗:", e);
+                }
                 
-                if (!liff.isLoggedIn()) { liff.login(); return; }
-                const profile = await liff.getProfile();
-                globalLineId = profile.userId;
+                // 繞過 LINE 環境直接進入電腦開發測試模式
+                if (!liffInitSuccess || (!liff.isInClient() && window.location.protocol !== 'file:')) {
+                    // 自動生成一個測試用的 ID
+                    globalLineId = "TEST_LOCAL_ID_" + Math.floor(Math.random()*10000);
+                } else {
+                    if (!liff.isLoggedIn()) { liff.login(); return; }
+                    const profile = await liff.getProfile();
+                    globalLineId = profile.userId;
+                }
 
                 const { data: user, error } = await window._sb.from('employees').select('*').eq('line_id', globalLineId).single();
                 
@@ -167,75 +354,92 @@
                 setTimeout(() => { document.getElementById('loading-screen').style.display = 'none'; }, 500);
 
                 if (user) {
+                    // 🌟 極度重要：必須在這裡補寫入憑證，否則 shared.js 會認不出人！
                     localStorage.setItem('hypass_emp_id', user.id);
                     localStorage.setItem('hypass_emp_name', user.full_name);
+
                     if (user.is_approved && user.employment_status === '在職') {
+                        // 啟動迴圈計數，3秒後解除警報
+                        sessionStorage.setItem('hypass_loop_guard', loopCount + 1);
+                        setTimeout(() => { sessionStorage.removeItem('hypass_loop_guard'); }, 3000);
+                        
+                        // 使用智能動態路由，確保安全著陸
                         window.location.href = getTargetUrl(user);
-                    } else if (user.employment_status === '離職') {
+                    } else if (user.employment_status === '離職' || user.employment_status === '留職停薪') {
                         document.getElementById('unauthorized-screen').classList.remove('hidden');
+                        document.getElementById('unauthorized-screen').classList.add('flex');
                     } else {
                         document.getElementById('pending-screen').classList.remove('hidden');
                     }
                 } else {
                     document.getElementById('register-screen').classList.remove('hidden');
-                    initSignaturePad();
-                    fetchLatestContract();
+                    await fetchLatestContract();
+                    setTimeout(initSignaturePad, 300);
                 }
-            } catch (err) { alert('驗證失敗，請於 LINE 內開啟'); }
-        }
-
-        function initSignaturePad() {
-            sigCanvas = document.getElementById('signature-pad');
-            if(!sigCanvas) return;
-            sigCtx = sigCanvas.getContext('2d');
-            sigCanvas.width = sigCanvas.offsetWidth;
-            sigCanvas.height = sigCanvas.offsetHeight;
-            sigCtx.lineWidth = 3; sigCtx.strokeStyle = '#0f172a';
-            const start = (e) => { isDrawing = true; draw(e); };
-            const end = () => { isDrawing = false; sigCtx.beginPath(); };
-            const draw = (e) => {
-                if(!isDrawing) return; e.preventDefault();
-                let x = e.clientX || (e.touches && e.touches[0].clientX);
-                let y = e.clientY || (e.touches && e.touches[0].clientY);
-                let rect = sigCanvas.getBoundingClientRect();
-                sigCtx.lineTo(x - rect.left, y - rect.top); sigCtx.stroke();
-                sigCtx.beginPath(); sigCtx.moveTo(x - rect.left, y - rect.top);
-            };
-            sigCanvas.addEventListener('mousedown', start); sigCanvas.addEventListener('mouseup', end); sigCanvas.addEventListener('mousemove', draw);
-            sigCanvas.addEventListener('touchstart', start, {passive:false}); sigCanvas.addEventListener('touchend', end); sigCanvas.addEventListener('touchmove', draw, {passive:false});
-        }
-
-        async function fetchLatestContract() {
-            const { data } = await window._sb.from('company_forms').select('*').eq('form_type', 'employment_contract').single();
-            if(data) {
-                currentContractVersion = data.form_version;
-                document.getElementById('contract-version-badge').innerText = data.form_version;
-                document.getElementById('dynamic-contract-content').innerHTML = data.content;
+            } catch (err) {
+                console.error('System Init Error:', err);
+                const errText = document.getElementById('loading-error-text');
+                if(errText) errText.innerText = err.message || err;
             }
         }
 
         async function submitRegistration(e) {
             e.preventDefault();
+            
+            const blank = document.createElement('canvas');
+            blank.width = sigCanvas.width; blank.height = sigCanvas.height;
+            if(sigCanvas.toDataURL() === blank.toDataURL()) {
+                alert('請在合約下方空白處完成您的數位簽名！'); return;
+            }
+
             const btn = document.getElementById('btn-submit-reg');
-            btn.disabled = true; btn.innerText = '處理中...';
+            btn.innerText = '資料寫入中...';
+            btn.disabled = true;
+
+            const bankVal = document.getElementById('reg-bank-code').value;
+            const [bankCode, bankName] = bankVal.split('-');
+            
+            const fullAddress = document.getElementById('reg-city').value + document.getElementById('reg-district').value + document.getElementById('reg-address-detail').value;
+            const onboardDate = document.getElementById('reg-onboard-date').value;
+
             const payload = {
-                line_id: globalLineId, full_name: document.getElementById('reg-name').value,
+                line_id: globalLineId,
+                full_name: document.getElementById('reg-name').value,
                 id_number: document.getElementById('reg-idnum').value.toUpperCase(),
                 phone: document.getElementById('reg-phone').value,
-                bank_code: document.getElementById('reg-bank-code').value.split('-')[0],
-                bank_name: document.getElementById('reg-bank-code').value.split('-')[1],
+                address: fullAddress,
+                emergency_contact: document.getElementById('reg-emer-name').value,
+                emergency_phone: document.getElementById('reg-emer-phone').value,
+                bank_code: bankCode,
+                bank_name: bankName,
                 bank_account: document.getElementById('reg-bank-acc').value,
                 bank_user_name: document.getElementById('reg-bank-user').value,
-                onboarding_date: document.getElementById('reg-onboard-date').value,
+                onboarding_date: onboardDate, 
+                email: document.getElementById('reg-email').value, 
+                nda_signed_at: new Date().toISOString(),
                 signature_data: sigCanvas.toDataURL("image/png"),
-                signed_contract_version: currentContractVersion,
-                employment_status: '在職', is_approved: false
+                signed_contract_version: currentLoadedContractVersion,
+                is_approved: false,
+                employment_status: '在職'
             };
-            const { error } = await window._sb.from('employees').insert([payload]);
-            if (!error) {
+
+            try {
+                const { error } = await window._sb.from('employees').insert([payload]);
+                if (error) {
+                    if(error.code === '23505') throw new Error('身分證字號已被註冊！');
+                    throw error;
+                }
+                
+                const bossMsg = `⚠️ 【新進/舊員工註冊通知】\n員工「${payload.full_name}」已提交基本資料與合約簽署。\n\n👉 系統提示：請登入後台「待辦審核」確認身分，並執行【開通】以配發員工編號，或予以駁回刪除。`;
+                window._sb.functions.invoke('line-webhook', { body: { action: 'notify_boss_new_emp', name: payload.full_name, message: bossMsg } }).catch(err=>console.log("Webhook 忽略:", err));
+
                 document.getElementById('register-screen').classList.add('hidden');
                 document.getElementById('pending-screen').classList.remove('hidden');
-            } else { alert('註冊失敗：' + error.message); btn.disabled = false; }
+            } catch (err) {
+                alert('註冊失敗：\n' + (err.message || '資料庫連線錯誤，請確認 Supabase 欄位是否齊全 (包含 signature_data)'));
+                btn.innerText = '確認送出並建檔';
+                btn.disabled = false;
+            }
         }
 
         window.onload = initApp;
