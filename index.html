@@ -94,6 +94,20 @@
                 </div>
             </div>
 
+            <div class="glass-panel p-6 shadow-sm border-t-4 border-red-400">
+                <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2 text-xl">🚨</span>緊急聯絡人</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[11px] font-black text-red-500 ml-1 block mb-1 uppercase tracking-wider">聯絡人姓名</label>
+                        <input type="text" id="reg-emer-name" class="input-field border-red-100 focus:border-red-400 focus:shadow-[0_0_0_4px_rgba(248,113,113,0.1)]" placeholder="聯絡人姓名與關係" required>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-black text-red-500 ml-1 block mb-1 uppercase tracking-wider">緊急電話</label>
+                        <input type="tel" id="reg-emer-phone" class="input-field border-red-100 focus:border-red-400 focus:shadow-[0_0_0_4px_rgba(248,113,113,0.1)]" placeholder="聯絡人手機" required>
+                    </div>
+                </div>
+            </div>
+
             <div class="glass-panel p-6 shadow-sm border-t-4 border-emerald-500">
                 <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2 text-xl">🏦</span>撥薪帳戶資料</h3>
                 <div class="space-y-4">
@@ -134,7 +148,7 @@
         </form>
     </div>
 
-    <script src="shared.js?v=1004"></script>
+    <script src="shared.js?v=1005"></script>
     <script>
         let sigCanvas, sigCtx, isDrawing = false;
         let globalLineId = "";
@@ -160,7 +174,7 @@
             setTimeout(() => { toast.style.animation = 'slideInLeft 0.4s ease-in reverse forwards'; setTimeout(() => toast.remove(), 400); }, 3000);
         }
 
-        function emergencyReset() { localStorage.clear(); sessionStorage.clear(); window.location.reload(); }
+        function emergencyReset() { localStorage.clear(); sessionStorage.clear(); window.location.href = 'index.html'; }
 
         // 🌟 手動輸入身分登入機制 (電腦版專用救援)
         async function empLogin() {
@@ -208,7 +222,7 @@
                 document.getElementById('unauthorized-screen').classList.remove('hidden');
                 document.getElementById('unauthorized-screen').classList.add('flex');
                 document.getElementById('unauth-title').innerText = '系統已攔截異常';
-                document.getElementById('unauth-desc').innerHTML = '偵測到權限異常跳轉迴圈。<br>已安全阻斷並清除快取。';
+                document.getElementById('unauth-desc').innerHTML = '偵測到權限異常跳轉迴圈。<br>已安全阻斷並清除快取。<br>請點擊下方按鈕重新驗證。';
                 return; 
             }
 
@@ -217,7 +231,7 @@
                 
                 await liff.init({ liffId: "2009148826-RoogHmxk" });
                 
-                // 🌟 判斷是否已登入 LINE，如果沒有，電腦版會直接顯示「手動登入畫面」，不再彈窗報錯
+                // 判斷是否已登入 LINE，如果沒有，電腦版會直接顯示「手動登入畫面」
                 if (!liff.isLoggedIn()) { 
                     document.getElementById('loading-screen').style.display = 'none';
                     document.getElementById('login-screen').classList.remove('hidden');
@@ -237,7 +251,7 @@
                     if (user.is_approved && user.employment_status === '在職') {
                         sessionStorage.setItem('hypass_loop_guard', loopCount + 1);
                         setTimeout(() => { sessionStorage.removeItem('hypass_loop_guard'); }, 3000);
-                        // 🌟 強制跳轉至員工大廳
+                        // 🌟 一律強制進入員工大廳，不分流
                         window.location.href = 'app_hr.html';
                     } else if (user.employment_status === '離職') {
                         document.getElementById('unauthorized-screen').classList.remove('hidden');
@@ -251,7 +265,7 @@
                     fetchLatestContract();
                 }
             } catch (err) { 
-                // 若 LINE LIFF 初始化失敗 (例如電腦瀏覽器阻擋)，則顯示手動登入畫面
+                // 若 LINE LIFF 初始化失敗，則顯示手動登入畫面
                 document.getElementById('loading-screen').style.display = 'none';
                 document.getElementById('login-screen').classList.remove('hidden');
             }
@@ -261,7 +275,8 @@
             sigCanvas = document.getElementById('signature-pad');
             if(!sigCanvas) return;
             sigCtx = sigCanvas.getContext('2d');
-            sigCanvas.width = sigCanvas.offsetWidth; sigCanvas.height = sigCanvas.offsetHeight;
+            sigCanvas.width = sigCanvas.offsetWidth;
+            sigCanvas.height = sigCanvas.offsetHeight;
             sigCtx.lineWidth = 3; sigCtx.strokeStyle = '#0f172a';
             const start = (e) => { isDrawing = true; draw(e); };
             const end = () => { isDrawing = false; sigCtx.beginPath(); };
