@@ -10,17 +10,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <style>
-        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; -webkit-tap-highlight-color: transparent;}
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; -webkit-tap-highlight-color: transparent; background: #e2e8f0; }
+        @media (max-width: 767px) { body { padding-bottom: 80px; } }
         
-        @media (max-width: 767px) { body { padding-bottom: 80px; background: #e2e8f0; } }
-        @media (min-width: 768px) { body { background: #e2e8f0; } }
-
-        #app-wrapper { display: flex; width: 100%; height: 100vh; overflow: hidden; }
-        #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; width: 100%; max-width: 28rem; margin: 0 auto; display: flex; flex-direction: column;}
-        
+        #app-wrapper { display: flex; width: 100%; height: 100vh; overflow: hidden; justify-content: center; }
         @media (min-width: 768px) { 
-            #app-wrapper { align-items: center; justify-content: center; padding: 20px; }
-            #app-container { height: 100%; min-height: auto; max-height: 900px; width: 450px; border-radius: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow-y: auto; }
+            #app-wrapper { padding: 24px; align-items: flex-start; }
             nav#core-bottom-nav { display: none !important; } 
         }
 
@@ -78,7 +73,7 @@
         </div>
         <div class="flex-1 px-4 space-y-2 pb-6">
             <button onclick="window.location.href='app_hr.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">👨‍💼</span> 員工中心</button>
-            <button onclick="window.location.href='app_inventory.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">📦</span> 庫存大盤</button>
+            <button onclick="window.location.href='app_inventory.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">📦</span> 庫存管理</button>
             <button onclick="window.location.href='app_purchase.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition bg-amber-600 text-white shadow-md"><span class="mr-3 text-xl">🛒</span> 採購中心</button>
             <button onclick="window.location.href='app_sales.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">💼</span> 業務中心</button>
             <button onclick="window.location.href='app_finance.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">💰</span> 財務中心</button>
@@ -90,7 +85,7 @@
     </aside>
 
     <div id="app-wrapper">
-    <div id="app-container" class="shadow-2xl relative hidden flex-col">
+    <div id="app-container" class="bg-[#f1f5f9] min-h-screen md:min-h-0 md:h-[90vh] md:rounded-2xl shadow-2xl relative hidden flex-col w-full max-w-[28rem] md:max-w-md overflow-y-auto">
         <header class="bg-slate-900 text-white px-5 py-4 shadow-md sticky top-0 z-50 flex items-center justify-between shrink-0 md:rounded-t-2xl">
             <button id="btn-back" onclick="backToDash()" class="hidden bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center shrink-0">🔙 返回</button>
             <div class="flex-1 text-center"><h1 class="text-lg font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-200 truncate" id="header-title">採購管理中心</h1></div>
@@ -105,6 +100,7 @@
                         <span class="flex items-center"><span class="mr-1.5 text-lg">📤</span> 最新採購狀況</span>
                         <span class="text-[9px] bg-amber-100 text-amber-700 px-2 py-1 rounded-md font-black border border-amber-200 shadow-sm">進行中單據</span>
                     </h3>
+                    
                     <div id="ui-dash-po-status" class="space-y-3">
                         <div class="text-center text-xs text-slate-400 py-4 font-bold border border-dashed rounded-xl border-slate-300">資料讀取中...</div>
                     </div>
@@ -116,10 +112,12 @@
                         <span class="font-black text-amber-800 tracking-wider text-base mb-1">待處理清單</span>
                         <span class="font-bold text-amber-600/70 text-[10px] tracking-wider">主管核准 / 產出 PDF</span>
                     </button>
+                    
                     <button onclick="openSupplierList()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-indigo-200 hover:bg-indigo-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">🏢</span>
                         <span class="font-black text-slate-700 text-[11px] tracking-widest leading-tight text-center">供應商管理</span>
                     </button>
+
                     <button onclick="openHistory()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">🗂️</span>
                         <span class="font-black text-slate-700 text-[11px] tracking-widest leading-tight text-center">採購記錄</span>
@@ -150,6 +148,7 @@
                         </div>
                         <input type="text" id="s-address" placeholder="公司地址" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500">
                         <input type="email" id="s-email" placeholder="聯絡電子郵件" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500">
+                        
                         <div class="border-t border-slate-100 pt-3"><h5 class="text-[10px] font-black text-slate-500 mb-2">📞 聯絡窗口</h5></div>
                         <div class="grid grid-cols-2 gap-3">
                             <input type="text" id="s-contact" placeholder="聯絡人姓名" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500">
@@ -157,22 +156,17 @@
                         </div>
                         <div class="border-t border-slate-100 pt-3"><h5 class="text-[10px] font-black text-slate-500 mb-2">💰 財務付款與銀行帳號</h5></div>
                         <select id="s-pay" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-indigo-500" required><option value="月結30天">月結 30 天</option><option value="月結60天">月結 60 天</option><option value="貨到付款">貨到付款 (C.O.D)</option><option value="匯款預付">匯款預付 (T/T)</option></select>
+                        
                         <div class="grid grid-cols-2 gap-3">
                             <select id="s-bank-code" class="w-full p-3 bg-white rounded-xl text-[11px] font-bold border border-slate-200 select-arrow outline-none focus:border-indigo-500">
                                 <option value="" disabled selected>銀行代碼</option>
-                                <option value="822-中國信託">822 中國信託</option>
-                                <option value="804-中華郵政">804 中華郵政</option>
-                                <option value="013-國泰世華">013 國泰世華</option>
-                                <option value="812-台新銀行">812 台新銀行</option>
-                                <option value="012-台北富邦">012 台北富邦</option>
-                                <option value="004-臺灣銀行">004 臺灣銀行</option>
-                                <option value="006-合作金庫">006 合作金庫</option>
-                                <option value="007-第一銀行">007 第一銀行</option>
-                                <option value="008-華南銀行">008 華南銀行</option>
-                                <option value="009-彰化銀行">009 彰化銀行</option>
+                                <option value="822-中國信託">822 中國信託</option><option value="804-中華郵政">804 中華郵政</option><option value="013-國泰世華">013 國泰世華</option><option value="812-台新銀行">812 台新銀行</option>
+                                <option value="012-台北富邦">012 台北富邦</option><option value="004-臺灣銀行">004 臺灣銀行</option><option value="006-合作金庫">006 合作金庫</option><option value="007-第一銀行">007 第一銀行</option>
+                                <option value="008-華南銀行">008 華南銀行</option><option value="009-彰化銀行">009 彰化銀行</option>
                             </select>
                             <input type="number" id="s-bank-acc" placeholder="純數字帳號" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500 font-mono">
                         </div>
+
                         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3.5 rounded-xl shadow-md active:scale-95 transition tracking-widest text-base mt-2">💾 儲存</button>
                     </form>
                 </div>
@@ -231,10 +225,7 @@
             </div>
 
         </main>
-    </div>
-    </div>
-
-    <div id="supplier-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
+    </div> </div> <div id="supplier-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
         <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-5 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
             <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯供應商</h3>
             <input type="hidden" id="edit-s-id">
@@ -243,18 +234,23 @@
                     <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">名稱</label><input type="text" id="edit-s-name" class="w-full p-2 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none" required></div>
                     <div><label class="text-[10px] font-bold text-slate-500 ml-1">代號</label><input type="text" id="edit-s-code" class="w-full p-2 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 uppercase outline-none" required></div>
                     <div><label class="text-[10px] font-bold text-slate-500 ml-1">統編</label><input type="text" id="edit-s-tax" class="w-full p-2 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none"></div>
+                    
                     <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">公司地址</label><input type="text" id="edit-s-address" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none"></div>
                     <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">聯絡信箱</label><input type="email" id="edit-s-email" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none"></div>
+
                     <div class="col-span-2 border-t border-slate-100 pt-2"><h5 class="text-[10px] font-black text-slate-500 mb-1">📞 聯絡窗口</h5></div>
                     <div><input type="text" id="edit-s-contact" placeholder="聯絡人" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none"></div>
                     <div><input type="text" id="edit-s-phone" placeholder="電話" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none"></div>
+                    
                     <div class="col-span-2 border-t border-slate-100 pt-2"><h5 class="text-[10px] font-black text-slate-500 mb-1">💰 付款資訊</h5></div>
                     <div class="col-span-2"><select id="edit-s-pay" class="w-full p-2 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none" required><option value="月結30天">月結 30 天</option><option value="月結60天">月結 60 天</option><option value="貨到付款">貨到付款</option><option value="匯款預付">匯款預付</option></select></div>
+                    
                     <div class="col-span-2 grid grid-cols-2 gap-2">
                         <select id="edit-s-bank-code" class="w-full p-2 bg-white rounded-xl text-[11px] font-bold border border-slate-200 select-arrow outline-none">
-                            <option value="">無</option><option value="822-中國信託">822 中國信託</option><option value="804-中華郵政">804 中華郵政</option><option value="013-國泰世華">013 國泰世華</option>
-                            <option value="812-台新銀行">812 台新銀行</option><option value="012-台北富邦">012 台北富邦</option><option value="004-臺灣銀行">004 臺灣銀行</option>
-                            <option value="006-合作金庫">006 合作金庫</option><option value="007-第一銀行">007 第一銀行</option><option value="008-華南銀行">008 華南銀行</option><option value="009-彰化銀行">009 彰化銀行</option>
+                            <option value="">無</option>
+                            <option value="822-中國信託">822 中國信託</option><option value="804-中華郵政">804 中華郵政</option><option value="013-國泰世華">013 國泰世華</option><option value="812-台新銀行">812 台新銀行</option>
+                            <option value="012-台北富邦">012 台北富邦</option><option value="004-臺灣銀行">004 臺灣銀行</option><option value="006-合作金庫">006 合作金庫</option><option value="007-第一銀行">007 第一銀行</option>
+                            <option value="008-華南銀行">008 華南銀行</option><option value="009-彰化銀行">009 彰化銀行</option>
                         </select>
                         <input type="number" id="edit-s-bank-acc" placeholder="純數字帳號" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none font-mono">
                     </div>
@@ -299,14 +295,13 @@
 
     <audio id="beep-sound" src="data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
 
-    <script src="shared.js?v=1010"></script>
+    <script src="shared.js?v=9999"></script>
     <script>
         window.supplierData = [];
         let html5QrcodeScanner = null;
         let isReceivingScan = false;
         let currentReceivePO = null;
 
-        // 全域暫存變數
         let currentViewingPoId = null;
         let currentViewingIsLegacy = false;
 
@@ -336,9 +331,8 @@
         async function safeUpdate(table, payload, id) { 
             const { error } = await window._sb.from(table).update(payload).eq('id', id); 
             if (error) {
-                // 如果是欄位不存在的錯誤 (schema cache 或是 column not found)
-                if (error.message && (error.message.includes('updated_at') || error.message.includes('schema cache'))) {
-                    console.warn("🛡️ 觸發防彈裝甲：找不到 updated_at 欄位，自動切換為安全模式寫入狀態！");
+                if (error.message && (error.message.includes('updated_at') || error.message.includes('schema cache') || error.message.includes('column'))) {
+                    console.warn("🛡️ 觸發防彈裝甲：忽略快取錯誤，強制寫入基本狀態！");
                     let safePayload = { ...payload };
                     delete safePayload.updated_at; // 捨棄日期，強行過關
                     const { error: retryError } = await window._sb.from(table).update(safePayload).eq('id', id);
@@ -352,7 +346,6 @@
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // 🌟 終極救援：點擊強制解鎖
         window.forceUnlock = function() {
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('app-container').classList.remove('hidden');
@@ -431,7 +424,6 @@
             loadDashboardData();
         }
 
-        // 🌟 完美抓取：解除「已核准」不顯示的過濾封印
         async function fetchSafePOs() {
             let poData = [];
             try { 
@@ -539,7 +531,7 @@
                         } else {
                             step3Html = `<div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm bg-emerald-500 text-white">✓</div>
                                          <span class="text-[9px] font-bold mt-1 text-emerald-700">已發送</span>
-                                         <span class="text-[8px] text-emerald-600 font-mono mt-0.5">${step === 3 ? sDate : ''}</span>`;
+                                         <span class="text-[8px] text-emerald-600 font-mono mt-0.5">${step >= 3 ? sDate : ''}</span>`;
                         }
 
                         let tlHtml = `
@@ -609,6 +601,7 @@
             }
 
             container.innerHTML = window.supplierData.map(s => {
+                let uDate = s.updated_at ? new Date(s.updated_at).toLocaleDateString('zh-TW') : '--';
                 return `
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-3">
                     <div class="flex justify-between items-start mb-2">
@@ -684,10 +677,9 @@
                 bank_details: document.getElementById('s-bank-acc').value, 
                 updated_at: new Date().toISOString()
             };
-            try { await window._sb.from('suppliers').insert([p]); showSysToast('✅ 建立成功！'); e.target.reset(); await loadSuppliers(); backToDash(); } catch(err) { alert('寫入失敗'); }
+            try { await window._sb.from('suppliers').insert([p]); showSysToast('✅ 建立成功！'); e.target.reset(); await loadSuppliers(); backToDash(); } catch(err) { alert('寫入失敗，請確認資料庫有加入新欄位。'); }
         }
 
-        // 🌟 待處理清單同步支援雙重狀態按鈕
         async function openPoManagement() {
             openView('po-management', '📝 待處理清單');
             const container = document.getElementById('ui-pending-pos');
@@ -734,7 +726,6 @@
             }).join('');
         }
 
-        // 🌟 獨立核准按鈕 (支援防彈裝甲寫入)
         async function quickApprovePO(id, isLegacy) {
             if (!window.currentUser || !window.currentUser.perm_purchase_approve) {
                 alert('🚨 權限不足！請聯繫管理員開通核准權限。'); return;
@@ -967,7 +958,24 @@
             } else { elPo.innerHTML = `<div class="text-xs text-slate-400 py-6 text-center bg-white border border-dashed rounded-xl">無記錄</div>`; }
         }
 
-        async function openPOEdit(id, isLegacy, currentStatus, note, expected_date) {
+        async function sharePO(id, isLegacy) {
+            showSysToast('⏳ 正在產生 PDF 檔案，請稍候...');
+            try {
+                const { html, poNo } = await getPoHtmlContent(id, isLegacy);
+                const opt = { margin: [0.5, 0.5], filename: `HYPASS_採購單_${poNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+                const tempDiv = document.createElement('div'); tempDiv.innerHTML = html; tempDiv.style.padding = '20px';
+                const pdfBlob = await html2pdf().set(opt).from(tempDiv).output('blob');
+                const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: 'HYPASS 採購單', text: `您好，附上採購單 ${poNo}，請查收。` });
+                    showSysToast('✅ 檔案分享成功！');
+                } else {
+                    showSysToast('您的裝置不支援直接分享，改為自動下載...'); executePdfDownload(html, poNo, id, isLegacy);
+                }
+            } catch(e) { alert('失敗: ' + e.message); }
+        }
+
+        function openPOEdit(id, isLegacy, currentStatus, note, expected_date) {
             document.getElementById('po-edit-id').value = id;
             document.getElementById('po-edit-islegacy').value = isLegacy ? 'true' : 'false';
             let displayStatus = currentStatus;
@@ -1092,7 +1100,6 @@
             if(currentViewingHtml) executePdfDownload(currentViewingHtml, currentViewingPoNo, currentViewingPoId, currentViewingIsLegacy); 
         });
 
-        // 🌟 點擊下載 PDF，觸發狀態變更為「已發送」
         async function executePdfDownload(htmlContent, poNo, id, isLegacy) {
             showSysToast('PDF 檔案生成中，請稍候...');
             if (id) {
