@@ -65,9 +65,9 @@
         <h2 class="text-xl font-black tracking-widest mb-2">HYPASS 採購中心</h2>
         <p class="text-xs font-bold text-slate-400 tracking-wider mb-6" id="loading-msg">系統載入與驗證中...</p>
         <div id="rescue-btn" class="hidden flex-col items-center">
-            <p class="text-amber-400 text-[10px] font-bold mb-3">網路似乎有點慢，或權限驗證超時</p>
-            <button onclick="forceUnlock()" class="bg-amber-500 text-white font-black px-6 py-2.5 rounded-full shadow-lg active:scale-95 transition mb-3">強制進入系統</button>
-            <button onclick="window.location.href='app_hr.html'" class="bg-slate-700 text-white font-black px-6 py-2.5 rounded-full shadow-lg active:scale-95 transition">返回員工大廳</button>
+            <p class="text-amber-400 text-[10px] font-bold mb-3 bg-slate-800 px-3 py-1 rounded">網路似乎有點慢，或權限驗證超時</p>
+            <button onclick="forceUnlock()" class="bg-amber-500 text-white font-black px-6 py-2.5 rounded-full shadow-lg active:scale-95 transition mb-3 w-48">強制進入系統</button>
+            <button onclick="window.location.href='app_hr.html'" class="bg-slate-700 text-white font-black px-6 py-2.5 rounded-full shadow-lg active:scale-95 transition w-48">返回員工大廳</button>
         </div>
     </div>
 
@@ -314,14 +314,12 @@
 
     <audio id="beep-sound" src="data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
 
-    <script src="shared.js?v=9999"></script>
+    <script src="shared.js?v=1001"></script>
     <script>
         window.supplierData = [];
         let html5QrcodeScanner = null;
         let isReceivingScan = false;
         let currentReceivePO = null;
-
-        // 全域暫存變數
         let currentViewingPoId = null;
         let currentViewingIsLegacy = false;
 
@@ -352,7 +350,7 @@
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // 🌟 終極救援：點擊解除卡頓
+        // 🌟 終極救援：點擊強制解鎖
         window.forceUnlock = function() {
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('app-container').classList.remove('hidden');
@@ -361,18 +359,18 @@
             loadDashboardData();
         }
 
+        // 🌟 防呆啟動函數，不依賴任何事件，直接啟動！
         async function bootPurchase() {
-            // 設定 4 秒超時防護，顯示救援按鈕
             let authTimeout = setTimeout(() => {
                 const msg = document.getElementById('loading-msg');
                 const btn = document.getElementById('rescue-btn');
                 if(msg) msg.style.display = 'none';
                 if(btn) btn.classList.remove('hidden');
                 if(btn) btn.classList.add('flex');
-            }, 4000);
+            }, 3000);
 
             try {
-                if(!window.authGuard) throw new Error("shared.js 未載入");
+                if(typeof authGuard === 'undefined') throw new Error("shared.js 尚未完全載入");
                 const isAuth = await authGuard('purchase'); 
                 
                 if(!isAuth) {
@@ -404,9 +402,6 @@
                 await loadDashboardData();
             } catch(e) { 
                 console.error(e); 
-                clearTimeout(authTimeout);
-                const ls = document.getElementById('loading-screen');
-                if(ls) ls.innerHTML = `<div class="text-6xl mb-4">⚠️</div><h2 class="text-xl font-black text-white mb-2">載入發生錯誤</h2><p class="text-slate-400 text-xs mb-6">${e.message}</p><button onclick="forceUnlock()" class="bg-amber-500 text-white px-6 py-3 rounded-full font-black shadow-lg mb-3 w-48">強制進入</button><button onclick="window.location.href='app_hr.html'" class="bg-white text-slate-900 px-6 py-3 rounded-full font-black shadow-lg w-48">返回大廳</button>`;
             }
         }
 
@@ -468,7 +463,6 @@
             return poData;
         }
 
-        // 🌟 核心：最新採購狀況 (升級 Timeline 與料號顯示)
         async function loadDashboardData() {
             try {
                 const pos = await fetchSafePOs();
@@ -485,7 +479,6 @@
                         let items = getSafeArray(po.items_json);
                         let totalQty = 0; let totalReceived = 0;
                         
-                        // 🌟 升級版：顯示料號、品名、採購數量
                         let itemsStr = items.map(i => {
                             let invItem = window.inventoryData.find(x => x.id === i.id || x.item_name === i.name);
                             let iCode = invItem ? invItem.item_code : '--';
@@ -511,18 +504,16 @@
                         if(sId === 'PO異常(遲交)') sId = '異常(遲交)';
                         if(sId === '已到貨') sId = '完成';
 
-                        // 🌟 進度條邏輯
                         let step = 1;
-                        if(sId !== '待審核' && sId !== '待處理') step = 2; // 審核通過/發送中
+                        if(sId !== '待審核' && sId !== '待處理') step = 2; 
                         if(sId === '已發送' || sId === '部分到貨' || sId.includes('異常')) step = 3;
-                        if(totalReceived > 0 && remainQty > 0) step = 4; // 部分到貨
-                        if(remainQty === 0 && totalQty > 0) step = 5; // 完成
+                        if(totalReceived > 0 && remainQty > 0) step = 4; 
+                        if(remainQty === 0 && totalQty > 0) step = 5; 
 
                         let cDate = new Date(po.created_at).toLocaleDateString('en-US', {month:'numeric', day:'numeric'});
                         let eDate = (po.expected_date && po.expected_date !== '未定' && po.expected_date !== null) ? new Date(po.expected_date).toLocaleDateString('en-US', {month:'numeric', day:'numeric'}) : '--';
                         let sDate = (step >= 3 && po.updated_at) ? new Date(po.updated_at).toLocaleDateString('en-US', {month:'numeric', day:'numeric'}) : '--';
 
-                        // 繪製 Timeline HTML
                         let tlHtml = `
                         <div class="relative flex items-start justify-between w-full mt-4 mb-2 px-2 z-0">
                             <div class="absolute top-2.5 left-[10%] w-[80%] h-1 bg-slate-100 -z-10 rounded-full"></div>
@@ -580,7 +571,6 @@
             } catch(e) { console.error(e); }
         }
 
-        // 🌟 供應商管理 (已加入擴充欄位)
         async function openSupplierList() {
             openView('supplier-list', '🏢 供應商紀錄');
             const container = document.getElementById('ui-supplier-list');
@@ -642,7 +632,7 @@
                 payment_method: document.getElementById('edit-s-pay').value, 
                 bank_code: document.getElementById('edit-s-bank-code').value,
                 bank_account: document.getElementById('edit-s-bank-acc').value,
-                bank_details: document.getElementById('edit-s-bank-acc').value, // 備用相容
+                bank_details: document.getElementById('edit-s-bank-acc').value, 
                 updated_at: new Date().toISOString()
             };
             
@@ -667,7 +657,7 @@
                 payment_method: document.getElementById('s-pay').value, 
                 bank_code: document.getElementById('s-bank-code').value,
                 bank_account: document.getElementById('s-bank-acc').value,
-                bank_details: document.getElementById('s-bank-acc').value, // 備用
+                bank_details: document.getElementById('s-bank-acc').value, 
                 updated_at: new Date().toISOString()
             };
             try { await window._sb.from('suppliers').insert([p]); showSysToast('✅ 建立成功！'); e.target.reset(); await loadSuppliers(); backToDash(); } catch(err) { alert('寫入失敗，請確認資料庫有加入新欄位。'); }
@@ -714,7 +704,6 @@
                 alert('🚨 權限不足！請聯繫管理員開通核准權限。'); return;
             }
             try {
-                // 🌟 核准時同步寫入 updated_at 讓時間軸抓取
                 if(isLegacy) await safeUpdate('purchase_orders', {status: 'PO已發送', updated_at: new Date().toISOString()}, id);
                 else await safeUpdate('po_documents', {status: '已發送', updated_at: new Date().toISOString()}, id);
                 showSysToast('✅ 採購單已核准！');
@@ -723,7 +712,6 @@
             } catch(e) { alert('失敗: ' + e.message); }
         }
 
-        // 🌟 分批入庫核心介面
         async function openPOReceive(id, isLegacy) {
             openView('po-receive', '📥 分批入庫核銷');
             document.getElementById('receive-po-id').value = id;
@@ -797,7 +785,6 @@
             btn.parentElement.querySelector('input').value = max;
         }
 
-        // 掃碼輔助入庫
         function startPOBarcodeScan() {
             isReceivingScan = true;
             document.getElementById('receive-scanner-container').classList.remove('hidden');
@@ -824,7 +811,7 @@
                         }
                     }
                 });
-                if(!found) showSysToast(`❌ 此採購單中找不到料號：${code}`);
+                if(!found) showSysToast(`❌ 找不到料號：${code}`);
             }).catch(err => { alert('相機啟動失敗！'); });
         }
 
@@ -854,7 +841,6 @@
                     let targetItem = items[idx];
                     targetItem.received_qty = (parseFloat(targetItem.received_qty) || 0) + addQty;
                     
-                    // 如果有 item.id (通常是成品)，或者是原料(我們用名稱反查 ID)
                     let itemId = targetItem.id;
                     if(targetItem.type === '原料') {
                         let invItem = window.inventoryData?.find(x => x.item_name === targetItem.name);
@@ -868,7 +854,6 @@
                     }
                 }
                 
-                // 檢查是否全部完成
                 let t = parseFloat(items[idx].qty)||0;
                 let r = parseFloat(items[idx].received_qty)||0;
                 if (r < t) allDone = false;
@@ -979,7 +964,6 @@
             const ed = document.getElementById('po-edit-date').value;
             if(isLegacy) { if(st === '已發送') st = 'PO已發送'; if(st === '異常(遲交)') st = 'PO異常(遲交)'; }
             
-            // 🌟 如果狀態是已發送，我們就自動壓上 updated_at
             let payload = { status: st, note: note };
             if (st === '已發送' || st === 'PO已發送') {
                 payload.updated_at = new Date().toISOString();
@@ -999,7 +983,6 @@
         }
 
         let currentViewingPoNo = ''; let currentViewingHtml = ''; 
-        let currentViewingPoId = null; let currentViewingIsLegacy = false;
 
         async function getPoHtmlContent(id, isLegacy) {
             let poData = null;
@@ -1091,25 +1074,21 @@
 
         async function executePdfDownload(htmlContent, poNo, id, isLegacy) {
             showSysToast('PDF 檔案生成中，請稍候...');
-            
-            // 🌟 下載 PDF 時，自動更新狀態為「已發送」，並記錄更新時間
             if (id) {
                 try {
                     let payload = { status: isLegacy ? 'PO已發送' : '已發送', updated_at: new Date().toISOString() };
                     if (isLegacy) await window._sb.from('purchase_orders').update(payload).eq('id', id);
                     else await window._sb.from('po_documents').update(payload).eq('id', id);
-                    // 默默更新首頁狀態
                     if(document.getElementById('view-dashboard').classList.contains('active')) loadDashboardData();
                 } catch(e) {}
             }
-
             const opt = { margin: [0.5, 0.5], filename: `HYPASS_採購單_${poNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
             const tempDiv = document.createElement('div'); tempDiv.innerHTML = htmlContent; tempDiv.style.padding = '20px';
             html2pdf().set(opt).from(tempDiv).save().then(() => { showSysToast('✅ PDF 下載完成！狀態已更新為「已發送」'); });
         }
 
-        // 🌟 防呆：強制使用事件監聽確保順利執行
-        document.addEventListener('DOMContentLoaded', bootPurchase);
+        // 🌟 強制啟動：用最暴力的方式確保一定執行
+        setTimeout(bootPurchase, 100);
     </script>
 </body>
 </html>
