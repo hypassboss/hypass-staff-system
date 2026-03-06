@@ -347,7 +347,10 @@
             setTimeout(() => { toast.style.animation = 'slideInLeft 0.4s ease-in reverse forwards'; setTimeout(() => toast.remove(), 400); }, 5000);
         }
 
-        async function safeUpdate(table, payload, id) { try { await window._sb.from(table).update(payload).eq('id', id); } catch(e) {} }
+        async function safeUpdate(table, payload, id) { 
+            const { error } = await window._sb.from(table).update(payload).eq('id', id); 
+            if (error) throw error;
+        }
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
@@ -432,6 +435,7 @@
             loadDashboardData();
         }
 
+        // 🌟 修正 FetchSafePOs：不再過濾掉「已核准」的單據！
         async function fetchSafePOs() {
             let poData = [];
             try { 
@@ -441,20 +445,16 @@
             
             try {
                 const { data: pos, error: e2 } = await window._sb.from('purchase_orders').select('*, employees(full_name)').order('created_at', {ascending: false});
-                let safePos = [];
-                if (e2) {
-                    const { data: pos_fb } = await window._sb.from('purchase_orders').select('*').order('created_at', {ascending: false});
-                    safePos = pos_fb ? pos_fb.map(x => ({...x, employees: {full_name: '未知'}})) : [];
-                } else {
-                    safePos = pos || [];
-                }
+                let safePos = pos || [];
 
                 if (safePos.length > 0) {
                     let oldPos = safePos.filter(x => x.note && x.note.startsWith('PO-')).map(x => {
                         let parts = (x.note||'').split('|||');
                         return { id: x.id, po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', status: x.status, expected_date: x.expected_date || '未定', items_json: x.raw_materials, created_at: x.created_at, updated_at: x.updated_at, is_legacy: true, note: parts[2] || '' };
                     });
-                    let otherDrafts = safePos.filter(x => x.status === '待審核' && (!x.note || !x.note.startsWith('PO-'))).map(x => {
+                    
+                    // 🌟 重要修正：不再限制 status 只能是 '待審核'，把沒有 PO- 前綴的舊單都抓出來
+                    let otherDrafts = safePos.filter(x => (!x.note || !x.note.startsWith('PO-'))).map(x => {
                         return { id: x.id, po_no: 'PO-DRAFT-' + String(x.id).slice(0,5).toUpperCase(), supplier_name: '未指定供應商', status: x.status, expected_date: x.expected_date || '未定', items_json: x.raw_materials, created_at: x.created_at, updated_at: x.updated_at, is_legacy: true, note: x.note || '' };
                     });
                     poData = [...poData, ...oldPos, ...otherDrafts];
@@ -612,8 +612,7 @@
             }
             try {
                 let payload = { status: isLegacy ? 'PO已核准' : '已核准', updated_at: new Date().toISOString() };
-                if (isLegacy) await window._sb.from('purchase_orders').update(payload).eq('id', id);
-                else await window._sb.from('po_documents').update(payload).eq('id', id);
+                await safeUpdate(isLegacy ? 'purchase_orders' : 'po_documents', payload, id);
                 showSysToast('✅ 採購單已核准！請點擊下載 PDF 完成發送');
                 loadDashboardData();
                 if(document.getElementById('view-po-management').classList.contains('active')) openPoManagement();
@@ -733,10 +732,13 @@
                 let itemsStr = safePoItems.map(i => `<div class="flex justify-between items-center border-b border-slate-100/50 pb-1 mb-1"><span class="text-slate-700 truncate pr-2">${i.name}</span><span class="text-amber-700 font-black shrink-0">x${parseFloat(i.qty).toFixed(0)} <span class="text-[9px] text-slate-400">${i.unit||'件'}</span></span></div>`).join('');
                 let dateText = p.expected_date ? String(p.expected_date).slice(5) : '未定';
                 
+                let sId = p.status;
+                if(sId === 'PO已核准') sId = '已核准';
+
                 let btnHtml = '';
-                if(p.status === '待審核' || p.status === '待處理') {
+                if(sId === '待審核' || sId === '待處理') {
                     btnHtml = `<button onclick="quickApprovePO('${p.id}', ${p.is_legacy})" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-3 rounded-xl shadow-md active:scale-95 text-sm transition tracking-widest">✅ 審核核准</button>`;
-                } else {
+                } else if (sId === '已核准') {
                     btnHtml = `<button onclick="quickSendPO_PDF('${p.id}', ${p.is_legacy})" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-3 rounded-xl shadow-md active:scale-95 text-sm transition tracking-widest">📄 下載 PDF 並發送</button>`;
                 }
 
@@ -744,7 +746,7 @@
                 <div class="bg-white p-4 rounded-2xl border-2 border-amber-200 shadow-sm flex flex-col mb-3">
                     <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
                         <span class="text-[10px] font-mono font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded">${formatPO(p.po_no)}</span>
-                        <span class="text-[10px] font-black px-2 py-0.5 rounded text-sky-700 bg-sky-50">${p.status.replace('PO','')}</span>
+                        <span class="text-[10px] font-black px-2 py-0.5 rounded ${sId === '已核准' ? 'text-emerald-700 bg-emerald-50' : 'text-sky-700 bg-sky-50'}">${sId}</span>
                     </div>
                     <div class="flex justify-between items-end mb-3">
                         <h4 class="font-black text-base text-slate-800 leading-tight flex-1 pr-2 truncate">🏢 ${p.supplier_name}</h4>
@@ -1037,6 +1039,8 @@
             } 
         }
 
+        let currentViewingPoNo = ''; let currentViewingHtml = ''; 
+
         async function getPoHtmlContent(id, isLegacy) {
             let poData = null;
             try { 
@@ -1133,6 +1137,7 @@
                     if (isLegacy) await window._sb.from('purchase_orders').update(payload).eq('id', id);
                     else await window._sb.from('po_documents').update(payload).eq('id', id);
                     if(document.getElementById('view-dashboard').classList.contains('active')) loadDashboardData();
+                    if(document.getElementById('view-po-management').classList.contains('active')) openPoManagement();
                 } catch(e) {}
             }
             const opt = { margin: [0.5, 0.5], filename: `HYPASS_採購單_${poNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
