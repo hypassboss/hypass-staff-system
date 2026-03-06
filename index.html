@@ -116,8 +116,17 @@
         function emergencyReset() {
             localStorage.clear();
             sessionStorage.clear();
-            showSysToast('🧹 系統快取已強制清除！');
+            showSysToast('🧹 系統快取已強制清除！即將重新載入...');
             setTimeout(() => { window.location.reload(); }, 1000);
+        }
+
+        // 判斷該送員工去哪個大廳 (動態路由，防止去錯頁面被踢出來)
+        function getTargetUrl(empData) {
+            if (empData.perm_inventory) return 'app_inventory.html';
+            if (empData.perm_purchase) return 'app_purchase.html';
+            if (empData.perm_sales) return 'app_sales.html';
+            if (empData.perm_finance) return 'app_finance.html';
+            return 'app_hr.html'; // 預設員工大廳
         }
 
         async function empLogin() {
@@ -163,9 +172,12 @@
                     return;
                 }
 
-                // 🌟 登入成功：寫入 LocalStorage 並跳轉
+                // 🌟 登入成功：寫入 LocalStorage 
                 localStorage.setItem('hypass_emp_id', data.id);
                 localStorage.setItem('hypass_emp_name', data.full_name);
+                
+                // 重置迴圈計數器
+                sessionStorage.removeItem('hypass_loop_guard');
                 
                 showSysToast('✅ 身分驗證成功，正在進入系統...');
                 
@@ -173,9 +185,8 @@
                 btn.classList.remove('bg-slate-900', 'hover:bg-slate-800');
                 btn.classList.add('bg-emerald-600');
                 
-                setTimeout(() => { 
-                    window.location.href = 'app_hr.html'; 
-                }, 800);
+                const targetUrl = getTargetUrl(data);
+                setTimeout(() => { window.location.href = targetUrl; }, 800);
 
             } catch(e) {
                 console.error("Login Error: ", e);
@@ -197,34 +208,51 @@
             }, 1500);
         }
 
-        // 🌟 終極防死迴圈引擎：先向 DB 查水表再放行
+        // 🌟 終極防死迴圈引擎 + 動態入關盤查
         window.onload = async () => {
+            // 1. 物理防禦：如果 3 秒內被踢回來 2 次，強制切斷迴圈
+            let loopCount = parseInt(sessionStorage.getItem('hypass_loop_guard') || '0');
+            if (loopCount >= 2) {
+                sessionStorage.removeItem('hypass_loop_guard');
+                localStorage.removeItem('hypass_emp_id');
+                localStorage.removeItem('hypass_emp_name');
+                document.getElementById('status-text').innerText = '⛔ 系統已攔截異常權限迴圈，請重新登入！';
+                showSysToast('⚠️ 權限衝突，已強制為您重置狀態。');
+                return; // 🛑 絕對停止
+            }
+
             const empId = localStorage.getItem('hypass_emp_id');
             const btn = document.getElementById('btn-login');
             const statusText = document.getElementById('status-text');
 
             if(empId) {
+                // 記錄跳轉次數
+                sessionStorage.setItem('hypass_loop_guard', loopCount + 1);
+                // 3 秒後如果沒有被彈回來，就解除警報
+                setTimeout(() => { sessionStorage.removeItem('hypass_loop_guard'); }, 3000);
+
                 btn.innerHTML = '<span class="animate-pulse tracking-widest">驗證安全憑證中...</span>'; 
                 btn.disabled = true;
-                statusText.innerText = '系統正在自動驗證您的登入狀態...';
+                statusText.innerText = '系統正在自動驗證您的權限狀態...';
                 
                 try {
-                    // 背景靜默檢查該員工是否依然有效
-                    const { data, error } = await window._sb.from('employees').select('is_approved, employment_status').eq('id', empId).single();
+                    // 查水表：確定他的身分與擁有的權限
+                    const { data, error } = await window._sb.from('employees').select('*').eq('id', empId).single();
                     
                     if (data && data.is_approved && data.employment_status === '在職') {
-                        // 驗證通過，直接安全放行
-                        window.location.href = 'app_hr.html';
+                        // 依照他的權限，送去正確的畫面，就不會再被踢回來了
+                        const targetUrl = getTargetUrl(data);
+                        window.location.href = targetUrl;
                     } else {
-                        // 查無此人或已離職/拔除權限 ➔ 清除快取，留在首頁
+                        // 查無此人或已離職 ➔ 清除快取，留在首頁
                         localStorage.removeItem('hypass_emp_id');
                         localStorage.removeItem('hypass_emp_name');
+                        sessionStorage.removeItem('hypass_loop_guard');
                         showSysToast('⚠️ 登入狀態已更新或失效，請重新登入。');
                         resetBtn(btn);
                         statusText.innerText = '請輸入您的專屬資料進行身分驗證';
                     }
                 } catch(e) {
-                    // 如果只是單純網路斷線，不清快取，但也不要死迴圈跳轉
                     console.warn("無法驗證背景狀態", e);
                     resetBtn(btn);
                     statusText.innerText = '請輸入您的專屬資料進行身分驗證';
