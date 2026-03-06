@@ -49,7 +49,7 @@
         <div class="flex justify-between items-center p-4 bg-slate-800 text-white shrink-0 shadow-md">
             <h3 class="font-black text-base flex items-center"><span class="mr-2 text-xl">📄</span>單據檢視</h3>
             <div class="space-x-2">
-                <button id="btn-modal-download" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-xs font-black shadow-sm transition">📥 下載</button>
+                <button id="btn-modal-download" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-xs font-black shadow-sm transition">📥 下載 PDF</button>
                 <button onclick="closePdfModal()" class="bg-slate-700 hover:bg-red-500 px-4 py-2 rounded-lg text-xs font-black border border-slate-600 transition">✕ 關閉</button>
             </div>
         </div>
@@ -316,6 +316,10 @@
         let isReceivingScan = false;
         let currentReceivePO = null;
 
+        // 全域暫存變數
+        let currentViewingPoId = null;
+        let currentViewingIsLegacy = false;
+
         function getSafeArray(data) { 
             if (!data) return []; 
             if (Array.isArray(data)) return data; 
@@ -359,6 +363,12 @@
                     document.getElementById('app-container').classList.remove('hidden'); 
                     document.getElementById('app-container').classList.add('flex');
                 }, 400);
+
+                // 為了在 Dashboard 顯示料號，必須先載入庫存資料建立 Map
+                try {
+                    const { data: itemsData } = await window._sb.from('items').select('id, item_code, item_name');
+                    window.inventoryData = itemsData || [];
+                } catch(e) { window.inventoryData = []; }
 
                 await loadSuppliers();
                 await loadDashboardData();
@@ -410,10 +420,10 @@
                 if (safePos.length > 0) {
                     let oldPos = safePos.filter(x => x.note && x.note.startsWith('PO-')).map(x => {
                         let parts = (x.note||'').split('|||');
-                        return { id: x.id, po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', status: x.status, expected_date: x.expected_date || '未定', items_json: x.raw_materials, created_at: x.created_at, is_legacy: true, note: parts[2] || '' };
+                        return { id: x.id, po_no: parts[0] || 'PO-UNKNOWN', supplier_name: parts[1] || '未指定供應商', status: x.status, expected_date: x.expected_date || '未定', items_json: x.raw_materials, created_at: x.created_at, updated_at: x.updated_at, is_legacy: true, note: parts[2] || '' };
                     });
                     let otherDrafts = safePos.filter(x => x.status === '待審核' && (!x.note || !x.note.startsWith('PO-'))).map(x => {
-                        return { id: x.id, po_no: 'PO-DRAFT-' + String(x.id).slice(0,5).toUpperCase(), supplier_name: '未指定供應商', status: x.status, expected_date: x.expected_date || '未定', items_json: x.raw_materials, created_at: x.created_at, is_legacy: true, note: x.note || '' };
+                        return { id: x.id, po_no: 'PO-DRAFT-' + String(x.id).slice(0,5).toUpperCase(), supplier_name: '未指定供應商', status: x.status, expected_date: x.expected_date || '未定', items_json: x.raw_materials, created_at: x.created_at, updated_at: x.updated_at, is_legacy: true, note: x.note || '' };
                     });
                     poData = [...poData, ...oldPos, ...otherDrafts];
                 }
@@ -423,7 +433,7 @@
             return poData;
         }
 
-        // 🌟 核心：最新採購狀況 (渲染進度條)
+        // 🌟 核心：最新採購狀況 (升級 Timeline 與料號顯示)
         async function loadDashboardData() {
             try {
                 const pos = await fetchSafePOs();
@@ -439,11 +449,26 @@
                     activePos.forEach(po => {
                         let items = getSafeArray(po.items_json);
                         let totalQty = 0; let totalReceived = 0;
-                        items.forEach(i => {
-                            totalQty += parseFloat(i.qty) || 0;
-                            totalReceived += parseFloat(i.received_qty) || 0;
-                        });
                         
+                        // 🌟 升級版：顯示料號、品名、採購數量
+                        let itemsStr = items.map(i => {
+                            let invItem = window.inventoryData.find(x => x.id === i.id || x.item_name === i.name);
+                            let iCode = invItem ? invItem.item_code : '--';
+                            let q = parseFloat(i.qty)||0;
+                            
+                            totalQty += q;
+                            totalReceived += parseFloat(i.received_qty) || 0;
+                            
+                            return `
+                            <div class="flex justify-between items-center border-b border-slate-200/50 last:border-0 pb-1 mb-1 last:pb-0 last:mb-0">
+                                <div class="flex items-center min-w-0 flex-1 pr-2">
+                                    <span class="text-[9px] font-mono text-slate-500 bg-white border border-slate-200 px-1 rounded shadow-sm mr-1.5 shrink-0">${iCode}</span>
+                                    <span class="text-[11px] font-black text-slate-700 truncate">${i.name}</span>
+                                </div>
+                                <span class="text-[11px] font-black text-sky-600 shrink-0">x${q} <span class="text-[9px] text-slate-400 font-bold">${i.unit||'件'}</span></span>
+                            </div>`;
+                        }).join('');
+
                         let remainQty = Math.max(0, totalQty - totalReceived);
                         
                         let sId = po.status;
@@ -451,7 +476,7 @@
                         if(sId === 'PO異常(遲交)') sId = '異常(遲交)';
                         if(sId === '已到貨') sId = '完成';
 
-                        // 判斷階段
+                        // 🌟 進度條邏輯
                         let step = 1;
                         if(sId !== '待審核' && sId !== '待處理') step = 2; // 審核通過/發送中
                         if(sId === '已發送' || sId === '部分到貨' || sId.includes('異常')) step = 3;
@@ -459,52 +484,57 @@
                         if(remainQty === 0 && totalQty > 0) step = 5; // 完成
 
                         let cDate = new Date(po.created_at).toLocaleDateString('en-US', {month:'numeric', day:'numeric'});
-                        let eDate = (po.expected_date && po.expected_date !== '未定') ? new Date(po.expected_date).toLocaleDateString('en-US', {month:'numeric', day:'numeric'}) : '--';
+                        let eDate = (po.expected_date && po.expected_date !== '未定' && po.expected_date !== null) ? new Date(po.expected_date).toLocaleDateString('en-US', {month:'numeric', day:'numeric'}) : '--';
+                        let sDate = (step >= 3 && po.updated_at) ? new Date(po.updated_at).toLocaleDateString('en-US', {month:'numeric', day:'numeric'}) : '--';
 
                         // 繪製 Timeline HTML
                         let tlHtml = `
-                        <div class="relative flex items-center justify-between w-full mt-3 mb-1 px-2 z-0">
+                        <div class="relative flex items-start justify-between w-full mt-4 mb-2 px-2 z-0">
                             <div class="absolute top-2.5 left-[10%] w-[80%] h-1 bg-slate-100 -z-10 rounded-full"></div>
-                            <div class="absolute top-2.5 left-[10%] h-1 bg-emerald-500 -z-10 rounded-full transition-all duration-500" style="width: ${(step-1)*25}%"></div>
+                            <div class="absolute top-2.5 left-[10%] h-1 bg-amber-500 -z-10 rounded-full transition-all duration-500" style="width: ${(step-1)*25}%"></div>
                             
-                            <div class="flex flex-col items-center w-1/5">
-                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=1 ? 'bg-emerald-500 text-white':'bg-slate-200 text-slate-400'}">✓</div>
+                            <div class="flex flex-col items-center w-1/5 relative">
+                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=1 ? 'bg-amber-500 text-white':'bg-slate-200 text-slate-400'}">✓</div>
                                 <span class="text-[9px] font-bold mt-1 ${step>=1?'text-slate-700':'text-slate-400'}">請購日</span>
-                                <span class="text-[8px] text-slate-400 font-mono">${cDate}</span>
-                            </div>
-                            <div class="flex flex-col items-center w-1/5">
-                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=2 ? 'bg-emerald-500 text-white':'bg-slate-200 text-slate-400'}">${step>=2?'✓':'2'}</div>
-                                <span class="text-[9px] font-bold mt-1 ${step>=2?'text-slate-700':'text-slate-400'}">審查中</span>
-                            </div>
-                            <div class="flex flex-col items-center w-1/5">
-                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=3 ? 'bg-emerald-500 text-white':'bg-slate-200 text-slate-400'}">${step>=3?'✓':'3'}</div>
-                                <span class="text-[9px] font-bold mt-1 ${step>=3?'text-slate-700':'text-slate-400'}">已發送</span>
+                                <span class="text-[8px] text-slate-400 font-mono mt-0.5">${cDate}</span>
                             </div>
                             <div class="flex flex-col items-center w-1/5 relative">
-                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=4 ? (remainQty>0?'bg-amber-500 text-white':'bg-emerald-500 text-white'):'bg-slate-200 text-slate-400'}">${step>=5?'✓':'4'}</div>
-                                <span class="text-[9px] font-bold mt-1 ${step>=4?'text-amber-700':'text-slate-400'}">交貨日</span>
-                                <span class="text-[8px] text-slate-400 font-mono mb-0.5">${eDate}</span>
-                                ${step>=3 && remainQty>0 ? `<span class="absolute -bottom-4 text-[8px] whitespace-nowrap font-black bg-red-100 text-red-600 px-1 rounded">未交:${remainQty.toFixed(0)}</span>` : ''}
+                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=2 ? 'bg-amber-500 text-white':'bg-slate-200 text-slate-400'}">${step>=2?'✓':'2'}</div>
+                                <span class="text-[9px] font-bold mt-1 ${step>=2?'text-slate-700':'text-slate-400'}">審查中</span>
                             </div>
-                            <div class="flex flex-col items-center w-1/5">
-                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=5 ? 'bg-emerald-500 text-white':'bg-slate-200 text-slate-400'}">5</div>
-                                <span class="text-[9px] font-bold mt-1 ${step>=5?'text-emerald-700':'text-slate-400'}">已完成</span>
+                            <div class="flex flex-col items-center w-1/5 relative">
+                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=3 ? 'bg-amber-500 text-white':'bg-slate-200 text-slate-400'}">${step>=3?'✓':'3'}</div>
+                                <span class="text-[9px] font-bold mt-1 ${step>=3?'text-slate-700':'text-slate-400'}">已發送</span>
+                                <span class="text-[8px] text-amber-600 font-bold mt-0.5">${sDate}</span>
+                            </div>
+                            <div class="flex flex-col items-center w-1/5 relative">
+                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=4 ? (remainQty>0?'bg-indigo-500 text-white':'bg-amber-500 text-white'):'bg-slate-200 text-slate-400'}">${step>=5?'✓':'4'}</div>
+                                <span class="text-[9px] font-bold mt-1 ${step>=4?'text-indigo-700':'text-slate-400'}">交貨日</span>
+                                <span class="text-[8px] text-slate-400 font-mono mb-0.5">${eDate}</span>
+                                ${step>=3 && remainQty>0 ? `<span class="absolute -bottom-4 text-[8px] whitespace-nowrap font-black bg-red-100 text-red-600 px-1 rounded shadow-sm border border-red-200">未交:${remainQty.toFixed(0)}</span>` : ''}
+                            </div>
+                            <div class="flex flex-col items-center w-1/5 relative">
+                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=5 ? 'bg-amber-500 text-white':'bg-slate-200 text-slate-400'}">5</div>
+                                <span class="text-[9px] font-bold mt-1 ${step>=5?'text-amber-700':'text-slate-400'}">已完成</span>
                             </div>
                         </div>`;
 
                         let receiveBtn = '';
                         if(step >= 3 && remainQty > 0) {
-                            receiveBtn = `<button onclick="openPOReceive('${po.id}', ${po.is_legacy})" class="mt-4 w-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 py-2 rounded-xl text-xs font-black shadow-sm transition active:scale-95 flex justify-center items-center"><span class="mr-1">📥</span> 執行分批入庫核銷</button>`;
+                            receiveBtn = `<button onclick="openPOReceive('${po.id}', ${po.is_legacy})" class="mt-4 w-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 py-2.5 rounded-xl text-xs font-black shadow-sm transition active:scale-95 flex justify-center items-center tracking-widest"><span class="mr-1">📥</span> 執行分批入庫核銷</button>`;
                         }
 
                         poHtml += `
-                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm mb-3 relative overflow-hidden">
-                            <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
+                        <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm mb-4 relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-3">
                                 <div>
-                                    <span class="text-[10px] font-mono font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded mr-1">${formatPO(po.po_no)}</span>
-                                    <span class="text-[11px] font-black text-slate-800">${po.supplier_name}</span>
+                                    <span class="text-[10px] font-mono font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded mr-1 shadow-sm border border-amber-100">${formatPO(po.po_no)}</span>
+                                    <span class="text-[13px] font-black text-slate-800">${po.supplier_name}</span>
                                 </div>
-                                <span class="text-[9px] font-black px-2 py-0.5 rounded bg-slate-100 text-slate-600">${sId}</span>
+                                <span class="text-[9px] font-black px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">${sId}</span>
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-inner mb-3 space-y-1.5">
+                                ${itemsStr || '<span class="text-slate-400 italic text-[10px]">無明細</span>'}
                             </div>
                             ${tlHtml}
                             ${receiveBtn}
@@ -649,8 +679,9 @@
                 alert('🚨 權限不足！請聯繫管理員開通核准權限。'); return;
             }
             try {
-                if(isLegacy) await safeUpdate('purchase_orders', {status: 'PO已發送'}, id);
-                else await safeUpdate('po_documents', {status: '已發送'}, id);
+                // 🌟 核准時同步寫入 updated_at 讓時間軸抓取
+                if(isLegacy) await safeUpdate('purchase_orders', {status: 'PO已發送', updated_at: new Date().toISOString()}, id);
+                else await safeUpdate('po_documents', {status: '已發送', updated_at: new Date().toISOString()}, id);
                 showSysToast('✅ 採購單已核准！');
                 processAdminPO_PDF(id, isLegacy, 'view');
                 openPoManagement(); 
@@ -851,7 +882,7 @@
                     
                     let itemsStr = safePoItems.map(i => {
                         let q = parseFloat(i.qty)||0; let r = parseFloat(i.received_qty)||0;
-                        let tag = r > 0 ? `<span class="text-[8px] ml-1 bg-emerald-100 text-emerald-700 px-1 rounded">已收:${r}</span>` : '';
+                        let tag = r > 0 ? `<span class="text-[8px] ml-1 bg-emerald-100 text-emerald-700 px-1 rounded border border-emerald-200">已收:${r}</span>` : '';
                         return `<div class="flex justify-between items-center border-b pb-1 mb-1 last:border-0"><span class="text-slate-700 truncate pr-2">${i.name}</span><span class="text-amber-700 font-black shrink-0">x${q.toFixed(0)} <span class="text-[9px] text-slate-400">${i.unit||'件'}</span>${tag}</span></div>`;
                     }).join('');
                     
@@ -888,7 +919,7 @@
                     await navigator.share({ files: [file], title: 'HYPASS 採購單', text: `您好，附上採購單 ${poNo}，請查收。` });
                     showSysToast('✅ 檔案分享成功！');
                 } else {
-                    showSysToast('您的裝置不支援直接分享，改為自動下載...'); executePdfDownload(html, poNo);
+                    showSysToast('您的裝置不支援直接分享，改為自動下載...'); executePdfDownload(html, poNo, id, isLegacy);
                 }
             } catch(e) { alert('失敗: ' + e.message); }
         }
@@ -912,8 +943,14 @@
             const note = document.getElementById('po-edit-note').value;
             const ed = document.getElementById('po-edit-date').value;
             if(isLegacy) { if(st === '已發送') st = 'PO已發送'; if(st === '異常(遲交)') st = 'PO異常(遲交)'; }
+            
+            // 如果狀態是已發送，我們就自動壓上 updated_at
             let payload = { status: st, note: note };
+            if (st === '已發送' || st === 'PO已發送') {
+                payload.updated_at = new Date().toISOString();
+            }
             if(ed) payload.expected_date = ed;
+            
             try {
                 if(isLegacy) { await window._sb.from('purchase_orders').update(payload).eq('id', id); } else { await window._sb.from('po_documents').update(payload).eq('id', id); }
                 showSysToast('✅ 狀態已更新！'); closeModal('po-edit-modal'); openHistory(); 
@@ -926,7 +963,8 @@
             } 
         }
 
-        let currentViewingPoNo = ''; let currentViewingHtml = '';
+        let currentViewingPoNo = ''; let currentViewingHtml = ''; 
+        let currentViewingPoId = null; let currentViewingIsLegacy = false;
 
         async function getPoHtmlContent(id, isLegacy) {
             let poData = null;
@@ -997,6 +1035,7 @@
 
         async function processAdminPO_PDF(id, isLegacy, action) {
             try {
+                currentViewingPoId = id; currentViewingIsLegacy = isLegacy;
                 const { html, poNo } = await getPoHtmlContent(id, isLegacy);
                 currentViewingHtml = html; currentViewingPoNo = poNo;
                 if(action === 'view') {
@@ -1004,20 +1043,34 @@
                     const modal = document.getElementById('pdf-preview-modal');
                     modal.classList.remove('hidden'); modal.classList.add('flex');
                 } else if(action === 'download') {
-                    executePdfDownload(currentViewingHtml, currentViewingPoNo);
+                    executePdfDownload(currentViewingHtml, currentViewingPoNo, id, isLegacy);
                 }
             } catch(e) { alert(e.message); }
         }
 
         function closePdfModal() { const m = document.getElementById('pdf-preview-modal'); m.classList.add('hidden'); m.classList.remove('flex'); }
 
-        document.getElementById('btn-modal-download').addEventListener('click', () => { if(currentViewingHtml) executePdfDownload(currentViewingHtml, currentViewingPoNo); });
+        document.getElementById('btn-modal-download').addEventListener('click', () => { 
+            if(currentViewingHtml) executePdfDownload(currentViewingHtml, currentViewingPoNo, currentViewingPoId, currentViewingIsLegacy); 
+        });
 
-        function executePdfDownload(htmlContent, poNo) {
+        async function executePdfDownload(htmlContent, poNo, id, isLegacy) {
             showSysToast('PDF 檔案生成中，請稍候...');
+            
+            // 🌟 下載 PDF 時，自動更新狀態為「已發送」，並記錄更新時間
+            if (id) {
+                try {
+                    let payload = { status: isLegacy ? 'PO已發送' : '已發送', updated_at: new Date().toISOString() };
+                    if (isLegacy) await window._sb.from('purchase_orders').update(payload).eq('id', id);
+                    else await window._sb.from('po_documents').update(payload).eq('id', id);
+                    // 默默更新首頁狀態
+                    if(document.getElementById('view-dashboard').classList.contains('active')) loadDashboardData();
+                } catch(e) {}
+            }
+
             const opt = { margin: [0.5, 0.5], filename: `HYPASS_採購單_${poNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
             const tempDiv = document.createElement('div'); tempDiv.innerHTML = htmlContent; tempDiv.style.padding = '20px';
-            html2pdf().set(opt).from(tempDiv).save().then(() => { showSysToast('✅ PDF 下載完成！'); });
+            html2pdf().set(opt).from(tempDiv).save().then(() => { showSysToast('✅ PDF 下載完成！狀態已更新為「已發送」'); });
         }
 
         window.onload = function() {
