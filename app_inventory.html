@@ -64,13 +64,13 @@
             <h1 class="text-3xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">HYPASS</h1>
             <span class="text-[10px] text-slate-400 tracking-[0.2em] uppercase font-bold mt-1 block">ERP Frontend</span>
         </div>
-        <nav class="flex-1 px-4 space-y-2 pb-6">
+        <div class="flex-1 px-4 space-y-2 pb-6">
             <button onclick="window.location.href='app_hr.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">👨‍💼</span> 員工中心</button>
             <button onclick="window.location.href='app_inventory.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition bg-emerald-600 text-white shadow-md"><span class="mr-3 text-xl">📦</span> 庫存大盤</button>
             <button onclick="window.location.href='app_purchase.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">🛒</span> 採購中心</button>
             <button onclick="window.location.href='app_sales.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">💼</span> 業務中心</button>
             <button onclick="window.location.href='app_finance.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">💰</span> 財務中心</button>
-        </nav>
+        </div>
         <div class="p-4 border-t border-slate-800 bg-slate-900/50 sticky bottom-0">
             <div class="text-[10px] text-slate-400 mb-1 px-2 font-bold tracking-widest">登入身分</div>
             <div id="desktop-user-badge" class="font-black text-emerald-400 px-2 truncate">載入中...</div>
@@ -87,7 +87,7 @@
             <div class="shrink-0 text-[10px] font-bold bg-white/10 px-2 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
         </header>
 
-        <main class="p-4 relative z-10 flex-1 overflow-y-auto no-scrollbar">
+        <main class="p-4 relative z-10 flex-1 overflow-y-auto no-scrollbar pb-10">
             <div id="friday-reminder" class="hidden bg-gradient-to-r from-amber-500 to-orange-500 text-white p-4 rounded-2xl shadow-lg mb-4 border-2 border-amber-300 relative overflow-hidden">
                 <div class="absolute -right-4 -bottom-4 text-7xl opacity-20 grayscale">📅</div>
                 <div class="flex items-center justify-between mb-2 border-b border-amber-300/50 pb-2 relative z-10">
@@ -172,7 +172,7 @@
                         <button onclick="switchInvCat('其他')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">其他</button>
                     </div>
                 </div>
-                <div id="ui-inventory-list" class="space-y-4 pb-16"></div>
+                <div id="ui-inventory-list" class="space-y-4 pb-4"></div>
             </div>
 
             <div id="view-scanner" class="view-panel">
@@ -251,13 +251,29 @@
                                 <input type="text" id="i-custom-category" placeholder="請輸入新類別名稱" class="hidden mt-2 w-full p-2.5 bg-sky-50 rounded-xl text-sm font-bold border border-sky-300 outline-none">
                             </div>
                             <div class="col-span-2">
-                                <input type="text" id="i-spec" placeholder="詳細規格尺寸 (選填)" class="w-full p-2.5 bg-slate-50 rounded-xl text-sm border border-slate-200 outline-none focus:border-sky-500">
+                                <input type="text" id="i-spec" placeholder="詳細規格敘述 (選填)" class="w-full p-2.5 bg-slate-50 rounded-xl text-sm border border-slate-200 outline-none focus:border-sky-500">
                             </div>
-                            <div class="bg-white p-2 rounded-xl border border-slate-200">
+                            
+                            <div class="col-span-2 grid grid-cols-3 gap-2 mt-1">
+                                <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+                                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">長度 (cm)</label>
+                                    <input type="number" step="any" id="i-length" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none">
+                                </div>
+                                <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+                                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">寬度 (cm)</label>
+                                    <input type="number" step="any" id="i-width" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none">
+                                </div>
+                                <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+                                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">高度 (cm)</label>
+                                    <input type="number" step="any" id="i-height" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none">
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-2 rounded-xl border border-slate-200 mt-2">
                                 <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">每箱包裝數量</label>
                                 <input type="number" id="i-qty" value="1" min="1" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none" required>
                             </div>
-                            <div class="bg-white p-2 rounded-xl border border-slate-200">
+                            <div class="bg-white p-2 rounded-xl border border-slate-200 mt-2">
                                 <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">生產週期</label>
                                 <select id="i-lead" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow" required>
                                     <option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option>
@@ -269,15 +285,23 @@
                                     <option value="7">7 天 (每週)</option><option value="30" selected>30 天 (每月)</option><option value="60">60 天 (雙月)</option><option value="90">90 天 (每季)</option>
                                 </select>
                             </div>
+                            
                             <div class="col-span-2 border-t border-sky-200 pt-3 mt-1">
                                 <h5 class="text-xs font-black text-slate-700 mb-3 flex items-center justify-between">
                                     <span class="flex items-center"><span class="mr-1 text-lg">⚙️</span> 產品 BOM 表設定</span>
                                     <span class="text-[9px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded">最多 6 項</span>
                                 </h5>
                                 <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-100 p-1">
-                                    <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[450px]">
+                                    <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[500px]">
                                         <thead class="text-slate-500 border-b border-slate-200">
-                                            <tr><th class="p-2 font-bold w-6 text-center">項次</th><th class="p-2 font-bold">原料名稱</th><th class="p-2 font-bold">用量</th><th class="p-2 font-bold">單位</th><th class="p-2 font-bold text-sky-700">總用量(+10%損耗)</th></tr>
+                                            <tr>
+                                                <th class="p-2 font-bold w-6 text-center">項次</th>
+                                                <th class="p-2 font-bold">原料名稱</th>
+                                                <th class="p-2 font-bold w-16 text-center">用量</th>
+                                                <th class="p-2 font-bold w-16 text-center text-amber-600">損耗(%)</th>
+                                                <th class="p-2 font-bold w-16 text-center">單位</th>
+                                                <th class="p-2 font-bold text-sky-700 w-20 text-center">總用量</th>
+                                            </tr>
                                         </thead>
                                         <tbody id="bom-table-body" class="divide-y divide-slate-100 bg-white rounded-lg"></tbody>
                                     </table>
@@ -322,6 +346,22 @@
                         <label class="text-[10px] font-bold text-slate-500 ml-1">生產週期</label>
                         <select id="fe-item-lead" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-sky-500 transition shadow-inner"><option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option></select>
                     </div>
+                    
+                    <div class="col-span-2 grid grid-cols-3 gap-2">
+                        <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-inner">
+                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">長度(cm)</label>
+                            <input type="number" step="any" id="fe-item-length" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none">
+                        </div>
+                        <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-inner">
+                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">寬度(cm)</label>
+                            <input type="number" step="any" id="fe-item-width" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none">
+                        </div>
+                        <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-inner">
+                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">高度(cm)</label>
+                            <input type="number" step="any" id="fe-item-height" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none">
+                        </div>
+                    </div>
+
                     <div class="col-span-2">
                         <label class="text-[10px] font-bold text-slate-500 ml-1">盤點週期 (逾期提醒)</label>
                         <select id="fe-item-cycle" class="w-full p-2.5 bg-sky-50 border border-sky-200 rounded-xl text-sm font-black text-sky-900 select-arrow outline-none focus:border-sky-500 transition shadow-inner"><option value="7">7 天 (每週)</option><option value="30">30 天 (每月)</option><option value="60">60 天 (雙月)</option><option value="90">90 天 (一季)</option></select>
@@ -330,9 +370,16 @@
                 <div class="border-t border-slate-200 pt-3 mt-2">
                     <h5 class="text-[10px] font-black text-sky-700 mb-2 tracking-widest">⚙️ BOM 表修正</h5>
                     <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
-                        <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[400px]">
+                        <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[500px]">
                             <thead class="text-slate-500 border-b border-slate-200">
-                                <tr><th class="p-1 font-bold">項次</th><th class="p-1 font-bold">原料名稱</th><th class="p-1 font-bold">用量</th><th class="p-1 font-bold">單位</th><th class="p-1 font-bold text-sky-700">總用量(+10%損耗)</th></tr>
+                                <tr>
+                                    <th class="p-1 font-bold">項次</th>
+                                    <th class="p-1 font-bold">原料名稱</th>
+                                    <th class="p-1 font-bold w-16 text-center">用量</th>
+                                    <th class="p-1 font-bold w-16 text-center text-amber-600">損耗(%)</th>
+                                    <th class="p-1 font-bold w-16 text-center">單位</th>
+                                    <th class="p-1 font-bold text-sky-700 w-20 text-center">總用量</th>
+                                </tr>
                             </thead>
                             <tbody id="fe-bom-table-body" class="divide-y divide-slate-100 bg-white rounded-lg"></tbody>
                         </table>
@@ -367,7 +414,7 @@
 
     <audio id="beep-sound" src="data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
 
-    <script src="shared.js?v=999"></script>
+    <script src="shared.js?v=1005"></script>
     <script>
         let html5QrcodeScanner = null; 
         let currentItemPackQty = 1; 
@@ -513,10 +560,23 @@
                     });
                 }
                 
-                const { data: checks } = await window._sb.from('inventory_ledgers').select('item_id, created_at, employees(full_name)').eq('action_type', '盤點').order('created_at', {ascending: false});
+                // 🌟 多重防護：如果關聯查詢失敗，退回基本查詢
+                let checksQuery = await window._sb.from('inventory_ledgers')
+                    .select('item_id, created_at, employees(full_name)')
+                    .eq('action_type', '盤點')
+                    .order('created_at', {ascending: false});
                 
+                if (checksQuery.error) {
+                    console.warn("Fallback query for checks triggered.");
+                    checksQuery = await window._sb.from('inventory_ledgers')
+                        .select('item_id, created_at')
+                        .eq('action_type', '盤點')
+                        .order('created_at', {ascending: false});
+                }
+                
+                const checks = checksQuery.data || [];
                 let nextChecks = { ...window.latestChecks }; 
-                if(checks) { 
+                if(checks.length > 0) { 
                     checks.forEach(c => {
                         let dbDate = new Date(c.created_at);
                         let local = nextChecks[c.item_id];
@@ -524,7 +584,7 @@
                             nextChecks[c.item_id] = { 
                                 rawDate: c.created_at, 
                                 date: dbDate.toLocaleDateString('zh-TW'), 
-                                emp: c.employees?.full_name || '未知' 
+                                emp: c.employees?.full_name || '系統紀錄' 
                             };
                         }
                     }); 
@@ -908,13 +968,12 @@
             await window._sb.from('items').update({ safe_stock_level: newVal }).eq('id', id); 
         }
 
-        // 🌟 樂觀更新黑科技：不再調用全畫面渲染，直接更新 DOM
+        // 🌟 樂觀更新黑科技：加上嚴謹的 DB 錯誤攔截
         async function inlineUpdateCurrentStock(id, oldQty, newValStr, inputEl) { 
             const newQty = parseInt(newValStr) || 0; 
             if(newQty === oldQty) return; 
             const diff = newQty - oldQty; 
             
-            // 🌟 1. 瞬間更新本地資料與指定 DOM (絕對不回跳！)
             let item = window.inventoryData.find(x => x.id === id);
             if (item) {
                 item.current_stock = newQty;
@@ -924,14 +983,11 @@
                 let newEmp = window.currentUser?.full_name || '使用者';
                 window.latestChecks[id] = { rawDate: nowIso, date: newDate, emp: newEmp };
                 
-                // 僅更新該卡片的日期欄位
                 const checkEl = document.getElementById(`last-check-${id}`);
                 if (checkEl) checkEl.innerHTML = `${newDate} (${newEmp})`;
 
-                // 重新綁定 onchange，讓下次計算 diff 正確
                 if (inputEl) inputEl.setAttribute('onchange', `inlineUpdateCurrentStock('${id}', ${newQty}, this.value, this)`);
 
-                // 若在法定盤點清單內，自動移除
                 const fridayBtn = document.querySelector(`button[onclick="openCountViewFromId('${id}')"]`);
                 if(fridayBtn) {
                     const row = fridayBtn.closest('.bg-white\\/20');
@@ -946,12 +1002,17 @@
                 }
             }
             
-            showSysToast('✅ 庫存已更新，並記錄為最新盤點！');
-            
-            // 🌟 2. 背景安靜寫入資料庫，不觸發全畫面重刷
-            await window._sb.from('inventory_ledgers').insert([{ 
+            // 🌟 加入錯誤攔截，防止寫入失敗導致重整後資料消失
+            const { error: insErr } = await window._sb.from('inventory_ledgers').insert([{ 
                 item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: `列表快速校正 (原:${oldQty} -> 新:${newQty})` 
             }]); 
+
+            if (insErr) {
+                console.error("盤點紀錄寫入失敗:", insErr);
+                alert('寫入盤點紀錄失敗，請確認網路或資料庫狀態：' + insErr.message);
+            } else {
+                showSysToast('✅ 庫存已更新，並記錄為最新盤點！');
+            }
         }
 
         async function inlineUpdateCycle(id, newValStr) { 
@@ -1207,6 +1268,7 @@
             document.getElementById('c-total-qty').value = Math.max(0, parseInt(document.getElementById('c-total-qty').value) + val); 
         }
 
+        // 🌟 防護盤點寫入錯誤機制
         async function submitCount() { 
             const id = document.getElementById('c-item-id').value; 
             const newVal = parseInt(document.getElementById('c-total-qty').value); 
@@ -1238,25 +1300,29 @@
                 }
             }
 
-            await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: '相機掃碼校正' }]); 
+            const { error: insErr } = await window._sb.from('inventory_ledgers').insert([{ item_id: id, employee_id: window.currentUser.id, change_qty: diff, action_type: '盤點', note: '相機掃碼校正' }]); 
             
-            const beep = document.getElementById('beep-sound'); 
-            if(beep) { beep.currentTime = 0; beep.play().catch(()=>{}); } 
-            
-            showSysToast('✅ 盤點紀錄已儲存！');
+            if (insErr) {
+                alert('盤點紀錄寫入失敗: ' + insErr.message);
+            } else {
+                const beep = document.getElementById('beep-sound'); 
+                if(beep) { beep.currentTime = 0; beep.play().catch(()=>{}); } 
+                showSysToast('✅ 盤點紀錄已儲存！');
+            }
             
             btn.innerText = '💾 確認並盤點下一個'; 
             btn.disabled = false; 
             openScanner(); 
         }
         
+        // 🌟 BOM 表加入損耗設定
         function renderBomTable(tbodyId, existingData = []) {
             let rawItems = window.inventoryData.filter(i => i.item_type === '原料'); 
             let html = ''; 
             let safeData = getSafeArray(existingData);
             
             for(let i=0; i<6; i++) {
-                let r = safeData[i] || { material: '', usage: '', unit: '米平方', total_qty: '' };
+                let r = safeData[i] || { material: '', usage: '', unit: '米平方', total_qty: '', loss: 0 };
                 let opts = '<option value="">(請選擇原料...)</option>' + rawItems.map(rm => `<option value="${rm.item_name}" ${r.material===rm.item_name?'selected':''}>[${rm.item_code}] ${rm.item_name}</option>`).join('');
                 if(r.material && !rawItems.some(rm => rm.item_name === r.material)) {
                     opts += `<option value="${r.material}" selected>${r.material} (舊資料)</option>`;
@@ -1267,6 +1333,7 @@
                     <td class="p-2 text-slate-300 text-center font-black">${i+1}</td>
                     <td class="p-1"><select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold bom-mat select-arrow truncate text-slate-700 focus:border-sky-500 outline-none shadow-inner">${opts}</select></td>
                     <td class="p-1"><input type="number" step="any" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-black text-sky-700 text-center bom-qty outline-none focus:border-sky-500 shadow-inner" value="${r.usage}" oninput="calcBomLoss(this)"></td>
+                    <td class="p-1"><input type="number" step="any" class="w-full p-2 bg-amber-50 border border-amber-200 rounded-lg text-xs font-black text-amber-700 text-center bom-loss outline-none focus:border-amber-500 shadow-inner" value="${r.loss||0}" oninput="calcBomLoss(this)"></td>
                     <td class="p-1">
                         <select class="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold select-arrow bom-unit outline-none focus:border-sky-500 shadow-sm">
                             <option value="米平方" ${r.unit==='米平方'?'selected':''}>米平方</option>
@@ -1282,10 +1349,12 @@
             document.getElementById(tbodyId).innerHTML = html;
         }
 
+        // 🌟 自動換算 BOM 總用量 (包含自定義損耗)
         function calcBomLoss(el) { 
             const tr = el.closest('tr'); 
-            const usage = parseFloat(el.value) || 0; 
-            tr.querySelector('.bom-total').value = usage > 0 ? (usage * 1.1).toFixed(2) : ''; 
+            const usage = parseFloat(tr.querySelector('.bom-qty').value) || 0; 
+            const loss = parseFloat(tr.querySelector('.bom-loss').value) || 0; 
+            tr.querySelector('.bom-total').value = usage > 0 ? (usage * (1 + loss / 100)).toFixed(2) : ''; 
         }
 
         function checkCustomCategory() { 
@@ -1301,6 +1370,7 @@
                     data.push({ 
                         material: mat, 
                         usage: parseFloat(tr.querySelector('.bom-qty').value) || 0, 
+                        loss: parseFloat(tr.querySelector('.bom-loss').value) || 0,
                         unit: tr.querySelector('.bom-unit').value, 
                         total_qty: parseFloat(tr.querySelector('.bom-total').value) || 0 
                     }); 
@@ -1309,6 +1379,7 @@
             return data; 
         }
 
+        // 🌟 新增長寬高資料綁定
         async function saveItem(e) { 
             e.preventDefault(); 
             let cat = document.getElementById('i-category').value === 'custom' ? document.getElementById('i-custom-category').value : document.getElementById('i-category').value; 
@@ -1318,6 +1389,9 @@
                 item_type: document.getElementById('i-type').value, 
                 category: cat, 
                 specification: document.getElementById('i-spec').value, 
+                length: parseFloat(document.getElementById('i-length').value) || null,
+                width: parseFloat(document.getElementById('i-width').value) || null,
+                height: parseFloat(document.getElementById('i-height').value) || null,
                 qty_per_pack: parseInt(document.getElementById('i-qty').value) || 1, 
                 safe_stock_level: 0, 
                 lead_time_days: parseInt(document.getElementById('i-lead').value) || 15, 
@@ -1331,7 +1405,9 @@
                 window.suppressListRender = false;
                 await loadItems(); 
                 renderBomTable('bom-table-body'); 
-            } 
+            } else {
+                alert('寫入失敗，請確認資料表是否已新增 length, width, height 欄位。');
+            }
         }
         
         function renderItemSearch() {
@@ -1430,6 +1506,10 @@
             document.getElementById('fe-item-lead').value = i.lead_time_days || 15; 
             document.getElementById('fe-item-cycle').value = i.stocktake_cycle || 30; 
             
+            document.getElementById('fe-item-length').value = i.length || '';
+            document.getElementById('fe-item-width').value = i.width || '';
+            document.getElementById('fe-item-height').value = i.height || '';
+
             renderBomTable('fe-bom-table-body', i.bom_data || []); 
             document.getElementById('front-item-edit-modal').classList.add('active'); 
         }
@@ -1442,6 +1522,9 @@
             const p = { 
                 item_name: document.getElementById('fe-item-name').value, 
                 category: feItemCat ? feItemCat.value : '未分類', 
+                length: parseFloat(document.getElementById('fe-item-length').value) || null,
+                width: parseFloat(document.getElementById('fe-item-width').value) || null,
+                height: parseFloat(document.getElementById('fe-item-height').value) || null,
                 lead_time_days: parseInt(document.getElementById('fe-item-lead').value) || 15, 
                 stocktake_cycle: parseInt(document.getElementById('fe-item-cycle').value) || 30, 
                 bom_data: extractBomData('fe-bom-table-body') 
@@ -1449,7 +1532,7 @@
             
             const { error } = await window._sb.from('items').update(p).eq('id', id); 
             if(error) {
-                alert('失敗'); 
+                alert('寫入失敗，請確認資料表是否已新增 length, width, height 欄位。'); 
             } else { 
                 alert('✅ 已儲存修改！'); 
                 closeModal('front-item-edit-modal'); 
@@ -1477,6 +1560,10 @@
         }
 
         window.onload = bootInventory;
+
+        // 🌟 防護機制：避免誤刪電腦版左側導覽列
+        const enforceNavObserver = new MutationObserver(() => { const oldNav = document.querySelector('nav:not(#core-bottom-nav)'); if (oldNav) oldNav.remove(); });
+        enforceNavObserver.observe(document.body, { childList: true, subtree: true });
     </script>
 </body>
 </html>
