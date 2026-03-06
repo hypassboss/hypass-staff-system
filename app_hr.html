@@ -22,7 +22,8 @@
         @media (min-width: 768px) { 
             #app-wrapper { align-items: center; justify-content: center; padding: 20px; }
             #app-container { height: 100%; min-height: auto; max-height: 900px; border-radius: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow-y: auto; }
-            nav#core-bottom-nav { display: none !important; } /* 電腦版隱藏底部導覽 */
+            /* 電腦版隱藏底部導覽，但「絕對不影響」左側側邊欄的 nav */
+            nav#core-bottom-nav { display: none !important; } 
         }
 
         .view-panel { display: none; animation: fadeIn 0.3s ease; } .view-panel.active { display: block; flex: 1; }
@@ -55,8 +56,6 @@
         #canvas-container { position: relative; width: 100%; height: 160px; background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 1rem; overflow: hidden; }
         #signature-pad { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
         
-        nav { display: none !important; }
-        #core-bottom-nav { display: flex !important; }
         @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         .toast-msg { animation: slideInLeft 0.4s ease-out forwards; z-index: 9999; }
     </style>
@@ -70,13 +69,6 @@
         <div class="text-6xl mb-4 animate-bounce">🛡️</div>
         <h2 class="text-xl font-black tracking-widest mb-2">HYPASS</h2>
         <p class="text-xs font-bold text-slate-400 tracking-wider">安全驗證與身分核實中...</p>
-    </div>
-
-    <div id="unauthorized-screen" class="fixed inset-0 bg-slate-50 z-[9998] hidden flex-col items-center justify-center p-6 text-center">
-        <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center text-5xl mb-6 shadow-inner">🚫</div>
-        <h2 class="text-2xl font-black text-slate-800 mb-2">無權限訪問</h2>
-        <p class="text-sm font-bold text-slate-500 leading-relaxed mb-8">您的帳號目前處於未開通或停權狀態。<br>如有疑問，請聯繫系統管理員。</p>
-        <button onclick="liff.closeWindow()" class="w-full max-w-xs bg-slate-900 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition">關閉視窗</button>
     </div>
 
     <aside class="hidden md:flex w-64 bg-slate-900 text-white flex-col h-full shadow-2xl shrink-0 z-20 overflow-y-auto no-scrollbar">
@@ -100,7 +92,7 @@
     </aside>
 
     <div id="app-wrapper">
-    <div id="app-container" class="shadow-2xl relative hidden">
+    <div id="app-container" class="shadow-2xl relative hidden flex-col">
         <header class="bg-slate-900 text-white px-5 py-4 shadow-md sticky top-0 z-50 flex items-center justify-between shrink-0 md:rounded-t-2xl">
             <button id="btn-back" onclick="backToDash()" class="hidden bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center shrink-0">🔙 返回</button>
             <div class="flex-1 text-center"><h1 class="text-lg font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-200 truncate" id="header-title">員工大廳</h1></div>
