@@ -93,7 +93,7 @@
     </aside>
 
     <div id="app-wrapper">
-    <div id="app-container" class="shadow-2xl relative hidden flex-col">
+    <div id="app-container" class="bg-[#f1f5f9] min-h-screen md:min-h-0 md:h-[90vh] md:rounded-2xl shadow-2xl relative hidden flex-col w-full max-w-[28rem] md:max-w-md overflow-y-auto">
         <header class="bg-slate-900 text-white px-5 py-4 md:py-5 shadow-md sticky top-0 z-50 flex items-center justify-between shrink-0 md:rounded-t-2xl">
             <button id="btn-back" onclick="backToDash()" class="hidden bg-white/10 hover:bg-white/20 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold transition flex items-center shrink-0">🔙 返回</button>
             <div class="flex-1 text-center"><h1 class="text-lg md:text-xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-200 truncate" id="header-title">採購管理中心</h1></div>
@@ -196,7 +196,7 @@
                         <input type="month" id="hist-month-filter" class="bg-white border border-slate-300 rounded-lg p-2 md:p-2.5 text-xs md:text-sm font-black text-slate-700 outline-none shadow-sm cursor-pointer hover:border-amber-400 transition" onchange="openHistory()">
                     </div>
                 </div>
-                <div id="ui-hist-po" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                <div id="ui-hist-po" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
                     <div class="text-center text-xs text-slate-400 py-6 col-span-full">載入中...</div>
                 </div>
             </div>
@@ -245,18 +245,18 @@
                     <div class="col-span-2"><label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1">聯絡信箱</label><input type="email" id="edit-s-email" class="w-full p-3 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none"></div>
 
                     <div class="col-span-2 border-t border-slate-100 pt-2"><h5 class="text-[10px] md:text-xs font-black text-slate-500 mb-1">📞 聯絡窗口</h5></div>
-                    <div><input type="text" id="edit-s-contact" placeholder="聯絡人" class="w-full p-3 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none"></div>
-                    <div><input type="text" id="edit-s-phone" placeholder="電話" class="w-full p-3 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none"></div>
+                    <div><input type="text" id="edit-s-contact" placeholder="聯絡人" class="w-full p-2 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none"></div>
+                    <div><input type="text" id="edit-s-phone" placeholder="電話" class="w-full p-2 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none"></div>
                     
                     <div class="col-span-2 border-t border-slate-100 pt-2"><h5 class="text-[10px] md:text-xs font-black text-slate-500 mb-1">💰 付款資訊</h5></div>
-                    <div class="col-span-2"><select id="edit-s-pay" class="w-full p-3 bg-slate-50 rounded-xl text-sm md:text-base font-bold border border-slate-200 select-arrow outline-none" required><option value="月結30天">月結 30 天</option><option value="月結60天">月結 60 天</option><option value="貨到付款">貨到付款</option><option value="匯款預付">匯款預付</option></select></div>
+                    <div class="col-span-2"><select id="edit-s-pay" class="w-full p-2 bg-slate-50 rounded-xl text-sm md:text-base font-bold border border-slate-200 select-arrow outline-none" required><option value="月結30天">月結 30 天</option><option value="月結60天">月結 60 天</option><option value="貨到付款">貨到付款</option><option value="匯款預付">匯款預付</option></select></div>
                     
-                    <div class="col-span-2 grid grid-cols-2 gap-3">
-                        <select id="edit-s-bank-code" class="w-full p-3 bg-white rounded-xl text-[11px] md:text-sm font-bold border border-slate-200 select-arrow outline-none">
+                    <div class="col-span-2 grid grid-cols-2 gap-2">
+                        <select id="edit-s-bank-code" class="w-full p-2 bg-white rounded-xl text-[11px] md:text-sm font-bold border border-slate-200 select-arrow outline-none">
                             <option value="">無</option>
                             <option value="822-中國信託">822 中國信託</option><option value="804-中華郵政">804 中華郵政</option><option value="013-國泰世華">013 國泰世華</option><option value="812-台新銀行">812 台新銀行</option><option value="012-台北富邦">012 台北富邦</option><option value="004-臺灣銀行">004 臺灣銀行</option><option value="006-合作金庫">006 合作金庫</option><option value="007-第一銀行">007 第一銀行</option><option value="008-華南銀行">008 華南銀行</option><option value="009-彰化銀行">009 彰化銀行</option>
                         </select>
-                        <input type="number" id="edit-s-bank-acc" placeholder="純數字帳號" class="w-full p-3 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none font-mono">
+                        <input type="number" id="edit-s-bank-acc" placeholder="純數字帳號" class="w-full p-2 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none font-mono">
                     </div>
                 </div>
             </div>
@@ -269,7 +269,7 @@
 
     <div id="po-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[9990]">
         <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-6 md:p-8 relative flex flex-col shadow-2xl">
-            <h3 class="font-black text-lg md:text-xl border-b border-slate-100 pb-3 mb-5 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯狀態</h3>
+            <h3 class="font-black text-lg md:text-xl border-b border-slate-100 pb-3 mb-5 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯單據</h3>
             <input type="hidden" id="po-edit-id">
             <input type="hidden" id="po-edit-islegacy">
             <div class="space-y-4 mb-6">
@@ -282,9 +282,11 @@
                 <div><label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1 block mb-1">期望到貨日</label><input type="date" id="po-edit-date" class="w-full p-3 md:p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm md:text-base font-bold outline-none focus:border-amber-400"></div>
                 <div><label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1 block mb-1">備註說明</label><textarea id="po-edit-note" class="w-full p-3 md:p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm md:text-base font-bold outline-none h-24 resize-none focus:border-amber-400"></textarea></div>
             </div>
-            <div class="flex space-x-3">
-                <button onclick="closeModal('po-edit-modal')" class="w-1/3 bg-slate-100 text-slate-600 font-bold py-3.5 md:py-4 rounded-xl active:scale-95 md:text-lg">取消</button>
-                <button onclick="savePOEdit()" class="flex-1 bg-amber-500 text-white font-black py-3.5 md:py-4 rounded-xl active:scale-95 shadow-md md:text-lg tracking-widest">儲存變更</button>
+            
+            <div class="flex space-x-2 md:space-x-3">
+                <button onclick="closeModal('po-edit-modal')" class="w-1/4 bg-slate-100 text-slate-600 font-bold py-3.5 md:py-4 rounded-xl active:scale-95 transition md:text-sm">取消</button>
+                <button onclick="delPOFromModal()" class="w-1/4 bg-red-100 text-red-600 font-black py-3.5 md:py-4 rounded-xl active:scale-95 transition md:text-sm shadow-sm border border-red-200 flex justify-center items-center"><span class="text-lg">🗑️</span></button>
+                <button onclick="savePOEdit()" class="flex-1 bg-amber-500 text-white font-black py-3.5 md:py-4 rounded-xl active:scale-95 transition shadow-md md:text-base tracking-widest">💾 儲存變更</button>
             </div>
         </div>
     </div>
@@ -306,7 +308,6 @@
         let isReceivingScan = false;
         let currentReceivePO = null;
 
-        // 全域暫存變數
         let currentViewingPoId = null;
         let currentViewingIsLegacy = false;
 
@@ -706,7 +707,7 @@
                 if(sId === '待審核' || sId === '待處理') {
                     btnHtml = `<button onclick="quickApprovePO('${p.id}', ${p.is_legacy})" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-3 md:py-4 rounded-xl shadow-md active:scale-95 text-sm md:text-base transition tracking-widest mt-auto">✅ 審核核准</button>`;
                 } else if (sId === '已核准') {
-                    btnHtml = `<button onclick="quickSendPO_PDF('${p.id}', ${p.is_legacy})" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-3 md:py-4 rounded-xl shadow-md active:scale-95 text-sm md:text-base transition tracking-widest mt-auto">📄 下載 PDF 並發送</button>`;
+                    btnHtml = `<button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy}, 'download')" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-3 md:py-4 rounded-xl shadow-md active:scale-95 text-sm md:text-base transition tracking-widest mt-auto">📄 下載 PDF 並發送</button>`;
                 }
 
                 return `
@@ -743,8 +744,79 @@
             } catch(e) { alert('核准失敗: ' + e.message); }
         }
 
-        function quickSendPO_PDF(id, isLegacy) {
-            processAdminPO_PDF(id, isLegacy, 'download');
+        // 🌟 採購紀錄大改版 (四宮格時間版面 + 極簡雙按鈕)
+        async function openHistory() {
+            openView('history', '🗂️ 採購記錄');
+            const elPo = document.getElementById('ui-hist-po');
+            const monthInput = document.getElementById('hist-month-filter');
+            
+            if(!monthInput.value) {
+                const now = new Date();
+                monthInput.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+            }
+            const selectedMonth = monthInput.value;
+            elPo.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 col-span-full">載入中...</div>';
+
+            const pos = await fetchSafePOs();
+            const filteredPos = pos.filter(p => p.created_at && p.created_at.startsWith(selectedMonth));
+
+            if(filteredPos && filteredPos.length > 0) {
+                elPo.innerHTML = filteredPos.map(p => {
+                    let stCol = p.status === '完成' || p.status === 'PO完成' || p.status === '已到貨' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (p.status.includes('異常') ? 'text-white bg-red-500 shadow-sm animate-pulse border-red-600' : (p.status === '待審核' || p.status === '待處理' ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-sky-700 bg-sky-50 border-sky-200'));
+                    
+                    let safePoItems = getSafeArray(p.items_json);
+                    let itemsStr = safePoItems.map(i => {
+                        let q = parseFloat(i.qty)||0; let r = parseFloat(i.received_qty)||0;
+                        let tag = r > 0 ? `<span class="text-[8px] md:text-[9px] ml-1 bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200">已收:${r}</span>` : '';
+                        return `<div class="flex justify-between items-center border-b border-slate-200/50 pb-1.5 mb-1.5 last:border-0 last:pb-0 last:mb-0"><span class="text-slate-700 font-bold truncate pr-2">${i.name}</span><span class="text-amber-700 font-black shrink-0 text-xs md:text-sm">x${q.toFixed(0)} <span class="text-[9px] text-slate-400">${i.unit||'件'}</span>${tag}</span></div>`;
+                    }).join('');
+                    
+                    let safeNote = (p.note || '').replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n");
+
+                    // 🌟 四宮格時間邏輯
+                    let reqDate = new Date(p.created_at).toLocaleDateString('zh-TW', {month:'numeric', day:'numeric'});
+                    let expDate = (p.expected_date && p.expected_date !== '未定' && p.expected_date !== null) ? new Date(p.expected_date).toLocaleDateString('zh-TW', {month:'numeric', day:'numeric'}) : '--';
+                    
+                    let sendDate = '--';
+                    let compDate = '--';
+                    
+                    if (p.status.includes('已發送') || p.status.includes('部分到貨') || p.status.includes('異常')) {
+                        sendDate = p.updated_at ? new Date(p.updated_at).toLocaleDateString('zh-TW', {month:'numeric', day:'numeric'}) : '已紀錄';
+                    }
+                    if (p.status.includes('完成') || p.status.includes('PO完成')) {
+                        sendDate = '已紀錄'; 
+                        compDate = p.updated_at ? new Date(p.updated_at).toLocaleDateString('zh-TW', {month:'numeric', day:'numeric'}) : '已紀錄';
+                    }
+
+                    return `
+                    <div class="bg-white p-5 md:p-6 rounded-[1.5rem] border border-slate-200 shadow-sm transition hover:shadow-lg flex flex-col relative overflow-hidden">
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                            <span class="text-xs md:text-sm font-mono font-black text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 shadow-sm">${formatPO(p.po_no)}</span>
+                            <span class="text-[10px] md:text-xs font-black px-2.5 py-1 rounded-lg shadow-sm border ${stCol}">${p.status.replace('PO','')}</span>
+                        </div>
+                        
+                        <h4 class="text-base md:text-lg font-black text-slate-800 mb-3 truncate flex items-center"><span class="mr-2 text-xl">🏢</span> ${p.supplier_name}</h4>
+                        
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-inner text-[11px] md:text-xs flex-1 space-y-1.5 mb-4">
+                            <div class="text-[10px] text-slate-400 font-black border-b border-slate-200 pb-1 mb-1.5 uppercase tracking-widest">請購內容</div>
+                            ${itemsStr || '<span class="text-slate-400 italic">無明細</span>'}
+                        </div>
+                        
+                        <div class="grid grid-cols-4 gap-1 text-center bg-white border border-slate-200 rounded-xl mb-5 shadow-sm py-2">
+                            <div class="border-r border-slate-100 last:border-0"><span class="block text-[9px] text-slate-400 font-bold mb-0.5">請購日</span><span class="text-[10px] md:text-xs font-black text-slate-700">${reqDate}</span></div>
+                            <div class="border-r border-slate-100 last:border-0"><span class="block text-[9px] text-slate-400 font-bold mb-0.5">發送日</span><span class="text-[10px] md:text-xs font-black text-sky-600">${sendDate}</span></div>
+                            <div class="border-r border-slate-100 last:border-0"><span class="block text-[9px] text-slate-400 font-bold mb-0.5">交貨日</span><span class="text-[10px] md:text-xs font-black text-amber-600">${expDate}</span></div>
+                            <div><span class="block text-[9px] text-slate-400 font-bold mb-0.5">完成日</span><span class="text-[10px] md:text-xs font-black text-emerald-600">${compDate}</span></div>
+                        </div>
+
+                        ${p.note ? `<p class="text-[10px] md:text-xs text-slate-600 font-bold bg-amber-50 p-2.5 rounded-lg border border-amber-100 mb-4 line-clamp-2">📝 備註: ${p.note}</p>` : ''}
+                        
+                        <div class="grid grid-cols-2 gap-3 mt-auto">
+                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'download')" class="bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-xl text-xs md:text-sm font-black shadow-md active:scale-95 transition tracking-widest flex justify-center items-center"><span class="mr-1.5 text-base">📥</span> 下載</button>
+                            <button onclick="openPOEdit('${p.id}', ${p.is_legacy?true:false}, '${p.status}', '${safeNote}', '${p.expected_date||''}')" class="bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl text-xs md:text-sm font-black shadow-md active:scale-95 transition tracking-widest flex justify-center items-center"><span class="mr-1.5 text-base">✏️</span> 編輯</button>
+                        </div>
+                    </div>`;}).join('');
+            } else { elPo.innerHTML = `<div class="text-xs md:text-sm text-slate-400 py-10 text-center bg-white border border-dashed rounded-xl col-span-full font-bold">此月份無採購紀錄</div>`; }
         }
 
         async function openPOReceive(id, isLegacy) {
@@ -894,7 +966,7 @@
                 if (r < t) allDone = false;
             });
 
-            if(!hasChanges) { alert('您未輸入任何點收數量！'); btn.innerText = '確認入庫並同步更新庫存'; btn.disabled = false; return; }
+            if(!hasChanges) { alert('您未輸入任何點收數量！'); btn.innerText = '確認入庫'; btn.disabled = false; return; }
 
             let newStatus = allDone ? '完成' : '部分到貨';
 
@@ -911,93 +983,10 @@
                 if(isReceivingScan) stopPOBarcodeScan();
                 backToDash();
 
-            } catch(e) { alert('寫入失敗: ' + e.message); btn.innerText = '確認入庫並同步更新庫存'; btn.disabled = false; }
+            } catch(e) { alert('寫入失敗: ' + e.message); btn.innerText = '確認入庫'; btn.disabled = false; }
         }
 
-        // 🌟 採購紀錄 (優化顯示與刪除修復)
-        async function openHistory() {
-            openView('history', '🗂️ 採購記錄');
-            const elPo = document.getElementById('ui-hist-po');
-            const monthInput = document.getElementById('hist-month-filter');
-            
-            if(!monthInput.value) {
-                const now = new Date();
-                monthInput.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-            }
-            const selectedMonth = monthInput.value;
-            elPo.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 col-span-full">載入中...</div>';
-
-            const pos = await fetchSafePOs();
-            const filteredPos = pos.filter(p => p.created_at && p.created_at.startsWith(selectedMonth));
-
-            if(filteredPos && filteredPos.length > 0) {
-                elPo.innerHTML = filteredPos.map(p => {
-                    let stCol = p.status === '完成' || p.status === 'PO完成' || p.status === '已到貨' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (p.status.includes('異常') ? 'text-white bg-red-500 shadow-sm animate-pulse border-red-600' : (p.status === '待審核' ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-sky-700 bg-sky-50 border-sky-200'));
-                    let dateText = (p.expected_date && p.expected_date !== '未定' && p.expected_date !== null) ? String(p.expected_date).slice(5) : '未定';
-                    let safePoItems = getSafeArray(p.items_json);
-                    
-                    let itemsStr = safePoItems.map(i => {
-                        let q = parseFloat(i.qty)||0; let r = parseFloat(i.received_qty)||0;
-                        let tag = r > 0 ? `<span class="text-[8px] md:text-[9px] ml-1 bg-emerald-100 text-emerald-700 px-1 rounded border border-emerald-200">已收:${r}</span>` : '';
-                        return `<div class="flex justify-between items-center border-b border-slate-100 pb-1.5 mb-1.5 last:border-0 last:pb-0 last:mb-0"><span class="text-slate-700 font-bold truncate pr-2">${i.name}</span><span class="text-amber-700 font-black shrink-0 text-xs md:text-sm">x${q.toFixed(0)} <span class="text-[9px] text-slate-400">${i.unit||'件'}</span>${tag}</span></div>`;
-                    }).join('');
-                    
-                    let safeNote = (p.note || '').replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n");
-
-                    return `
-                    <div class="bg-white p-4 md:p-6 rounded-[1.5rem] border border-slate-200 shadow-sm transition hover:shadow-lg flex flex-col">
-                        <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-3">
-                            <div>
-                                <h4 class="text-sm md:text-base font-black text-slate-800 font-mono tracking-wider mb-1">${formatPO(p.po_no)}</h4>
-                                <span class="text-[9px] md:text-[10px] text-slate-400 font-bold bg-slate-50 px-2 py-0.5 rounded border border-slate-100">建立: ${new Date(p.created_at).toLocaleDateString('zh-TW')}</span>
-                            </div>
-                            <div class="text-right flex flex-col items-end">
-                                <span class="text-[10px] md:text-[11px] font-black px-2.5 py-1 rounded shadow-sm border ${stCol}">${p.status.replace('PO','')}</span>
-                                <span class="text-[9px] md:text-[10px] font-bold text-amber-600 mt-1.5 bg-amber-50 px-1.5 py-0.5 rounded">交期: ${dateText}</span>
-                            </div>
-                        </div>
-                        <div class="text-[14px] md:text-base font-black text-slate-800 mb-3 truncate flex items-center"><span class="mr-1">🏢</span> ${p.supplier_name}</div>
-                        
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-inner mb-3 text-[11px] md:text-xs flex-1">
-                            ${itemsStr || '<span class="text-slate-400 italic">無明細</span>'}
-                        </div>
-                        
-                        ${p.note ? `<p class="text-[10px] md:text-xs text-slate-600 font-bold bg-amber-50/50 p-2.5 rounded-lg border border-amber-100/50 mb-4 line-clamp-2">📝 備註: ${p.note}</p>` : '<div class="mb-4"></div>'}
-                        
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-auto">
-                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'view')" class="text-[11px] md:text-xs bg-slate-800 hover:bg-slate-700 text-white py-2.5 md:py-3 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm md:text-base">👁️</span> 預覽</button>
-                            <button onclick="sharePO('${p.id}', ${p.is_legacy?true:false})" class="text-[11px] md:text-xs bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 md:py-3 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm md:text-base">📲</span> 分享</button>
-                            <button onclick="openPOEdit('${p.id}', ${p.is_legacy?true:false}, '${p.status}', '${safeNote}', '${p.expected_date||''}')" class="text-[11px] md:text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 py-2.5 md:py-3 rounded-xl font-black shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm md:text-base">✏️</span> 狀態</button>
-                            <button onclick="delPO('${p.id}', ${p.is_legacy?true:false})" class="text-[11px] md:text-xs text-red-600 hover:bg-red-50 border border-red-200 bg-white py-2.5 md:py-3 rounded-xl font-black shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm md:text-base">🗑️</span> 刪除</button>
-                        </div>
-                    </div>`;}).join('');
-            } else { elPo.innerHTML = `<div class="text-xs md:text-sm text-slate-400 py-10 text-center bg-white border border-dashed rounded-xl col-span-full font-bold">此月份無採購記錄</div>`; }
-        }
-
-        // 🌟 終極修復 PDF 手機下載問題 (利用 Blob 跨平台通用法則)
-        async function sharePO(id, isLegacy) {
-            showSysToast('⏳ 正在產生 PDF 檔案，請稍候...');
-            try {
-                const { html, poNo } = await getPoHtmlContent(id, isLegacy);
-                const opt = { margin: [0.5, 0.5], filename: `HYPASS_採購單_${poNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
-                const tempDiv = document.createElement('div'); tempDiv.innerHTML = html; tempDiv.style.padding = '20px';
-                
-                html2pdf().set(opt).from(tempDiv).outputPdf('blob').then(async function(pdfBlob) {
-                    const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        try {
-                            await navigator.share({ files: [file], title: 'HYPASS 採購單', text: `您好，附上採購單 ${poNo}，請查收。` });
-                            showSysToast('✅ 檔案分享成功！');
-                        } catch (shareErr) {
-                            executePdfDownload(html, poNo, id, isLegacy);
-                        }
-                    } else {
-                        executePdfDownload(html, poNo, id, isLegacy);
-                    }
-                });
-            } catch(e) { alert('失敗: ' + e.message); }
-        }
-
+        // 🌟 編輯視窗呼叫
         function openPOEdit(id, isLegacy, currentStatus, note, expected_date) {
             document.getElementById('po-edit-id').value = id;
             document.getElementById('po-edit-islegacy').value = isLegacy ? 'true' : 'false';
@@ -1024,7 +1013,7 @@
             }
             
             let payload = { status: st, note: note };
-            if (st.includes('已核准') || st.includes('已發送')) {
+            if (st.includes('已核准') || st.includes('已發送') || st.includes('完成')) {
                 payload.updated_at = new Date().toISOString();
             }
             if(ed) payload.expected_date = ed;
@@ -1035,8 +1024,11 @@
             } catch(e) { alert('失敗: ' + e.message); }
         }
 
-        // 🌟 徹底修復刪除異常問題，加入嚴謹報錯機制
-        async function delPO(id, isLegacy) { 
+        // 🌟 整合至編輯視窗的刪除功能
+        async function delPOFromModal() {
+            const id = document.getElementById('po-edit-id').value;
+            const isLegacy = document.getElementById('po-edit-islegacy').value === 'true';
+            
             if(confirm('⚠️ 警告：確定要永久刪除此採購單嗎？\n這項操作無法復原！')){ 
                 try { 
                     const table = isLegacy ? 'purchase_orders' : 'po_documents';
@@ -1044,9 +1036,10 @@
                     if (error) throw error;
                     
                     showSysToast('✅ 採購單已成功刪除！'); 
+                    closeModal('po-edit-modal');
                     openHistory(); 
                 } catch(e) {
-                    alert('刪除失敗，可能是因為此單據與庫存或其他資料有關聯：\n' + e.message);
+                    alert('刪除失敗，這張單據可能已被庫存系統鎖定：\n' + e.message);
                 }
             } 
         }
@@ -1149,6 +1142,7 @@
                     safeUpdate(isLegacy ? 'purchase_orders' : 'po_documents', payload, id).then(() => {
                         if(document.getElementById('view-dashboard').classList.contains('active')) loadDashboardData();
                         if(document.getElementById('view-po-management').classList.contains('active')) openPoManagement();
+                        if(document.getElementById('view-history').classList.contains('active')) openHistory();
                     });
                 } catch(e) {}
             }
@@ -1156,7 +1150,6 @@
             const opt = { margin: [0.5, 0.5], filename: `HYPASS_採購單_${poNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
             const tempDiv = document.createElement('div'); tempDiv.innerHTML = htmlContent; tempDiv.style.padding = '20px';
             
-            // 採用 Blob 產生並使用隱藏 <a> 標籤強制下載，突破手機版限制
             html2pdf().set(opt).from(tempDiv).outputPdf('blob').then(function(pdfBlob) {
                 const url = URL.createObjectURL(pdfBlob);
                 const a = document.createElement('a');
