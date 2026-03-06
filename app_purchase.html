@@ -11,11 +11,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <style>
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; -webkit-tap-highlight-color: transparent; background: #e2e8f0; }
-        @media (max-width: 767px) { body { padding-bottom: 80px; } }
         
+        /* 🌟 雙模態底層設定 */
+        @media (max-width: 767px) { body { padding-bottom: 80px; } }
+        @media (min-width: 768px) { body { overflow: hidden; } }
+
+        /* 🌟 核心：手機版黃金比例 */
         #app-wrapper { display: flex; width: 100%; height: 100vh; overflow: hidden; justify-content: center; }
+        #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; width: 100%; max-width: 28rem; margin: 0 auto; display: flex; flex-direction: column;}
+        
+        /* 🌟 核心升級：電腦版滿版解放 (自動變寬) */
         @media (min-width: 768px) { 
-            #app-wrapper { padding: 24px; align-items: flex-start; }
+            #app-wrapper { align-items: flex-start; justify-content: center; padding: 24px; flex: 1; }
+            #app-container { height: 100%; min-height: auto; max-height: none; width: 100%; max-width: 1400px; border-radius: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow-y: auto; background: #f8fafc; margin: 0; }
             nav#core-bottom-nav { display: none !important; } 
         }
 
@@ -41,11 +49,11 @@
 <body class="text-slate-800 relative md:flex md:h-screen md:overflow-hidden w-full">
 
     <div id="pdf-preview-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-sm z-[9999] hidden flex-col">
-        <div class="flex justify-between items-center p-4 bg-slate-800 text-white shrink-0 shadow-md">
-            <h3 class="font-black text-base flex items-center"><span class="mr-2 text-xl">📄</span>單據檢視</h3>
+        <div class="flex justify-between items-center p-4 md:p-5 bg-slate-800 text-white shrink-0 shadow-md">
+            <h3 class="font-black text-base md:text-xl flex items-center"><span class="mr-2 text-xl">📄</span>單據檢視</h3>
             <div class="space-x-2">
-                <button id="btn-modal-download" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-xs font-black shadow-sm transition">📥 下載 PDF</button>
-                <button onclick="closePdfModal()" class="bg-slate-700 hover:bg-red-500 px-4 py-2 rounded-lg text-xs font-black border border-slate-600 transition">✕ 關閉</button>
+                <button id="btn-modal-download" class="bg-indigo-600 hover:bg-indigo-500 px-4 md:px-6 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-black shadow-sm transition">📥 下載 PDF</button>
+                <button onclick="closePdfModal()" class="bg-slate-700 hover:bg-red-500 px-4 md:px-6 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-black border border-slate-600 transition">✕ 關閉</button>
             </div>
         </div>
         <div class="flex-1 overflow-y-auto p-2 sm:p-6 flex justify-center no-scrollbar">
@@ -57,12 +65,12 @@
 
     <div id="loading-screen" class="fixed inset-0 bg-slate-900 z-[9999] flex flex-col items-center justify-center text-white transition-opacity duration-500">
         <div class="text-6xl mb-4 animate-bounce">🛒</div>
-        <h2 class="text-xl font-black tracking-widest mb-2">HYPASS 採購中心</h2>
-        <p class="text-xs font-bold text-slate-400 tracking-wider mb-6" id="loading-msg">系統載入與驗證中...</p>
+        <h2 class="text-xl md:text-2xl font-black tracking-widest mb-2">HYPASS 採購中心</h2>
+        <p class="text-xs md:text-sm font-bold text-slate-400 tracking-wider mb-6" id="loading-msg">系統載入與驗證中...</p>
         <div id="rescue-btn" class="hidden flex-col items-center">
-            <p class="text-amber-400 text-[10px] font-bold mb-3 bg-slate-800 px-3 py-1 rounded">網路似乎有點慢，或權限驗證超時</p>
-            <button onclick="forceUnlock()" class="bg-amber-500 text-white font-black px-6 py-2.5 rounded-full shadow-lg active:scale-95 transition mb-3 w-48">強制進入系統</button>
-            <button onclick="window.location.href='app_hr.html'" class="bg-slate-700 text-white font-black px-6 py-2.5 rounded-full shadow-lg active:scale-95 transition w-48">返回員工大廳</button>
+            <p class="text-amber-400 text-[10px] md:text-xs font-bold mb-3 bg-slate-800 px-3 py-1 rounded">網路似乎有點慢，或權限驗證超時</p>
+            <button onclick="forceUnlock()" class="bg-amber-500 text-white font-black px-6 py-2.5 md:py-3 rounded-full shadow-lg active:scale-95 transition mb-3 w-48 md:w-56 md:text-lg">強制進入系統</button>
+            <button onclick="window.location.href='app_hr.html'" class="bg-slate-700 text-white font-black px-6 py-2.5 md:py-3 rounded-full shadow-lg active:scale-95 transition w-48 md:w-56 md:text-lg">返回員工大廳</button>
         </div>
     </div>
 
@@ -85,202 +93,198 @@
     </aside>
 
     <div id="app-wrapper">
-    <div id="app-container" class="bg-[#f1f5f9] min-h-screen md:min-h-0 md:h-[90vh] md:rounded-2xl shadow-2xl relative hidden flex-col w-full max-w-[28rem] md:max-w-md overflow-y-auto">
-        <header class="bg-slate-900 text-white px-5 py-4 shadow-md sticky top-0 z-50 flex items-center justify-between shrink-0 md:rounded-t-2xl">
-            <button id="btn-back" onclick="backToDash()" class="hidden bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center shrink-0">🔙 返回</button>
-            <div class="flex-1 text-center"><h1 class="text-lg font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-200 truncate" id="header-title">採購管理中心</h1></div>
-            <div class="shrink-0 text-[10px] font-bold bg-white/10 px-2 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
+    <div id="app-container" class="shadow-2xl relative hidden flex-col">
+        <header class="bg-slate-900 text-white px-5 py-4 md:py-5 shadow-md sticky top-0 z-50 flex items-center justify-between shrink-0 md:rounded-t-2xl">
+            <button id="btn-back" onclick="backToDash()" class="hidden bg-white/10 hover:bg-white/20 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold transition flex items-center shrink-0">🔙 返回</button>
+            <div class="flex-1 text-center"><h1 class="text-lg md:text-xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-200 truncate" id="header-title">採購管理中心</h1></div>
+            <div class="shrink-0 text-[10px] md:text-xs font-bold bg-white/10 px-2 md:px-3 py-1 md:py-1.5 rounded-full border border-white/20" id="user-badge">載入中</div>
         </header>
 
-        <main class="p-4 relative z-10 flex-1 overflow-y-auto no-scrollbar pb-10">
-            <div id="view-dashboard" class="view-panel active space-y-4">
+        <main class="p-4 md:p-6 relative z-10 flex-1 overflow-y-auto no-scrollbar pb-10">
+            <div id="view-dashboard" class="view-panel active space-y-4 md:space-y-6">
                 
-                <div class="glass-card p-4 rounded-[1.5rem] shadow-sm border-t-4 border-amber-500 relative overflow-hidden">
-                    <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between px-1">
-                        <span class="flex items-center"><span class="mr-1.5 text-lg">📤</span> 最新採購狀況</span>
-                        <span class="text-[9px] bg-amber-100 text-amber-700 px-2 py-1 rounded-md font-black border border-amber-200 shadow-sm">進行中單據</span>
+                <div class="glass-card p-4 md:p-6 rounded-[1.5rem] shadow-sm border-t-4 border-amber-500 relative overflow-hidden">
+                    <h3 class="font-black text-slate-800 text-sm md:text-base mb-3 md:mb-5 flex items-center justify-between px-1">
+                        <span class="flex items-center"><span class="mr-1.5 text-lg md:text-xl">📤</span> 最新採購狀況</span>
+                        <span class="text-[9px] md:text-[11px] bg-amber-100 text-amber-700 px-2 py-1 rounded-md font-black border border-amber-200 shadow-sm">進行中單據</span>
                     </h3>
                     
-                    <div id="ui-dash-po-status" class="space-y-3">
-                        <div class="text-center text-xs text-slate-400 py-4 font-bold border border-dashed rounded-xl border-slate-300">資料讀取中...</div>
+                    <div id="ui-dash-po-status" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div class="text-center text-xs md:text-sm text-slate-400 py-6 font-bold border border-dashed rounded-xl border-slate-300 col-span-full">資料讀取中...</div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 mt-4">
-                    <button onclick="openPoManagement()" class="glass-card p-5 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-amber-200 hover:bg-amber-50 col-span-2 bg-amber-50/50">
-                        <span class="text-4xl mb-2 drop-shadow-md">📝</span>
-                        <span class="font-black text-amber-800 tracking-wider text-base mb-1">待處理清單</span>
-                        <span class="font-bold text-amber-600/70 text-[10px] tracking-wider">主管核准 / 產出 PDF</span>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mt-4">
+                    <button onclick="openPoManagement()" class="glass-card p-5 md:p-8 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-amber-200 hover:bg-amber-50 col-span-2 lg:col-span-2 bg-amber-50/50">
+                        <span class="text-4xl md:text-5xl mb-2 drop-shadow-md">📝</span>
+                        <span class="font-black text-amber-800 tracking-wider text-base md:text-xl mb-1">待處理清單</span>
+                        <span class="font-bold text-amber-600/70 text-[10px] md:text-sm tracking-wider">主管核准 / 產出 PDF</span>
                     </button>
                     
-                    <button onclick="openSupplierList()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-indigo-200 hover:bg-indigo-50">
-                        <span class="text-3xl mb-1.5 drop-shadow-md">🏢</span>
-                        <span class="font-black text-slate-700 text-[11px] tracking-widest leading-tight text-center">供應商管理</span>
+                    <button onclick="openSupplierList()" class="glass-card p-4 md:p-6 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-indigo-200 hover:bg-indigo-50 lg:col-span-1">
+                        <span class="text-3xl md:text-4xl mb-1.5 drop-shadow-md">🏢</span>
+                        <span class="font-black text-slate-700 text-[11px] md:text-sm tracking-widest leading-tight text-center">供應商管理</span>
                     </button>
 
-                    <button onclick="openHistory()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
-                        <span class="text-3xl mb-1.5 drop-shadow-md">🗂️</span>
-                        <span class="font-black text-slate-700 text-[11px] tracking-widest leading-tight text-center">採購記錄</span>
+                    <button onclick="openHistory()" class="glass-card p-4 md:p-6 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50 lg:col-span-1">
+                        <span class="text-3xl md:text-4xl mb-1.5 drop-shadow-md">🗂️</span>
+                        <span class="font-black text-slate-700 text-[11px] md:text-sm tracking-widest leading-tight text-center">採購紀錄</span>
                     </button>
                 </div>
             </div>
 
-            <div id="view-supplier-list" class="view-panel space-y-4">
+            <div id="view-supplier-list" class="view-panel space-y-4 md:space-y-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2">🏢</span>供應商紀錄</h3>
-                    <button onclick="openView('supplier-add', '新增供應商')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow-md active:scale-95 transition">
+                    <h3 class="font-black text-slate-800 text-lg md:text-2xl flex items-center"><span class="mr-2">🏢</span>供應商紀錄</h3>
+                    <button onclick="openView('supplier-add', '新增供應商')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-black shadow-md active:scale-95 transition">
                         ➕ 新增
                     </button>
                 </div>
-                <div id="ui-supplier-list" class="space-y-3">
-                    <div class="text-center text-xs text-slate-400 py-6">載入中...</div>
+                <div id="ui-supplier-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
+                    <div class="text-center text-xs text-slate-400 py-6 col-span-full">載入中...</div>
                 </div>
             </div>
 
             <div id="view-supplier-add" class="view-panel space-y-5">
-                <div class="glass-card p-5 rounded-[1.5rem] shadow-sm border-t-4 border-indigo-500">
-                    <h3 class="font-black text-slate-800 pl-1 text-lg mb-4">建立供應商</h3>
-                    <form onsubmit="saveSupplier(event)" class="space-y-3">
-                        <input type="text" id="s-name" placeholder="供應商名稱 (必填)" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none focus:border-indigo-500" required>
-                        <div class="grid grid-cols-2 gap-3">
-                            <input type="text" id="s-code" placeholder="廠商代號 (例: S001)" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 uppercase outline-none focus:border-indigo-500" required>
-                            <input type="text" id="s-tax" placeholder="統一編號" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none focus:border-indigo-500">
+                <div class="glass-card p-5 md:p-8 rounded-[2rem] shadow-sm border-t-4 border-indigo-500 max-w-2xl mx-auto">
+                    <h3 class="font-black text-slate-800 pl-1 text-lg md:text-xl mb-5">建立供應商</h3>
+                    <form onsubmit="saveSupplier(event)" class="space-y-4">
+                        <input type="text" id="s-name" placeholder="供應商名稱 (必填)" class="w-full p-3 md:p-4 bg-slate-50 rounded-xl text-sm md:text-base font-bold border border-slate-200 outline-none focus:border-indigo-500" required>
+                        <div class="grid grid-cols-2 gap-3 md:gap-4">
+                            <input type="text" id="s-code" placeholder="廠商代號 (例: S001)" class="w-full p-3 md:p-4 bg-slate-50 rounded-xl text-sm md:text-base font-bold border border-slate-200 uppercase outline-none focus:border-indigo-500" required>
+                            <input type="text" id="s-tax" placeholder="統一編號" class="w-full p-3 md:p-4 bg-slate-50 rounded-xl text-sm md:text-base font-bold border border-slate-200 outline-none focus:border-indigo-500">
                         </div>
-                        <input type="text" id="s-address" placeholder="公司地址" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500">
-                        <input type="email" id="s-email" placeholder="聯絡電子郵件" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500">
+                        <input type="text" id="s-address" placeholder="公司地址" class="w-full p-3 md:p-4 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none focus:border-indigo-500">
+                        <input type="email" id="s-email" placeholder="聯絡電子郵件" class="w-full p-3 md:p-4 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none focus:border-indigo-500">
                         
-                        <div class="border-t border-slate-100 pt-3"><h5 class="text-[10px] font-black text-slate-500 mb-2">📞 聯絡窗口</h5></div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <input type="text" id="s-contact" placeholder="聯絡人姓名" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500">
-                            <input type="text" id="s-phone" placeholder="聯絡電話" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500">
+                        <div class="border-t border-slate-100 pt-4"><h5 class="text-[10px] md:text-xs font-black text-slate-500 mb-2">📞 聯絡窗口</h5></div>
+                        <div class="grid grid-cols-2 gap-3 md:gap-4">
+                            <input type="text" id="s-contact" placeholder="聯絡人姓名" class="w-full p-3 md:p-4 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none focus:border-indigo-500">
+                            <input type="text" id="s-phone" placeholder="聯絡電話" class="w-full p-3 md:p-4 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none focus:border-indigo-500">
                         </div>
-                        <div class="border-t border-slate-100 pt-3"><h5 class="text-[10px] font-black text-slate-500 mb-2">💰 財務付款與銀行帳號</h5></div>
-                        <select id="s-pay" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-indigo-500" required><option value="月結30天">月結 30 天</option><option value="月結60天">月結 60 天</option><option value="貨到付款">貨到付款 (C.O.D)</option><option value="匯款預付">匯款預付 (T/T)</option></select>
+                        <div class="border-t border-slate-100 pt-4"><h5 class="text-[10px] md:text-xs font-black text-slate-500 mb-2">💰 財務付款與銀行帳號</h5></div>
+                        <select id="s-pay" class="w-full p-3 md:p-4 bg-slate-50 rounded-xl text-sm md:text-base font-bold border border-slate-200 select-arrow outline-none focus:border-indigo-500" required><option value="月結30天">月結 30 天</option><option value="月結60天">月結 60 天</option><option value="貨到付款">貨到付款 (C.O.D)</option><option value="匯款預付">匯款預付 (T/T)</option></select>
                         
-                        <div class="grid grid-cols-2 gap-3">
-                            <select id="s-bank-code" class="w-full p-3 bg-white rounded-xl text-[11px] font-bold border border-slate-200 select-arrow outline-none focus:border-indigo-500">
+                        <div class="grid grid-cols-2 gap-3 md:gap-4">
+                            <select id="s-bank-code" class="w-full p-3 md:p-4 bg-white rounded-xl text-[11px] md:text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-indigo-500">
                                 <option value="" disabled selected>銀行代碼</option>
-                                <option value="822-中國信託">822 中國信託</option><option value="804-中華郵政">804 中華郵政</option><option value="013-國泰世華">013 國泰世華</option><option value="812-台新銀行">812 台新銀行</option>
-                                <option value="012-台北富邦">012 台北富邦</option><option value="004-臺灣銀行">004 臺灣銀行</option><option value="006-合作金庫">006 合作金庫</option><option value="007-第一銀行">007 第一銀行</option>
-                                <option value="008-華南銀行">008 華南銀行</option><option value="009-彰化銀行">009 彰化銀行</option>
+                                <option value="822-中國信託">822 中國信託</option><option value="804-中華郵政">804 中華郵政</option><option value="013-國泰世華">013 國泰世華</option><option value="812-台新銀行">812 台新銀行</option><option value="012-台北富邦">012 台北富邦</option><option value="004-臺灣銀行">004 臺灣銀行</option><option value="006-合作金庫">006 合作金庫</option><option value="007-第一銀行">007 第一銀行</option><option value="008-華南銀行">008 華南銀行</option><option value="009-彰化銀行">009 彰化銀行</option>
                             </select>
-                            <input type="number" id="s-bank-acc" placeholder="純數字帳號" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500 font-mono">
+                            <input type="number" id="s-bank-acc" placeholder="純數字帳號" class="w-full p-3 md:p-4 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none focus:border-indigo-500 font-mono">
                         </div>
 
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3.5 rounded-xl shadow-md active:scale-95 transition tracking-widest text-base mt-2">💾 儲存</button>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 md:py-5 rounded-2xl shadow-md active:scale-95 transition tracking-widest text-base md:text-lg mt-4">💾 儲存</button>
                     </form>
                 </div>
             </div>
 
-            <div id="view-po-management" class="view-panel space-y-4">
+            <div id="view-po-management" class="view-panel space-y-4 md:space-y-6">
                 <div class="flex flex-col mb-4 border-b border-slate-200 pb-3">
-                    <h3 class="font-black text-slate-800 text-lg flex items-center mb-1"><span class="mr-2">📝</span>待處理清單</h3>
-                    <p class="text-[10px] text-slate-500 font-bold">需具備<strong class="text-red-600">核准權限</strong>方可進行審核與產出 PDF。</p>
+                    <h3 class="font-black text-slate-800 text-lg md:text-2xl flex items-center mb-1"><span class="mr-2">📝</span>待處理清單</h3>
+                    <p class="text-[10px] md:text-xs text-slate-500 font-bold">需具備<strong class="text-red-600">核准權限</strong>方可進行審核與產出 PDF。</p>
                 </div>
-                <div id="ui-pending-pos" class="space-y-4">
-                    <div class="text-center text-xs text-slate-400 py-6">載入中...</div>
+                <div id="ui-pending-pos" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
+                    <div class="text-center text-xs text-slate-400 py-6 col-span-full">載入中...</div>
                 </div>
             </div>
 
-            <div id="view-history" class="view-panel space-y-4">
+            <div id="view-history" class="view-panel space-y-4 md:space-y-6">
                 <div class="flex justify-between items-end mb-4 border-b border-slate-200 pb-3">
-                    <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1">🗂️</span>採購記錄</h3>
+                    <h3 class="font-black text-slate-800 text-lg md:text-2xl flex items-center"><span class="mr-2">🗂️</span>採購紀錄</h3>
                     <div class="flex flex-col items-end">
-                        <label class="text-[9px] font-bold text-slate-500 mb-0.5 mr-1">選擇月份</label>
-                        <input type="month" id="hist-month-filter" class="bg-white border border-slate-300 rounded-lg p-1.5 text-xs font-black text-slate-700 outline-none" onchange="openHistory()">
+                        <label class="text-[9px] md:text-xs font-bold text-slate-500 mb-1 mr-1">選擇月份過濾</label>
+                        <input type="month" id="hist-month-filter" class="bg-white border border-slate-300 rounded-lg p-2 md:p-2.5 text-xs md:text-sm font-black text-slate-700 outline-none shadow-sm cursor-pointer hover:border-amber-400 transition" onchange="openHistory()">
                     </div>
                 </div>
-                <div id="ui-hist-po" class="space-y-4">
-                    <div class="text-center text-xs text-slate-400 py-6">載入中...</div>
+                <div id="ui-hist-po" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                    <div class="text-center text-xs text-slate-400 py-6 col-span-full">載入中...</div>
                 </div>
             </div>
 
             <div id="view-po-receive" class="view-panel space-y-4">
-                <div class="glass-card p-5 rounded-[1.5rem] shadow-sm border-t-4 border-emerald-500">
-                    <div class="flex justify-between items-start mb-4 border-b border-slate-200 pb-3">
+                <div class="glass-card p-5 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm border-t-4 border-emerald-500 max-w-4xl mx-auto">
+                    <div class="flex justify-between items-start mb-5 border-b border-slate-200 pb-4">
                         <div>
-                            <h3 class="font-black text-slate-800 text-lg flex items-center mb-1"><span class="mr-1">📥</span> 分批入庫核銷</h3>
-                            <p class="text-xs font-mono font-bold text-slate-500" id="receive-po-no">PO-XXXX</p>
+                            <h3 class="font-black text-slate-800 text-lg md:text-2xl flex items-center mb-1.5"><span class="mr-2">📥</span> 分批入庫核銷</h3>
+                            <p class="text-xs md:text-sm font-mono font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded inline-block" id="receive-po-no">PO-XXXX</p>
                         </div>
-                        <button onclick="startPOBarcodeScan()" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow-sm flex items-center active:scale-95 transition">
-                            <span class="mr-1">📷</span>掃碼+1
+                        <button onclick="startPOBarcodeScan()" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2.5 rounded-xl text-xs md:text-sm font-black shadow-md flex items-center active:scale-95 transition">
+                            <span class="mr-1.5">📷</span>掃碼+1
                         </button>
                     </div>
 
-                    <div id="receive-scanner-container" class="hidden mb-4 rounded-xl overflow-hidden shadow-inner border border-slate-300">
-                        <div id="receive-reader" class="w-full bg-black min-h-[250px]"></div>
-                        <button onclick="stopPOBarcodeScan()" class="w-full bg-red-600 text-white font-bold py-2 text-xs">關閉掃描器</button>
+                    <div id="receive-scanner-container" class="hidden mb-6 rounded-2xl overflow-hidden shadow-inner border-2 border-slate-800">
+                        <div id="receive-reader" class="w-full bg-black min-h-[300px] md:min-h-[400px]"></div>
+                        <button onclick="stopPOBarcodeScan()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 md:py-4 text-sm md:text-base tracking-widest transition">關閉掃描器</button>
                     </div>
 
-                    <p class="text-[10px] text-emerald-700 font-bold bg-emerald-50 p-2 rounded-lg mb-4 border border-emerald-100">💡 提示：輸入本次到貨數量，系統將自動扣除未交貨數。當所有品項未交貨數為 0 時，此單將自動結案。</p>
+                    <p class="text-[10px] md:text-xs text-emerald-700 font-bold bg-emerald-50 p-3 rounded-xl mb-5 border border-emerald-100 leading-relaxed shadow-sm">💡 提示：輸入本次到貨數量，系統將自動扣除未交貨數並更新庫存。當所有品項未交貨數為 0 時，此單將自動結案。</p>
                     
                     <input type="hidden" id="receive-po-id">
                     <input type="hidden" id="receive-po-legacy">
-                    <div id="ui-receive-items" class="space-y-3 mb-6">
+                    <div id="ui-receive-items" class="space-y-4 md:space-y-5 mb-8">
                         <div class="text-center text-xs text-slate-400 py-6">載入中...</div>
                     </div>
 
-                    <button onclick="submitPOReceive()" id="btn-submit-receive" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base">💾 確認入庫並更新庫存</button>
+                    <button onclick="submitPOReceive()" id="btn-submit-receive" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 md:py-5 rounded-2xl shadow-lg active:scale-95 transition tracking-widest text-base md:text-lg">💾 確認入庫並同步更新庫存</button>
                 </div>
             </div>
 
         </main>
     </div> </div> <div id="supplier-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
-        <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-5 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
-            <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯供應商</h3>
+        <div class="bg-white w-full max-w-lg m-auto rounded-[2rem] p-6 md:p-8 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
+            <h3 class="font-black text-lg md:text-xl border-b pb-3 mb-5 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯供應商</h3>
             <input type="hidden" id="edit-s-id">
-            <div class="space-y-3">
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">名稱</label><input type="text" id="edit-s-name" class="w-full p-2 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none" required></div>
-                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">代號</label><input type="text" id="edit-s-code" class="w-full p-2 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 uppercase outline-none" required></div>
-                    <div><label class="text-[10px] font-bold text-slate-500 ml-1">統編</label><input type="text" id="edit-s-tax" class="w-full p-2 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none"></div>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-3 md:gap-4">
+                    <div class="col-span-2"><label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1">名稱</label><input type="text" id="edit-s-name" class="w-full p-3 bg-slate-50 rounded-xl text-sm md:text-base font-bold border border-slate-200 outline-none" required></div>
+                    <div><label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1">代號</label><input type="text" id="edit-s-code" class="w-full p-3 bg-slate-50 rounded-xl text-sm md:text-base font-bold border border-slate-200 uppercase outline-none" required></div>
+                    <div><label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1">統編</label><input type="text" id="edit-s-tax" class="w-full p-3 bg-slate-50 rounded-xl text-sm md:text-base font-bold border border-slate-200 outline-none"></div>
                     
-                    <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">公司地址</label><input type="text" id="edit-s-address" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none"></div>
-                    <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">聯絡信箱</label><input type="email" id="edit-s-email" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none"></div>
+                    <div class="col-span-2"><label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1">公司地址</label><input type="text" id="edit-s-address" class="w-full p-3 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none"></div>
+                    <div class="col-span-2"><label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1">聯絡信箱</label><input type="email" id="edit-s-email" class="w-full p-3 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none"></div>
 
-                    <div class="col-span-2 border-t border-slate-100 pt-2"><h5 class="text-[10px] font-black text-slate-500 mb-1">📞 聯絡窗口</h5></div>
-                    <div><input type="text" id="edit-s-contact" placeholder="聯絡人" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none"></div>
-                    <div><input type="text" id="edit-s-phone" placeholder="電話" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none"></div>
+                    <div class="col-span-2 border-t border-slate-100 pt-2"><h5 class="text-[10px] md:text-xs font-black text-slate-500 mb-1">📞 聯絡窗口</h5></div>
+                    <div><input type="text" id="edit-s-contact" placeholder="聯絡人" class="w-full p-3 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none"></div>
+                    <div><input type="text" id="edit-s-phone" placeholder="電話" class="w-full p-3 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none"></div>
                     
-                    <div class="col-span-2 border-t border-slate-100 pt-2"><h5 class="text-[10px] font-black text-slate-500 mb-1">💰 付款資訊</h5></div>
-                    <div class="col-span-2"><select id="edit-s-pay" class="w-full p-2 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none" required><option value="月結30天">月結 30 天</option><option value="月結60天">月結 60 天</option><option value="貨到付款">貨到付款</option><option value="匯款預付">匯款預付</option></select></div>
+                    <div class="col-span-2 border-t border-slate-100 pt-2"><h5 class="text-[10px] md:text-xs font-black text-slate-500 mb-1">💰 付款資訊</h5></div>
+                    <div class="col-span-2"><select id="edit-s-pay" class="w-full p-3 bg-slate-50 rounded-xl text-sm md:text-base font-bold border border-slate-200 select-arrow outline-none" required><option value="月結30天">月結 30 天</option><option value="月結60天">月結 60 天</option><option value="貨到付款">貨到付款</option><option value="匯款預付">匯款預付</option></select></div>
                     
-                    <div class="col-span-2 grid grid-cols-2 gap-2">
-                        <select id="edit-s-bank-code" class="w-full p-2 bg-white rounded-xl text-[11px] font-bold border border-slate-200 select-arrow outline-none">
+                    <div class="col-span-2 grid grid-cols-2 gap-3">
+                        <select id="edit-s-bank-code" class="w-full p-3 bg-white rounded-xl text-[11px] md:text-sm font-bold border border-slate-200 select-arrow outline-none">
                             <option value="">無</option>
-                            <option value="822-中國信託">822 中國信託</option><option value="804-中華郵政">804 中華郵政</option><option value="013-國泰世華">013 國泰世華</option><option value="812-台新銀行">812 台新銀行</option>
-                            <option value="012-台北富邦">012 台北富邦</option><option value="004-臺灣銀行">004 臺灣銀行</option><option value="006-合作金庫">006 合作金庫</option><option value="007-第一銀行">007 第一銀行</option>
-                            <option value="008-華南銀行">008 華南銀行</option><option value="009-彰化銀行">009 彰化銀行</option>
+                            <option value="822-中國信託">822 中國信託</option><option value="804-中華郵政">804 中華郵政</option><option value="013-國泰世華">013 國泰世華</option><option value="812-台新銀行">812 台新銀行</option><option value="012-台北富邦">012 台北富邦</option><option value="004-臺灣銀行">004 臺灣銀行</option><option value="006-合作金庫">006 合作金庫</option><option value="007-第一銀行">007 第一銀行</option><option value="008-華南銀行">008 華南銀行</option><option value="009-彰化銀行">009 彰化銀行</option>
                         </select>
-                        <input type="number" id="edit-s-bank-acc" placeholder="純數字帳號" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none font-mono">
+                        <input type="number" id="edit-s-bank-acc" placeholder="純數字帳號" class="w-full p-3 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none font-mono">
                     </div>
                 </div>
             </div>
-            <div class="flex space-x-3 mt-6">
-                <button onclick="closeModal('supplier-edit-modal')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-3 rounded-xl active:scale-95">取消</button>
-                <button onclick="saveEditSupplier()" class="flex-1 bg-indigo-600 text-white font-black py-3 rounded-xl tracking-widest active:scale-95">儲存</button>
+            <div class="flex space-x-3 mt-8">
+                <button onclick="closeModal('supplier-edit-modal')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-4 rounded-xl active:scale-95 md:text-lg">取消</button>
+                <button onclick="saveEditSupplier()" class="flex-1 bg-indigo-600 text-white font-black py-4 rounded-xl tracking-widest active:scale-95 md:text-lg shadow-md">儲存變更</button>
             </div>
         </div>
     </div>
 
     <div id="po-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[9990]">
-        <div class="bg-white w-full max-w-sm m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl">
-            <h3 class="font-black text-lg border-b border-slate-100 pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯狀態</h3>
+        <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-6 md:p-8 relative flex flex-col shadow-2xl">
+            <h3 class="font-black text-lg md:text-xl border-b border-slate-100 pb-3 mb-5 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯狀態</h3>
             <input type="hidden" id="po-edit-id">
             <input type="hidden" id="po-edit-islegacy">
-            <div class="space-y-3 mb-5">
+            <div class="space-y-4 mb-6">
                 <div>
-                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">修改狀態</label>
-                    <select id="po-edit-status" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none">
+                    <label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1 block mb-1">修改狀態</label>
+                    <select id="po-edit-status" class="w-full p-3 md:p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm md:text-base font-bold select-arrow outline-none focus:border-amber-400">
                         <option value="待審核">待審核</option><option value="已核准">已核准</option><option value="已發送">已發送</option><option value="完成">✅ 完成</option><option value="異常(遲交)">🚨 異常(遲交)</option><option value="取消">取消作廢</option>
                     </select>
                 </div>
-                <div><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">期望到貨日</label><input type="date" id="po-edit-date" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none"></div>
-                <div><label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">備註說明</label><textarea id="po-edit-note" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none h-20 resize-none"></textarea></div>
+                <div><label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1 block mb-1">期望到貨日</label><input type="date" id="po-edit-date" class="w-full p-3 md:p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm md:text-base font-bold outline-none focus:border-amber-400"></div>
+                <div><label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1 block mb-1">備註說明</label><textarea id="po-edit-note" class="w-full p-3 md:p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm md:text-base font-bold outline-none h-24 resize-none focus:border-amber-400"></textarea></div>
             </div>
             <div class="flex space-x-3">
-                <button onclick="closeModal('po-edit-modal')" class="w-1/3 bg-slate-100 text-slate-600 font-bold py-3 rounded-xl active:scale-95">取消</button>
-                <button onclick="savePOEdit()" class="flex-1 bg-amber-500 text-white font-black py-3 rounded-xl active:scale-95">儲存</button>
+                <button onclick="closeModal('po-edit-modal')" class="w-1/3 bg-slate-100 text-slate-600 font-bold py-3.5 md:py-4 rounded-xl active:scale-95 md:text-lg">取消</button>
+                <button onclick="savePOEdit()" class="flex-1 bg-amber-500 text-white font-black py-3.5 md:py-4 rounded-xl active:scale-95 shadow-md md:text-lg tracking-widest">儲存變更</button>
             </div>
         </div>
     </div>
@@ -295,13 +299,14 @@
 
     <audio id="beep-sound" src="data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
 
-    <script src="shared.js?v=9999"></script>
+    <script src="shared.js?v=20260307"></script>
     <script>
         window.supplierData = [];
         let html5QrcodeScanner = null;
         let isReceivingScan = false;
         let currentReceivePO = null;
 
+        // 全域暫存變數
         let currentViewingPoId = null;
         let currentViewingIsLegacy = false;
 
@@ -321,20 +326,19 @@
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = 'toast-msg bg-amber-600 text-white px-4 py-3 rounded-xl shadow-lg border border-amber-400 font-black text-sm flex items-center z-[9999]';
+            toast.className = 'toast-msg bg-amber-600 text-white px-5 py-4 rounded-xl shadow-2xl border border-amber-400 font-black text-sm flex items-center z-[9999]';
             toast.innerHTML = `<span class="mr-2 text-xl">✅</span>${msg}`;
             container.appendChild(toast);
             setTimeout(() => { toast.style.animation = 'slideInLeft 0.4s ease-in reverse forwards'; setTimeout(() => toast.remove(), 400); }, 5000);
         }
 
-        // 🌟 終極防彈裝甲：忽略 updated_at 寫入失敗的超強更新器
         async function safeUpdate(table, payload, id) { 
             const { error } = await window._sb.from(table).update(payload).eq('id', id); 
             if (error) {
                 if (error.message && (error.message.includes('updated_at') || error.message.includes('schema cache') || error.message.includes('column'))) {
                     console.warn("🛡️ 觸發防彈裝甲：忽略快取錯誤，強制寫入基本狀態！");
                     let safePayload = { ...payload };
-                    delete safePayload.updated_at; // 捨棄日期，強行過關
+                    delete safePayload.updated_at; 
                     const { error: retryError } = await window._sb.from(table).update(safePayload).eq('id', id);
                     if (retryError) throw retryError;
                 } else {
@@ -459,7 +463,7 @@
                 const activePos = pos.filter(p => !['完成', 'PO完成', '取消'].includes(p.status));
 
                 if(!activePos || activePos.length === 0) { 
-                    poContainer.innerHTML = '<div class="p-6 text-center text-slate-400 font-bold bg-white rounded-xl">無進行中的採購單</div>'; 
+                    poContainer.innerHTML = '<div class="p-6 text-center text-slate-400 font-bold bg-white rounded-xl col-span-full border border-dashed">無進行中的採購單</div>'; 
                 } else {
                     const today = new Date(); today.setHours(0,0,0,0);
                     let poHtml = '';
@@ -480,10 +484,10 @@
                             return `
                             <div class="flex justify-between items-center border-b border-slate-200/50 last:border-0 pb-1 mb-1 last:pb-0 last:mb-0">
                                 <div class="flex items-center min-w-0 flex-1 pr-2">
-                                    <span class="text-[9px] font-mono text-slate-500 bg-white border border-slate-200 px-1 rounded shadow-sm mr-1.5 shrink-0">${iCode}</span>
-                                    <span class="text-[11px] font-black text-slate-700 truncate">${i.name}</span>
+                                    <span class="text-[9px] md:text-[10px] font-mono text-slate-500 bg-white border border-slate-200 px-1.5 py-0.5 rounded shadow-sm mr-2 shrink-0">${iCode}</span>
+                                    <span class="text-[11px] md:text-xs font-black text-slate-700 truncate">${i.name}</span>
                                 </div>
-                                <span class="text-[11px] font-black text-sky-600 shrink-0">x${q} <span class="text-[9px] text-slate-400 font-bold">${i.unit||'件'}</span></span>
+                                <span class="text-[11px] md:text-xs font-black text-sky-600 shrink-0">x${q} <span class="text-[9px] text-slate-400 font-bold">${i.unit||'件'}</span></span>
                             </div>`;
                         }).join('');
 
@@ -509,39 +513,39 @@
                         let step2Html = '';
                         if (sId === '待審核' || sId === '待處理') {
                             if (hasPerm) {
-                                step2Html = `<button onclick="quickApprovePO('${po.id}', ${po.is_legacy})" class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-md bg-amber-500 text-white animate-pulse active:scale-90">批</button>
-                                             <span class="text-[9px] font-bold mt-1 text-amber-600">待核准</span>`;
+                                step2Html = `<button onclick="quickApprovePO('${po.id}', ${po.is_legacy})" class="w-6 h-6 md:w-8 md:h-8 rounded-full text-[10px] md:text-xs flex justify-center items-center font-black shadow-md bg-amber-500 text-white animate-pulse active:scale-90 transition">批</button>
+                                             <span class="text-[9px] md:text-[10px] font-bold mt-1 text-amber-600">待核准</span>`;
                             } else {
-                                step2Html = `<div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm bg-slate-200 text-slate-400">2</div>
-                                             <span class="text-[9px] font-bold mt-1 text-slate-400">審查中</span>`;
+                                step2Html = `<div class="w-6 h-6 md:w-8 md:h-8 rounded-full text-[10px] md:text-xs flex justify-center items-center font-black shadow-sm bg-slate-200 text-slate-400">2</div>
+                                             <span class="text-[9px] md:text-[10px] font-bold mt-1 text-slate-400">審查中</span>`;
                             }
                         } else {
-                            step2Html = `<div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm bg-emerald-500 text-white">✓</div>
-                                         <span class="text-[9px] font-bold mt-1 text-emerald-700">已核准</span>
+                            step2Html = `<div class="w-6 h-6 md:w-8 md:h-8 rounded-full text-[10px] md:text-xs flex justify-center items-center font-black shadow-sm bg-emerald-500 text-white">✓</div>
+                                         <span class="text-[9px] md:text-[10px] font-bold mt-1 text-emerald-700">已核准</span>
                                          ${step === 2 ? `<span class="text-[8px] text-emerald-600 font-mono mt-0.5">${sDate}</span>` : ''}`;
                         }
 
                         let step3Html = '';
                         if (step < 2) {
-                            step3Html = `<div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm bg-slate-200 text-slate-400">3</div>
-                                         <span class="text-[9px] font-bold mt-1 text-slate-400">待發送</span>`;
+                            step3Html = `<div class="w-6 h-6 md:w-8 md:h-8 rounded-full text-[10px] md:text-xs flex justify-center items-center font-black shadow-sm bg-slate-200 text-slate-400">3</div>
+                                         <span class="text-[9px] md:text-[10px] font-bold mt-1 text-slate-400">待發送</span>`;
                         } else if (step === 2) {
-                            step3Html = `<button onclick="quickSendPO_PDF('${po.id}', ${po.is_legacy})" class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-md bg-sky-500 text-white animate-pulse active:scale-90">📄</button>
-                                         <span class="text-[9px] font-bold mt-1 text-sky-600">載PDF</span>`;
+                            step3Html = `<button onclick="quickSendPO_PDF('${po.id}', ${po.is_legacy})" class="w-6 h-6 md:w-8 md:h-8 rounded-full text-[10px] md:text-xs flex justify-center items-center font-black shadow-md bg-sky-500 text-white animate-pulse active:scale-90 transition">📄</button>
+                                         <span class="text-[9px] md:text-[10px] font-bold mt-1 text-sky-600">載PDF</span>`;
                         } else {
-                            step3Html = `<div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm bg-emerald-500 text-white">✓</div>
-                                         <span class="text-[9px] font-bold mt-1 text-emerald-700">已發送</span>
+                            step3Html = `<div class="w-6 h-6 md:w-8 md:h-8 rounded-full text-[10px] md:text-xs flex justify-center items-center font-black shadow-sm bg-emerald-500 text-white">✓</div>
+                                         <span class="text-[9px] md:text-[10px] font-bold mt-1 text-emerald-700">已發送</span>
                                          <span class="text-[8px] text-emerald-600 font-mono mt-0.5">${step >= 3 ? sDate : ''}</span>`;
                         }
 
                         let tlHtml = `
                         <div class="relative flex items-start justify-between w-full mt-4 mb-2 px-2 z-0">
-                            <div class="absolute top-2.5 left-[10%] w-[80%] h-1 bg-slate-100 -z-10 rounded-full"></div>
-                            <div class="absolute top-2.5 left-[10%] h-1 bg-emerald-500 -z-10 rounded-full transition-all duration-500" style="width: ${(step-1)*25}%"></div>
+                            <div class="absolute top-3 md:top-4 left-[10%] w-[80%] h-1 bg-slate-100 -z-10 rounded-full"></div>
+                            <div class="absolute top-3 md:top-4 left-[10%] h-1 bg-emerald-500 -z-10 rounded-full transition-all duration-500" style="width: ${(step-1)*25}%"></div>
                             
                             <div class="flex flex-col items-center w-1/5 relative">
-                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=1 ? 'bg-emerald-500 text-white':'bg-slate-200 text-slate-400'}">✓</div>
-                                <span class="text-[9px] font-bold mt-1 ${step>=1?'text-slate-700':'text-slate-400'}">請購日</span>
+                                <div class="w-6 h-6 md:w-8 md:h-8 rounded-full text-[10px] md:text-xs flex justify-center items-center font-black shadow-sm ${step>=1 ? 'bg-emerald-500 text-white':'bg-slate-200 text-slate-400'}">✓</div>
+                                <span class="text-[9px] md:text-[10px] font-bold mt-1 ${step>=1?'text-slate-700':'text-slate-400'}">請購日</span>
                                 <span class="text-[8px] text-slate-400 font-mono mt-0.5">${cDate}</span>
                             </div>
                             <div class="flex flex-col items-center w-1/5 relative">
@@ -551,32 +555,32 @@
                                 ${step3Html}
                             </div>
                             <div class="flex flex-col items-center w-1/5 relative">
-                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=4 ? (remainQty>0?'bg-amber-500 text-white':'bg-emerald-500 text-white'):'bg-slate-200 text-slate-400'}">${step>=5?'✓':'4'}</div>
-                                <span class="text-[9px] font-bold mt-1 ${step>=4?'text-amber-700':'text-slate-400'}">交貨日</span>
+                                <div class="w-6 h-6 md:w-8 md:h-8 rounded-full text-[10px] md:text-xs flex justify-center items-center font-black shadow-sm ${step>=4 ? (remainQty>0?'bg-amber-500 text-white':'bg-emerald-500 text-white'):'bg-slate-200 text-slate-400'}">${step>=5?'✓':'4'}</div>
+                                <span class="text-[9px] md:text-[10px] font-bold mt-1 ${step>=4?'text-amber-700':'text-slate-400'}">交貨日</span>
                                 <span class="text-[8px] text-slate-400 font-mono mb-0.5">${eDate}</span>
-                                ${step>=3 && remainQty>0 ? `<span class="absolute -bottom-4 text-[8px] whitespace-nowrap font-black bg-red-100 text-red-600 px-1 rounded shadow-sm border border-red-200">未交:${remainQty.toFixed(0)}</span>` : ''}
+                                ${step>=3 && remainQty>0 ? `<span class="absolute -bottom-5 text-[8px] md:text-[9px] whitespace-nowrap font-black bg-red-100 text-red-600 px-1.5 py-0.5 rounded shadow-sm border border-red-200">未交:${remainQty.toFixed(0)}</span>` : ''}
                             </div>
                             <div class="flex flex-col items-center w-1/5 relative">
-                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=5 ? 'bg-emerald-500 text-white':'bg-slate-200 text-slate-400'}">5</div>
-                                <span class="text-[9px] font-bold mt-1 ${step>=5?'text-emerald-700':'text-slate-400'}">已完成</span>
+                                <div class="w-6 h-6 md:w-8 md:h-8 rounded-full text-[10px] md:text-xs flex justify-center items-center font-black shadow-sm ${step>=5 ? 'bg-emerald-500 text-white':'bg-slate-200 text-slate-400'}">5</div>
+                                <span class="text-[9px] md:text-[10px] font-bold mt-1 ${step>=5?'text-emerald-700':'text-slate-400'}">已完成</span>
                             </div>
                         </div>`;
 
                         let receiveBtn = '';
                         if(step >= 3 && remainQty > 0) {
-                            receiveBtn = `<button onclick="openPOReceive('${po.id}', ${po.is_legacy})" class="mt-4 w-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 py-2.5 rounded-xl text-xs font-black shadow-sm transition active:scale-95 flex justify-center items-center tracking-widest"><span class="mr-1">📥</span> 執行分批入庫核銷</button>`;
+                            receiveBtn = `<button onclick="openPOReceive('${po.id}', ${po.is_legacy})" class="mt-5 w-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 py-3 rounded-xl text-xs md:text-sm font-black shadow-sm transition active:scale-95 flex justify-center items-center tracking-widest"><span class="mr-1.5 text-base">📥</span> 執行分批入庫核銷</button>`;
                         }
 
                         poHtml += `
-                        <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm mb-4 relative overflow-hidden">
+                        <div class="bg-white p-4 md:p-6 rounded-3xl border border-slate-200 shadow-sm mb-4 relative overflow-hidden hover:shadow-md transition">
                             <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-3">
                                 <div>
-                                    <span class="text-[10px] font-mono font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded mr-1 shadow-sm border border-amber-100">${formatPO(po.po_no)}</span>
-                                    <span class="text-[13px] font-black text-slate-800">${po.supplier_name}</span>
+                                    <span class="text-[10px] md:text-[11px] font-mono font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded mr-1 shadow-sm border border-amber-100">${formatPO(po.po_no)}</span>
+                                    <span class="text-[13px] md:text-base font-black text-slate-800">${po.supplier_name}</span>
                                 </div>
-                                <span class="text-[9px] font-black px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">${sId}</span>
+                                <span class="text-[9px] md:text-[10px] font-black px-2 py-1 rounded bg-slate-100 text-slate-600 border border-slate-200">${sId}</span>
                             </div>
-                            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-inner mb-3 space-y-1.5">
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-inner mb-3 space-y-1.5">
                                 ${itemsStr || '<span class="text-slate-400 italic text-[10px]">無明細</span>'}
                             </div>
                             ${tlHtml}
@@ -591,30 +595,30 @@
         async function openSupplierList() {
             openView('supplier-list', '🏢 供應商紀錄');
             const container = document.getElementById('ui-supplier-list');
-            container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">載入中...</p>';
+            container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6 col-span-full">載入中...</p>';
             
             await loadSuppliers();
             
             if(window.supplierData.length === 0) {
-                container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl">目前無資料</p>';
+                container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl col-span-full">目前無資料</p>';
                 return;
             }
 
             container.innerHTML = window.supplierData.map(s => {
-                let uDate = s.updated_at ? new Date(s.updated_at).toLocaleDateString('zh-TW') : '--';
                 return `
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-3">
-                    <div class="flex justify-between items-start mb-2">
+                <div class="bg-white p-4 md:p-5 rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md">
+                    <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-2">
                         <div>
                             <span class="text-[10px] font-mono font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border mr-1">${s.supplier_code}</span>
-                            <h4 class="font-black text-base text-slate-800 inline-block">${s.supplier_name}</h4>
+                            <h4 class="font-black text-base md:text-lg text-slate-800 inline-block">${s.supplier_name}</h4>
                         </div>
-                        <button onclick="openEditSupplier('${s.id}')" class="text-[10px] bg-slate-800 text-white px-3 py-1.5 rounded-lg font-bold">編輯</button>
+                        <button onclick="openEditSupplier('${s.id}')" class="text-[10px] md:text-xs bg-slate-800 hover:bg-slate-700 transition text-white px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-bold shadow-sm">編輯</button>
                     </div>
-                    <div class="text-[10px] text-slate-500 font-bold grid grid-cols-2 gap-1.5 mb-2">
-                        <div>📞窗口: ${s.contact_name||'--'}</div><div>💰付款: ${s.payment_method||'--'}</div>
-                        <div class="col-span-2 text-slate-400 truncate">🏠 ${s.address||'--'}</div>
-                        <div class="col-span-2 text-slate-400">🏦 ${s.bank_code||'--'} - ${s.bank_account || s.bank_details || '--'}</div>
+                    <div class="text-[10px] md:text-xs text-slate-500 font-bold grid grid-cols-2 gap-2">
+                        <div class="bg-slate-50 p-1.5 rounded"><span class="text-slate-400 block mb-0.5">📞窗口</span><span class="text-slate-700">${s.contact_name||'--'}</span></div>
+                        <div class="bg-slate-50 p-1.5 rounded"><span class="text-slate-400 block mb-0.5">💰付款</span><span class="text-slate-700">${s.payment_method||'--'}</span></div>
+                        <div class="col-span-2 text-slate-500 truncate bg-slate-50 p-1.5 rounded">🏠 ${s.address||'--'}</div>
+                        <div class="col-span-2 text-indigo-700 bg-indigo-50 border border-indigo-100 p-1.5 rounded font-mono">🏦 ${s.bank_code||'--'} - ${s.bank_account || s.bank_details || '--'}</div>
                     </div>
                 </div>`;
             }).join('');
@@ -683,12 +687,12 @@
         async function openPoManagement() {
             openView('po-management', '📝 待處理清單');
             const container = document.getElementById('ui-pending-pos');
-            container.innerHTML = '<div class="text-center text-xs text-slate-400 py-6">讀取中...</div>';
+            container.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 col-span-full">讀取中...</div>';
             
             const pos = await fetchSafePOs();
             const pending = pos.filter(r => ['待審核', '待處理', '已核准', 'PO已核准'].includes(r.status));
 
-            if(pending.length === 0) { container.innerHTML = '<p class="text-center text-sm font-bold text-slate-400 py-10 bg-slate-50 rounded-2xl border border-dashed">目前無待辦單據</p>'; return; }
+            if(pending.length === 0) { container.innerHTML = '<p class="text-center text-sm font-bold text-slate-400 py-10 bg-slate-50 rounded-2xl border border-dashed col-span-full">目前無待辦單據</p>'; return; }
 
             container.innerHTML = pending.map(p => {
                 let safePoItems = getSafeArray(p.items_json);
@@ -700,25 +704,25 @@
 
                 let btnHtml = '';
                 if(sId === '待審核' || sId === '待處理') {
-                    btnHtml = `<button onclick="quickApprovePO('${p.id}', ${p.is_legacy})" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-3 rounded-xl shadow-md active:scale-95 text-sm transition tracking-widest">✅ 審核核准</button>`;
+                    btnHtml = `<button onclick="quickApprovePO('${p.id}', ${p.is_legacy})" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-3 md:py-4 rounded-xl shadow-md active:scale-95 text-sm md:text-base transition tracking-widest mt-auto">✅ 審核核准</button>`;
                 } else if (sId === '已核准') {
-                    btnHtml = `<button onclick="quickSendPO_PDF('${p.id}', ${p.is_legacy})" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-3 rounded-xl shadow-md active:scale-95 text-sm transition tracking-widest">📄 下載 PDF 並發送</button>`;
+                    btnHtml = `<button onclick="quickSendPO_PDF('${p.id}', ${p.is_legacy})" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-3 md:py-4 rounded-xl shadow-md active:scale-95 text-sm md:text-base transition tracking-widest mt-auto">📄 下載 PDF 並發送</button>`;
                 }
 
                 return `
-                <div class="bg-white p-4 rounded-2xl border-2 border-amber-200 shadow-sm flex flex-col mb-3">
+                <div class="bg-white p-4 md:p-5 rounded-2xl border-2 border-amber-200 shadow-sm flex flex-col hover:shadow-lg transition">
                     <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
-                        <span class="text-[10px] font-mono font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded">${formatPO(p.po_no)}</span>
-                        <span class="text-[10px] font-black px-2 py-0.5 rounded ${sId === '已核准' ? 'text-emerald-700 bg-emerald-50' : 'text-sky-700 bg-sky-50'}">${sId}</span>
+                        <span class="text-[10px] md:text-xs font-mono font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded">${formatPO(p.po_no)}</span>
+                        <span class="text-[10px] md:text-xs font-black px-2 py-0.5 rounded ${sId === '已核准' ? 'text-emerald-700 bg-emerald-50' : 'text-sky-700 bg-sky-50'}">${sId}</span>
                     </div>
                     <div class="flex justify-between items-end mb-3">
-                        <h4 class="font-black text-base text-slate-800 leading-tight flex-1 pr-2 truncate">🏢 ${p.supplier_name}</h4>
-                        <div class="text-right shrink-0">
-                            <span class="text-[9px] text-slate-500 font-bold block mb-0.5">要求到貨</span>
-                            <span class="font-black text-amber-600 text-sm tracking-tight leading-none">${dateText}</span>
+                        <h4 class="font-black text-base md:text-lg text-slate-800 leading-tight flex-1 pr-2 truncate">🏢 ${p.supplier_name}</h4>
+                        <div class="text-right shrink-0 bg-amber-50 px-2 py-1 rounded border border-amber-100">
+                            <span class="text-[9px] md:text-[10px] text-amber-700 font-bold block mb-0.5">要求到貨</span>
+                            <span class="font-black text-amber-600 text-sm md:text-base tracking-tight leading-none">${dateText}</span>
                         </div>
                     </div>
-                    <div class="bg-slate-50 p-2.5 rounded-xl border shadow-inner text-[11px] font-bold mb-4 flex-1">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-inner text-[11px] md:text-xs font-bold mb-4 flex-1 space-y-1">
                         ${itemsStr || '<span class="text-slate-400 italic">無明細資料</span>'}
                     </div>
                     ${btnHtml}
@@ -772,24 +776,24 @@
                     let isDone = remain === 0;
 
                     return `
-                    <div class="bg-white p-4 rounded-2xl border ${isDone?'border-emerald-300 opacity-70':'border-slate-200'} shadow-sm flex flex-col receive-item-row" data-idx="${idx}" data-id="${item.id}">
-                        <div class="flex justify-between items-start mb-2">
-                            <h4 class="font-black text-sm text-slate-800 flex-1 pr-2 leading-tight">${item.name}</h4>
-                            ${isDone ? '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-black border border-emerald-200">✅ 已結案</span>' : '<span class="text-[9px] bg-amber-50 text-amber-600 px-2 py-0.5 rounded font-black border border-amber-200">未結案</span>'}
+                    <div class="bg-white p-4 md:p-5 rounded-2xl border-2 ${isDone?'border-emerald-300 opacity-70':'border-slate-200 shadow-sm'} flex flex-col receive-item-row" data-idx="${idx}" data-id="${item.id}">
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="font-black text-sm md:text-base text-slate-800 flex-1 pr-2 leading-tight">${item.name}</h4>
+                            ${isDone ? '<span class="text-[9px] md:text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-black border border-emerald-200">✅ 已結案</span>' : '<span class="text-[9px] md:text-[10px] bg-amber-50 text-amber-600 px-2 py-0.5 rounded font-black border border-amber-200">未結案</span>'}
                         </div>
-                        <div class="grid grid-cols-3 gap-2 text-center text-[10px] font-bold mb-3 border-b border-slate-100 pb-2">
-                            <div><span class="text-slate-400 block mb-0.5">應收總數</span><span class="text-slate-700">${total}</span></div>
-                            <div><span class="text-slate-400 block mb-0.5">已收數</span><span class="text-sky-600">${recv}</span></div>
-                            <div><span class="text-red-500 block mb-0.5">未交數</span><span class="text-red-600 text-sm font-black receive-remain-lbl">${remain}</span></div>
+                        <div class="grid grid-cols-3 gap-2 text-center text-[10px] md:text-xs font-bold mb-4 border-b border-slate-100 pb-3">
+                            <div class="bg-slate-50 p-1.5 rounded-lg border border-slate-100"><span class="text-slate-400 block mb-0.5">應收總數</span><span class="text-slate-700 text-sm md:text-base">${total}</span></div>
+                            <div class="bg-sky-50 p-1.5 rounded-lg border border-sky-100"><span class="text-sky-400 block mb-0.5">已收數</span><span class="text-sky-600 text-sm md:text-base">${recv}</span></div>
+                            <div class="bg-red-50 p-1.5 rounded-lg border border-red-100"><span class="text-red-400 block mb-0.5">未交數</span><span class="text-red-600 text-sm md:text-base font-black receive-remain-lbl">${remain}</span></div>
                         </div>
                         <div class="flex items-center space-x-2 ${isDone?'hidden':''}">
-                            <span class="text-xs font-black text-emerald-700 whitespace-nowrap">📥 本次點收:</span>
-                            <div class="flex items-center bg-emerald-50 border border-emerald-200 rounded-xl overflow-hidden flex-1">
-                                <button type="button" onclick="adjReceiveQty(this, -1)" class="w-10 h-10 bg-white font-black text-emerald-600 border-r border-emerald-100 active:bg-slate-50">-</button>
-                                <input type="number" min="0" max="${remain}" value="0" class="w-full h-10 bg-transparent text-center font-black text-lg outline-none receive-input-qty text-emerald-800" onchange="validateReceiveQty(this, ${remain})">
-                                <button type="button" onclick="adjReceiveQty(this, 1)" class="w-10 h-10 bg-white font-black text-emerald-600 border-l border-emerald-100 active:bg-slate-50">+</button>
+                            <span class="text-xs md:text-sm font-black text-emerald-700 whitespace-nowrap">📥 本次點收:</span>
+                            <div class="flex items-center bg-emerald-50 border border-emerald-200 rounded-xl overflow-hidden flex-1 shadow-inner">
+                                <button type="button" onclick="adjReceiveQty(this, -1)" class="w-12 h-12 md:w-14 md:h-14 bg-white font-black text-xl text-emerald-600 border-r border-emerald-100 active:bg-slate-50 transition">-</button>
+                                <input type="number" min="0" max="${remain}" value="0" class="w-full h-12 md:h-14 bg-transparent text-center font-black text-2xl md:text-3xl outline-none receive-input-qty text-emerald-800" onchange="validateReceiveQty(this, ${remain})">
+                                <button type="button" onclick="adjReceiveQty(this, 1)" class="w-12 h-12 md:w-14 md:h-14 bg-white font-black text-xl text-emerald-600 border-l border-emerald-100 active:bg-slate-50 transition">+</button>
                             </div>
-                            <button type="button" onclick="receiveAll(this, ${remain})" class="bg-slate-800 text-white text-[10px] font-bold px-3 py-2 rounded-lg ml-1 active:scale-95">全收</button>
+                            <button type="button" onclick="receiveAll(this, ${remain})" class="bg-slate-800 hover:bg-slate-700 text-white text-xs md:text-sm font-bold px-4 py-3 md:py-4 rounded-xl ml-2 active:scale-95 transition shadow-md">全收</button>
                         </div>
                     </div>`;
                 }).join('');
@@ -890,7 +894,7 @@
                 if (r < t) allDone = false;
             });
 
-            if(!hasChanges) { alert('您未輸入任何點收數量！'); btn.innerText = '確認入庫'; btn.disabled = false; return; }
+            if(!hasChanges) { alert('您未輸入任何點收數量！'); btn.innerText = '確認入庫並同步更新庫存'; btn.disabled = false; return; }
 
             let newStatus = allDone ? '完成' : '部分到貨';
 
@@ -907,9 +911,10 @@
                 if(isReceivingScan) stopPOBarcodeScan();
                 backToDash();
 
-            } catch(e) { alert('寫入失敗: ' + e.message); btn.innerText = '確認入庫'; btn.disabled = false; }
+            } catch(e) { alert('寫入失敗: ' + e.message); btn.innerText = '確認入庫並同步更新庫存'; btn.disabled = false; }
         }
 
+        // 🌟 採購紀錄 (優化顯示與刪除修復)
         async function openHistory() {
             openView('history', '🗂️ 採購記錄');
             const elPo = document.getElementById('ui-hist-po');
@@ -920,7 +925,7 @@
                 monthInput.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
             }
             const selectedMonth = monthInput.value;
-            elPo.innerHTML = '<div class="text-center text-xs text-slate-400 py-6">載入中...</div>';
+            elPo.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 col-span-full">載入中...</div>';
 
             const pos = await fetchSafePOs();
             const filteredPos = pos.filter(p => p.created_at && p.created_at.startsWith(selectedMonth));
@@ -933,45 +938,63 @@
                     
                     let itemsStr = safePoItems.map(i => {
                         let q = parseFloat(i.qty)||0; let r = parseFloat(i.received_qty)||0;
-                        let tag = r > 0 ? `<span class="text-[8px] ml-1 bg-emerald-100 text-emerald-700 px-1 rounded border border-emerald-200">已收:${r}</span>` : '';
-                        return `<div class="flex justify-between items-center border-b pb-1 mb-1 last:border-0"><span class="text-slate-700 truncate pr-2">${i.name}</span><span class="text-amber-700 font-black shrink-0">x${q.toFixed(0)} <span class="text-[9px] text-slate-400">${i.unit||'件'}</span>${tag}</span></div>`;
+                        let tag = r > 0 ? `<span class="text-[8px] md:text-[9px] ml-1 bg-emerald-100 text-emerald-700 px-1 rounded border border-emerald-200">已收:${r}</span>` : '';
+                        return `<div class="flex justify-between items-center border-b border-slate-100 pb-1.5 mb-1.5 last:border-0 last:pb-0 last:mb-0"><span class="text-slate-700 font-bold truncate pr-2">${i.name}</span><span class="text-amber-700 font-black shrink-0 text-xs md:text-sm">x${q.toFixed(0)} <span class="text-[9px] text-slate-400">${i.unit||'件'}</span>${tag}</span></div>`;
                     }).join('');
                     
                     let safeNote = (p.note || '').replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n");
 
                     return `
-                    <div class="bg-white p-4 rounded-[1.5rem] border border-slate-200 shadow-sm mb-3">
-                        <div class="flex justify-between items-start mb-2 border-b pb-2">
-                            <div><h4 class="text-sm font-black text-slate-800 font-mono tracking-wider">${formatPO(p.po_no)}</h4><span class="text-[9px] text-slate-400 font-bold">${new Date(p.created_at).toLocaleDateString('zh-TW')}</span></div>
-                            <div class="text-right flex flex-col items-end"><span class="text-[10px] font-black px-2 py-0.5 rounded border ${stCol}">${p.status.replace('PO','')}</span><span class="text-[9px] font-bold text-amber-600 mt-1">交期: ${dateText}</span></div>
+                    <div class="bg-white p-4 md:p-6 rounded-[1.5rem] border border-slate-200 shadow-sm transition hover:shadow-lg flex flex-col">
+                        <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-3">
+                            <div>
+                                <h4 class="text-sm md:text-base font-black text-slate-800 font-mono tracking-wider mb-1">${formatPO(p.po_no)}</h4>
+                                <span class="text-[9px] md:text-[10px] text-slate-400 font-bold bg-slate-50 px-2 py-0.5 rounded border border-slate-100">建立: ${new Date(p.created_at).toLocaleDateString('zh-TW')}</span>
+                            </div>
+                            <div class="text-right flex flex-col items-end">
+                                <span class="text-[10px] md:text-[11px] font-black px-2.5 py-1 rounded shadow-sm border ${stCol}">${p.status.replace('PO','')}</span>
+                                <span class="text-[9px] md:text-[10px] font-bold text-amber-600 mt-1.5 bg-amber-50 px-1.5 py-0.5 rounded">交期: ${dateText}</span>
+                            </div>
                         </div>
-                        <div class="text-[12px] font-black text-slate-700 mb-2 truncate">🏢 ${p.supplier_name}</div>
-                        <div class="bg-slate-50 p-3 rounded-xl border shadow-inner mb-3 text-[11px] font-bold space-y-1">${itemsStr || '<span class="text-slate-400 italic">無明細</span>'}</div>
-                        ${p.note ? `<p class="text-[10px] text-slate-500 font-bold bg-amber-50 p-2 rounded-lg border mb-3 line-clamp-2">備註: ${p.note}</p>` : ''}
-                        <div class="grid grid-cols-2 gap-2 pt-2">
-                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'view')" class="text-[11px] bg-slate-800 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 flex justify-center items-center"><span class="mr-1 text-sm">👁️</span> 預覽單據</button>
-                            <button onclick="sharePO('${p.id}', ${p.is_legacy?true:false})" class="text-[11px] bg-emerald-600 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 flex justify-center items-center"><span class="mr-1 text-sm">📲</span> 傳 LINE</button>
-                            <button onclick="openPOEdit('${p.id}', ${p.is_legacy?true:false}, '${p.status}', '${safeNote}', '${p.expected_date||''}')" class="text-[11px] bg-amber-50 text-amber-700 border border-amber-200 py-2.5 rounded-xl font-black shadow-sm active:scale-95 flex justify-center items-center"><span class="mr-1 text-sm">✏️</span> 編輯狀態</button>
-                            <button onclick="delPO('${p.id}', ${p.is_legacy?true:false})" class="text-[11px] text-red-600 border border-red-200 bg-white py-2.5 rounded-xl font-black shadow-sm active:scale-95 flex justify-center items-center"><span class="mr-1 text-sm">🗑️</span> 刪除</button>
+                        <div class="text-[14px] md:text-base font-black text-slate-800 mb-3 truncate flex items-center"><span class="mr-1">🏢</span> ${p.supplier_name}</div>
+                        
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-inner mb-3 text-[11px] md:text-xs flex-1">
+                            ${itemsStr || '<span class="text-slate-400 italic">無明細</span>'}
+                        </div>
+                        
+                        ${p.note ? `<p class="text-[10px] md:text-xs text-slate-600 font-bold bg-amber-50/50 p-2.5 rounded-lg border border-amber-100/50 mb-4 line-clamp-2">📝 備註: ${p.note}</p>` : '<div class="mb-4"></div>'}
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-auto">
+                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'view')" class="text-[11px] md:text-xs bg-slate-800 hover:bg-slate-700 text-white py-2.5 md:py-3 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm md:text-base">👁️</span> 預覽</button>
+                            <button onclick="sharePO('${p.id}', ${p.is_legacy?true:false})" class="text-[11px] md:text-xs bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 md:py-3 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm md:text-base">📲</span> 分享</button>
+                            <button onclick="openPOEdit('${p.id}', ${p.is_legacy?true:false}, '${p.status}', '${safeNote}', '${p.expected_date||''}')" class="text-[11px] md:text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 py-2.5 md:py-3 rounded-xl font-black shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm md:text-base">✏️</span> 狀態</button>
+                            <button onclick="delPO('${p.id}', ${p.is_legacy?true:false})" class="text-[11px] md:text-xs text-red-600 hover:bg-red-50 border border-red-200 bg-white py-2.5 md:py-3 rounded-xl font-black shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm md:text-base">🗑️</span> 刪除</button>
                         </div>
                     </div>`;}).join('');
-            } else { elPo.innerHTML = `<div class="text-xs text-slate-400 py-6 text-center bg-white border border-dashed rounded-xl">無記錄</div>`; }
+            } else { elPo.innerHTML = `<div class="text-xs md:text-sm text-slate-400 py-10 text-center bg-white border border-dashed rounded-xl col-span-full font-bold">此月份無採購記錄</div>`; }
         }
 
+        // 🌟 終極修復 PDF 手機下載問題 (利用 Blob 跨平台通用法則)
         async function sharePO(id, isLegacy) {
             showSysToast('⏳ 正在產生 PDF 檔案，請稍候...');
             try {
                 const { html, poNo } = await getPoHtmlContent(id, isLegacy);
                 const opt = { margin: [0.5, 0.5], filename: `HYPASS_採購單_${poNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
                 const tempDiv = document.createElement('div'); tempDiv.innerHTML = html; tempDiv.style.padding = '20px';
-                const pdfBlob = await html2pdf().set(opt).from(tempDiv).output('blob');
-                const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file], title: 'HYPASS 採購單', text: `您好，附上採購單 ${poNo}，請查收。` });
-                    showSysToast('✅ 檔案分享成功！');
-                } else {
-                    showSysToast('您的裝置不支援直接分享，改為自動下載...'); executePdfDownload(html, poNo, id, isLegacy);
-                }
+                
+                html2pdf().set(opt).from(tempDiv).outputPdf('blob').then(async function(pdfBlob) {
+                    const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({ files: [file], title: 'HYPASS 採購單', text: `您好，附上採購單 ${poNo}，請查收。` });
+                            showSysToast('✅ 檔案分享成功！');
+                        } catch (shareErr) {
+                            executePdfDownload(html, poNo, id, isLegacy);
+                        }
+                    } else {
+                        executePdfDownload(html, poNo, id, isLegacy);
+                    }
+                });
             } catch(e) { alert('失敗: ' + e.message); }
         }
 
@@ -1010,6 +1033,22 @@
                 await safeUpdate(isLegacy ? 'purchase_orders' : 'po_documents', payload, id);
                 showSysToast('✅ 狀態已更新！'); closeModal('po-edit-modal'); openHistory(); 
             } catch(e) { alert('失敗: ' + e.message); }
+        }
+
+        // 🌟 徹底修復刪除異常問題，加入嚴謹報錯機制
+        async function delPO(id, isLegacy) { 
+            if(confirm('⚠️ 警告：確定要永久刪除此採購單嗎？\n這項操作無法復原！')){ 
+                try { 
+                    const table = isLegacy ? 'purchase_orders' : 'po_documents';
+                    const { error } = await window._sb.from(table).delete().eq('id', id); 
+                    if (error) throw error;
+                    
+                    showSysToast('✅ 採購單已成功刪除！'); 
+                    openHistory(); 
+                } catch(e) {
+                    alert('刪除失敗，可能是因為此單據與庫存或其他資料有關聯：\n' + e.message);
+                }
+            } 
         }
 
         async function getPoHtmlContent(id, isLegacy) {
@@ -1100,19 +1139,39 @@
             if(currentViewingHtml) executePdfDownload(currentViewingHtml, currentViewingPoNo, currentViewingPoId, currentViewingIsLegacy); 
         });
 
-        async function executePdfDownload(htmlContent, poNo, id, isLegacy) {
+        // 🌟 Blob 引擎：徹底解決手機版無法下載的問題
+        function executePdfDownload(htmlContent, poNo, id, isLegacy) {
             showSysToast('PDF 檔案生成中，請稍候...');
+            
             if (id) {
                 try {
                     let payload = { status: isLegacy ? 'PO已發送' : '已發送', updated_at: new Date().toISOString() };
-                    await safeUpdate(isLegacy ? 'purchase_orders' : 'po_documents', payload, id);
-                    if(document.getElementById('view-dashboard').classList.contains('active')) loadDashboardData();
-                    if(document.getElementById('view-po-management').classList.contains('active')) openPoManagement();
+                    safeUpdate(isLegacy ? 'purchase_orders' : 'po_documents', payload, id).then(() => {
+                        if(document.getElementById('view-dashboard').classList.contains('active')) loadDashboardData();
+                        if(document.getElementById('view-po-management').classList.contains('active')) openPoManagement();
+                    });
                 } catch(e) {}
             }
+
             const opt = { margin: [0.5, 0.5], filename: `HYPASS_採購單_${poNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
             const tempDiv = document.createElement('div'); tempDiv.innerHTML = htmlContent; tempDiv.style.padding = '20px';
-            html2pdf().set(opt).from(tempDiv).save().then(() => { showSysToast('✅ PDF 下載完成！狀態已更新為「已發送」'); });
+            
+            // 採用 Blob 產生並使用隱藏 <a> 標籤強制下載，突破手機版限制
+            html2pdf().set(opt).from(tempDiv).outputPdf('blob').then(function(pdfBlob) {
+                const url = URL.createObjectURL(pdfBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = opt.filename;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showSysToast('✅ PDF 下載完成！狀態已更新為「已發送」');
+                }, 100);
+            }).catch(function(err) {
+                alert('PDF 產生失敗：' + err.message);
+            });
         }
 
         setTimeout(bootPurchase, 50);
