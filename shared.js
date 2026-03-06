@@ -1,84 +1,71 @@
-// ==========================================
-// HYPASS 全域系統連線檔 (shared.js)
-// ==========================================
+// shared.js
+// 🔑 企業專屬 Supabase 連線金鑰 (已綁定)
+const supabaseUrl = 'https://obbcgmgkbazwpfvgbupg.supabase.co'; 
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0';
 
-// 1. 全新 Supabase 連線金鑰 (Anon Key 公開金鑰)
-const SUPABASE_URL = 'https://obbcgmgkbazwpfvgbupg.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iYmNnbWdrYmF6d3BmdmdidXBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUxNDQsImV4cCI6MjA4NjczMTE0NH0.UlCKV_BDRWToqtG8ol69USBKgehBYpB4aUdM25oNwM0';
-
-// 2. 全新 LIFF ID
-const LIFF_ID = '2009148826-RoogHmxk';
-
-// 初始化 Supabase 客戶端
-window._sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window._sb = supabase.createClient(supabaseUrl, supabaseAnonKey);
 window.currentUser = null;
 
-// 權限驗證守門員 (Auth Guard)
-async function authGuard(moduleName) {
-    try {
-        let liffInitSuccess = false;
-        try {
-            await liff.init({ liffId: LIFF_ID });
-            liffInitSuccess = true;
-        } catch(e) {
-            console.warn("LIFF初始化失敗:", e);
+async function authGuard(moduleName = null) {
+    const empId = localStorage.getItem('hypass_emp_id');
+    
+    // 1. 如果完全沒登入，強制踢回首頁 (確保各種路徑包含 GitHub Pages 都能正確跳轉)
+    if (!empId) {
+        if (!window.location.pathname.endsWith('index.html') && 
+            window.location.pathname !== '/' && 
+            !window.location.pathname.includes('/hypassboss.github.io/') &&
+            !window.location.pathname.includes('/hypass-staff-system/')) {
+            window.location.href = 'index.html';
         }
-        
-        let lineId = "";
-        
-        // 本機測試降級機制
-        if (!liffInitSuccess || (!liff.isInClient() && window.location.protocol !== 'file:')) {
-            if(confirm('偵測到非 LINE 環境或 LIFF ID 尚未生效！\n\n是否啟用「網頁開發測試模式」強制進入系統？\n(按「確定」可直接進入測試，按「取消」則攔截)')) {
-                lineId = "TEST_LOCAL_ID_" + Math.floor(Math.random()*1000); // 使用測試 ID
-                // 如果有特定想測試的員工 ID，可以直接在這裡寫死，例如 lineId = "Ufd172549b6df7d4b396a63b3b16ae34a";
-            } else {
-                if (!liffInitSuccess) {
-                    document.body.innerHTML = `<div style="padding:20px; text-align:center; font-family:sans-serif; color:#333;"><h2>系統連線異常</h2><p>無法初始化 LIFF (${LIFF_ID})。</p><p>請確認 LINE Developer 後台已發布此 ID。</p></div>`;
-                    return false;
-                }
-                if (!liff.isLoggedIn()) { liff.login(); return false; }
-                const profile = await liff.getProfile();
-                lineId = profile.userId;
-            }
-        } else {
-            if (!liff.isLoggedIn()) { liff.login(); return false; }
-            const profile = await liff.getProfile();
-            lineId = profile.userId;
-        }
+        return false;
+    }
 
-        // 查詢員工資料
-        const { data: user, error } = await window._sb.from('employees').select('*').eq('line_id', lineId).single();
+    // 2. 電腦版/網頁版測試環境保護 (只詢問一次)
+    if (!sessionStorage.getItem('dev_mode_prompted')) {
+        const isLine = navigator.userAgent.includes('Line');
+        if (!isLine) {
+            const devMode = confirm('偵測到非 LINE 環境或 LIFF ID 尚未生效！\n\n是否啟用「網頁開發測試模式」強制進入系統？\n(按「確定」可直接進入測試，按「取消」則攔截)');
+            if (!devMode) {
+                // 若按取消，清除登入並返回
+                localStorage.removeItem('hypass_emp_id');
+                localStorage.removeItem('hypass_emp_name');
+                window.location.href = 'index.html';
+                return false;
+            }
+        }
+        sessionStorage.setItem('dev_mode_prompted', 'true');
+    }
+
+    // 3. 驗證資料庫身分與權限
+    try {
+        const { data, error } = await window._sb.from('employees').select('*').eq('id', empId).single();
         
-        if (error || !user) {
-            alert('系統中查無您的資料，即將引導至註冊畫面。');
+        // 如果查無此人、離職、或未核准
+        if (error || !data || data.employment_status !== '在職' || !data.is_approved) {
+            localStorage.removeItem('hypass_emp_id');
+            localStorage.removeItem('hypass_emp_name');
+            alert('帳號狀態已失效或無權限，請重新登入！');
             window.location.href = 'index.html';
             return false;
         }
 
-        if (!user.is_approved || user.employment_status !== '在職') {
-            document.body.innerHTML = `
-                <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; padding: 20px; text-align: center; font-family: sans-serif;">
-                    <div style="width: 80px; height: 80px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 20px;">🚫</div>
-                    <h2 style="font-size: 24px; font-weight: 900; color: #1e293b; margin-bottom: 10px;">無權限訪問</h2>
-                    <p style="font-size: 14px; font-weight: bold; color: #64748b; line-height: 1.6; margin-bottom: 30px;">您的帳號目前處於未開通或停權狀態。<br>如有疑問，請聯繫系統管理員。</p>
-                    <button onclick="liff.closeWindow()" style="background: #0f172a; color: white; font-weight: 900; padding: 15px 30px; border-radius: 12px; border: none; width: 100%; max-width: 300px;">關閉視窗</button>
-                </div>
-            `;
-            return false;
+        window.currentUser = data;
+
+        // 4. 各模組專屬權限檢查 (溫和退回機制：回傳 false 讓前端顯示警告，絕不強制跳轉造成死迴圈)
+        if (moduleName) {
+            let hasPerm = false;
+            if (moduleName === 'inv') hasPerm = data.perm_inventory;
+            if (moduleName === 'purchase') hasPerm = data.perm_purchase;
+            if (moduleName === 'sales') hasPerm = data.perm_sales;
+            if (moduleName === 'finance') hasPerm = data.perm_finance;
+            
+            if (!hasPerm) return false; 
         }
 
-        // 模組權限檢查
-        if (moduleName === 'inv' && !user.perm_inventory) { alert('您沒有【庫存系統】的訪問權限！'); window.location.href = 'app_hr.html'; return false; }
-        if (moduleName === 'purchase' && !user.perm_purchase) { alert('您沒有【採購系統】的訪問權限！'); window.location.href = 'app_hr.html'; return false; }
-        if (moduleName === 'sales' && !user.perm_sales) { alert('您沒有【業務系統】的訪問權限！'); window.location.href = 'app_hr.html'; return false; }
-        if (moduleName === 'finance' && !user.perm_finance) { alert('您沒有【財務系統】的訪問權限！'); window.location.href = 'app_hr.html'; return false; }
-
-        window.currentUser = user;
         return true;
-        
-    } catch (err) {
-        console.error('Auth Guard Error:', err);
-        alert('身分驗證過程中發生錯誤：' + (err.message || err));
+    } catch (e) {
+        console.error('Auth check failed:', e);
+        alert('無法連線到伺服器，請檢查網路狀態。');
         return false;
     }
 }
