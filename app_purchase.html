@@ -52,9 +52,10 @@
     <div id="toast-container" class="fixed bottom-24 left-4 z-[9999] flex flex-col space-y-3 pointer-events-none"></div>
 
     <div id="loading-screen" class="fixed inset-0 bg-slate-900 z-[9999] flex flex-col items-center justify-center text-white transition-opacity duration-500">
-        <div class="text-6xl mb-4 animate-bounce">🛒</div>
-        <h2 class="text-xl font-black tracking-widest mb-2">HYPASS 採購中心</h2>
-        <p class="text-xs font-bold text-slate-400 tracking-wider">系統載入中...</p>
+        <div class="text-6xl mb-4 animate-bounce" id="loading-icon">🛒</div>
+        <h2 class="text-xl font-black tracking-widest mb-2" id="loading-title">HYPASS 採購中心</h2>
+        <p class="text-xs font-bold text-slate-400 tracking-wider" id="loading-subtitle">系統載入與權限驗證中...</p>
+        <div id="loading-action" class="mt-6 hidden"></div>
     </div>
 
     <aside class="hidden md:flex w-64 bg-slate-900 text-white flex-col h-full shadow-2xl shrink-0 z-20 overflow-y-auto no-scrollbar">
@@ -272,7 +273,7 @@
         function formatPO(no) {
             if(!no) return '未知單號';
             let str = String(no).replace('PO-', '');
-            if(str.length > 10) return str.slice(-8); // 取最後 8 碼精簡顯示
+            if(str.length > 10) return str.slice(-8); 
             return str;
         }
 
@@ -291,27 +292,44 @@
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
+        // 🌟 防彈登入與載入解鎖引擎
         async function bootPurchase() {
             try {
+                // 1. 強制 5 秒逾時保護，避免網路異常導致畫面永久鎖死
+                let authTimeout = setTimeout(() => {
+                    const ls = document.getElementById('loading-screen');
+                    if(ls) ls.innerHTML = '<div class="text-4xl mb-4">⚠️</div><h2 class="text-xl font-black text-white">載入超時</h2><p class="text-slate-400 mt-2">無法驗證身分，請檢查網路或重新登入</p><button onclick="window.location.href=\'index.html\'" class="mt-6 bg-white text-slate-900 px-6 py-2 rounded-full font-bold">重新登入</button>';
+                }, 5000);
+
                 const isAuth = await authGuard('purchase'); 
-                if(!isAuth) return; 
+                clearTimeout(authTimeout); // 成功驗證則取消超時
+
+                if(!isAuth) {
+                    const ls = document.getElementById('loading-screen');
+                    if(ls) ls.innerHTML = '<div class="text-4xl mb-4">⛔</div><h2 class="text-xl font-black text-white">權限不足</h2><p class="text-slate-400 mt-2 text-center text-sm px-6">您尚未被授權「採購系統」權限。<br>請聯繫系統管理員至後台開通。</p><button onclick="window.location.href=\'app_hr.html\'" class="mt-6 bg-emerald-500 hover:bg-emerald-400 text-white px-6 py-2 rounded-full font-black tracking-widest shadow-lg transition active:scale-95">返回員工大廳</button>';
+                    return; 
+                }
 
                 document.getElementById('user-badge').innerText = window.currentUser?.full_name || '使用者'; 
                 if(document.getElementById('desktop-user-badge')) {
                     document.getElementById('desktop-user-badge').innerText = window.currentUser?.full_name || '使用者'; 
                 }
                 
+                // 🌟 瞬間解開載入畫面，讓使用者看到 UI，絕不卡死
                 document.getElementById('loading-screen').classList.add('opacity-0');
                 setTimeout(() => { 
                     document.getElementById('loading-screen').style.display = 'none'; 
                     document.getElementById('app-container').classList.remove('hidden'); 
                     document.getElementById('app-container').classList.add('flex');
-                }, 500);
+                }, 400);
 
+                // 在背景安靜拉取資料
                 await loadSuppliers();
                 await loadDashboardData();
             } catch(e) {
                 console.error(e);
+                const ls = document.getElementById('loading-screen');
+                if(ls) ls.innerHTML = '<div class="text-4xl mb-4">💥</div><h2 class="text-xl font-black text-white">系統發生錯誤</h2><p class="text-slate-400 mt-2 px-4 text-xs break-all">' + e.message + '</p><button onclick="window.location.href=\'index.html\'" class="mt-6 bg-white text-slate-900 px-6 py-2 rounded-full font-bold">重新登入</button>';
             }
         }
 
@@ -338,7 +356,6 @@
             loadDashboardData();
         }
 
-        // 🌟 防彈級紀錄撈取引擎：專注於 PO 單
         async function fetchSafePOs() {
             let poData = [];
             try { 
@@ -374,7 +391,6 @@
             return poData;
         }
 
-        // 🌟 儀表板資料載入 (最新採購狀況表格式優化、雙行摘要)
         async function loadDashboardData() {
             try {
                 const pos = await fetchSafePOs();
@@ -410,7 +426,6 @@
                         let dateText = (po.expected_date && po.expected_date !== '未定' && po.expected_date !== null) ? String(po.expected_date).slice(5) : '未定';
                         let safePoItems = getSafeArray(po.items_json);
                         
-                        // 🌟 雙行顯示明細 (品名 + 數量)
                         let itemsStr = safePoItems.map(i => `
                             <div class="flex flex-col border-b border-slate-100/50 pb-1 mb-1 last:border-0 last:pb-0 last:mb-0">
                                 <span class="text-slate-800 font-bold truncate text-[10px]">${i.name}</span>
@@ -441,7 +456,6 @@
             } catch(e) {}
         }
 
-        // 🌟 供應商紀錄管理
         async function openSupplierList() {
             openView('supplier-list', '🏢 供應商紀錄');
             const container = document.getElementById('ui-supplier-list');
@@ -529,11 +543,10 @@
             try { await window._sb.from('suppliers').insert([p]); showSysToast('✅ 供應商建立成功！'); e.target.reset(); await loadSuppliers(); backToDash(); } catch(err) { alert('儲存失敗'); }
         }
 
-        // 🌟 待處理採購單 (負責審核並發送)
         async function openPoManagement() {
             openView('po-management', '📝 待處理採購單');
             const container = document.getElementById('ui-pending-pos');
-            container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">讀取中...</p>';
+            container.innerHTML = '<div class="col-span-full text-center text-xs text-slate-400 py-6">讀取中...</div>';
             
             const pos = await fetchSafePOs();
             const pending = pos.filter(r => r.status === '待審核' || r.status === '待處理');
@@ -569,9 +582,7 @@
             }).join('');
         }
 
-        // 🌟 嚴格審核權限判定
         async function approveAndSendPO(id, isLegacy) {
-            // 權限檢查
             if (!window.currentUser || !window.currentUser.perm_purchase_approve) {
                 alert('🚨 權限不足：您尚未被授權「採購核准權限」！\n請聯繫系統管理員 (老闆) 至後台員工資料為您開通權限。');
                 return;
@@ -585,13 +596,12 @@
                 }
                 showSysToast('✅ 採購單已核准發送！');
                 processAdminPO_PDF(id, isLegacy, 'view');
-                openPoManagement(); // Refresh the background list
+                openPoManagement(); 
             } catch(e) {
                 alert('核准失敗: ' + e.message);
             }
         }
 
-        // 🌟 單一採購紀錄中心 (包含月份篩選與分享功能，大螢幕網格化)
         async function openHistory() {
             openView('history', '🗂️ 採購紀錄');
             const elPo = document.getElementById('ui-hist-po');
@@ -607,7 +617,6 @@
 
             const pos = await fetchSafePOs();
             
-            // 根據選定月份篩選
             const filteredPos = pos.filter(p => {
                 if(!p.created_at) return false;
                 return p.created_at.startsWith(selectedMonth);
@@ -655,7 +664,6 @@
             } else { elPo.innerHTML = `<div class="col-span-full"><p class="text-xs text-slate-400 py-6 text-center border border-dashed border-slate-200 rounded-xl bg-white">此月份無採購單紀錄</p></div>`; }
         }
 
-        // 🌟 手機專用：直接產生 PDF 檔案並呼叫手機分享 (分享到 LINE / Email)
         async function sharePO(id, isLegacy) {
             showSysToast('⏳ 正在產生 PDF 檔案，請稍候...');
             try {
@@ -691,7 +699,6 @@
             }
         }
 
-        // 🌟 進階版編輯 Modal
         function openPOEdit(id, isLegacy, currentStatus, note, expected_date) {
             document.getElementById('po-edit-id').value = id;
             document.getElementById('po-edit-islegacy').value = isLegacy ? 'true' : 'false';
@@ -751,7 +758,9 @@
             } 
         }
 
-        // 🌟 終極引擎：產生 HTML 內容以供轉 PDF 或預覽
+        let currentViewingPoNo = '';
+        let currentViewingHtml = '';
+
         async function getPoHtmlContent(id, isLegacy) {
             let poData = null;
             try { 
@@ -879,7 +888,6 @@
             };
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = htmlContent;
-            // 確保匯出的 PDF 不會貼邊
             tempDiv.style.padding = '20px';
             html2pdf().set(opt).from(tempDiv).save().then(() => {
                 showSysToast('✅ PDF 下載完成！');
@@ -887,7 +895,6 @@
         }
 
         window.onload = function() {
-            // 🌟 完美執行啟動函數
             bootPurchase();
             
             const enforceNavObserver = new MutationObserver(() => { const oldNav = document.querySelector('nav:not(#core-bottom-nav)'); if (oldNav) oldNav.remove(); });
