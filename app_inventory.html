@@ -20,7 +20,7 @@
         #app-wrapper { display: flex; width: 100%; height: 100vh; overflow: hidden; }
         #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; width: 100%; max-width: 28rem; margin: 0 auto; display: flex; flex-direction: column;}
         
-        /* 🌟 電腦版滿版解放 + 視覺放大 */
+        /* 🌟 核心升級：電腦版滿版解放 */
         @media (min-width: 768px) { 
             #app-wrapper { align-items: flex-start; justify-content: center; padding: 24px; flex: 1; }
             #app-container { height: 100%; min-height: auto; max-height: none; width: 100%; max-width: 1400px; border-radius: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow-y: auto; background: #f8fafc; margin: 0; }
@@ -306,16 +306,12 @@
                                     <input type="number" id="i-folds" oninput="calcNewArea()" class="w-full p-3 bg-white rounded-lg text-sm md:text-base font-black text-center border-0 outline-none shadow-sm text-blue-900" placeholder="例如: 30">
                                 </div>
                                 <div>
-                                    <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">面積 (系統依照公式自動換算)</label>
-                                    <input type="number" step="any" id="i-area" readonly class="w-full p-3 bg-blue-100/50 rounded-lg text-sm md:text-base font-black text-center border border-blue-200 outline-none shadow-inner text-blue-900 cursor-not-allowed" placeholder="自動換算 (m²)">
+                                    <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">面積 (自動換算) 單位M2</label>
+                                    <input type="number" step="any" id="i-area" readonly class="w-full p-3 bg-blue-100/50 rounded-lg text-sm md:text-base font-black text-center border border-blue-200 outline-none shadow-inner text-blue-900 cursor-not-allowed" placeholder="自動換算">
                                 </div>
                                 <div class="col-span-2">
-                                    <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">適用的汽車型號 (可輸入多行)</label>
-                                    <textarea id="i-models" rows="3" class="w-full p-3 bg-white rounded-lg text-sm md:text-base font-bold border-0 outline-none shadow-sm text-blue-900 resize-none leading-relaxed" placeholder="例如:&#10;Toyota Altis&#10;Honda CR-V"></textarea>
-                                </div>
-                                <div class="col-span-2">
-                                    <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">適用年份 (可輸入多行)</label>
-                                    <textarea id="i-years" rows="3" class="w-full p-3 bg-white rounded-lg text-sm md:text-base font-bold border-0 outline-none shadow-sm text-blue-900 resize-none leading-relaxed" placeholder="例如:&#10;2015年前&#10;2016~2020&#10;2021年後"></textarea>
+                                    <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">適用車型與年份 (可自由換行填寫)</label>
+                                    <textarea id="i-models-years" rows="4" class="w-full p-3 bg-white rounded-lg text-sm md:text-base font-bold border-0 outline-none shadow-sm text-blue-900 resize-none leading-relaxed" placeholder="例如:&#10;Toyota Altis (2016-2020)&#10;Honda CR-V (2015年前)"></textarea>
                                 </div>
                             </div>
 
@@ -378,7 +374,10 @@
                 </div>
             </div>
         </main>
-    </div> </div> <div id="front-item-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
+    </div>
+    </div>
+
+    <div id="front-item-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
         <div class="bg-white w-full max-w-2xl m-auto rounded-[2rem] p-6 md:p-8 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
             <h3 class="font-black text-lg md:text-xl border-b pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯基本資料與 BOM</h3>
             <input type="hidden" id="fe-item-id">
@@ -419,16 +418,12 @@
                             <input type="number" id="fe-item-folds" oninput="calcEditArea()" class="w-full p-2.5 md:p-3 bg-white rounded-lg text-sm md:text-base font-black text-center border-0 outline-none shadow-sm text-blue-900">
                         </div>
                         <div>
-                            <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">面積 (系統自動換算)</label>
-                            <input type="number" step="any" id="fe-item-area" readonly class="w-full p-2.5 md:p-3 bg-blue-100/50 rounded-lg text-sm md:text-base font-black text-center border border-blue-200 outline-none shadow-inner text-blue-900 cursor-not-allowed">
+                            <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">面積 (自動換算) 單位M2</label>
+                            <input type="number" step="any" id="fe-item-area" readonly class="w-full p-2.5 md:p-3 bg-blue-100/50 rounded-lg text-sm md:text-base font-black text-center border border-blue-200 outline-none shadow-inner text-blue-900 cursor-not-allowed" placeholder="自動換算">
                         </div>
                         <div class="col-span-2">
-                            <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">適用的汽車型號 (可換行)</label>
-                            <textarea id="fe-item-models" rows="3" class="w-full p-2.5 md:p-3 bg-white rounded-lg text-sm md:text-base font-bold border-0 outline-none shadow-sm text-blue-900 resize-none leading-relaxed"></textarea>
-                        </div>
-                        <div class="col-span-2">
-                            <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">適用年份 (可換行)</label>
-                            <textarea id="fe-item-years" rows="3" class="w-full p-2.5 md:p-3 bg-white rounded-lg text-sm md:text-base font-bold border-0 outline-none shadow-sm text-blue-900 resize-none leading-relaxed"></textarea>
+                            <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">適用車型與年份 (可自由換行填寫)</label>
+                            <textarea id="fe-item-models-years" rows="4" class="w-full p-2.5 md:p-3 bg-white rounded-lg text-sm md:text-base font-bold border-0 outline-none shadow-sm text-blue-900 resize-none leading-relaxed"></textarea>
                         </div>
                     </div>
 
@@ -474,6 +469,14 @@
         </div>
     </div>
 
+    <nav id="core-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9990] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <div onclick="event.stopPropagation(); window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-emerald-600"><span class="text-xl mb-1">📦</span><span class="scale-90">庫存</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
+    </nav>
+
     <audio id="beep-sound" src="data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
 
     <script src="shared.js?v=999"></script>
@@ -488,7 +491,7 @@
         let currentInvType = '全部'; 
         let currentInvCat = '全部';
 
-        // 🌟 自動換算面積函數 (寬 x 摺數 x 高 x 2 / 10000)
+        // 🌟 自動換算面積函數 (寬 x 摺數 x 高 x 2 / 10000) = 平方公尺 (m2)
         function calcNewArea() {
             let w = parseFloat(document.getElementById('i-width').value) || 0;
             let h = parseFloat(document.getElementById('i-height').value) || 0;
@@ -928,7 +931,7 @@
             container.innerHTML = data.map(i => {
                 let l = i.length || '--'; let w = i.width || '--'; let h = i.height || '--';
                 let f = i.folds || '--'; let a = i.area || '--';
-                let m = i.applicable_models || '未註明'; let y = i.applicable_years || '未註明';
+                let m = i.applicable_models || '未註明';
                 
                 let highlightClass = isSearchResult && i._diff !== undefined && i._diff <= 2 ? 'border-amber-400 bg-amber-50 shadow-md' : 'border-slate-200 bg-white';
                 let badge = isSearchResult && i._diff !== undefined && i._diff <= 2 ? '<span class="absolute top-2 right-2 bg-amber-500 text-white text-[8px] md:text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm animate-pulse">極度吻合</span>' : '';
@@ -950,8 +953,7 @@
                     </div>
 
                     <div class="bg-blue-50/50 p-2.5 md:p-3 rounded-lg border border-blue-100 text-[10px] md:text-xs space-y-1.5 mt-auto">
-                        <div class="flex items-start"><span class="font-bold text-blue-700 shrink-0 mr-1 w-10 md:w-12">車型:</span><span class="font-black text-slate-700 break-words flex-1 whitespace-pre-line">${m}</span></div>
-                        <div class="flex items-start border-t border-blue-100 pt-1.5"><span class="font-bold text-blue-700 shrink-0 mr-1 w-10 md:w-12">年份:</span><span class="font-black text-slate-700 break-words flex-1 whitespace-pre-line">${y}</span></div>
+                        <div class="flex items-start"><span class="font-bold text-blue-700 shrink-0 mr-1 w-12 md:w-16">適用車型:</span><span class="font-black text-slate-700 break-words flex-1 whitespace-pre-line">${m}</span></div>
                     </div>
                 </div>`;
             }).join('');
@@ -1467,6 +1469,7 @@
             document.getElementById('c-total-qty').value = Math.max(0, parseInt(document.getElementById('c-total-qty').value) + val); 
         }
 
+        // 🌟 防護盤點寫入錯誤機制
         async function submitCount() { 
             const id = document.getElementById('c-item-id').value; 
             const newVal = parseInt(document.getElementById('c-total-qty').value); 
@@ -1570,6 +1573,7 @@
             return data; 
         }
 
+        // 🌟 防彈儲存機制：如果欄位不存在，自動攔截快取錯誤
         async function saveItem(e) { 
             e.preventDefault(); 
             let cat = document.getElementById('i-category').value === 'custom' ? document.getElementById('i-custom-category').value : document.getElementById('i-category').value; 
@@ -1584,23 +1588,27 @@
                 height: parseFloat(document.getElementById('i-height').value) || null,
                 folds: parseInt(document.getElementById('i-folds').value) || null,
                 area: parseFloat(document.getElementById('i-area').value) || null,
-                applicable_models: document.getElementById('i-models').value || null,
-                applicable_years: document.getElementById('i-years').value || null,
+                applicable_models: document.getElementById('i-models-years').value || null, // 🌟 合併後對應此欄位
                 qty_per_pack: parseInt(document.getElementById('i-qty').value) || 1, 
                 safe_stock_level: 0, 
                 lead_time_days: parseInt(document.getElementById('i-lead').value) || 15, 
                 stocktake_cycle: parseInt(document.getElementById('i-cycle').value) || 30, 
                 bom_data: extractBomData('bom-table-body') 
             }; 
+            
             const { error } = await window._sb.from('items').insert([p]); 
-            if(!error) { 
+            if(error) { 
+                if (error.message && error.message.includes('schema cache')) {
+                    alert('🚨 資料庫快取尚未更新！\n\n系統已偵測到您在 Supabase 新增了欄位，但伺服器需要幾分鐘來刷新快取。\n\n解決方法：\n1. 請稍等 2~3 分鐘後再試。\n2. 或到 Supabase 後台 -> [Project Settings] -> [API] -> 點擊 [Reload schema cache] 按鈕。');
+                } else {
+                    alert('寫入失敗，請確認資料表是否已新增 length, width, height, folds, area 等欄位。\n' + error.message);
+                }
+            } else {
                 alert('✅ 成功！'); 
                 e.target.reset(); 
                 window.suppressListRender = false;
                 await loadItems(); 
                 renderBomTable('bom-table-body'); 
-            } else {
-                alert('寫入失敗，請確認資料表是否已新增 length, width, height, folds, area 等欄位。\n' + error.message);
             }
         }
         
@@ -1707,8 +1715,7 @@
             
             document.getElementById('fe-item-folds').value = i.folds || '';
             document.getElementById('fe-item-area').value = i.area || '';
-            document.getElementById('fe-item-models').value = i.applicable_models || '';
-            document.getElementById('fe-item-years').value = i.applicable_years || '';
+            document.getElementById('fe-item-models-years').value = i.applicable_models || '';
 
             renderBomTable('fe-bom-table-body', i.bom_data || []); 
             document.getElementById('front-item-edit-modal').classList.add('active'); 
@@ -1727,8 +1734,7 @@
                 height: parseFloat(document.getElementById('fe-item-height').value) || null,
                 folds: parseInt(document.getElementById('fe-item-folds').value) || null,
                 area: parseFloat(document.getElementById('fe-item-area').value) || null,
-                applicable_models: document.getElementById('fe-item-models').value || null,
-                applicable_years: document.getElementById('fe-item-years').value || null,
+                applicable_models: document.getElementById('fe-item-models-years').value || null, // 🌟 合併後對應此欄位
                 lead_time_days: parseInt(document.getElementById('fe-item-lead').value) || 15, 
                 stocktake_cycle: parseInt(document.getElementById('fe-item-cycle').value) || 30, 
                 bom_data: extractBomData('fe-bom-table-body') 
@@ -1736,7 +1742,11 @@
             
             const { error } = await window._sb.from('items').update(p).eq('id', id); 
             if(error) {
-                alert('寫入失敗，請確認資料表是否已新增所有冷氣濾網欄位。\n' + error.message); 
+                if (error.message && error.message.includes('schema cache')) {
+                    alert('🚨 資料庫快取尚未更新！\n\n系統已偵測到您在 Supabase 新增了欄位，但伺服器需要幾分鐘來刷新快取。\n\n解決方法：\n1. 請稍等 2~3 分鐘後再試。\n2. 或到 Supabase 後台 -> [Project Settings] -> [API] -> 點擊 [Reload schema cache] 按鈕。');
+                } else {
+                    alert('寫入失敗，請確認資料表是否已新增 length, width, height, folds, area 等欄位。\n' + error.message);
+                }
             } else { 
                 alert('✅ 已儲存修改！'); 
                 closeModal('front-item-edit-modal'); 
