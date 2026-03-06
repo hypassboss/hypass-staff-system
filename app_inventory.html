@@ -109,10 +109,10 @@
                         <table class="w-full text-left text-[10px] table-fixed">
                             <thead class="text-slate-500 border-b border-slate-200 bg-slate-100/50">
                                 <tr>
-                                    <th class="py-1.5 px-1 font-bold text-left w-[42%]">料號/品名</th>
-                                    <th class="py-1.5 px-1 font-bold text-center text-emerald-700 w-[16%]">現庫</th>
-                                    <th class="py-1.5 px-1 font-bold text-center text-sky-600 w-[16%]">採購</th>
-                                    <th class="py-1.5 px-1 font-bold text-center w-[26%]">狀態</th>
+                                    <th class="py-1.5 px-1 font-bold text-left w-[40%]">料號/品名</th>
+                                    <th class="py-1.5 px-1 font-bold text-center text-emerald-700 w-[15%]">現庫</th>
+                                    <th class="py-1.5 px-1 font-bold text-center text-sky-600 w-[15%]">已購</th>
+                                    <th class="py-1.5 px-1 font-bold text-center w-[30%]">狀態/操作</th>
                                 </tr>
                             </thead>
                             <tbody id="ui-filter-status-table-alert" class="divide-y divide-slate-100 bg-white rounded-lg">
@@ -414,7 +414,7 @@
 
     <audio id="beep-sound" src="data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
 
-    <script src="shared.js?v=1005"></script>
+    <script src="shared.js?v=999"></script>
     <script>
         let html5QrcodeScanner = null; 
         let currentItemPackQty = 1; 
@@ -724,7 +724,10 @@
                 } else {
                     filterHtml = alertGoods.map(i => {
                         let qtyHtml = '<span class="text-slate-300">0</span>'; 
-                        let etaHtml = '<span class="text-slate-400 font-bold">--</span>';
+                        
+                        // 🌟 這是全新的動態一鍵採購按鈕邏輯！
+                        let actionOrStatusHtml = `<button onclick="quickAddPO('${i.id}')" class="bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-white text-[9px] font-black px-2 py-1.5 rounded-lg shadow-sm active:scale-95 transition flex items-center justify-center w-full tracking-widest"><span class="mr-1 text-xs">🛒</span> 採購</button>`;
+                        
                         let pQty = 0;
                         let dStr = null;
                         let pStatus = null;
@@ -745,10 +748,11 @@
                             let stText = pStatus || '待處理';
                             let stColor = stText.includes('異常') || stText.includes('遲交') ? 'text-red-600 bg-red-100' : 'text-sky-700 bg-sky-100';
                             
-                            etaHtml = `
-                                <div class="flex flex-col items-center justify-center space-y-0.5">
-                                    <span class="text-[9px] font-bold text-slate-700 leading-none">${dateText}</span>
-                                    <span class="text-[8px] font-black px-1.5 py-0.5 rounded-sm ${stColor} leading-none whitespace-nowrap">${stText}</span>
+                            // 如果已經在採購，點擊狀態標籤依舊可以追加採購
+                            actionOrStatusHtml = `
+                                <div class="flex flex-col items-center justify-center cursor-pointer active:scale-95 transition" onclick="quickAddPO('${i.id}')" title="點擊可再次追加採購">
+                                    <span class="text-[9px] font-bold text-slate-700 leading-none mb-0.5">${dateText}</span>
+                                    <span class="text-[8px] font-black px-1.5 py-0.5 rounded-sm ${stColor} leading-none whitespace-nowrap shadow-sm border border-slate-200/50">${stText}</span>
                                 </div>
                             `;
                         }
@@ -768,7 +772,7 @@
                             </div>
                         `;
 
-                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0"><td class="py-2 px-1 align-middle overflow-hidden">${displayHtml}</td><td class="py-2 px-1 text-center align-middle font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="py-2 px-1 text-center align-middle">${qtyHtml}</td><td class="py-2 px-1 text-center align-middle text-[10px]">${etaHtml}</td></tr>`;
+                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0"><td class="py-2 px-1 align-middle overflow-hidden">${displayHtml}</td><td class="py-2 px-1 text-center align-middle font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="py-2 px-1 text-center align-middle">${qtyHtml}</td><td class="py-2 px-1 text-center align-middle px-1">${actionOrStatusHtml}</td></tr>`;
                     }).join('');
                 }
                 const uiFilterStatusTableAll = document.getElementById('ui-filter-status-table-alert');
@@ -783,6 +787,19 @@
             } catch(fatalError) {
                 console.error("UI 渲染失敗", fatalError);
             }
+        }
+
+        // 🌟 新增：從警示列表一鍵採購的功能
+        function quickAddPO(id) {
+            poCart.add(id);
+            updateTopReqBar();
+            // 如果原本在其他頁籤，我們自動幫他切換並打開選單
+            document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active')); 
+            document.getElementById('view-inventory-list').classList.add('active');
+            document.getElementById('header-title').innerText = '庫存紀錄 / 低庫存採購'; 
+            document.getElementById('btn-back').classList.remove('hidden');
+            // 直接彈出 PO 產生畫面
+            openPOModal();
         }
 
         function openCountViewFromId(id) { 
