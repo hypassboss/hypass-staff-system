@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <style>
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; -webkit-tap-highlight-color: transparent;}
         
@@ -63,7 +63,12 @@
     <div id="loading-screen" class="fixed inset-0 bg-slate-900 z-[9999] flex flex-col items-center justify-center text-white transition-opacity duration-500">
         <div class="text-6xl mb-4 animate-bounce">🛒</div>
         <h2 class="text-xl font-black tracking-widest mb-2">HYPASS 採購中心</h2>
-        <p class="text-xs font-bold text-slate-400 tracking-wider">系統載入中...</p>
+        <p class="text-xs font-bold text-slate-400 tracking-wider mb-6" id="loading-msg">系統載入與驗證中...</p>
+        <div id="rescue-btn" class="hidden flex-col items-center">
+            <p class="text-amber-400 text-[10px] font-bold mb-3">網路似乎有點慢，或權限驗證超時</p>
+            <button onclick="forceUnlock()" class="bg-amber-500 text-white font-black px-6 py-2.5 rounded-full shadow-lg active:scale-95 transition mb-3">強制進入系統</button>
+            <button onclick="window.location.href='app_hr.html'" class="bg-slate-700 text-white font-black px-6 py-2.5 rounded-full shadow-lg active:scale-95 transition">返回員工大廳</button>
+        </div>
     </div>
 
     <aside class="hidden md:flex w-64 bg-slate-900 text-white flex-col h-full shadow-2xl shrink-0 z-20 overflow-y-auto no-scrollbar">
@@ -309,7 +314,7 @@
 
     <audio id="beep-sound" src="data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
 
-    <script src="shared.js?v=999"></script>
+    <script src="shared.js?v=9999"></script>
     <script>
         window.supplierData = [];
         let html5QrcodeScanner = null;
@@ -347,23 +352,37 @@
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
+        // 🌟 終極救援：點擊解除卡頓
+        window.forceUnlock = function() {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('app-container').classList.add('flex');
+            loadSuppliers();
+            loadDashboardData();
+        }
+
         async function bootPurchase() {
+            // 設定 4 秒超時防護，顯示救援按鈕
+            let authTimeout = setTimeout(() => {
+                const msg = document.getElementById('loading-msg');
+                const btn = document.getElementById('rescue-btn');
+                if(msg) msg.style.display = 'none';
+                if(btn) btn.classList.remove('hidden');
+                if(btn) btn.classList.add('flex');
+            }, 4000);
+
             try {
-                // 🌟 加入防護機制：如果沒權限直接顯示錯誤，不卡死
-                let authTimeout = setTimeout(() => {
-                    const ls = document.getElementById('loading-screen');
-                    if(ls) ls.innerHTML = '<div class="text-4xl mb-4">⚠️</div><h2 class="text-xl font-black text-white">載入超時或無權限</h2><p class="text-slate-400 mt-2 text-xs">請確認您具備「採購」權限，或檢查網路</p><button onclick="window.location.href=\'app_hr.html\'" class="mt-6 bg-white text-slate-900 px-6 py-2 rounded-full font-bold">返回大廳</button>';
-                }, 5000);
-
+                if(!window.authGuard) throw new Error("shared.js 未載入");
                 const isAuth = await authGuard('purchase'); 
-                clearTimeout(authTimeout);
-
+                
                 if(!isAuth) {
+                    clearTimeout(authTimeout);
                     const ls = document.getElementById('loading-screen');
-                    if(ls) ls.innerHTML = '<div class="text-6xl mb-4">🚫</div><h2 class="text-xl font-black text-white">無權限訪問</h2><p class="text-slate-400 mt-2 text-xs">您沒有採購系統的權限</p><button onclick="window.location.href=\'app_hr.html\'" class="mt-6 bg-white text-slate-900 px-6 py-2 rounded-full font-bold">返回員工大廳</button>';
+                    if(ls) ls.innerHTML = '<div class="text-6xl mb-4">🚫</div><h2 class="text-xl font-black text-white mb-2">無權限訪問</h2><p class="text-slate-400 text-xs mb-6">您沒有採購系統的權限</p><button onclick="window.location.href=\'app_hr.html\'" class="bg-white text-slate-900 px-6 py-3 rounded-full font-black shadow-lg">返回員工大廳</button>';
                     return;
                 }
 
+                clearTimeout(authTimeout);
                 document.getElementById('user-badge').innerText = window.currentUser?.full_name || '使用者'; 
                 if(document.getElementById('desktop-user-badge')) {
                     document.getElementById('desktop-user-badge').innerText = window.currentUser?.full_name || '使用者'; 
@@ -376,7 +395,6 @@
                     document.getElementById('app-container').classList.add('flex');
                 }, 400);
 
-                // 為了在 Dashboard 顯示料號，必須先載入庫存資料建立 Map
                 try {
                     const { data: itemsData } = await window._sb.from('items').select('id, item_code, item_name');
                     window.inventoryData = itemsData || [];
@@ -384,7 +402,12 @@
 
                 await loadSuppliers();
                 await loadDashboardData();
-            } catch(e) { console.error(e); }
+            } catch(e) { 
+                console.error(e); 
+                clearTimeout(authTimeout);
+                const ls = document.getElementById('loading-screen');
+                if(ls) ls.innerHTML = `<div class="text-6xl mb-4">⚠️</div><h2 class="text-xl font-black text-white mb-2">載入發生錯誤</h2><p class="text-slate-400 text-xs mb-6">${e.message}</p><button onclick="forceUnlock()" class="bg-amber-500 text-white px-6 py-3 rounded-full font-black shadow-lg mb-3 w-48">強制進入</button><button onclick="window.location.href='app_hr.html'" class="bg-white text-slate-900 px-6 py-3 rounded-full font-black shadow-lg w-48">返回大廳</button>`;
+            }
         }
 
         async function loadSuppliers() {
@@ -1085,11 +1108,8 @@
             html2pdf().set(opt).from(tempDiv).save().then(() => { showSysToast('✅ PDF 下載完成！狀態已更新為「已發送」'); });
         }
 
-        window.onload = function() {
-            bootPurchase();
-            const enforceNavObserver = new MutationObserver(() => { const oldNav = document.querySelector('nav:not(#core-bottom-nav)'); if (oldNav) oldNav.remove(); });
-            enforceNavObserver.observe(document.body, { childList: true, subtree: true });
-        }
+        // 🌟 防呆：強制使用事件監聽確保順利執行
+        document.addEventListener('DOMContentLoaded', bootPurchase);
     </script>
 </body>
 </html>
