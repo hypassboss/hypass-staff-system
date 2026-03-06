@@ -245,18 +245,18 @@
                     <div class="col-span-2"><label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1">聯絡信箱</label><input type="email" id="edit-s-email" class="w-full p-3 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none"></div>
 
                     <div class="col-span-2 border-t border-slate-100 pt-2"><h5 class="text-[10px] md:text-xs font-black text-slate-500 mb-1">📞 聯絡窗口</h5></div>
-                    <div><input type="text" id="edit-s-contact" placeholder="聯絡人" class="w-full p-2 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none"></div>
-                    <div><input type="text" id="edit-s-phone" placeholder="電話" class="w-full p-2 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none"></div>
+                    <div><input type="text" id="edit-s-contact" placeholder="聯絡人" class="w-full p-3 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none"></div>
+                    <div><input type="text" id="edit-s-phone" placeholder="電話" class="w-full p-3 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none"></div>
                     
                     <div class="col-span-2 border-t border-slate-100 pt-2"><h5 class="text-[10px] md:text-xs font-black text-slate-500 mb-1">💰 付款資訊</h5></div>
-                    <div class="col-span-2"><select id="edit-s-pay" class="w-full p-2 bg-slate-50 rounded-xl text-sm md:text-base font-bold border border-slate-200 select-arrow outline-none" required><option value="月結30天">月結 30 天</option><option value="月結60天">月結 60 天</option><option value="貨到付款">貨到付款</option><option value="匯款預付">匯款預付</option></select></div>
+                    <div class="col-span-2"><select id="edit-s-pay" class="w-full p-3 bg-slate-50 rounded-xl text-sm md:text-base font-bold border border-slate-200 select-arrow outline-none" required><option value="月結30天">月結 30 天</option><option value="月結60天">月結 60 天</option><option value="貨到付款">貨到付款</option><option value="匯款預付">匯款預付</option></select></div>
                     
-                    <div class="col-span-2 grid grid-cols-2 gap-2">
-                        <select id="edit-s-bank-code" class="w-full p-2 bg-white rounded-xl text-[11px] md:text-sm font-bold border border-slate-200 select-arrow outline-none">
+                    <div class="col-span-2 grid grid-cols-2 gap-3">
+                        <select id="edit-s-bank-code" class="w-full p-3 bg-white rounded-xl text-[11px] md:text-sm font-bold border border-slate-200 select-arrow outline-none">
                             <option value="">無</option>
                             <option value="822-中國信託">822 中國信託</option><option value="804-中華郵政">804 中華郵政</option><option value="013-國泰世華">013 國泰世華</option><option value="812-台新銀行">812 台新銀行</option><option value="012-台北富邦">012 台北富邦</option><option value="004-臺灣銀行">004 臺灣銀行</option><option value="006-合作金庫">006 合作金庫</option><option value="007-第一銀行">007 第一銀行</option><option value="008-華南銀行">008 華南銀行</option><option value="009-彰化銀行">009 彰化銀行</option>
                         </select>
-                        <input type="number" id="edit-s-bank-acc" placeholder="純數字帳號" class="w-full p-2 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none font-mono">
+                        <input type="number" id="edit-s-bank-acc" placeholder="純數字帳號" class="w-full p-3 bg-white rounded-xl text-sm md:text-base border border-slate-200 outline-none font-mono">
                     </div>
                 </div>
             </div>
@@ -333,6 +333,7 @@
             setTimeout(() => { toast.style.animation = 'slideInLeft 0.4s ease-in reverse forwards'; setTimeout(() => toast.remove(), 400); }, 5000);
         }
 
+        // 🌟 終極防彈裝甲：忽略 updated_at 寫入失敗的超強更新器
         async function safeUpdate(table, payload, id) { 
             const { error } = await window._sb.from(table).update(payload).eq('id', id); 
             if (error) {
@@ -606,6 +607,7 @@
             }
 
             container.innerHTML = window.supplierData.map(s => {
+                let uDate = s.updated_at ? new Date(s.updated_at).toLocaleDateString('zh-TW') : '--';
                 return `
                 <div class="bg-white p-4 md:p-5 rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md">
                     <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-2">
@@ -707,7 +709,7 @@
                 if(sId === '待審核' || sId === '待處理') {
                     btnHtml = `<button onclick="quickApprovePO('${p.id}', ${p.is_legacy})" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-3 md:py-4 rounded-xl shadow-md active:scale-95 text-sm md:text-base transition tracking-widest mt-auto">✅ 審核核准</button>`;
                 } else if (sId === '已核准') {
-                    btnHtml = `<button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy}, 'download')" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-3 md:py-4 rounded-xl shadow-md active:scale-95 text-sm md:text-base transition tracking-widest mt-auto">📄 下載 PDF 並發送</button>`;
+                    btnHtml = `<button onclick="executePdfDownloadForced('${p.id}', ${p.is_legacy})" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-3 md:py-4 rounded-xl shadow-md active:scale-95 text-sm md:text-base transition tracking-widest mt-auto">📄 下載 PDF 並發送</button>`;
                 }
 
                 return `
@@ -812,7 +814,7 @@
                         ${p.note ? `<p class="text-[10px] md:text-xs text-slate-600 font-bold bg-amber-50 p-2.5 rounded-lg border border-amber-100 mb-4 line-clamp-2">📝 備註: ${p.note}</p>` : ''}
                         
                         <div class="grid grid-cols-2 gap-3 mt-auto">
-                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'download')" class="bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-xl text-xs md:text-sm font-black shadow-md active:scale-95 transition tracking-widest flex justify-center items-center"><span class="mr-1.5 text-base">📥</span> 下載</button>
+                            <button onclick="executePdfDownloadForced('${p.id}', ${p.is_legacy})" class="bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-xl text-xs md:text-sm font-black shadow-md active:scale-95 transition tracking-widest flex justify-center items-center"><span class="mr-1.5 text-base">📥</span> 下載</button>
                             <button onclick="openPOEdit('${p.id}', ${p.is_legacy?true:false}, '${p.status}', '${safeNote}', '${p.expected_date||''}')" class="bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl text-xs md:text-sm font-black shadow-md active:scale-95 transition tracking-widest flex justify-center items-center"><span class="mr-1.5 text-base">✏️</span> 編輯</button>
                         </div>
                     </div>`;}).join('');
@@ -966,7 +968,7 @@
                 if (r < t) allDone = false;
             });
 
-            if(!hasChanges) { alert('您未輸入任何點收數量！'); btn.innerText = '確認入庫'; btn.disabled = false; return; }
+            if(!hasChanges) { alert('您未輸入任何點收數量！'); btn.innerText = '確認入庫並同步更新庫存'; btn.disabled = false; return; }
 
             let newStatus = allDone ? '完成' : '部分到貨';
 
@@ -975,15 +977,15 @@
                     await window._sb.from('inventory_ledgers').insert(ledgerEntries);
                 }
                 
-                let payload = { items_json: items, status: newStatus };
-                if(isLegacy) await window._sb.from('purchase_orders').update({ raw_materials: items, status: newStatus==='完成'?'PO完成':newStatus }).eq('id', id);
+                let payload = { items_json: items, status: newStatus, updated_at: new Date().toISOString() };
+                if(isLegacy) await window._sb.from('purchase_orders').update({ raw_materials: items, status: newStatus==='完成'?'PO完成':newStatus, updated_at: new Date().toISOString() }).eq('id', id);
                 else await window._sb.from('po_documents').update(payload).eq('id', id);
 
                 showSysToast(allDone ? '✅ 採購單已全數到齊並結案！' : '✅ 部分到貨已入庫！');
                 if(isReceivingScan) stopPOBarcodeScan();
                 backToDash();
 
-            } catch(e) { alert('寫入失敗: ' + e.message); btn.innerText = '確認入庫'; btn.disabled = false; }
+            } catch(e) { alert('寫入失敗: ' + e.message); btn.innerText = '確認入庫並同步更新庫存'; btn.disabled = false; }
         }
 
         // 🌟 編輯視窗呼叫
@@ -1121,7 +1123,7 @@
                     const modal = document.getElementById('pdf-preview-modal');
                     modal.classList.remove('hidden'); modal.classList.add('flex');
                 } else if(action === 'download') {
-                    executePdfDownload(currentViewingHtml, currentViewingPoNo, id, isLegacy);
+                    executePdfDownloadForced(id, isLegacy);
                 }
             } catch(e) { alert(e.message); }
         }
@@ -1129,12 +1131,18 @@
         function closePdfModal() { const m = document.getElementById('pdf-preview-modal'); m.classList.add('hidden'); m.classList.remove('flex'); }
 
         document.getElementById('btn-modal-download').addEventListener('click', () => { 
-            if(currentViewingHtml) executePdfDownload(currentViewingHtml, currentViewingPoNo, currentViewingPoId, currentViewingIsLegacy); 
+            if(currentViewingHtml) executePdfDownloadForced(currentViewingPoId, currentViewingIsLegacy); 
         });
 
-        // 🌟 Blob 引擎：徹底解決手機版無法下載的問題
-        function executePdfDownload(htmlContent, poNo, id, isLegacy) {
+        // 🌟 終極強制下載 PDF 引擎 (實體渲染隱藏法)
+        async function executePdfDownloadForced(id, isLegacy) {
             showSysToast('PDF 檔案生成中，請稍候...');
+            let htmlContent, poNo;
+
+            try {
+                const data = await getPoHtmlContent(id, isLegacy);
+                htmlContent = data.html; poNo = data.poNo;
+            } catch(e) { alert('抓取資料失敗'); return; }
             
             if (id) {
                 try {
@@ -1147,23 +1155,32 @@
                 } catch(e) {}
             }
 
-            const opt = { margin: [0.5, 0.5], filename: `HYPASS_採購單_${poNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
-            const tempDiv = document.createElement('div'); tempDiv.innerHTML = htmlContent; tempDiv.style.padding = '20px';
+            const opt = { 
+                margin: [0.5, 0.5], 
+                filename: `HYPASS_採購單_${poNo}.pdf`, 
+                image: { type: 'jpeg', quality: 0.98 }, 
+                html2canvas: { scale: 2, useCORS: true, letterRendering: true }, 
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } 
+            };
             
-            html2pdf().set(opt).from(tempDiv).outputPdf('blob').then(function(pdfBlob) {
-                const url = URL.createObjectURL(pdfBlob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = opt.filename;
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    showSysToast('✅ PDF 下載完成！狀態已更新為「已發送」');
-                }, 100);
-            }).catch(function(err) {
+            const tempDiv = document.createElement('div'); 
+            tempDiv.innerHTML = htmlContent; 
+            tempDiv.style.background = 'white';
+            tempDiv.style.padding = '20px';
+            tempDiv.style.width = '800px'; 
+            
+            // 🌟 秘訣：將元素加入畫面中但隱藏，確保 html2canvas 渲染成功
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '-9999px';
+            document.body.appendChild(tempDiv);
+
+            html2pdf().set(opt).from(tempDiv).save().then(() => { 
+                showSysToast('✅ PDF 下載完成！'); 
+                document.body.removeChild(tempDiv);
+            }).catch(err => {
                 alert('PDF 產生失敗：' + err.message);
+                document.body.removeChild(tempDiv);
             });
         }
 
