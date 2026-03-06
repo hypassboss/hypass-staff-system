@@ -8,392 +8,122 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        body { background: #e2e8f0; font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; padding-bottom: 80px;}
-        #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
+        @media (max-width: 767px) { body { padding-bottom: 80px; } }
+        @media (min-width: 768px) { body { background: #f8fafc; } }
+        
         .view-panel { display: none; animation: fadeIn 0.3s ease; } .view-panel.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.8); }
-        .modal { display: none !important; } .modal.active { display: flex !important; z-index: 200; }
-        .select-arrow { appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-size: 1.5em 1.5em; background-position: right 0.5rem center; background-repeat: no-repeat; padding-right: 2rem; }
+        .glass-card { background: #ffffff; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(226, 232, 240, 0.8); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         
-        /* 🚨 終極防禦：封殺所有 shared.js 產生的舊導覽列，只顯示我們的核心導覽列 */
-        nav { display: none !important; }
-        #core-bottom-nav { display: flex !important; }
+        @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .toast-msg { animation: slideInLeft 0.4s ease-out forwards; }
     </style>
 </head>
-<body class="text-slate-800 relative">
+<body class="text-slate-800 bg-slate-50 md:flex md:h-screen md:overflow-hidden relative w-full">
 
-    <div id="app-container" class="max-w-md mx-auto shadow-2xl relative">
-        <header class="bg-slate-900 text-white px-5 py-4 shadow-md sticky top-0 z-50 flex items-center h-16">
-            <button id="btn-back" onclick="backToDash()" class="hidden mr-3 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition">🔙 返回</button>
-            <div><h1 class="text-xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-sky-200" id="header-title">財務對帳中心</h1></div>
-            <div class="ml-auto text-[10px] font-bold bg-white/10 px-3 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
+    <div id="toast-container" class="fixed bottom-24 md:bottom-10 left-1/2 transform -translate-x-1/2 z-[9999] flex flex-col space-y-3 pointer-events-none w-11/12 max-w-md"></div>
+
+    <div id="loading-screen" class="fixed inset-0 bg-slate-900 z-[9999] flex flex-col items-center justify-center text-white transition-opacity duration-500">
+        <div class="text-6xl mb-4 animate-bounce">💰</div>
+        <h2 class="text-xl font-black tracking-widest mb-2">HYPASS 財務中心</h2>
+        <p class="text-xs font-bold text-slate-400 tracking-wider">系統載入與權限驗證中...</p>
+    </div>
+
+    <aside class="hidden md:flex w-64 bg-slate-900 text-white flex-col h-full shadow-2xl shrink-0 z-20 overflow-y-auto no-scrollbar">
+        <div class="p-6 pb-4 border-b border-slate-800 mb-4 sticky top-0 bg-slate-900 z-10">
+            <h1 class="text-3xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">HYPASS</h1>
+            <span class="text-[10px] text-slate-400 tracking-[0.2em] uppercase font-bold mt-1 block">ERP Frontend</span>
+        </div>
+        <nav class="flex-1 px-4 space-y-2 pb-6">
+            <button onclick="window.location.href='app_hr.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">👨‍💼</span> 員工中心</button>
+            <button onclick="window.location.href='app_inventory.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">📦</span> 庫存大盤</button>
+            <button onclick="window.location.href='app_purchase.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">🛒</span> 採購中心</button>
+            <button onclick="window.location.href='app_sales.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">💼</span> 業務中心</button>
+            <button onclick="window.location.href='app_finance.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition bg-blue-600 text-white shadow-md"><span class="mr-3 text-xl">💰</span> 財務中心</button>
+            <div class="pt-4 mt-4 border-t border-slate-800"></div>
+            <button onclick="window.location.href='admin.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-amber-500 hover:text-amber-400 hover:bg-slate-800 border border-slate-700"><span class="mr-3 text-xl">👑</span> 指揮中心 (老闆)</button>
+        </nav>
+        <div class="p-4 border-t border-slate-800 bg-slate-900/50 sticky bottom-0">
+            <div class="text-[10px] text-slate-400 mb-1 px-2 font-bold tracking-widest">登入身分</div>
+            <div id="desktop-user-badge" class="font-black text-blue-400 px-2 truncate">載入中...</div>
+        </div>
+    </aside>
+
+    <div id="app-container" class="flex-1 flex-col h-full relative hidden overflow-y-auto md:overflow-y-hidden w-full max-w-full">
+        
+        <header class="md:hidden bg-slate-900 text-white px-4 py-3 shadow-md sticky top-0 z-50 flex items-center justify-between h-14 relative shrink-0">
+            <button id="btn-back" class="hidden mr-2 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition shrink-0 flex items-center">🔙 返回</button>
+            <div class="flex-1 min-w-0 flex justify-center text-center">
+                <h1 class="text-base sm:text-lg font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300 truncate px-2" id="header-title">財務對帳中心</h1>
+            </div>
+            <div class="shrink-0 text-[10px] font-bold bg-white/10 px-2 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
         </header>
 
-        <main class="p-5 relative z-10">
-            <div id="view-dashboard" class="view-panel active space-y-5">
-                <div class="bg-gradient-to-br from-blue-600 to-sky-600 rounded-[2rem] p-6 text-white shadow-lg relative overflow-hidden">
-                    <div class="absolute -right-4 -top-4 text-7xl opacity-20">💰</div>
-                    <h2 class="text-2xl font-black mb-1">對帳大盤管理</h2>
-                    <p class="text-xs font-bold text-blue-100 mb-5 tracking-wider">現金流與發票應收帳款追蹤</p>
-                    
-                    <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-inner">
-                        <p class="text-[10px] font-bold mb-1 tracking-widest uppercase text-blue-100">待核帳應收總額 (未入帳)</p>
-                        <div class="flex items-baseline text-4xl font-black tracking-tight" id="dash-pending-amount">
-                            <span class="text-lg mr-1 opacity-80">NT$</span> 0
-                        </div>
-                        <p class="text-[9px] text-blue-200 mt-2 flex items-center"><span class="w-1.5 h-1.5 bg-amber-400 rounded-full mr-1.5 animate-pulse"></span>共有 <span id="dash-pending-count" class="font-black px-1">0</span> 筆待處理單據</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="openView('add-record', '新增業務對帳單')" class="glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-blue-200 hover:bg-blue-50 col-span-2 bg-blue-50/50">
-                        <span class="text-5xl mb-3 drop-shadow-md">🧾</span>
-                        <span class="font-black text-blue-800 tracking-wider text-lg">新增業務對帳單</span>
-                        <span class="font-bold text-blue-600/70 text-xs tracking-wider mt-1">發票建檔 / 預計收款日</span>
-                    </button>
-                    
-                    <button onclick="openRecordList('待核帳')" class="glass-card p-5 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-amber-200 hover:bg-amber-50">
-                        <span class="text-4xl mb-2 drop-shadow-md">⏳</span>
-                        <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">待核帳清單</span>
-                        <span class="font-bold text-amber-600/70 text-[10px] tracking-wider">追蹤未入帳款</span>
-                    </button>
-                    
-                    <button onclick="openRecordList('全部')" class="glass-card p-5 rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
-                        <span class="text-4xl mb-2 drop-shadow-md">🗂️</span>
-                        <span class="font-black text-slate-700 text-[13px] tracking-widest mb-0.5">歷史總表</span>
-                        <span class="font-bold text-slate-500/70 text-[10px] tracking-wider">所有結案與異常</span>
-                    </button>
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 relative z-10 w-full flex items-center justify-center min-h-[70vh]">
+            <div class="max-w-2xl w-full text-center">
+                <div class="glass-card p-10 md:p-16 rounded-[3rem] shadow-xl border-t-8 border-blue-500 relative overflow-hidden">
+                    <div class="absolute -left-10 -bottom-10 text-[150px] opacity-5">🏦</div>
+                    <span class="text-6xl md:text-8xl mb-6 block drop-shadow-lg relative z-10">🔐</span>
+                    <h2 class="text-2xl md:text-3xl font-black text-slate-800 tracking-wider mb-3 relative z-10">財務模組籌備中</h2>
+                    <p class="text-sm md:text-base font-bold text-slate-500 leading-relaxed max-w-md mx-auto relative z-10">
+                        為確保企業資金安全與報表精準度，對帳大盤與請款審核功能正在進行最後的資安強化。<br><br>敬請期待後續上線！
+                    </p>
                 </div>
             </div>
-
-            <div id="view-add-record" class="view-panel space-y-5">
-                <div class="glass-card p-6 rounded-[2rem] shadow-sm border-t-4 border-blue-500">
-                    <h3 class="font-black text-slate-800 pl-1 text-lg mb-5 flex items-center"><span class="mr-2 text-2xl">✍️</span> 建立應收對帳單</h3>
-                    <form onsubmit="saveFinanceRecord(event)" class="space-y-4">
-                        
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">客戶/廠商名稱</label>
-                            <input type="text" id="f-client" placeholder="例如: 某某科技股份有限公司" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-black outline-none focus:border-blue-500 transition shadow-inner" required>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">發票總金額 (含稅)</label>
-                                <input type="number" id="f-amount" placeholder="NT$" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-lg font-black text-blue-700 outline-none focus:border-blue-500 transition shadow-inner" required>
-                            </div>
-                            <div>
-                                <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">預計付款/到期日</label>
-                                <input type="date" id="f-date" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-black outline-none focus:border-blue-500 transition shadow-inner" required>
-                            </div>
-                        </div>
-
-                        <div class="border-t border-slate-100 pt-4 mt-2">
-                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-2">約定付款方式</label>
-                            <div class="flex space-x-3 bg-slate-50 p-1.5 rounded-xl border border-slate-200 shadow-inner mb-3">
-                                <label class="flex-1 text-center py-2.5 bg-white rounded-lg border border-slate-200 cursor-pointer has-[:checked]:bg-blue-500 has-[:checked]:text-white has-[:checked]:border-blue-600 transition font-black text-sm text-slate-500 shadow-sm">
-                                    <input type="radio" name="pay_method" value="銀行匯款" class="hidden" onchange="togglePayMethod()" checked>🏦 銀行匯款
-                                </label>
-                                <label class="flex-1 text-center py-2.5 bg-white rounded-lg border border-slate-200 cursor-pointer has-[:checked]:bg-amber-500 has-[:checked]:text-white has-[:checked]:border-amber-600 transition font-black text-sm text-slate-500 shadow-sm">
-                                    <input type="radio" name="pay_method" value="實體支票" class="hidden" onchange="togglePayMethod()">🎫 實體支票
-                                </label>
-                            </div>
-
-                            <div id="ui-bank-details" class="animate-[fadeIn_0.2s_ease-out]">
-                                <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">匯款帳戶資訊 (選填)</label>
-                                <input type="text" id="f-bank-info" placeholder="例如: 中國信託 / 末五碼 12345" class="w-full p-3.5 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition">
-                            </div>
-
-                            <div id="ui-check-details" class="hidden animate-[fadeIn_0.2s_ease-out]">
-                                <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">支票號碼與資訊 (選填)</label>
-                                <input type="text" id="f-check-info" placeholder="例如: 支票號碼 AA1234567" class="w-full p-3.5 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 transition">
-                            </div>
-                        </div>
-
-                        <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-sky-500 text-white font-black py-4.5 rounded-2xl shadow-lg active:scale-95 transition tracking-widest text-lg mt-6 block">💾 儲存並建檔對帳</button>
-                    </form>
-                </div>
-            </div>
-
-            <div id="view-records" class="view-panel space-y-4">
-                <div class="glass-card p-5 md:p-6 rounded-[2rem] shadow-sm border-t-4 border-slate-600 relative pb-10">
-                    <h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center justify-between">
-                        <span class="flex items-center"><span class="mr-2 text-xl">🗂️</span><span id="ui-list-title">對帳總表</span></span>
-                    </h3>
-                    
-                    <div class="flex space-x-2 mb-5">
-                        <select id="f-status-filter" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-black text-slate-700 outline-none select-arrow shadow-inner" onchange="filterRecords()">
-                            <option value="全部">🔍 顯示全部狀態</option>
-                            <option value="待核帳">⏳ 待核帳 (未入帳)</option>
-                            <option value="已入帳">✅ 已入帳結案</option>
-                            <option value="異常">⚠️ 異常 / 退票</option>
-                        </select>
-                    </div>
-
-                    <div id="ui-finance-list" class="space-y-3 max-h-[65vh] overflow-y-auto no-scrollbar pr-1 pb-10">
-                        <p class="text-center text-xs text-slate-400 py-6">載入中...</p>
-                    </div>
-                </div>
-            </div>
-
         </main>
     </div>
 
-    <div id="finance-detail-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
-        <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl max-h-[85vh] overflow-y-auto no-scrollbar">
-            <div class="border-b border-slate-100 pb-3 mb-4">
-                <h3 class="font-black text-xl text-slate-800 flex justify-between items-center">
-                    <span>對帳單明細</span>
-                    <button onclick="deleteFinanceRecord()" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg border border-red-200 active:scale-95 shadow-sm transition">🗑️ 刪除</button>
-                </h3>
-            </div>
-            
-            <div class="space-y-4 flex-1">
-                <div class="text-center bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-inner">
-                    <p class="text-[10px] font-bold text-slate-400 mb-1">客戶名稱</p>
-                    <h4 class="font-black text-lg text-slate-800" id="m-f-client">--</h4>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
-                        <span class="block text-[9px] font-bold text-slate-400 mb-1">發票金額</span>
-                        <span class="font-black text-blue-600 text-xl tracking-tight" id="m-f-amount">--</span>
-                    </div>
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
-                        <span class="block text-[9px] font-bold text-slate-400 mb-1">預計付款日</span>
-                        <span class="font-black text-slate-700 text-base mt-1 block" id="m-f-date">--</span>
-                    </div>
-                </div>
-
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-[10px] font-bold text-slate-500">付款方式</span>
-                        <span class="font-black text-xs text-slate-700 bg-white px-2 py-0.5 rounded shadow-sm border border-slate-200" id="m-f-method">--</span>
-                    </div>
-                    <div class="text-xs font-bold text-slate-600 pt-2 border-t border-slate-200/60" id="m-f-details">--</div>
-                </div>
-
-                <div class="pt-2">
-                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">核帳狀態更新</label>
-                    <select id="m-f-status" class="w-full bg-white border border-slate-300 p-3.5 rounded-xl text-sm font-black text-slate-800 select-arrow shadow-sm outline-none focus:border-blue-500 transition">
-                        <option value="待核帳">⏳ 待核帳 (未收到款項)</option>
-                        <option value="已入帳">✅ 已入帳結案</option>
-                        <option value="異常">⚠️ 異常 / 退票</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="flex space-x-3 mt-6 pt-4 border-t border-slate-100">
-                <button onclick="closeModal('finance-detail-modal')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl transition active:scale-95">關閉</button>
-                <button onclick="updateFinanceStatus()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black py-3.5 rounded-xl transition shadow-md active:scale-95 tracking-widest">儲存狀態</button>
-            </div>
-        </div>
-    </div>
-
-    <nav id="core-bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9999] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <div onclick="window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
-        <div onclick="window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></div>
-        <div onclick="window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></div>
-        <div onclick="window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
-        
-        <div onclick="window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-blue-600"><span class="text-xl mb-1">💰</span><span class="scale-90">財務</span></div>
+    <nav id="core-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9990] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <div onclick="event.stopPropagation(); window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-blue-600"><span class="text-xl mb-1">💰</span><span class="scale-90">財務</span></div>
     </nav>
 
     <script src="shared.js"></script>
     <script>
-        window.financeRecords = [];
-        let activeRecordId = null;
-
         async function bootFinance() {
-            const isAuth = await authGuard('finance'); 
-            if(isAuth) { 
-                document.getElementById('user-badge').innerText = window.currentUser.full_name; 
-                await loadDashboardStats();
-            }
-        }
+            try {
+                // 強制超時保護
+                let authTimeout = setTimeout(() => {
+                    const ls = document.getElementById('loading-screen');
+                    if(ls) ls.innerHTML = '<div class="text-4xl mb-4">⚠️</div><h2 class="text-xl font-black text-white">載入超時</h2><p class="text-slate-400 mt-2">請檢查網路或重新登入</p><button onclick="window.location.href=\'index.html\'" class="mt-6 bg-white text-slate-900 px-6 py-2 rounded-full font-bold">重新登入</button>';
+                }, 5000);
 
-        function openView(viewId, title) {
-            document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active')); 
-            document.getElementById('view-' + viewId).classList.add('active');
-            document.getElementById('header-title').innerText = title; 
-            document.getElementById('btn-back').classList.remove('hidden'); 
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
+                const isAuth = await authGuard('finance'); 
+                clearTimeout(authTimeout);
 
-        function backToDash() { 
-            document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active')); 
-            document.getElementById('view-dashboard').classList.add('active'); 
-            document.getElementById('header-title').innerText = '財務對帳中心'; 
-            document.getElementById('btn-back').classList.add('hidden'); 
-            loadDashboardStats();
-        }
-
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); activeRecordId = null; }
-
-        function togglePayMethod() {
-            const method = document.querySelector('input[name="pay_method"]:checked').value;
-            if(method === '銀行匯款') {
-                document.getElementById('ui-bank-details').classList.remove('hidden');
-                document.getElementById('ui-check-details').classList.add('hidden');
-                document.getElementById('f-check-info').value = '';
-            } else {
-                document.getElementById('ui-bank-details').classList.add('hidden');
-                document.getElementById('ui-check-details').classList.remove('hidden');
-                document.getElementById('f-bank-info').value = '';
-            }
-        }
-
-        // 🌟 智慧大盤統計
-        async function loadDashboardStats() {
-            const { data, error } = await window._sb.from('finance_records').select('invoice_amount').eq('status', '待核帳');
-            if(error) return;
-            let total = 0;
-            if(data) { data.forEach(r => total += parseFloat(r.invoice_amount) || 0); }
-            document.getElementById('dash-pending-amount').innerHTML = `<span class="text-lg mr-1 opacity-80 font-bold">NT$</span> ${total.toLocaleString()}`;
-            document.getElementById('dash-pending-count').innerText = data ? data.length : 0;
-        }
-
-        // 🌟 儲存對帳單
-        async function saveFinanceRecord(e) {
-            e.preventDefault();
-            const client = document.getElementById('f-client').value;
-            const amount = parseFloat(document.getElementById('f-amount').value) || 0;
-            const date = document.getElementById('f-date').value;
-            const method = document.querySelector('input[name="pay_method"]:checked').value;
-            const bankInfo = document.getElementById('f-bank-info').value;
-            const checkInfo = document.getElementById('f-check-info').value;
-
-            if(amount <= 0) { alert('金額必須大於 0'); return; }
-
-            const payload = {
-                employee_id: window.currentUser.id,
-                client_name: client,
-                invoice_amount: amount,
-                payment_date: date,
-                payment_method: method,
-                bank_details: bankInfo,
-                check_number: checkInfo,
-                status: '待核帳'
-            };
-
-            const { error } = await window._sb.from('finance_records').insert([payload]);
-            if(error) { alert('儲存失敗:' + error.message); }
-            else {
-                alert('✅ 對帳單建檔成功！');
-                e.target.reset();
-                togglePayMethod();
-                backToDash();
-            }
-        }
-
-        // 🌟 載入歷史清單
-        async function openRecordList(defaultFilter) {
-            document.getElementById('f-status-filter').value = defaultFilter;
-            document.getElementById('ui-list-title').innerText = defaultFilter === '待核帳' ? '待核帳清單' : '歷史對帳大盤';
-            openView('records', '🗂️ 對帳管理總表');
-            
-            document.getElementById('ui-finance-list').innerHTML = '<p class="text-center text-xs text-slate-400 py-6">資料載入中...</p>';
-            
-            const { data, error } = await window._sb.from('finance_records').select('*, employees(full_name)').order('payment_date', {ascending: true});
-            if(error || !data) { document.getElementById('ui-finance-list').innerHTML = '<p class="text-center text-xs text-slate-400 py-6">載入失敗</p>'; return; }
-            
-            window.financeRecords = data;
-            filterRecords();
-        }
-
-        function filterRecords() {
-            const filter = document.getElementById('f-status-filter').value;
-            let res = window.financeRecords;
-            if(filter !== '全部') { res = res.filter(r => r.status === filter); }
-
-            const container = document.getElementById('ui-finance-list');
-            if(res.length === 0) { container.innerHTML = '<div class="text-center text-xs text-slate-400 py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">無符合條件的單據</div>'; return; }
-
-            container.innerHTML = res.map(r => {
-                let badgeCol = r.status === '已入帳' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : (r.status === '待核帳' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-red-100 text-red-600 border-red-200');
-                let methodIcon = r.payment_method === '銀行匯款' ? '🏦' : '🎫';
-                
-                // 判斷是否逾期
-                let dateCol = 'text-slate-500';
-                if(r.status === '待核帳') {
-                    const today = new Date(); today.setHours(0,0,0,0);
-                    const payDate = new Date(r.payment_date);
-                    if(payDate < today) dateCol = 'text-red-500 animate-pulse';
+                if(!isAuth) {
+                    const ls = document.getElementById('loading-screen');
+                    if(ls) ls.innerHTML = '<div class="text-4xl mb-4">⛔</div><h2 class="text-xl font-black text-white">權限不足</h2><p class="text-slate-400 mt-2 text-center text-sm px-6">您尚未被授權「財務系統」權限。</p><button onclick="window.location.href=\'app_hr.html\'" class="mt-6 bg-blue-500 hover:bg-blue-400 text-white px-6 py-2 rounded-full font-black tracking-widest shadow-lg transition active:scale-95">返回員工大廳</button>';
+                    return; 
                 }
 
-                return `
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm relative active:scale-[0.98] transition-transform cursor-pointer mb-3" onclick="openRecordDetail('${r.id}')">
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="text-[10px] font-black text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 truncate max-w-[60%]">${r.client_name}</span>
-                        <span class="text-[10px] font-black px-2 py-1 rounded-full border ${badgeCol}">${r.status}</span>
-                    </div>
-                    <div class="flex justify-between items-end mt-3">
-                        <div>
-                            <div class="text-xl font-black text-blue-700 tracking-tight leading-none mb-1">NT$ ${r.invoice_amount.toLocaleString()}</div>
-                            <div class="text-[10px] font-bold ${dateCol} flex items-center mt-1.5"><span class="mr-1">📅</span>預計: ${r.payment_date}</div>
-                        </div>
-                        <div class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100 flex items-center shadow-inner"><span class="mr-1">${methodIcon}</span>${r.payment_method}</div>
-                    </div>
-                </div>`;
-            }).join('');
-        }
+                document.getElementById('user-badge').innerText = window.currentUser?.full_name || '使用者'; 
+                if(document.getElementById('desktop-user-badge')) {
+                    document.getElementById('desktop-user-badge').innerText = window.currentUser?.full_name || '使用者'; 
+                }
+                
+                document.getElementById('loading-screen').classList.add('opacity-0');
+                setTimeout(() => { 
+                    document.getElementById('loading-screen').style.display = 'none'; 
+                    document.getElementById('app-container').classList.remove('hidden'); 
+                    document.getElementById('app-container').classList.add('flex');
+                }, 400);
 
-        // 🌟 開啟詳細明細與狀態編輯
-        function openRecordDetail(id) {
-            const r = window.financeRecords.find(x => x.id === id); if(!r) return;
-            activeRecordId = r.id;
-            
-            document.getElementById('m-f-client').innerText = r.client_name;
-            document.getElementById('m-f-amount').innerText = `NT$ ${r.invoice_amount.toLocaleString()}`;
-            document.getElementById('m-f-date').innerText = r.payment_date;
-            document.getElementById('m-f-method').innerText = r.payment_method;
-            document.getElementById('m-f-status').value = r.status;
-
-            let detailsText = '無特別備註資訊';
-            if(r.payment_method === '銀行匯款' && r.bank_details) detailsText = `匯款資訊: ${r.bank_details}`;
-            if(r.payment_method === '實體支票' && r.check_number) detailsText = `支票資訊: ${r.check_number}`;
-            document.getElementById('m-f-details').innerText = detailsText;
-
-            openModal('finance-detail-modal');
-        }
-
-        async function updateFinanceStatus() {
-            if(!activeRecordId) return;
-            const newSt = document.getElementById('m-f-status').value;
-            const { error } = await window._sb.from('finance_records').update({ status: newSt }).eq('id', activeRecordId);
-            if(error) alert('更新失敗'); 
-            else { 
-                alert('✅ 狀態已更新'); 
-                closeModal('finance-detail-modal'); 
-                const curFilter = document.getElementById('f-status-filter').value;
-                openRecordList(curFilter); 
+            } catch(e) {
+                console.error(e);
             }
         }
 
-        async function deleteFinanceRecord() {
-            if(!activeRecordId) return;
-            if(!confirm('⚠️ 確定要刪除這筆對帳單嗎？此操作無法復原！')) return;
-            const { error } = await window._sb.from('finance_records').delete().eq('id', activeRecordId);
-            if(error) alert('刪除失敗'); 
-            else { 
-                alert('✅ 紀錄已刪除'); 
-                closeModal('finance-detail-modal'); 
-                const curFilter = document.getElementById('f-status-filter').value;
-                openRecordList(curFilter); 
-            }
+        window.onload = () => {
+            bootFinance();
+            const enforceNavObserver = new MutationObserver(() => { const oldNav = document.querySelector('nav:not(#core-bottom-nav)'); if (oldNav) oldNav.remove(); });
+            enforceNavObserver.observe(document.body, { childList: true, subtree: true });
         }
-
-        window.onload = bootFinance;
-
-        // 🚨 終極強制覆寫導覽列 (攔截 shared.js 的舊設定，鎖死正確排序與跳轉)
-        const enforceNavObserver = new MutationObserver(() => {
-            const oldNav = document.querySelector('nav:not(#core-bottom-nav)');
-            if (oldNav) oldNav.remove();
-        });
-        enforceNavObserver.observe(document.body, { childList: true, subtree: true });
     </script>
 </body>
 </html>
