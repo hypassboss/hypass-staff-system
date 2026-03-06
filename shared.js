@@ -20,23 +20,9 @@ async function authGuard(moduleName = null) {
         return false;
     }
 
-    // 2. 電腦版/網頁版測試環境保護 (只詢問一次)
-    if (!sessionStorage.getItem('dev_mode_prompted')) {
-        const isLine = navigator.userAgent.includes('Line');
-        if (!isLine) {
-            const devMode = confirm('偵測到非 LINE 環境或 LIFF ID 尚未生效！\n\n是否啟用「網頁開發測試模式」強制進入系統？\n(按「確定」可直接進入測試，按「取消」則攔截)');
-            if (!devMode) {
-                // 若按取消，清除登入並返回
-                localStorage.removeItem('hypass_emp_id');
-                localStorage.removeItem('hypass_emp_name');
-                window.location.href = 'index.html';
-                return false;
-            }
-        }
-        sessionStorage.setItem('dev_mode_prompted', 'true');
-    }
+    // 🌟 已徹底移除「非 LINE 環境」的確認彈窗，提升電腦版操作流暢度與安全性！
 
-    // 3. 驗證資料庫身分與權限
+    // 2. 驗證資料庫身分與權限
     try {
         const { data, error } = await window._sb.from('employees').select('*').eq('id', empId).single();
         
@@ -51,7 +37,7 @@ async function authGuard(moduleName = null) {
 
         window.currentUser = data;
 
-        // 4. 各模組專屬權限檢查 (溫和退回機制：回傳 false 讓前端顯示警告，絕不強制跳轉造成死迴圈)
+        // 3. 各模組專屬權限檢查 (溫和退回機制：回傳 false 讓前端顯示警告，絕不強制跳轉造成死迴圈)
         if (moduleName) {
             let hasPerm = false;
             if (moduleName === 'inv') hasPerm = data.perm_inventory;
