@@ -8,21 +8,20 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; -webkit-tap-highlight-color: transparent;}
         
-        /* 🌟 雙模態底層設定 */
         @media (max-width: 767px) { body { padding-bottom: 80px; background: #e2e8f0; } }
         @media (min-width: 768px) { body { background: #e2e8f0; } }
 
-        /* 🌟 核心：確保主容器在電腦上也是完美的手機比例 (不拉伸) */
         #app-wrapper { display: flex; width: 100%; height: 100vh; overflow: hidden; }
         #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; width: 100%; max-width: 28rem; margin: 0 auto; display: flex; flex-direction: column;}
         
         @media (min-width: 768px) { 
             #app-wrapper { align-items: center; justify-content: center; padding: 20px; }
             #app-container { height: 100%; min-height: auto; max-height: 900px; width: 450px; border-radius: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow-y: auto; }
-            nav#core-bottom-nav { display: none !important; } /* 電腦版隱藏底部導覽 */
+            nav#core-bottom-nav { display: none !important; } 
         }
 
         .view-panel { display: none; animation: fadeIn 0.3s ease; } .view-panel.active { display: block; flex: 1; }
@@ -101,27 +100,17 @@
                         <span class="flex items-center"><span class="mr-1.5 text-lg">📤</span> 最新採購狀況</span>
                         <span class="text-[9px] bg-amber-100 text-amber-700 px-2 py-1 rounded-md font-black border border-amber-200 shadow-sm">進行中單據</span>
                     </h3>
-                    <div class="border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
-                        <table class="w-full text-left text-[10px] table-fixed">
-                            <thead class="text-slate-500 border-b border-slate-200 bg-slate-100/50">
-                                <tr>
-                                    <th class="py-1.5 px-1 font-bold text-left w-[38%]">單號/供應商</th>
-                                    <th class="py-1.5 px-1 font-bold text-left w-[40%]">摘要明細</th>
-                                    <th class="py-1.5 px-1 font-bold text-center w-[22%]">狀態</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ui-dash-po-status" class="divide-y divide-slate-100 bg-white rounded-lg">
-                                <tr><td colspan="3" class="p-4 text-center text-slate-400 font-bold">資料讀取中...</td></tr>
-                            </tbody>
-                        </table>
+                    
+                    <div id="ui-dash-po-status" class="space-y-3">
+                        <div class="text-center text-xs text-slate-400 py-4 font-bold border border-dashed rounded-xl border-slate-300">資料讀取中...</div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 mt-4">
                     <button onclick="openPoManagement()" class="glass-card p-5 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-amber-200 hover:bg-amber-50 col-span-2 bg-amber-50/50">
                         <span class="text-4xl mb-2 drop-shadow-md">📝</span>
-                        <span class="font-black text-amber-800 tracking-wider text-base mb-1">待處理採購單</span>
-                        <span class="font-bold text-amber-600/70 text-[10px] tracking-wider">核准需求 / 產出 PDF</span>
+                        <span class="font-black text-amber-800 tracking-wider text-base mb-1">待審核清單</span>
+                        <span class="font-bold text-amber-600/70 text-[10px] tracking-wider">主管核准需求 / 產出 PDF</span>
                     </button>
                     
                     <button onclick="openSupplierList()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-indigo-200 hover:bg-indigo-50">
@@ -131,7 +120,7 @@
 
                     <button onclick="openHistory()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
                         <span class="text-3xl mb-1.5 drop-shadow-md">🗂️</span>
-                        <span class="font-black text-slate-700 text-[11px] tracking-widest leading-tight text-center">採購紀錄大盤</span>
+                        <span class="font-black text-slate-700 text-[11px] tracking-widest leading-tight text-center">採購記錄</span>
                     </button>
                 </div>
             </div>
@@ -157,14 +146,34 @@
                             <input type="text" id="s-code" placeholder="廠商代號 (例: S001)" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 uppercase outline-none focus:border-indigo-500" required>
                             <input type="text" id="s-tax" placeholder="統一編號" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none focus:border-indigo-500">
                         </div>
+                        <input type="text" id="s-address" placeholder="公司地址" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500">
+                        <input type="email" id="s-email" placeholder="聯絡電子郵件" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500">
+                        
                         <div class="border-t border-slate-100 pt-3"><h5 class="text-[10px] font-black text-slate-500 mb-2">📞 聯絡窗口</h5></div>
                         <div class="grid grid-cols-2 gap-3">
                             <input type="text" id="s-contact" placeholder="聯絡人姓名" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500">
                             <input type="text" id="s-phone" placeholder="聯絡電話" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500">
                         </div>
-                        <div class="border-t border-slate-100 pt-3"><h5 class="text-[10px] font-black text-slate-500 mb-2">💰 財務付款</h5></div>
+                        <div class="border-t border-slate-100 pt-3"><h5 class="text-[10px] font-black text-slate-500 mb-2">💰 財務付款與銀行帳號</h5></div>
                         <select id="s-pay" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-indigo-500" required><option value="月結30天">月結 30 天</option><option value="月結60天">月結 60 天</option><option value="貨到付款">貨到付款 (C.O.D)</option><option value="匯款預付">匯款預付 (T/T)</option></select>
-                        <input type="text" id="s-bank" placeholder="匯款銀行帳號資訊" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500">
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <select id="s-bank-code" class="w-full p-3 bg-white rounded-xl text-[11px] font-bold border border-slate-200 select-arrow outline-none focus:border-indigo-500">
+                                <option value="" disabled selected>銀行代碼</option>
+                                <option value="822-中國信託">822 中國信託</option>
+                                <option value="804-中華郵政">804 中華郵政</option>
+                                <option value="013-國泰世華">013 國泰世華</option>
+                                <option value="812-台新銀行">812 台新銀行</option>
+                                <option value="012-台北富邦">012 台北富邦</option>
+                                <option value="004-臺灣銀行">004 臺灣銀行</option>
+                                <option value="006-合作金庫">006 合作金庫</option>
+                                <option value="007-第一銀行">007 第一銀行</option>
+                                <option value="008-華南銀行">008 華南銀行</option>
+                                <option value="009-彰化銀行">009 彰化銀行</option>
+                            </select>
+                            <input type="number" id="s-bank-acc" placeholder="純數字帳號" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500 font-mono">
+                        </div>
+
                         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3.5 rounded-xl shadow-md active:scale-95 transition tracking-widest text-base mt-2">💾 儲存</button>
                     </form>
                 </div>
@@ -172,7 +181,7 @@
 
             <div id="view-po-management" class="view-panel space-y-4">
                 <div class="flex flex-col mb-4 border-b border-slate-200 pb-3">
-                    <h3 class="font-black text-slate-800 text-lg flex items-center mb-1"><span class="mr-2">📝</span>待處理採購單</h3>
+                    <h3 class="font-black text-slate-800 text-lg flex items-center mb-1"><span class="mr-2">📝</span>待審核採購單</h3>
                     <p class="text-[10px] text-slate-500 font-bold">需具備<strong class="text-red-600">核准權限</strong>方可產出正式 PDF 採購單。</p>
                 </div>
                 <div id="ui-pending-pos" class="space-y-4">
@@ -182,7 +191,7 @@
 
             <div id="view-history" class="view-panel space-y-4">
                 <div class="flex justify-between items-end mb-4 border-b border-slate-200 pb-3">
-                    <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1">🗂️</span>採購紀錄</h3>
+                    <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1">🗂️</span>採購記錄</h3>
                     <div class="flex flex-col items-end">
                         <label class="text-[9px] font-bold text-slate-500 mb-0.5 mr-1">選擇月份</label>
                         <input type="month" id="hist-month-filter" class="bg-white border border-slate-300 rounded-lg p-1.5 text-xs font-black text-slate-700 outline-none" onchange="openHistory()">
@@ -190,6 +199,35 @@
                 </div>
                 <div id="ui-hist-po" class="space-y-4">
                     <div class="text-center text-xs text-slate-400 py-6">載入中...</div>
+                </div>
+            </div>
+
+            <div id="view-po-receive" class="view-panel space-y-4">
+                <div class="glass-card p-5 rounded-[1.5rem] shadow-sm border-t-4 border-emerald-500">
+                    <div class="flex justify-between items-start mb-4 border-b border-slate-200 pb-3">
+                        <div>
+                            <h3 class="font-black text-slate-800 text-lg flex items-center mb-1"><span class="mr-1">📥</span> 分批入庫核銷</h3>
+                            <p class="text-xs font-mono font-bold text-slate-500" id="receive-po-no">PO-XXXX</p>
+                        </div>
+                        <button onclick="startPOBarcodeScan()" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow-sm flex items-center active:scale-95 transition">
+                            <span class="mr-1">📷</span>掃碼+1
+                        </button>
+                    </div>
+
+                    <div id="receive-scanner-container" class="hidden mb-4 rounded-xl overflow-hidden shadow-inner border border-slate-300">
+                        <div id="receive-reader" class="w-full bg-black min-h-[250px]"></div>
+                        <button onclick="stopPOBarcodeScan()" class="w-full bg-red-600 text-white font-bold py-2 text-xs">關閉掃描器</button>
+                    </div>
+
+                    <p class="text-[10px] text-emerald-700 font-bold bg-emerald-50 p-2 rounded-lg mb-4 border border-emerald-100">💡 提示：輸入本次到貨數量，系統將自動扣除未交貨數。當所有品項未交貨數為 0 時，此單將自動結案。</p>
+                    
+                    <input type="hidden" id="receive-po-id">
+                    <input type="hidden" id="receive-po-legacy">
+                    <div id="ui-receive-items" class="space-y-3 mb-6">
+                        <div class="text-center text-xs text-slate-400 py-6">載入中...</div>
+                    </div>
+
+                    <button onclick="submitPOReceive()" id="btn-submit-receive" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base">💾 確認入庫並更新庫存</button>
                 </div>
             </div>
 
@@ -203,12 +241,33 @@
                     <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">名稱</label><input type="text" id="edit-s-name" class="w-full p-2 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none" required></div>
                     <div><label class="text-[10px] font-bold text-slate-500 ml-1">代號</label><input type="text" id="edit-s-code" class="w-full p-2 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 uppercase outline-none" required></div>
                     <div><label class="text-[10px] font-bold text-slate-500 ml-1">統編</label><input type="text" id="edit-s-tax" class="w-full p-2 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none"></div>
+                    
+                    <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">公司地址</label><input type="text" id="edit-s-address" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none"></div>
+                    <div class="col-span-2"><label class="text-[10px] font-bold text-slate-500 ml-1">聯絡信箱</label><input type="email" id="edit-s-email" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none"></div>
+
                     <div class="col-span-2 border-t border-slate-100 pt-2"><h5 class="text-[10px] font-black text-slate-500 mb-1">📞 聯絡窗口</h5></div>
                     <div><input type="text" id="edit-s-contact" placeholder="聯絡人" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none"></div>
                     <div><input type="text" id="edit-s-phone" placeholder="電話" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none"></div>
+                    
                     <div class="col-span-2 border-t border-slate-100 pt-2"><h5 class="text-[10px] font-black text-slate-500 mb-1">💰 付款資訊</h5></div>
                     <div class="col-span-2"><select id="edit-s-pay" class="w-full p-2 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none" required><option value="月結30天">月結 30 天</option><option value="月結60天">月結 60 天</option><option value="貨到付款">貨到付款</option><option value="匯款預付">匯款預付</option></select></div>
-                    <div class="col-span-2"><input type="text" id="edit-s-bank" placeholder="銀行帳號資訊" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none"></div>
+                    
+                    <div class="col-span-2 grid grid-cols-2 gap-2">
+                        <select id="edit-s-bank-code" class="w-full p-2 bg-white rounded-xl text-[11px] font-bold border border-slate-200 select-arrow outline-none">
+                            <option value="">無</option>
+                            <option value="822-中國信託">822 中國信託</option>
+                            <option value="804-中華郵政">804 中華郵政</option>
+                            <option value="013-國泰世華">013 國泰世華</option>
+                            <option value="812-台新銀行">812 台新銀行</option>
+                            <option value="012-台北富邦">012 台北富邦</option>
+                            <option value="004-臺灣銀行">004 臺灣銀行</option>
+                            <option value="006-合作金庫">006 合作金庫</option>
+                            <option value="007-第一銀行">007 第一銀行</option>
+                            <option value="008-華南銀行">008 華南銀行</option>
+                            <option value="009-彰化銀行">009 彰化銀行</option>
+                        </select>
+                        <input type="number" id="edit-s-bank-acc" placeholder="純數字帳號" class="w-full p-2 bg-white rounded-xl text-sm border border-slate-200 outline-none font-mono">
+                    </div>
                 </div>
             </div>
             <div class="flex space-x-3 mt-6">
@@ -248,9 +307,14 @@
         <div onclick="event.stopPropagation(); window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
     </nav>
 
+    <audio id="beep-sound" src="data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
+
     <script src="shared.js?v=999"></script>
     <script>
         window.supplierData = [];
+        let html5QrcodeScanner = null;
+        let isReceivingScan = false;
+        let currentReceivePO = null;
 
         function getSafeArray(data) { 
             if (!data) return []; 
@@ -298,9 +362,7 @@
 
                 await loadSuppliers();
                 await loadDashboardData();
-            } catch(e) {
-                console.error(e);
-            }
+            } catch(e) { console.error(e); }
         }
 
         async function loadSuppliers() {
@@ -320,6 +382,7 @@
                 document.getElementById('btn-back').classList.remove('hidden'); 
             }
             window.scrollTo({top: 0, behavior: 'smooth'});
+            if(isReceivingScan) stopPOBarcodeScan();
         }
 
         function backToDash() { 
@@ -360,58 +423,99 @@
             return poData;
         }
 
+        // 🌟 核心：最新採購狀況 (渲染進度條)
         async function loadDashboardData() {
             try {
                 const pos = await fetchSafePOs();
                 const poContainer = document.getElementById('ui-dash-po-status');
-                const activePos = pos.filter(p => !['完成', 'PO完成', '已到貨', '取消'].includes(p.status));
+                const activePos = pos.filter(p => !['完成', 'PO完成', '取消'].includes(p.status));
 
                 if(!activePos || activePos.length === 0) { 
-                    poContainer.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 font-bold">無進行中的採購單</td></tr>'; 
+                    poContainer.innerHTML = '<div class="p-6 text-center text-slate-400 font-bold bg-white rounded-xl">無進行中的採購單</div>'; 
                 } else {
                     const today = new Date(); today.setHours(0,0,0,0);
                     let poHtml = '';
                     
                     activePos.forEach(po => {
-                        let expDate = new Date(po.expected_date);
-                        let diffDays = isNaN(expDate.getTime()) ? 999 : Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
-                        let statusBadge = '';
+                        let items = getSafeArray(po.items_json);
+                        let totalQty = 0; let totalReceived = 0;
+                        items.forEach(i => {
+                            totalQty += parseFloat(i.qty) || 0;
+                            totalReceived += parseFloat(i.received_qty) || 0;
+                        });
                         
-                        if (po.status.includes('異常') || po.status.includes('拒收') || po.status.includes('遲交')) {
-                            statusBadge = `<span class="text-[8px] font-black text-white bg-red-600 px-1.5 py-0.5 rounded shadow-sm animate-pulse">${po.status.replace('PO','')}</span>`;
-                        } else if (po.status === '待審核') {
-                            statusBadge = '<span class="text-[8px] font-black text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded border border-sky-200">待審核</span>';
-                        } else {
-                            if (diffDays < 0) {
-                                statusBadge = '<span class="text-[8px] font-black text-white bg-red-500 px-1.5 py-0.5 rounded shadow-sm animate-pulse">遲交</span>';
-                            } else if (diffDays <= 3) {
-                                statusBadge = '<span class="text-[8px] font-black text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">警示</span>';
-                            } else {
-                                statusBadge = `<span class="text-[8px] font-black text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">${po.status.replace('PO','')}</span>`;
-                            }
+                        let remainQty = Math.max(0, totalQty - totalReceived);
+                        
+                        let sId = po.status;
+                        if(sId === 'PO已發送') sId = '已發送';
+                        if(sId === 'PO異常(遲交)') sId = '異常(遲交)';
+                        if(sId === '已到貨') sId = '完成';
+
+                        // 判斷階段
+                        let step = 1;
+                        if(sId !== '待審核' && sId !== '待處理') step = 2; // 審核通過/發送中
+                        if(sId === '已發送' || sId === '部分到貨' || sId.includes('異常')) step = 3;
+                        if(totalReceived > 0 && remainQty > 0) step = 4; // 部分到貨
+                        if(remainQty === 0 && totalQty > 0) step = 5; // 完成
+
+                        let cDate = new Date(po.created_at).toLocaleDateString('en-US', {month:'numeric', day:'numeric'});
+                        let eDate = (po.expected_date && po.expected_date !== '未定') ? new Date(po.expected_date).toLocaleDateString('en-US', {month:'numeric', day:'numeric'}) : '--';
+
+                        // 繪製 Timeline HTML
+                        let tlHtml = `
+                        <div class="relative flex items-center justify-between w-full mt-3 mb-1 px-2 z-0">
+                            <div class="absolute top-2.5 left-[10%] w-[80%] h-1 bg-slate-100 -z-10 rounded-full"></div>
+                            <div class="absolute top-2.5 left-[10%] h-1 bg-emerald-500 -z-10 rounded-full transition-all duration-500" style="width: ${(step-1)*25}%"></div>
+                            
+                            <div class="flex flex-col items-center w-1/5">
+                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=1 ? 'bg-emerald-500 text-white':'bg-slate-200 text-slate-400'}">✓</div>
+                                <span class="text-[9px] font-bold mt-1 ${step>=1?'text-slate-700':'text-slate-400'}">請購日</span>
+                                <span class="text-[8px] text-slate-400 font-mono">${cDate}</span>
+                            </div>
+                            <div class="flex flex-col items-center w-1/5">
+                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=2 ? 'bg-emerald-500 text-white':'bg-slate-200 text-slate-400'}">${step>=2?'✓':'2'}</div>
+                                <span class="text-[9px] font-bold mt-1 ${step>=2?'text-slate-700':'text-slate-400'}">審查中</span>
+                            </div>
+                            <div class="flex flex-col items-center w-1/5">
+                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=3 ? 'bg-emerald-500 text-white':'bg-slate-200 text-slate-400'}">${step>=3?'✓':'3'}</div>
+                                <span class="text-[9px] font-bold mt-1 ${step>=3?'text-slate-700':'text-slate-400'}">已發送</span>
+                            </div>
+                            <div class="flex flex-col items-center w-1/5 relative">
+                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=4 ? (remainQty>0?'bg-amber-500 text-white':'bg-emerald-500 text-white'):'bg-slate-200 text-slate-400'}">${step>=5?'✓':'4'}</div>
+                                <span class="text-[9px] font-bold mt-1 ${step>=4?'text-amber-700':'text-slate-400'}">交貨日</span>
+                                <span class="text-[8px] text-slate-400 font-mono mb-0.5">${eDate}</span>
+                                ${step>=3 && remainQty>0 ? `<span class="absolute -bottom-4 text-[8px] whitespace-nowrap font-black bg-red-100 text-red-600 px-1 rounded">未交:${remainQty.toFixed(0)}</span>` : ''}
+                            </div>
+                            <div class="flex flex-col items-center w-1/5">
+                                <div class="w-6 h-6 rounded-full text-[10px] flex justify-center items-center font-black shadow-sm ${step>=5 ? 'bg-emerald-500 text-white':'bg-slate-200 text-slate-400'}">5</div>
+                                <span class="text-[9px] font-bold mt-1 ${step>=5?'text-emerald-700':'text-slate-400'}">已完成</span>
+                            </div>
+                        </div>`;
+
+                        let receiveBtn = '';
+                        if(step >= 3 && remainQty > 0) {
+                            receiveBtn = `<button onclick="openPOReceive('${po.id}', ${po.is_legacy})" class="mt-4 w-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 py-2 rounded-xl text-xs font-black shadow-sm transition active:scale-95 flex justify-center items-center"><span class="mr-1">📥</span> 執行分批入庫核銷</button>`;
                         }
 
-                        let dateText = (po.expected_date && po.expected_date !== '未定' && po.expected_date !== null) ? String(po.expected_date).slice(5) : '未定';
-                        let safePoItems = getSafeArray(po.items_json);
-                        
-                        let itemsStr = safePoItems.map(i => `
-                            <div class="flex flex-col border-b border-slate-100/50 pb-1 mb-1 last:border-0 last:pb-0 last:mb-0">
-                                <span class="text-slate-800 font-bold truncate text-[10px]">${i.name}</span>
-                                <span class="text-amber-700 font-black text-[9px]">數量: ${parseFloat(i.qty).toFixed(0)} <span class="text-[8px] text-slate-400">${i.unit||'件'}</span></span>
+                        poHtml += `
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm mb-3 relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
+                                <div>
+                                    <span class="text-[10px] font-mono font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded mr-1">${formatPO(po.po_no)}</span>
+                                    <span class="text-[11px] font-black text-slate-800">${po.supplier_name}</span>
+                                </div>
+                                <span class="text-[9px] font-black px-2 py-0.5 rounded bg-slate-100 text-slate-600">${sId}</span>
                             </div>
-                        `).join('');
-
-                        let col1Html = `<div class="flex flex-col overflow-hidden pr-0.5"><div class="font-mono font-black text-slate-800 text-[10px] truncate mb-0.5">${formatPO(po.po_no)}</div><div class="text-[9px] font-bold text-slate-500 truncate leading-tight">🏢 ${po.supplier_name}</div></div>`;
-                        let col2Html = `<div class="pr-1">${itemsStr || '<span class="text-slate-400 italic">無明細</span>'}</div>`;
-                        let col3Html = `<div class="flex flex-col items-center justify-center space-y-1"><span class="text-[9px] font-bold text-slate-700 leading-none">${dateText}</span>${statusBadge}</div>`;
-
-                        poHtml += `<tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0"><td class="py-2 px-1 align-middle overflow-hidden">${col1Html}</td><td class="py-2 px-1 align-middle overflow-hidden pl-1 border-l border-slate-100">${col2Html}</td><td class="py-2 px-1 text-center align-middle">${col3Html}</td></tr>`;
+                            ${tlHtml}
+                            ${receiveBtn}
+                        </div>`;
                     });
                     poContainer.innerHTML = poHtml;
                 }
-            } catch(e) {}
+            } catch(e) { console.error(e); }
         }
 
+        // 🌟 供應商管理 (已加入擴充欄位)
         async function openSupplierList() {
             openView('supplier-list', '🏢 供應商紀錄');
             const container = document.getElementById('ui-supplier-list');
@@ -435,9 +539,10 @@
                         </div>
                         <button onclick="openEditSupplier('${s.id}')" class="text-[10px] bg-slate-800 text-white px-3 py-1.5 rounded-lg font-bold">編輯</button>
                     </div>
-                    <div class="text-[10px] text-slate-500 font-bold grid grid-cols-2 gap-1 mb-2">
+                    <div class="text-[10px] text-slate-500 font-bold grid grid-cols-2 gap-1.5 mb-2">
                         <div>📞窗口: ${s.contact_name||'--'}</div><div>💰付款: ${s.payment_method||'--'}</div>
-                        <div class="col-span-2">🏦帳戶: ${s.bank_details||'--'}</div>
+                        <div class="col-span-2 text-slate-400 truncate">🏠 ${s.address||'--'}</div>
+                        <div class="col-span-2 text-slate-400">🏦 ${s.bank_code||'--'} - ${s.bank_account || s.bank_details || '--'}</div>
                     </div>
                 </div>`;
             }).join('');
@@ -449,10 +554,13 @@
             document.getElementById('edit-s-name').value = s.supplier_name;
             document.getElementById('edit-s-code').value = s.supplier_code;
             document.getElementById('edit-s-tax').value = s.tax_id || '';
+            document.getElementById('edit-s-address').value = s.address || '';
+            document.getElementById('edit-s-email').value = s.email || '';
             document.getElementById('edit-s-contact').value = s.contact_name || '';
             document.getElementById('edit-s-phone').value = s.contact_phone || '';
             document.getElementById('edit-s-pay').value = s.payment_method || '月結30天';
-            document.getElementById('edit-s-bank').value = s.bank_details || '';
+            document.getElementById('edit-s-bank-code').value = s.bank_code || '';
+            document.getElementById('edit-s-bank-acc').value = s.bank_account || s.bank_details || '';
             openModal('supplier-edit-modal');
         }
 
@@ -462,10 +570,14 @@
                 supplier_name: document.getElementById('edit-s-name').value, 
                 supplier_code: document.getElementById('edit-s-code').value.toUpperCase(), 
                 tax_id: document.getElementById('edit-s-tax').value, 
+                address: document.getElementById('edit-s-address').value,
+                email: document.getElementById('edit-s-email').value,
                 contact_name: document.getElementById('edit-s-contact').value, 
                 contact_phone: document.getElementById('edit-s-phone').value, 
                 payment_method: document.getElementById('edit-s-pay').value, 
-                bank_details: document.getElementById('edit-s-bank').value,
+                bank_code: document.getElementById('edit-s-bank-code').value,
+                bank_account: document.getElementById('edit-s-bank-acc').value,
+                bank_details: document.getElementById('edit-s-bank-acc').value, // 備用相容
                 updated_at: new Date().toISOString()
             };
             
@@ -483,24 +595,28 @@
                 supplier_name: document.getElementById('s-name').value, 
                 supplier_code: document.getElementById('s-code').value.toUpperCase(), 
                 tax_id: document.getElementById('s-tax').value, 
+                address: document.getElementById('s-address').value,
+                email: document.getElementById('s-email').value,
                 contact_name: document.getElementById('s-contact').value, 
                 contact_phone: document.getElementById('s-phone').value, 
                 payment_method: document.getElementById('s-pay').value, 
-                bank_details: document.getElementById('s-bank').value,
+                bank_code: document.getElementById('s-bank-code').value,
+                bank_account: document.getElementById('s-bank-acc').value,
+                bank_details: document.getElementById('s-bank-acc').value, // 備用
                 updated_at: new Date().toISOString()
             };
-            try { await window._sb.from('suppliers').insert([p]); showSysToast('✅ 建立成功！'); e.target.reset(); await loadSuppliers(); backToDash(); } catch(err) { alert('失敗'); }
+            try { await window._sb.from('suppliers').insert([p]); showSysToast('✅ 建立成功！'); e.target.reset(); await loadSuppliers(); backToDash(); } catch(err) { alert('寫入失敗，請確認資料庫有加入新欄位。'); }
         }
 
         async function openPoManagement() {
-            openView('po-management', '📝 待處理採購單');
+            openView('po-management', '📝 待審核採購單');
             const container = document.getElementById('ui-pending-pos');
             container.innerHTML = '<div class="text-center text-xs text-slate-400 py-6">讀取中...</div>';
             
             const pos = await fetchSafePOs();
             const pending = pos.filter(r => r.status === '待審核' || r.status === '待處理');
 
-            if(pending.length === 0) { container.innerHTML = '<p class="text-center text-sm font-bold text-slate-400 py-10 bg-slate-50 rounded-2xl border border-dashed">無待處理單據</p>'; return; }
+            if(pending.length === 0) { container.innerHTML = '<p class="text-center text-sm font-bold text-slate-400 py-10 bg-slate-50 rounded-2xl border border-dashed">無待審核單據</p>'; return; }
 
             container.innerHTML = pending.map(p => {
                 let safePoItems = getSafeArray(p.items_json);
@@ -530,7 +646,7 @@
 
         async function approveAndSendPO(id, isLegacy) {
             if (!window.currentUser || !window.currentUser.perm_purchase_approve) {
-                alert('🚨 權限不足！請聯繫管理員開通。'); return;
+                alert('🚨 權限不足！請聯繫管理員開通核准權限。'); return;
             }
             try {
                 if(isLegacy) await safeUpdate('purchase_orders', {status: 'PO已發送'}, id);
@@ -541,8 +657,179 @@
             } catch(e) { alert('失敗: ' + e.message); }
         }
 
+        // 🌟 分批入庫核心介面
+        async function openPOReceive(id, isLegacy) {
+            openView('po-receive', '📥 分批入庫核銷');
+            document.getElementById('receive-po-id').value = id;
+            document.getElementById('receive-po-legacy').value = isLegacy ? 'true' : 'false';
+            const container = document.getElementById('ui-receive-items');
+            container.innerHTML = '<div class="text-center text-slate-400 text-xs py-10">載入中...</div>';
+
+            try {
+                let poData = null;
+                if(isLegacy) {
+                    const { data } = await window._sb.from('purchase_orders').select('*').eq('id', id).single();
+                    if(data) { let parts = (data.note||'').split('|||'); poData = { po_no: parts[0], items_json: data.raw_materials }; }
+                } else {
+                    const { data } = await window._sb.from('po_documents').select('*').eq('id', id).single();
+                    poData = data;
+                }
+
+                if(!poData) throw new Error('讀取失敗');
+                currentReceivePO = poData;
+                document.getElementById('receive-po-no').innerText = formatPO(poData.po_no);
+                
+                let items = getSafeArray(poData.items_json);
+                let html = items.map((item, idx) => {
+                    let total = parseFloat(item.qty) || 0;
+                    let recv = parseFloat(item.received_qty) || 0;
+                    let remain = Math.max(0, total - recv);
+                    let isDone = remain === 0;
+
+                    return `
+                    <div class="bg-white p-4 rounded-2xl border ${isDone?'border-emerald-300 opacity-70':'border-slate-200'} shadow-sm flex flex-col receive-item-row" data-idx="${idx}" data-id="${item.id}">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-black text-sm text-slate-800 flex-1 pr-2 leading-tight">${item.name}</h4>
+                            ${isDone ? '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-black border border-emerald-200">✅ 已結案</span>' : '<span class="text-[9px] bg-amber-50 text-amber-600 px-2 py-0.5 rounded font-black border border-amber-200">未結案</span>'}
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-center text-[10px] font-bold mb-3 border-b border-slate-100 pb-2">
+                            <div><span class="text-slate-400 block mb-0.5">應收總數</span><span class="text-slate-700">${total}</span></div>
+                            <div><span class="text-slate-400 block mb-0.5">已收數</span><span class="text-sky-600">${recv}</span></div>
+                            <div><span class="text-red-500 block mb-0.5">未交數</span><span class="text-red-600 text-sm font-black receive-remain-lbl">${remain}</span></div>
+                        </div>
+                        <div class="flex items-center space-x-2 ${isDone?'hidden':''}">
+                            <span class="text-xs font-black text-emerald-700 whitespace-nowrap">📥 本次點收:</span>
+                            <div class="flex items-center bg-emerald-50 border border-emerald-200 rounded-xl overflow-hidden flex-1">
+                                <button type="button" onclick="adjReceiveQty(this, -1)" class="w-10 h-10 bg-white font-black text-emerald-600 border-r border-emerald-100 active:bg-slate-50">-</button>
+                                <input type="number" min="0" max="${remain}" value="0" class="w-full h-10 bg-transparent text-center font-black text-lg outline-none receive-input-qty text-emerald-800" onchange="validateReceiveQty(this, ${remain})">
+                                <button type="button" onclick="adjReceiveQty(this, 1)" class="w-10 h-10 bg-white font-black text-emerald-600 border-l border-emerald-100 active:bg-slate-50">+</button>
+                            </div>
+                            <button type="button" onclick="receiveAll(this, ${remain})" class="bg-slate-800 text-white text-[10px] font-bold px-3 py-2 rounded-lg ml-1 active:scale-95">全收</button>
+                        </div>
+                    </div>`;
+                }).join('');
+                container.innerHTML = html;
+
+            } catch(e) { container.innerHTML = '錯誤: ' + e.message; }
+        }
+
+        function adjReceiveQty(btn, step) {
+            const input = btn.parentElement.querySelector('input');
+            let val = parseInt(input.value) || 0;
+            let max = parseInt(input.getAttribute('max')) || 0;
+            let newVal = val + step;
+            if(newVal < 0) newVal = 0;
+            if(newVal > max) newVal = max;
+            input.value = newVal;
+        }
+        function validateReceiveQty(input, max) {
+            let val = parseInt(input.value) || 0;
+            if(val < 0) input.value = 0;
+            if(val > max) input.value = max;
+        }
+        function receiveAll(btn, max) {
+            btn.parentElement.querySelector('input').value = max;
+        }
+
+        // 掃碼輔助入庫
+        function startPOBarcodeScan() {
+            isReceivingScan = true;
+            document.getElementById('receive-scanner-container').classList.remove('hidden');
+            if(!html5QrcodeScanner) html5QrcodeScanner = new Html5Qrcode("receive-reader");
+            html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => {
+                const beep = document.getElementById('beep-sound'); 
+                if(beep) { beep.currentTime = 0; beep.play().catch(()=>{}); } 
+                
+                let code = decodedText.trim().toUpperCase();
+                let found = false;
+                document.querySelectorAll('.receive-item-row').forEach(row => {
+                    if(row.getAttribute('data-id') === code || row.querySelector('h4').innerText.toUpperCase().includes(code)) {
+                        found = true;
+                        let input = row.querySelector('.receive-input-qty');
+                        if(input) {
+                            let max = parseInt(input.getAttribute('max'));
+                            let current = parseInt(input.value) || 0;
+                            if(current < max) {
+                                input.value = current + 1;
+                                showSysToast(`掃描成功！已增加 +1`);
+                            } else {
+                                alert(`該料號 [${code}] 已達應收數量上限！`);
+                            }
+                        }
+                    }
+                });
+                if(!found) showSysToast(`❌ 此採購單中找不到料號：${code}`);
+            }).catch(err => { alert('相機啟動失敗！'); });
+        }
+
+        function stopPOBarcodeScan() {
+            isReceivingScan = false;
+            document.getElementById('receive-scanner-container').classList.add('hidden');
+            if(html5QrcodeScanner && html5QrcodeScanner.isScanning) html5QrcodeScanner.stop();
+        }
+
+        async function submitPOReceive() {
+            const btn = document.getElementById('btn-submit-receive');
+            btn.innerText = '處理中...'; btn.disabled = true;
+            const id = document.getElementById('receive-po-id').value;
+            const isLegacy = document.getElementById('receive-po-legacy').value === 'true';
+            
+            let items = getSafeArray(currentReceivePO.items_json);
+            let ledgerEntries = [];
+            let allDone = true;
+            let hasChanges = false;
+
+            document.querySelectorAll('.receive-item-row').forEach(row => {
+                let idx = parseInt(row.getAttribute('data-idx'));
+                let addQty = parseFloat(row.querySelector('.receive-input-qty')?.value) || 0;
+                
+                if (addQty > 0) {
+                    hasChanges = true;
+                    let targetItem = items[idx];
+                    targetItem.received_qty = (parseFloat(targetItem.received_qty) || 0) + addQty;
+                    
+                    // 如果有 item.id (通常是成品)，或者是原料(我們用名稱反查 ID)
+                    let itemId = targetItem.id;
+                    if(targetItem.type === '原料') {
+                        let invItem = window.inventoryData?.find(x => x.item_name === targetItem.name);
+                        if(invItem) itemId = invItem.id;
+                    }
+
+                    if(itemId && itemId !== 'null') {
+                        ledgerEntries.push({
+                            item_id: itemId, employee_id: window.currentUser.id, change_qty: addQty, action_type: '採購入庫', note: `採購單 ${formatPO(currentReceivePO.po_no)} 點收入庫`
+                        });
+                    }
+                }
+                
+                // 檢查是否全部完成
+                let t = parseFloat(items[idx].qty)||0;
+                let r = parseFloat(items[idx].received_qty)||0;
+                if (r < t) allDone = false;
+            });
+
+            if(!hasChanges) { alert('您未輸入任何點收數量！'); btn.innerText = '確認入庫'; btn.disabled = false; return; }
+
+            let newStatus = allDone ? '完成' : '部分到貨';
+
+            try {
+                if(ledgerEntries.length > 0) {
+                    await window._sb.from('inventory_ledgers').insert(ledgerEntries);
+                }
+                
+                let payload = { items_json: items, status: newStatus };
+                if(isLegacy) await window._sb.from('purchase_orders').update({ raw_materials: items, status: newStatus==='完成'?'PO完成':newStatus }).eq('id', id);
+                else await window._sb.from('po_documents').update(payload).eq('id', id);
+
+                showSysToast(allDone ? '✅ 採購單已全數到齊並結案！' : '✅ 部分到貨已入庫！');
+                if(isReceivingScan) stopPOBarcodeScan();
+                backToDash();
+
+            } catch(e) { alert('寫入失敗: ' + e.message); btn.innerText = '確認入庫'; btn.disabled = false; }
+        }
+
         async function openHistory() {
-            openView('history', '🗂️ 採購紀錄');
+            openView('history', '🗂️ 採購記錄');
             const elPo = document.getElementById('ui-hist-po');
             const monthInput = document.getElementById('hist-month-filter');
             
@@ -561,7 +848,13 @@
                     let stCol = p.status === '完成' || p.status === 'PO完成' || p.status === '已到貨' ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : (p.status.includes('異常') ? 'text-white bg-red-500 shadow-sm animate-pulse border-red-600' : (p.status === '待審核' ? 'text-sky-700 bg-sky-50 border-sky-200' : 'text-amber-700 bg-amber-50 border-amber-200'));
                     let dateText = (p.expected_date && p.expected_date !== '未定' && p.expected_date !== null) ? String(p.expected_date).slice(5) : '未定';
                     let safePoItems = getSafeArray(p.items_json);
-                    let itemsStr = safePoItems.map(i => `<div class="flex justify-between items-center border-b pb-1 mb-1 last:border-0"><span class="text-slate-700 truncate pr-2">${i.name}</span><span class="text-amber-700 font-black shrink-0">x${parseFloat(i.qty).toFixed(0)} <span class="text-[9px] text-slate-400">${i.unit||'件'}</span></span></div>`).join('');
+                    
+                    let itemsStr = safePoItems.map(i => {
+                        let q = parseFloat(i.qty)||0; let r = parseFloat(i.received_qty)||0;
+                        let tag = r > 0 ? `<span class="text-[8px] ml-1 bg-emerald-100 text-emerald-700 px-1 rounded">已收:${r}</span>` : '';
+                        return `<div class="flex justify-between items-center border-b pb-1 mb-1 last:border-0"><span class="text-slate-700 truncate pr-2">${i.name}</span><span class="text-amber-700 font-black shrink-0">x${q.toFixed(0)} <span class="text-[9px] text-slate-400">${i.unit||'件'}</span>${tag}</span></div>`;
+                    }).join('');
+                    
                     let safeNote = (p.note || '').replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n");
 
                     return `
@@ -580,7 +873,7 @@
                             <button onclick="delPO('${p.id}', ${p.is_legacy?true:false})" class="text-[11px] text-red-600 border border-red-200 bg-white py-2.5 rounded-xl font-black shadow-sm active:scale-95 flex justify-center items-center"><span class="mr-1 text-sm">🗑️</span> 刪除</button>
                         </div>
                     </div>`;}).join('');
-            } else { elPo.innerHTML = `<div class="text-xs text-slate-400 py-6 text-center bg-white border border-dashed rounded-xl">無紀錄</div>`; }
+            } else { elPo.innerHTML = `<div class="text-xs text-slate-400 py-6 text-center bg-white border border-dashed rounded-xl">無記錄</div>`; }
         }
 
         async function sharePO(id, isLegacy) {
