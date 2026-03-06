@@ -349,8 +349,20 @@
 
         async function bootPurchase() {
             try {
+                // 🌟 加入防護機制：如果沒權限直接顯示錯誤，不卡死
+                let authTimeout = setTimeout(() => {
+                    const ls = document.getElementById('loading-screen');
+                    if(ls) ls.innerHTML = '<div class="text-4xl mb-4">⚠️</div><h2 class="text-xl font-black text-white">載入超時或無權限</h2><p class="text-slate-400 mt-2 text-xs">請確認您具備「採購」權限，或檢查網路</p><button onclick="window.location.href=\'app_hr.html\'" class="mt-6 bg-white text-slate-900 px-6 py-2 rounded-full font-bold">返回大廳</button>';
+                }, 5000);
+
                 const isAuth = await authGuard('purchase'); 
-                if(!isAuth) return;
+                clearTimeout(authTimeout);
+
+                if(!isAuth) {
+                    const ls = document.getElementById('loading-screen');
+                    if(ls) ls.innerHTML = '<div class="text-6xl mb-4">🚫</div><h2 class="text-xl font-black text-white">無權限訪問</h2><p class="text-slate-400 mt-2 text-xs">您沒有採購系統的權限</p><button onclick="window.location.href=\'app_hr.html\'" class="mt-6 bg-white text-slate-900 px-6 py-2 rounded-full font-bold">返回員工大廳</button>';
+                    return;
+                }
 
                 document.getElementById('user-badge').innerText = window.currentUser?.full_name || '使用者'; 
                 if(document.getElementById('desktop-user-badge')) {
@@ -944,7 +956,7 @@
             const ed = document.getElementById('po-edit-date').value;
             if(isLegacy) { if(st === '已發送') st = 'PO已發送'; if(st === '異常(遲交)') st = 'PO異常(遲交)'; }
             
-            // 如果狀態是已發送，我們就自動壓上 updated_at
+            // 🌟 如果狀態是已發送，我們就自動壓上 updated_at
             let payload = { status: st, note: note };
             if (st === '已發送' || st === 'PO已發送') {
                 payload.updated_at = new Date().toISOString();
