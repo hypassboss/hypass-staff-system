@@ -20,7 +20,7 @@
         #app-wrapper { display: flex; width: 100%; height: 100vh; overflow: hidden; }
         #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; width: 100%; max-width: 28rem; margin: 0 auto; display: flex; flex-direction: column;}
         
-        /* 🌟 核心升級：電腦版滿版解放 (不再限制 450px) */
+        /* 🌟 電腦版滿版解放 + 視覺放大 */
         @media (min-width: 768px) { 
             #app-wrapper { align-items: flex-start; justify-content: center; padding: 24px; flex: 1; }
             #app-container { height: 100%; min-height: auto; max-height: none; width: 100%; max-width: 1400px; border-radius: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow-y: auto; background: #f8fafc; margin: 0; }
@@ -83,37 +83,37 @@
         <header class="bg-emerald-900 text-white px-4 py-3 shadow-md sticky top-0 z-50 flex items-center justify-between h-14 relative shrink-0 md:rounded-t-2xl">
             <button id="btn-back" onclick="backToDash()" class="hidden mr-2 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition shrink-0 flex items-center">🔙 返回</button>
             <div class="flex-1 min-w-0 flex justify-center text-center">
-                <h1 class="text-base sm:text-lg font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-200 truncate px-2" id="header-title">庫存管理中心</h1>
+                <h1 class="text-base sm:text-lg md:text-xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-200 truncate px-2" id="header-title">庫存管理中心</h1>
             </div>
-            <div class="shrink-0 text-[10px] font-bold bg-white/10 px-2 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
+            <div class="shrink-0 text-[10px] md:text-xs font-bold bg-white/10 px-2 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
         </header>
 
         <main class="p-4 relative z-10 flex-1 overflow-y-auto no-scrollbar pb-10">
-            <div id="friday-reminder" class="hidden bg-gradient-to-r from-amber-500 to-orange-500 text-white p-4 rounded-2xl shadow-lg mb-4 border-2 border-amber-300 relative overflow-hidden">
+            <div id="friday-reminder" class="hidden bg-gradient-to-r from-amber-500 to-orange-500 text-white p-4 md:p-6 rounded-2xl shadow-lg mb-4 border-2 border-amber-300 relative overflow-hidden">
                 <div class="absolute -right-4 -bottom-4 text-7xl opacity-20 grayscale">📅</div>
                 <div class="flex items-center justify-between mb-2 border-b border-amber-300/50 pb-2 relative z-10">
-                    <div class="flex items-center space-x-3"><span class="text-2xl animate-pulse drop-shadow-md">⚠️</span><h3 class="font-black text-base tracking-wider">法定盤點日</h3></div>
-                    <span class="bg-red-600 text-white px-2.5 py-1 rounded-lg text-xs font-black shadow-inner" id="friday-overdue-count">待盤: 0 件</span>
+                    <div class="flex items-center space-x-3"><span class="text-2xl md:text-3xl animate-pulse drop-shadow-md">⚠️</span><h3 class="font-black text-base md:text-lg tracking-wider">法定盤點日</h3></div>
+                    <span class="bg-red-600 text-white px-2.5 py-1 rounded-lg text-xs md:text-sm font-black shadow-inner" id="friday-overdue-count">待盤: 0 件</span>
                 </div>
-                <p class="text-[10px] font-bold text-amber-50 mb-2 relative z-10 bg-black/10 p-2 rounded-lg leading-relaxed border border-white/20 shadow-inner">📌 以下為<strong class="text-white">「尚未盤點」</strong>或<strong class="text-white">「已逾期」</strong>的清單，盤點完成後將自動移除：</p>
+                <p class="text-[10px] md:text-xs font-bold text-amber-50 mb-2 relative z-10 bg-black/10 p-2 rounded-lg leading-relaxed border border-white/20 shadow-inner">📌 以下為<strong class="text-white">「尚未盤點」</strong>或<strong class="text-white">「已逾期」</strong>的清單，盤點完成後將自動移除：</p>
                 <div id="friday-overdue-list" class="max-h-48 overflow-y-auto space-y-1.5 no-scrollbar pr-1 relative z-10"></div>
             </div>
 
             <div id="view-dashboard" class="view-panel active space-y-4">
                 
-                <div class="glass-card p-3 rounded-[1.5rem] shadow-sm border-t-4 border-red-500 relative overflow-hidden">
-                    <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between px-1">
-                        <span class="flex items-center"><span class="mr-1.5 text-lg">🚨</span> 庫存警示狀況</span>
-                        <span class="text-[9px] bg-red-100 text-red-700 px-2 py-1 rounded-md font-black border border-red-200 shadow-sm">低水位與警示</span>
+                <div class="glass-card p-3 md:p-5 rounded-[1.5rem] shadow-sm border-t-4 border-red-500 relative overflow-hidden">
+                    <h3 class="font-black text-slate-800 text-sm md:text-base mb-3 flex items-center justify-between px-1">
+                        <span class="flex items-center"><span class="mr-1.5 text-lg md:text-xl">🚨</span> 庫存警示狀況</span>
+                        <span class="text-[9px] md:text-xs bg-red-100 text-red-700 px-2 py-1 rounded-md font-black border border-red-200 shadow-sm">低水位與警示</span>
                     </h3>
                     <div class="border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1 overflow-x-auto no-scrollbar">
-                        <table class="w-full min-w-[350px] text-left text-[10px] table-fixed">
+                        <table class="w-full min-w-[450px] text-left text-[10px] md:text-xs table-fixed">
                             <thead class="text-slate-500 border-b border-slate-200 bg-slate-100/50">
                                 <tr>
-                                    <th class="py-1.5 px-1 font-bold text-left w-[40%]">料號/品名</th>
-                                    <th class="py-1.5 px-1 font-bold text-center text-emerald-700 w-[15%]">現庫</th>
-                                    <th class="py-1.5 px-1 font-bold text-center text-sky-600 w-[15%]">已購</th>
-                                    <th class="py-1.5 px-1 font-bold text-center w-[30%]">狀態/操作</th>
+                                    <th class="py-2 px-1 font-bold text-left w-[40%]">料號/品名</th>
+                                    <th class="py-2 px-1 font-bold text-center text-emerald-700 w-[15%]">現庫</th>
+                                    <th class="py-2 px-1 font-bold text-center text-sky-600 w-[15%]">已購</th>
+                                    <th class="py-2 px-1 font-bold text-center w-[30%]">狀態/操作</th>
                                 </tr>
                             </thead>
                             <tbody id="ui-filter-status-table-alert" class="divide-y divide-slate-100 bg-white rounded-lg">
@@ -124,83 +124,83 @@
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                    <button onclick="openCabinFilterView()" class="glass-card p-5 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border-t-4 border-blue-400 hover:bg-blue-50 col-span-2 md:col-span-3 lg:col-span-4 bg-gradient-to-r from-blue-50 to-sky-50">
-                        <span class="text-4xl mb-2 drop-shadow-md">❄️</span>
-                        <span class="font-black text-blue-900 tracking-wider text-base">冷氣濾網專區</span>
-                        <span class="font-bold text-blue-700/70 text-[10px] tracking-wider mt-0.5">尺寸比對 / 適用車型查詢</span>
+                    <button onclick="openCabinFilterView()" class="glass-card p-5 md:p-8 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border-t-4 border-blue-400 hover:bg-blue-50 col-span-2 md:col-span-3 lg:col-span-4 bg-gradient-to-r from-blue-50 to-sky-50">
+                        <span class="text-4xl md:text-5xl mb-2 drop-shadow-md">❄️</span>
+                        <span class="font-black text-blue-900 tracking-wider text-base md:text-xl">冷氣濾網專區</span>
+                        <span class="font-bold text-blue-700/70 text-[10px] md:text-sm tracking-wider mt-1">尺寸比對 / 適用車型與年份查詢</span>
                     </button>
 
-                    <button onclick="openScanner()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-emerald-200 hover:bg-emerald-50">
-                        <span class="text-3xl mb-1.5 drop-shadow-md">📷</span>
-                        <span class="font-black text-slate-700 text-[11px] tracking-widest leading-tight text-center">掃碼盤點<br>與入庫</span>
+                    <button onclick="openScanner()" class="glass-card p-4 md:p-6 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-emerald-200 hover:bg-emerald-50">
+                        <span class="text-3xl md:text-4xl mb-1.5 drop-shadow-md">📷</span>
+                        <span class="font-black text-slate-700 text-[11px] md:text-sm tracking-widest leading-tight text-center">掃碼盤點<br>與入庫</span>
                     </button>
-                    <button onclick="openInventoryList()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-indigo-200 hover:bg-indigo-50">
-                        <span class="text-3xl mb-1.5 drop-shadow-md">📋</span>
-                        <span class="font-black text-slate-700 text-[11px] tracking-widest leading-tight text-center">庫存紀錄<br>低庫存採購</span>
+                    <button onclick="openInventoryList()" class="glass-card p-4 md:p-6 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-indigo-200 hover:bg-indigo-50">
+                        <span class="text-3xl md:text-4xl mb-1.5 drop-shadow-md">📋</span>
+                        <span class="font-black text-slate-700 text-[11px] md:text-sm tracking-widest leading-tight text-center">庫存紀錄<br>低庫存採購</span>
                     </button>
-                    <button onclick="openView('register', '新增料號與 BOM')" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-sky-200 hover:bg-sky-50">
-                        <span class="text-3xl mb-1.5 drop-shadow-md">➕</span>
-                        <span class="font-black text-slate-700 text-[11px] tracking-widest leading-tight text-center">建立<br>新增料號</span>
+                    <button onclick="openView('register', '新增料號與 BOM')" class="glass-card p-4 md:p-6 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-sky-200 hover:bg-sky-50">
+                        <span class="text-3xl md:text-4xl mb-1.5 drop-shadow-md">➕</span>
+                        <span class="font-black text-slate-700 text-[11px] md:text-sm tracking-widest leading-tight text-center">建立<br>新增料號</span>
                     </button>
-                    <button onclick="openSearchPrintView()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
-                        <span class="text-3xl mb-1.5 drop-shadow-md">🖨️</span>
-                        <span class="font-black text-slate-700 text-[11px] tracking-widest leading-tight text-center">料號紀錄<br>標籤列印</span>
+                    <button onclick="openSearchPrintView()" class="glass-card p-4 md:p-6 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
+                        <span class="text-3xl md:text-4xl mb-1.5 drop-shadow-md">🖨️</span>
+                        <span class="font-black text-slate-700 text-[11px] md:text-sm tracking-widest leading-tight text-center">料號紀錄<br>標籤列印</span>
                     </button>
                 </div>
             </div>
 
             <div id="view-cabin-filter" class="view-panel space-y-5">
-                <div class="glass-card p-4 md:p-6 rounded-[2rem] shadow-sm border-t-4 border-blue-500">
-                    <h3 class="font-black text-slate-800 text-lg mb-4 flex items-center"><span class="mr-2">❄️</span>冷氣濾網 尺寸比對引擎</h3>
+                <div class="glass-card p-4 md:p-8 rounded-[2rem] shadow-sm border-t-4 border-blue-500 max-w-5xl mx-auto">
+                    <h3 class="font-black text-slate-800 text-lg md:text-xl mb-4 flex items-center"><span class="mr-2">❄️</span>冷氣濾網 尺寸比對引擎</h3>
                     
-                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-inner mb-6">
-                        <p class="text-[10px] font-black text-blue-800 mb-2 tracking-widest">輸入目標尺寸 (系統將自動尋找最相近的料號)</p>
-                        <div class="grid grid-cols-3 gap-2 mb-3">
-                            <div><label class="text-[9px] text-blue-600 font-bold ml-1">長度 (cm)</label><input type="number" step="any" id="cf-search-l" class="w-full p-2.5 rounded-lg border-0 outline-none text-center font-black shadow-sm text-sm" placeholder="長"></div>
-                            <div><label class="text-[9px] text-blue-600 font-bold ml-1">寬度 (cm)</label><input type="number" step="any" id="cf-search-w" class="w-full p-2.5 rounded-lg border-0 outline-none text-center font-black shadow-sm text-sm" placeholder="寬"></div>
-                            <div><label class="text-[9px] text-blue-600 font-bold ml-1">高度 (cm)</label><input type="number" step="any" id="cf-search-h" class="w-full p-2.5 rounded-lg border-0 outline-none text-center font-black shadow-sm text-sm" placeholder="高"></div>
+                    <div class="bg-blue-50 p-4 md:p-6 rounded-xl border border-blue-200 shadow-inner mb-6">
+                        <p class="text-[10px] md:text-xs font-black text-blue-800 mb-3 tracking-widest">輸入目標尺寸 (系統將自動尋找最相近的料號)</p>
+                        <div class="grid grid-cols-3 gap-3 mb-4">
+                            <div><label class="text-[9px] md:text-xs text-blue-600 font-bold ml-1 mb-1 block">長度 (cm)</label><input type="number" step="any" id="cf-search-l" class="w-full p-3 rounded-lg border-0 outline-none text-center font-black shadow-sm text-sm md:text-base" placeholder="長"></div>
+                            <div><label class="text-[9px] md:text-xs text-blue-600 font-bold ml-1 mb-1 block">寬度 (cm)</label><input type="number" step="any" id="cf-search-w" class="w-full p-3 rounded-lg border-0 outline-none text-center font-black shadow-sm text-sm md:text-base" placeholder="寬"></div>
+                            <div><label class="text-[9px] md:text-xs text-blue-600 font-bold ml-1 mb-1 block">高度 (cm)</label><input type="number" step="any" id="cf-search-h" class="w-full p-3 rounded-lg border-0 outline-none text-center font-black shadow-sm text-sm md:text-base" placeholder="高"></div>
                         </div>
-                        <button onclick="searchCabinFilters()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-xl shadow-md active:scale-95 transition tracking-widest">🔍 執行比對查詢</button>
+                        <button onclick="searchCabinFilters()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3.5 md:py-4 rounded-xl shadow-md active:scale-95 transition tracking-widest md:text-lg">🔍 執行比對查詢</button>
                     </div>
 
-                    <h4 class="text-xs font-black text-slate-500 mb-3 border-b border-slate-200 pb-2">比對結果與濾網總覽</h4>
-                    <div id="cf-results-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <p class="text-center text-xs text-slate-400 py-6 italic col-span-full">載入中...</p>
+                    <h4 class="text-xs md:text-sm font-black text-slate-500 mb-4 border-b border-slate-200 pb-2">比對結果與濾網總覽</h4>
+                    <div id="cf-results-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                        <p class="text-center text-xs md:text-sm text-slate-400 py-6 italic col-span-full">載入中...</p>
                     </div>
                 </div>
             </div>
 
             <div id="view-inventory-list" class="view-panel relative">
                 <div class="sticky top-0 z-30 bg-[#f1f5f9] pt-2 pb-3 border-b border-slate-300 shadow-sm mb-4">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1.5">🚨</span> 庫存紀錄 <span class="text-[10px] text-slate-400 font-bold ml-2">(可快速採購)</span></h3>
-                        <button onclick="openPOModal()" class="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-md active:scale-95 transition flex items-center">
-                            生成採購單 <span id="list-req-count" class="ml-1.5 bg-white text-sky-600 px-2 py-0.5 rounded text-[11px] transition-all duration-300 shadow-sm">0</span>
+                    <div class="flex justify-between items-center mb-3 max-w-6xl mx-auto">
+                        <h3 class="font-black text-slate-800 text-lg md:text-xl flex items-center"><span class="mr-1.5">🚨</span> 庫存紀錄 <span class="text-[10px] md:text-xs text-slate-400 font-bold ml-2">(可快速採購)</span></h3>
+                        <button onclick="openPOModal()" class="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl text-xs md:text-sm font-black shadow-md active:scale-95 transition flex items-center">
+                            生成採購單 <span id="list-req-count" class="ml-1.5 bg-white text-sky-600 px-2 py-0.5 rounded text-[11px] md:text-xs transition-all duration-300 shadow-sm">0</span>
                         </button>
                     </div>
 
-                    <div class="mb-2">
-                        <select id="inv-type-filter" onchange="switchInvType(this.value)" class="w-full p-3.5 bg-slate-800 text-white rounded-2xl text-sm font-black outline-none select-arrow shadow-md tracking-widest text-center border-2 border-slate-700">
+                    <div class="mb-3 max-w-6xl mx-auto">
+                        <select id="inv-type-filter" onchange="switchInvType(this.value)" class="w-full p-3.5 md:p-4 bg-slate-800 text-white rounded-2xl text-sm md:text-base font-black outline-none select-arrow shadow-md tracking-widest text-center border-2 border-slate-700">
                             <option value="全部">🌍 顯示所有庫存 (原料+成品)</option>
                             <option value="原料">🏭 僅顯示原料</option>
                             <option value="成品">📦 僅顯示成品</option>
                         </select>
                     </div>
 
-                    <div id="sub-tabs-raw" class="hidden flex space-x-2 overflow-x-auto no-scrollbar pb-1">
-                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-3 py-1.5 rounded-full border border-sky-500 text-[10px] font-bold bg-sky-500 text-white shadow-sm">全部原料</button>
-                        <button onclick="switchInvCat('標籤貼紙')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">標籤貼紙</button>
-                        <button onclick="switchInvCat('車用濾布')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">車用濾布</button>
-                        <button onclick="switchInvCat('其他')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">其他</button>
+                    <div id="sub-tabs-raw" class="hidden flex space-x-2 overflow-x-auto no-scrollbar pb-1 max-w-6xl mx-auto">
+                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-4 py-2 rounded-full border border-sky-500 text-[10px] md:text-xs font-bold bg-sky-500 text-white shadow-sm">全部原料</button>
+                        <button onclick="switchInvCat('標籤貼紙')" class="subcat-btn shrink-0 px-4 py-2 rounded-full border border-slate-300 text-[10px] md:text-xs font-bold bg-white text-slate-600 shadow-sm">標籤貼紙</button>
+                        <button onclick="switchInvCat('車用濾布')" class="subcat-btn shrink-0 px-4 py-2 rounded-full border border-slate-300 text-[10px] md:text-xs font-bold bg-white text-slate-600 shadow-sm">車用濾布</button>
+                        <button onclick="switchInvCat('其他')" class="subcat-btn shrink-0 px-4 py-2 rounded-full border border-slate-300 text-[10px] md:text-xs font-bold bg-white text-slate-600 shadow-sm">其他</button>
                     </div>
-                    <div id="sub-tabs-fin" class="hidden flex space-x-2 overflow-x-auto no-scrollbar pb-1">
-                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-3 py-1.5 rounded-full border border-sky-500 text-[10px] font-bold bg-sky-500 text-white shadow-sm">全部成品</button>
-                        <button onclick="switchInvCat('汽車冷氣濾網')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">汽車冷氣濾網</button>
-                        <button onclick="switchInvCat('VESTA系列產品')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">VESTA系列產品</button>
-                        <button onclick="switchInvCat('其他')" class="subcat-btn shrink-0 px-3 py-1.5 rounded-full border border-slate-300 text-[10px] font-bold bg-white text-slate-600 shadow-sm">其他</button>
+                    <div id="sub-tabs-fin" class="hidden flex space-x-2 overflow-x-auto no-scrollbar pb-1 max-w-6xl mx-auto">
+                        <button onclick="switchInvCat('全部')" class="subcat-btn active shrink-0 px-4 py-2 rounded-full border border-sky-500 text-[10px] md:text-xs font-bold bg-sky-500 text-white shadow-sm">全部成品</button>
+                        <button onclick="switchInvCat('汽車冷氣濾網')" class="subcat-btn shrink-0 px-4 py-2 rounded-full border border-slate-300 text-[10px] md:text-xs font-bold bg-white text-slate-600 shadow-sm">汽車冷氣濾網</button>
+                        <button onclick="switchInvCat('VESTA系列產品')" class="subcat-btn shrink-0 px-4 py-2 rounded-full border border-slate-300 text-[10px] md:text-xs font-bold bg-white text-slate-600 shadow-sm">VESTA系列產品</button>
+                        <button onclick="switchInvCat('其他')" class="subcat-btn shrink-0 px-4 py-2 rounded-full border border-slate-300 text-[10px] md:text-xs font-bold bg-white text-slate-600 shadow-sm">其他</button>
                     </div>
                 </div>
-                <div id="ui-inventory-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4"></div>
+                <div id="ui-inventory-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-10 max-w-6xl mx-auto"></div>
             </div>
 
             <div id="view-scanner" class="view-panel">
@@ -215,39 +215,39 @@
                 <div class="max-w-md mx-auto space-y-4">
                     <div class="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-6 rounded-[2rem] shadow-lg text-center relative overflow-hidden">
                         <div class="absolute -left-4 -bottom-4 text-7xl opacity-10">🏷️</div>
-                        <div class="text-[10px] text-sky-400 font-black tracking-widest mb-1 bg-white/10 inline-block px-3 py-1 rounded-full" id="c-item-code">料號讀取中...</div>
-                        <h3 class="text-2xl font-black mb-1 mt-2" id="c-item-name">品名讀取中...</h3>
-                        <p class="text-xs text-slate-400 font-bold" id="c-item-spec">規格讀取中...</p>
+                        <div class="text-[10px] md:text-xs text-sky-400 font-black tracking-widest mb-1 bg-white/10 inline-block px-3 py-1 rounded-full" id="c-item-code">料號讀取中...</div>
+                        <h3 class="text-2xl md:text-3xl font-black mb-1 mt-2" id="c-item-name">品名讀取中...</h3>
+                        <p class="text-xs md:text-sm text-slate-400 font-bold" id="c-item-spec">規格讀取中...</p>
                         <input type="hidden" id="c-item-id">
                         <input type="hidden" id="c-qty-per-pack">
                     </div>
-                    <div class="glass-card p-5 rounded-[2rem] shadow-sm border border-emerald-100">
-                        <h4 class="text-sm font-black text-slate-700 mb-4 flex items-center"><span class="mr-2 text-xl">✍️</span>請輸入盤點數量</h4>
+                    <div class="glass-card p-5 md:p-6 rounded-[2rem] shadow-sm border border-emerald-100">
+                        <h4 class="text-sm md:text-base font-black text-slate-700 mb-4 flex items-center"><span class="mr-2 text-xl">✍️</span>請輸入盤點數量</h4>
                         <div class="grid grid-cols-2 gap-3 mb-5">
                             <div class="bg-slate-50 p-2.5 rounded-2xl border border-slate-200 shadow-inner">
-                                <label class="text-[11px] font-black text-slate-500 ml-1 mb-1.5 block tracking-wider">📦 儲存庫 (整箱)</label>
-                                <select id="c-box-count" onchange="calcTotal()" class="w-full bg-white border border-slate-300 p-2.5 rounded-xl text-base font-black text-slate-800 text-center select-arrow shadow-sm outline-none">
+                                <label class="text-[11px] md:text-xs font-black text-slate-500 ml-1 mb-1.5 block tracking-wider">📦 儲存庫 (整箱)</label>
+                                <select id="c-box-count" onchange="calcTotal()" class="w-full bg-white border border-slate-300 p-2.5 md:p-3 rounded-xl text-base md:text-lg font-black text-slate-800 text-center select-arrow shadow-sm outline-none">
                                     <option value="0" selected>0 箱</option><option value="1">1 箱</option><option value="2">2 箱</option><option value="3">3 箱</option><option value="4">4 箱</option><option value="5">5 箱</option><option value="6">6 箱</option><option value="7">7 箱</option><option value="8">8 箱</option><option value="9">9 箱</option><option value="custom">自訂輸入...</option>
                                 </select>
-                                <input type="number" id="c-custom-box" oninput="calcTotal()" class="hidden w-full bg-sky-50 border border-sky-300 p-2.5 rounded-xl text-base font-black text-sky-800 text-center shadow-sm mt-2 outline-none" placeholder="輸入箱數">
+                                <input type="number" id="c-custom-box" oninput="calcTotal()" class="hidden w-full bg-sky-50 border border-sky-300 p-2.5 rounded-xl text-base md:text-lg font-black text-sky-800 text-center shadow-sm mt-2 outline-none" placeholder="輸入箱數">
                             </div>
                             <div class="bg-slate-50 p-2.5 rounded-2xl border border-slate-200 shadow-inner">
-                                <label class="text-[11px] font-black text-slate-500 ml-1 mb-1.5 block tracking-wider">🏷️ 出貨庫 (散裝)</label>
-                                <select id="c-fraction-count" onchange="calcTotal()" class="w-full bg-white border border-slate-300 p-2.5 rounded-xl text-base font-black text-slate-800 text-center select-arrow shadow-sm outline-none">
+                                <label class="text-[11px] md:text-xs font-black text-slate-500 ml-1 mb-1.5 block tracking-wider">🏷️ 出貨庫 (散裝)</label>
+                                <select id="c-fraction-count" onchange="calcTotal()" class="w-full bg-white border border-slate-300 p-2.5 md:p-3 rounded-xl text-base md:text-lg font-black text-slate-800 text-center select-arrow shadow-sm outline-none">
                                     <option value="1">1 箱</option><option value="0.75">3/4 箱</option><option value="0.5">1/2 箱</option><option value="0.25">1/4 箱</option><option value="0" selected>0 箱</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl mb-5 text-center shadow-inner">
-                            <p class="text-[10px] font-black text-emerald-700 mb-1.5 tracking-widest uppercase">系統自動換算總量</p>
-                            <p class="text-[9px] font-bold text-emerald-600/70 mb-3">(包裝為每箱 <span id="c-pack-num" class="font-black text-emerald-800 text-sm">--</span> 件)</p>
+                        <div class="bg-emerald-50 border border-emerald-200 p-4 md:p-5 rounded-2xl mb-5 text-center shadow-inner">
+                            <p class="text-[10px] md:text-xs font-black text-emerald-700 mb-1.5 tracking-widest uppercase">系統自動換算總量</p>
+                            <p class="text-[9px] md:text-xs font-bold text-emerald-600/70 mb-4">(包裝為每箱 <span id="c-pack-num" class="font-black text-emerald-800 text-sm">--</span> 件)</p>
                             <div class="flex items-center justify-center space-x-4">
-                                <button onclick="adjustTotal(-1)" class="w-10 h-10 bg-white rounded-full font-black text-xl text-emerald-600 shadow-md active:scale-90 transition transform">-</button>
-                                <input type="number" id="c-total-qty" class="bg-transparent text-5xl font-black text-emerald-900 w-24 text-center outline-none tracking-tighter" readonly>
-                                <button onclick="adjustTotal(1)" class="w-10 h-10 bg-white rounded-full font-black text-xl text-emerald-600 shadow-md active:scale-90 transition transform">+</button>
+                                <button onclick="adjustTotal(-1)" class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full font-black text-xl md:text-2xl text-emerald-600 shadow-md active:scale-90 transition transform">-</button>
+                                <input type="number" id="c-total-qty" class="bg-transparent text-5xl md:text-6xl font-black text-emerald-900 w-24 md:w-32 text-center outline-none tracking-tighter" readonly>
+                                <button onclick="adjustTotal(1)" class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full font-black text-xl md:text-2xl text-emerald-600 shadow-md active:scale-90 transition transform">+</button>
                             </div>
                         </div>
-                        <button id="btn-submit-count" onclick="submitCount()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition text-base tracking-widest flex justify-center items-center">
+                        <button id="btn-submit-count" onclick="submitCount()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 md:py-5 rounded-2xl shadow-lg active:scale-95 transition text-base md:text-lg tracking-widest flex justify-center items-center">
                             <span>💾 確認並盤點下一個</span>
                         </button>
                     </div>
@@ -255,82 +255,94 @@
             </div>
 
             <div id="view-register" class="view-panel space-y-5">
-                <div class="glass-card p-5 md:p-8 rounded-[2rem] shadow-sm border-t-4 border-sky-500 max-w-2xl mx-auto">
-                    <h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">➕</span> 新增料號基本資料</h3>
+                <div class="glass-card p-5 md:p-8 rounded-[2rem] shadow-sm border-t-4 border-sky-500 max-w-3xl mx-auto">
+                    <h3 class="font-black text-slate-800 pl-1 text-lg md:text-xl mb-5 flex items-center"><span class="mr-2">➕</span> 新增料號基本資料</h3>
                     <form onsubmit="saveItem(event)" class="space-y-4">
                         <div class="grid grid-cols-2 gap-3 md:gap-4">
                             <div class="col-span-2">
-                                <input type="text" id="i-name" placeholder="品名 (必填)" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none focus:border-sky-500" required>
+                                <input type="text" id="i-name" placeholder="品名 (必填)" class="w-full p-3 bg-slate-50 rounded-xl text-sm md:text-base font-bold border border-slate-200 outline-none focus:border-sky-500" required>
                             </div>
                             <div>
-                                <input type="text" id="i-code" placeholder="料號 (例: TMP-001)" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 uppercase outline-none focus:border-sky-500" required>
+                                <input type="text" id="i-code" placeholder="料號 (例: TMP-001)" class="w-full p-3 bg-slate-50 rounded-xl text-sm md:text-base font-bold border border-slate-200 uppercase outline-none focus:border-sky-500" required>
                             </div>
                             <div>
-                                <select id="i-type" class="w-full p-3 bg-white rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required>
+                                <select id="i-type" class="w-full p-3 bg-white rounded-xl text-sm md:text-base font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required>
                                     <option value="原料">原料</option><option value="成品" selected>成品</option>
                                 </select>
                             </div>
                             <div class="col-span-2">
-                                <select id="i-category" onchange="checkCustomCategory()" class="w-full p-3 bg-white rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required>
+                                <select id="i-category" onchange="checkCustomCategory()" class="w-full p-3 bg-white rounded-xl text-sm md:text-base font-bold border border-slate-200 select-arrow outline-none focus:border-sky-500" required>
                                     <option value="" disabled selected>請選擇產品類別</option>
                                     <option value="汽車冷氣濾網">汽車冷氣濾網</option><option value="VESTA系列產品">VESTA系列產品</option>
                                     <option value="卡卡吸管">卡卡吸管</option><option value="空氣瓶子">空氣瓶子</option>
                                     <option value="標籤貼紙">標籤貼紙</option><option value="車用濾布">車用濾布</option>
                                     <option value="custom" class="text-sky-600 font-black">➕ 新增自訂類別...</option>
                                 </select>
-                                <input type="text" id="i-custom-category" placeholder="請輸入新類別名稱" class="hidden mt-2 w-full p-3 bg-sky-50 rounded-xl text-sm font-bold border border-sky-300 outline-none">
+                                <input type="text" id="i-custom-category" placeholder="請輸入新類別名稱" class="hidden mt-2 w-full p-3 bg-sky-50 rounded-xl text-sm md:text-base font-bold border border-sky-300 outline-none">
                             </div>
                             <div class="col-span-2">
-                                <input type="text" id="i-spec" placeholder="詳細規格敘述 (選填)" class="w-full p-3 bg-slate-50 rounded-xl text-sm border border-slate-200 outline-none focus:border-sky-500">
+                                <input type="text" id="i-spec" placeholder="詳細規格敘述 (選填)" class="w-full p-3 bg-slate-50 rounded-xl text-sm md:text-base border border-slate-200 outline-none focus:border-sky-500">
                             </div>
                             
                             <div class="col-span-2 grid grid-cols-3 gap-2 mt-1">
-                                <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
-                                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">長度 (cm)</label>
-                                    <input type="number" step="any" id="i-length" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none">
+                                <div class="bg-white p-2 md:p-3 rounded-xl border border-slate-200 shadow-sm">
+                                    <label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1 block mb-1">長度 (cm)</label>
+                                    <input type="number" step="any" id="i-length" class="w-full p-2 bg-slate-50 rounded-lg text-sm md:text-base font-black text-center border-0 outline-none">
                                 </div>
-                                <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
-                                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">寬度 (cm)</label>
-                                    <input type="number" step="any" id="i-width" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none">
+                                <div class="bg-white p-2 md:p-3 rounded-xl border border-slate-200 shadow-sm">
+                                    <label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1 block mb-1">寬度 (cm)</label>
+                                    <input type="number" step="any" id="i-width" oninput="calcNewArea()" class="w-full p-2 bg-slate-50 rounded-lg text-sm md:text-base font-black text-center border-0 outline-none">
                                 </div>
-                                <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
-                                    <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">高度 (cm)</label>
-                                    <input type="number" step="any" id="i-height" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none">
+                                <div class="bg-white p-2 md:p-3 rounded-xl border border-slate-200 shadow-sm">
+                                    <label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1 block mb-1">高度 (cm)</label>
+                                    <input type="number" step="any" id="i-height" oninput="calcNewArea()" class="w-full p-2 bg-slate-50 rounded-lg text-sm md:text-base font-black text-center border-0 outline-none">
                                 </div>
                             </div>
 
-                            <div id="cf-extra-fields" class="hidden col-span-2 grid grid-cols-2 gap-2 mt-1 bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-inner">
-                                <div class="col-span-2 flex items-center mb-1"><span class="text-xl mr-1">❄️</span><h5 class="text-[11px] font-black text-blue-800 tracking-widest">冷氣濾網專屬擴充規格</h5></div>
-                                <div><label class="text-[10px] font-bold text-blue-700 ml-1 block mb-1">摺數</label><input type="number" id="i-folds" class="w-full p-2.5 bg-white rounded-lg text-sm font-black text-center border-0 outline-none shadow-sm text-blue-900" placeholder="例如: 30"></div>
-                                <div><label class="text-[10px] font-bold text-blue-700 ml-1 block mb-1">面積</label><input type="number" step="any" id="i-area" class="w-full p-2.5 bg-white rounded-lg text-sm font-black text-center border-0 outline-none shadow-sm text-blue-900" placeholder="自動或手動輸入"></div>
-                                <div class="col-span-2"><label class="text-[10px] font-bold text-blue-700 ml-1 block mb-1">適用的汽車型號</label><input type="text" id="i-models" class="w-full p-2.5 bg-white rounded-lg text-sm font-bold border-0 outline-none shadow-sm text-blue-900" placeholder="例如: Toyota Altis, Camry"></div>
-                                <div class="col-span-2"><label class="text-[10px] font-bold text-blue-700 ml-1 block mb-1">適用年份</label><input type="text" id="i-years" class="w-full p-2.5 bg-white rounded-lg text-sm font-bold border-0 outline-none shadow-sm text-blue-900" placeholder="例如: 2019-2024"></div>
+                            <div id="cf-extra-fields" class="hidden col-span-2 grid grid-cols-2 gap-3 mt-1 bg-blue-50 p-4 md:p-5 rounded-xl border border-blue-200 shadow-inner">
+                                <div class="col-span-2 flex items-center mb-1"><span class="text-xl mr-1">❄️</span><h5 class="text-[11px] md:text-sm font-black text-blue-800 tracking-widest">冷氣濾網專屬擴充規格</h5></div>
+                                <div>
+                                    <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">摺數</label>
+                                    <input type="number" id="i-folds" oninput="calcNewArea()" class="w-full p-3 bg-white rounded-lg text-sm md:text-base font-black text-center border-0 outline-none shadow-sm text-blue-900" placeholder="例如: 30">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">面積 (系統依照公式自動換算)</label>
+                                    <input type="number" step="any" id="i-area" readonly class="w-full p-3 bg-blue-100/50 rounded-lg text-sm md:text-base font-black text-center border border-blue-200 outline-none shadow-inner text-blue-900 cursor-not-allowed" placeholder="自動換算 (m²)">
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">適用的汽車型號 (可輸入多行)</label>
+                                    <textarea id="i-models" rows="3" class="w-full p-3 bg-white rounded-lg text-sm md:text-base font-bold border-0 outline-none shadow-sm text-blue-900 resize-none leading-relaxed" placeholder="例如:&#10;Toyota Altis&#10;Honda CR-V"></textarea>
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">適用年份 (可輸入多行)</label>
+                                    <textarea id="i-years" rows="3" class="w-full p-3 bg-white rounded-lg text-sm md:text-base font-bold border-0 outline-none shadow-sm text-blue-900 resize-none leading-relaxed" placeholder="例如:&#10;2015年前&#10;2016~2020&#10;2021年後"></textarea>
+                                </div>
                             </div>
 
-                            <div class="bg-white p-2 rounded-xl border border-slate-200 mt-2">
-                                <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">每箱包裝數量</label>
-                                <input type="number" id="i-qty" value="1" min="1" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none" required>
+                            <div class="bg-white p-2 md:p-3 rounded-xl border border-slate-200 mt-2">
+                                <label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1 block mb-1">每箱包裝數量</label>
+                                <input type="number" id="i-qty" value="1" min="1" class="w-full p-2 bg-slate-50 rounded-lg text-sm md:text-base font-black text-center border-0 outline-none" required>
                             </div>
-                            <div class="bg-white p-2 rounded-xl border border-slate-200 mt-2">
-                                <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">生產週期</label>
-                                <select id="i-lead" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow" required>
+                            <div class="bg-white p-2 md:p-3 rounded-xl border border-slate-200 mt-2">
+                                <label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1 block mb-1">生產週期</label>
+                                <select id="i-lead" class="w-full p-2 bg-slate-50 rounded-lg text-sm md:text-base font-black text-center border-0 outline-none select-arrow" required>
                                     <option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option>
                                 </select>
                             </div>
                             <div class="col-span-2 bg-white p-3 rounded-xl border border-sky-200 shadow-sm">
-                                <label class="text-[10px] font-black text-sky-700 ml-1 block mb-1 tracking-widest">盤點週期 (逾期提醒頻率)</label>
-                                <select id="i-cycle" class="w-full p-2 bg-sky-50 rounded-lg text-sm font-black text-center border-0 outline-none select-arrow text-sky-900" required>
+                                <label class="text-[10px] md:text-xs font-black text-sky-700 ml-1 block mb-1 tracking-widest">盤點週期 (逾期提醒頻率)</label>
+                                <select id="i-cycle" class="w-full p-2.5 bg-sky-50 rounded-lg text-sm md:text-base font-black text-center border-0 outline-none select-arrow text-sky-900" required>
                                     <option value="7">7 天 (每週)</option><option value="30" selected>30 天 (每月)</option><option value="60">60 天 (雙月)</option><option value="90">90 天 (每季)</option>
                                 </select>
                             </div>
                             
                             <div class="col-span-2 border-t border-sky-200 pt-4 mt-2">
-                                <h5 class="text-xs font-black text-slate-700 mb-3 flex items-center justify-between">
+                                <h5 class="text-xs md:text-sm font-black text-slate-700 mb-3 flex items-center justify-between">
                                     <span class="flex items-center"><span class="mr-1 text-lg">⚙️</span> 產品 BOM 表設定</span>
-                                    <span class="text-[9px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded">最多 6 項</span>
+                                    <span class="text-[9px] md:text-xs bg-slate-200 text-slate-500 px-2 py-0.5 rounded">最多 6 項</span>
                                 </h5>
                                 <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-100 p-1">
-                                    <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[500px]">
+                                    <table class="w-full text-left text-[10px] md:text-xs whitespace-nowrap min-w-[500px]">
                                         <thead class="text-slate-500 border-b border-slate-200">
                                             <tr>
                                                 <th class="p-2 font-bold w-6 text-center">項次</th>
@@ -346,77 +358,89 @@
                                 </div>
                             </div>
                         </div>
-                        <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-4 rounded-2xl shadow-md active:scale-95 transition tracking-widest text-base mt-6">💾 儲存料號與 BOM</button>
+                        <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-4 md:py-5 rounded-2xl shadow-md active:scale-95 transition tracking-widest text-base md:text-lg mt-6">💾 儲存料號與 BOM</button>
                     </form>
                 </div>
             </div>
 
             <div id="view-search-print" class="view-panel space-y-5">
-                <div class="glass-card p-4 md:p-6 rounded-[2rem] shadow-sm border-t-4 border-slate-600 max-w-3xl mx-auto">
-                    <h3 class="font-black text-slate-800 pl-1 text-base md:text-lg mb-4 flex items-center"><span class="mr-2">🔍</span>料號紀錄標籤列印</h3>
-                    <div class="flex space-x-2 mb-4">
-                        <select id="search-cat-filter" class="w-[35%] p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold outline-none select-arrow shadow-inner" onchange="renderItemSearch()">
+                <div class="glass-card p-4 md:p-8 rounded-[2rem] shadow-sm border-t-4 border-slate-600 max-w-4xl mx-auto">
+                    <h3 class="font-black text-slate-800 pl-1 text-base md:text-xl mb-5 flex items-center"><span class="mr-2">🔍</span>料號紀錄標籤列印</h3>
+                    <div class="flex space-x-2 mb-6">
+                        <select id="search-cat-filter" class="w-[35%] p-3 md:p-4 bg-slate-50 border border-slate-300 rounded-xl text-xs md:text-sm font-bold outline-none select-arrow shadow-inner" onchange="renderItemSearch()">
                             <option value="">全部分類</option>
                         </select>
-                        <input type="text" id="item-search-input" placeholder="搜尋料號/品名..." class="w-[65%] p-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold outline-none focus:border-slate-500 transition shadow-inner" onkeyup="renderItemSearch()">
+                        <input type="text" id="item-search-input" placeholder="搜尋料號/品名..." class="w-[65%] p-3 md:p-4 bg-slate-50 border border-slate-300 rounded-xl text-sm md:text-base font-bold outline-none focus:border-slate-500 transition shadow-inner" onkeyup="renderItemSearch()">
                     </div>
-                    <div id="item-search-results" class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-10">
-                        <div class="text-center text-xs text-slate-400 py-6 italic col-span-full">請輸入關鍵字搜尋料號...</div>
+                    <div id="item-search-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 pb-10">
+                        <div class="text-center text-xs md:text-sm text-slate-400 py-6 italic col-span-full">請輸入關鍵字搜尋料號...</div>
                     </div>
                 </div>
             </div>
         </main>
     </div> </div> <div id="front-item-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
-        <div class="bg-white w-full max-w-2xl m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
-            <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯基本資料與 BOM</h3>
+        <div class="bg-white w-full max-w-2xl m-auto rounded-[2rem] p-6 md:p-8 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
+            <h3 class="font-black text-lg md:text-xl border-b pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2">✏️</span> 編輯基本資料與 BOM</h3>
             <input type="hidden" id="fe-item-id">
             <div class="space-y-4">
                 <div>
-                    <label class="text-[10px] font-bold text-slate-500 ml-1">品名</label>
-                    <input type="text" id="fe-item-name" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-sky-500 transition shadow-inner">
+                    <label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1">品名</label>
+                    <input type="text" id="fe-item-name" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm md:text-base font-bold outline-none focus:border-sky-500 transition shadow-inner">
                 </div>
                 <div class="grid grid-cols-2 gap-3 md:gap-4">
                     <div>
-                        <label class="text-[10px] font-bold text-slate-500 ml-1">產品類別</label>
-                        <select id="fe-item-cat" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-sky-500 transition shadow-inner" onchange="checkFrontEditCategory()"></select>
+                        <label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1">產品類別</label>
+                        <select id="fe-item-cat" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm md:text-base font-bold select-arrow outline-none focus:border-sky-500 transition shadow-inner" onchange="checkFrontEditCategory()"></select>
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-slate-500 ml-1">生產週期</label>
-                        <select id="fe-item-lead" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold select-arrow outline-none focus:border-sky-500 transition shadow-inner"><option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option></select>
+                        <label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1">生產週期</label>
+                        <select id="fe-item-lead" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm md:text-base font-bold select-arrow outline-none focus:border-sky-500 transition shadow-inner"><option value="15">15 天</option><option value="30">30 天</option><option value="45">45 天</option><option value="60">60 天</option><option value="90">90 天</option></select>
                     </div>
                     
                     <div class="col-span-2 grid grid-cols-3 gap-2">
                         <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-inner">
-                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">長度(cm)</label>
-                            <input type="number" step="any" id="fe-item-length" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none">
+                            <label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1 block mb-1">長度(cm)</label>
+                            <input type="number" step="any" id="fe-item-length" class="w-full p-2 bg-slate-50 rounded-lg text-sm md:text-base font-black text-center border-0 outline-none">
                         </div>
                         <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-inner">
-                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">寬度(cm)</label>
-                            <input type="number" step="any" id="fe-item-width" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none">
+                            <label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1 block mb-1">寬度(cm)</label>
+                            <input type="number" step="any" id="fe-item-width" oninput="calcEditArea()" class="w-full p-2 bg-slate-50 rounded-lg text-sm md:text-base font-black text-center border-0 outline-none">
                         </div>
                         <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-inner">
-                            <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">高度(cm)</label>
-                            <input type="number" step="any" id="fe-item-height" class="w-full p-2 bg-slate-50 rounded-lg text-sm font-black text-center border-0 outline-none">
+                            <label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1 block mb-1">高度(cm)</label>
+                            <input type="number" step="any" id="fe-item-height" oninput="calcEditArea()" class="w-full p-2 bg-slate-50 rounded-lg text-sm md:text-base font-black text-center border-0 outline-none">
                         </div>
                     </div>
 
-                    <div id="fe-cf-extra-fields" class="hidden col-span-2 grid grid-cols-2 gap-3 bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-inner">
-                        <div class="col-span-2 flex items-center mb-1"><span class="text-xl mr-1">❄️</span><h5 class="text-[11px] font-black text-blue-800 tracking-widest">冷氣濾網專屬擴充規格</h5></div>
-                        <div><label class="text-[10px] font-bold text-blue-700 ml-1 block mb-1">摺數</label><input type="number" id="fe-item-folds" class="w-full p-2.5 bg-white rounded-lg text-sm font-black text-center border-0 outline-none shadow-sm text-blue-900"></div>
-                        <div><label class="text-[10px] font-bold text-blue-700 ml-1 block mb-1">面積</label><input type="number" step="any" id="fe-item-area" class="w-full p-2.5 bg-white rounded-lg text-sm font-black text-center border-0 outline-none shadow-sm text-blue-900"></div>
-                        <div class="col-span-2"><label class="text-[10px] font-bold text-blue-700 ml-1 block mb-1">適用的汽車型號</label><input type="text" id="fe-item-models" class="w-full p-2.5 bg-white rounded-lg text-sm font-bold border-0 outline-none shadow-sm text-blue-900"></div>
-                        <div class="col-span-2"><label class="text-[10px] font-bold text-blue-700 ml-1 block mb-1">適用年份</label><input type="text" id="fe-item-years" class="w-full p-2.5 bg-white rounded-lg text-sm font-bold border-0 outline-none shadow-sm text-blue-900"></div>
+                    <div id="fe-cf-extra-fields" class="hidden col-span-2 grid grid-cols-2 gap-3 bg-blue-50 p-4 md:p-5 rounded-xl border border-blue-200 shadow-inner">
+                        <div class="col-span-2 flex items-center mb-1"><span class="text-xl mr-1">❄️</span><h5 class="text-[11px] md:text-sm font-black text-blue-800 tracking-widest">冷氣濾網專屬擴充規格</h5></div>
+                        <div>
+                            <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">摺數</label>
+                            <input type="number" id="fe-item-folds" oninput="calcEditArea()" class="w-full p-2.5 md:p-3 bg-white rounded-lg text-sm md:text-base font-black text-center border-0 outline-none shadow-sm text-blue-900">
+                        </div>
+                        <div>
+                            <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">面積 (系統自動換算)</label>
+                            <input type="number" step="any" id="fe-item-area" readonly class="w-full p-2.5 md:p-3 bg-blue-100/50 rounded-lg text-sm md:text-base font-black text-center border border-blue-200 outline-none shadow-inner text-blue-900 cursor-not-allowed">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">適用的汽車型號 (可換行)</label>
+                            <textarea id="fe-item-models" rows="3" class="w-full p-2.5 md:p-3 bg-white rounded-lg text-sm md:text-base font-bold border-0 outline-none shadow-sm text-blue-900 resize-none leading-relaxed"></textarea>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">適用年份 (可換行)</label>
+                            <textarea id="fe-item-years" rows="3" class="w-full p-2.5 md:p-3 bg-white rounded-lg text-sm md:text-base font-bold border-0 outline-none shadow-sm text-blue-900 resize-none leading-relaxed"></textarea>
+                        </div>
                     </div>
 
                     <div class="col-span-2">
-                        <label class="text-[10px] font-bold text-slate-500 ml-1 block mb-1">盤點週期 (逾期提醒)</label>
-                        <select id="fe-item-cycle" class="w-full p-3 bg-sky-50 border border-sky-200 rounded-xl text-sm font-black text-sky-900 select-arrow outline-none focus:border-sky-500 transition shadow-inner"><option value="7">7 天 (每週)</option><option value="30">30 天 (每月)</option><option value="60">60 天 (雙月)</option><option value="90">90 天 (一季)</option></select>
+                        <label class="text-[10px] md:text-xs font-bold text-slate-500 ml-1 block mb-1">盤點週期 (逾期提醒)</label>
+                        <select id="fe-item-cycle" class="w-full p-3 bg-sky-50 border border-sky-200 rounded-xl text-sm md:text-base font-black text-sky-900 select-arrow outline-none focus:border-sky-500 transition shadow-inner"><option value="7">7 天 (每週)</option><option value="30">30 天 (每月)</option><option value="60">60 天 (雙月)</option><option value="90">90 天 (一季)</option></select>
                     </div>
                 </div>
                 <div class="border-t border-slate-200 pt-4 mt-2">
-                    <h5 class="text-[10px] font-black text-sky-700 mb-2 tracking-widest">⚙️ BOM 表修正</h5>
+                    <h5 class="text-[10px] md:text-xs font-black text-sky-700 mb-2 tracking-widest">⚙️ BOM 表修正</h5>
                     <div class="overflow-x-auto no-scrollbar border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
-                        <table class="w-full text-left text-[10px] whitespace-nowrap min-w-[500px]">
+                        <table class="w-full text-left text-[10px] md:text-xs whitespace-nowrap min-w-[500px]">
                             <thead class="text-slate-500 border-b border-slate-200">
                                 <tr>
                                     <th class="p-1 font-bold">項次</th>
@@ -433,30 +457,22 @@
                 </div>
             </div>
             <div class="flex space-x-3 mt-6">
-                <button onclick="closeModal('front-item-edit-modal')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-4 rounded-xl transition active:scale-95">取消</button>
-                <button onclick="saveFrontEditItem()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-4 rounded-xl transition shadow-md tracking-widest active:scale-95">儲存修改</button>
+                <button onclick="closeModal('front-item-edit-modal')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-4 rounded-xl transition active:scale-95 md:text-lg">取消</button>
+                <button onclick="saveFrontEditItem()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-4 rounded-xl transition shadow-md tracking-widest active:scale-95 md:text-lg">儲存修改</button>
             </div>
         </div>
     </div>
 
     <div id="po-qty-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-sm items-center justify-center p-4 z-[9990]">
-        <div class="bg-white w-full max-w-sm m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
-            <h3 class="font-black text-lg border-b border-slate-100 pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2 text-xl">🛒</span> 建立正式採購單</h3>
+        <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-6 md:p-8 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
+            <h3 class="font-black text-lg md:text-xl border-b border-slate-100 pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2 text-xl">🛒</span> 建立正式採購單</h3>
             <div id="po-qty-list" class="space-y-3 mb-5"></div>
             <div class="flex space-x-3 mt-2 shrink-0">
-                <button onclick="closeModal('po-qty-modal')" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl transition active:scale-95">取消</button>
-                <button id="btn-run-po" onclick="confirmGeneratePO()" class="flex-1 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-black py-3.5 rounded-xl transition shadow-md tracking-widest active:scale-95">確定生成採購單</button>
+                <button onclick="closeModal('po-qty-modal')" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 md:py-4 rounded-xl transition active:scale-95">取消</button>
+                <button id="btn-run-po" onclick="confirmGeneratePO()" class="flex-1 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-black py-3.5 md:py-4 rounded-xl transition shadow-md tracking-widest active:scale-95 md:text-lg">確定生成採購單</button>
             </div>
         </div>
     </div>
-
-    <nav id="core-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9990] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <div onclick="event.stopPropagation(); window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
-        <div onclick="event.stopPropagation(); window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-emerald-600"><span class="text-xl mb-1">📦</span><span class="scale-90">庫存</span></div>
-        <div onclick="event.stopPropagation(); window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></div>
-        <div onclick="event.stopPropagation(); window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
-        <div onclick="event.stopPropagation(); window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
-    </nav>
 
     <audio id="beep-sound" src="data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
 
@@ -471,6 +487,30 @@
         let isScanning = false;
         let currentInvType = '全部'; 
         let currentInvCat = '全部';
+
+        // 🌟 自動換算面積函數 (寬 x 摺數 x 高 x 2 / 10000)
+        function calcNewArea() {
+            let w = parseFloat(document.getElementById('i-width').value) || 0;
+            let h = parseFloat(document.getElementById('i-height').value) || 0;
+            let f = parseFloat(document.getElementById('i-folds').value) || 0;
+            if(w > 0 && h > 0 && f > 0) {
+                let area = (w * f * h * 2) / 10000;
+                document.getElementById('i-area').value = area.toFixed(4);
+            } else {
+                document.getElementById('i-area').value = '';
+            }
+        }
+        function calcEditArea() {
+            let w = parseFloat(document.getElementById('fe-item-width').value) || 0;
+            let h = parseFloat(document.getElementById('fe-item-height').value) || 0;
+            let f = parseFloat(document.getElementById('fe-item-folds').value) || 0;
+            if(w > 0 && h > 0 && f > 0) {
+                let area = (w * f * h * 2) / 10000;
+                document.getElementById('fe-item-area').value = area.toFixed(4);
+            } else {
+                document.getElementById('fe-item-area').value = '';
+            }
+        }
 
         async function safeInsertPO_Draft(payload) {
             try {
@@ -587,7 +627,6 @@
             renderItemSearch();
         }
 
-        // 🌟 新增：開啟冷氣濾網專區
         function openCabinFilterView() {
             openView('cabin-filter', '冷氣濾網 尺寸比對');
             renderCabinFilterList();
@@ -766,7 +805,6 @@
                     }
                 }
 
-                // 🌟 整合版：統一所有警示項目 (動態採購按鈕)
                 let alertGoods = window.inventoryData.filter(i => {
                     let safe = i.safe_stock_level || 0;
                     return i.current_stock <= (safe * 1.5);
@@ -786,7 +824,7 @@
                 } else {
                     filterHtml = alertGoods.map(i => {
                         let qtyHtml = '<span class="text-slate-300">0</span>'; 
-                        let actionOrStatusHtml = `<button onclick="quickAddPO('${i.id}')" class="bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-white text-[10px] font-black px-2 py-1.5 rounded-lg shadow-sm active:scale-95 transition flex items-center justify-center w-full tracking-widest"><span class="mr-1 text-xs">🛒</span> 採購</button>`;
+                        let actionOrStatusHtml = `<button onclick="quickAddPO('${i.id}')" class="bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-white text-[10px] md:text-xs font-black px-2 py-1.5 rounded-lg shadow-sm active:scale-95 transition flex items-center justify-center w-full tracking-widest"><span class="mr-1 text-xs">🛒</span> 採購</button>`;
                         
                         let pQty = 0; let dStr = null; let pStatus = null;
 
@@ -801,15 +839,15 @@
                         }
 
                         if(pQty > 0) {
-                            qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100">${pQty.toFixed(0)}</span>`;
+                            qtyHtml = `<span class="font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded shadow-sm border border-sky-100 md:text-sm">${pQty.toFixed(0)}</span>`;
                             let dateText = (dStr && dStr !== '未定' && dStr !== null) ? String(dStr).slice(5) : '未定';
                             let stText = pStatus || '待處理';
                             let stColor = stText.includes('異常') || stText.includes('遲交') ? 'text-red-600 bg-red-100 border-red-200' : 'text-sky-700 bg-sky-50 border-sky-200';
                             
                             actionOrStatusHtml = `
                                 <div class="flex flex-col items-center justify-center cursor-pointer active:scale-95 transition bg-slate-50 border border-slate-200 rounded-lg py-1 shadow-sm hover:bg-sky-50" onclick="quickAddPO('${i.id}')" title="點擊追加採購">
-                                    <span class="text-[9px] font-bold text-slate-500 leading-none mb-1">${dateText}</span>
-                                    <span class="text-[8px] font-black px-1.5 py-0.5 rounded-sm ${stColor} leading-none whitespace-nowrap shadow-sm border">${stText}</span>
+                                    <span class="text-[9px] md:text-xs font-bold text-slate-500 leading-none mb-1">${dateText}</span>
+                                    <span class="text-[8px] md:text-[10px] font-black px-1.5 py-0.5 rounded-sm ${stColor} leading-none whitespace-nowrap shadow-sm border">${stText}</span>
                                 </div>
                             `;
                         }
@@ -821,14 +859,14 @@
                         let displayHtml = `
                             <div class="flex flex-col overflow-hidden pr-0.5">
                                 <div class="flex items-center mb-0.5">
-                                    <span class="text-[8px] bg-slate-200 text-slate-600 px-1 rounded-sm mr-1 shrink-0 shadow-sm">${typeIcon}</span>
-                                    <span class="font-mono font-black text-slate-800 text-[10px] truncate tracking-wider">${i.item_code}</span>
+                                    <span class="text-[8px] md:text-[10px] bg-slate-200 text-slate-600 px-1 rounded-sm mr-1 shrink-0 shadow-sm">${typeIcon}</span>
+                                    <span class="font-mono font-black text-slate-800 text-[10px] md:text-xs truncate tracking-wider">${i.item_code}</span>
                                 </div>
-                                <div class="text-[9px] font-bold text-slate-500 truncate pl-[18px] leading-tight">${i.item_name}</div>
+                                <div class="text-[9px] md:text-xs font-bold text-slate-500 truncate pl-[18px] md:pl-[24px] leading-tight">${i.item_name}</div>
                             </div>
                         `;
 
-                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0"><td class="py-2 px-1 align-middle overflow-hidden">${displayHtml}</td><td class="py-2 px-1 text-center align-middle font-black text-sm tracking-tight ${stockClass}">${i.current_stock}</td><td class="py-2 px-1 text-center align-middle">${qtyHtml}</td><td class="py-2 px-1 text-center align-middle px-1">${actionOrStatusHtml}</td></tr>`;
+                        return `<tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0"><td class="py-2 px-1 align-middle overflow-hidden">${displayHtml}</td><td class="py-2 px-1 text-center align-middle font-black text-sm md:text-base tracking-tight ${stockClass}">${i.current_stock}</td><td class="py-2 px-1 text-center align-middle">${qtyHtml}</td><td class="py-2 px-1 text-center align-middle px-1">${actionOrStatusHtml}</td></tr>`;
                     }).join('');
                 }
                 const uiFilterStatusTableAll = document.getElementById('ui-filter-status-table-alert');
@@ -845,7 +883,6 @@
             }
         }
 
-        // 🌟 新增：冷氣濾網尺寸比對搜尋
         function searchCabinFilters() {
             const sl = parseFloat(document.getElementById('cf-search-l').value) || 0;
             const sw = parseFloat(document.getElementById('cf-search-w').value) || 0;
@@ -865,12 +902,11 @@
                 i._diff = dl + dw + dh;
             });
 
-            // 依差異度排序，並過濾掉差異過大的 (例如總誤差 > 10cm)
             results.sort((a, b) => a._diff - b._diff);
             let filteredResults = results.filter(i => i._diff <= 10);
 
             if(filteredResults.length === 0) {
-                document.getElementById('cf-results-list').innerHTML = '<p class="text-center text-xs text-red-500 py-6 font-bold col-span-full bg-red-50 rounded-xl border border-red-200">找不到尺寸相近的濾網，請確認輸入是否正確</p>';
+                document.getElementById('cf-results-list').innerHTML = '<p class="text-center text-xs md:text-sm text-red-500 py-6 font-bold col-span-full bg-red-50 rounded-xl border border-red-200">找不到尺寸相近的濾網，請確認輸入是否正確</p>';
                 return;
             }
 
@@ -885,7 +921,7 @@
             }
 
             if(data.length === 0) {
-                container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6 italic col-span-full">目前尚無冷氣濾網資料。</p>';
+                container.innerHTML = '<p class="text-center text-xs md:text-sm text-slate-400 py-6 italic col-span-full">目前尚無冷氣濾網資料。</p>';
                 return;
             }
 
@@ -895,33 +931,32 @@
                 let m = i.applicable_models || '未註明'; let y = i.applicable_years || '未註明';
                 
                 let highlightClass = isSearchResult && i._diff !== undefined && i._diff <= 2 ? 'border-amber-400 bg-amber-50 shadow-md' : 'border-slate-200 bg-white';
-                let badge = isSearchResult && i._diff !== undefined && i._diff <= 2 ? '<span class="absolute top-2 right-2 bg-amber-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-sm animate-pulse">極度吻合</span>' : '';
+                let badge = isSearchResult && i._diff !== undefined && i._diff <= 2 ? '<span class="absolute top-2 right-2 bg-amber-500 text-white text-[8px] md:text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm animate-pulse">極度吻合</span>' : '';
 
                 return `
-                <div class="p-4 rounded-2xl border-2 ${highlightClass} relative flex flex-col transition hover:shadow-md">
+                <div class="p-4 md:p-5 rounded-2xl border-2 ${highlightClass} relative flex flex-col transition hover:shadow-lg">
                     ${badge}
                     <div class="flex items-center space-x-2 mb-2 border-b border-slate-100 pb-2">
-                        <span class="text-[10px] font-mono font-black text-blue-700 bg-blue-100 px-2 py-0.5 rounded border border-blue-200 shadow-sm">${i.item_code}</span>
+                        <span class="text-[10px] md:text-xs font-mono font-black text-blue-700 bg-blue-100 px-2 py-0.5 rounded border border-blue-200 shadow-sm">${i.item_code}</span>
                     </div>
-                    <h4 class="font-black text-sm text-slate-800 leading-tight mb-3">${i.item_name}</h4>
+                    <h4 class="font-black text-sm md:text-base text-slate-800 leading-tight mb-3">${i.item_name}</h4>
                     
-                    <div class="grid grid-cols-3 gap-1.5 text-center bg-slate-50 p-2 rounded-xl mb-3 border border-slate-100 shadow-inner">
-                        <div class="bg-white rounded-lg p-1 border border-slate-100"><p class="text-[9px] text-slate-400 font-bold mb-0.5">長(cm)</p><p class="font-black text-slate-700 text-xs">${l}</p></div>
-                        <div class="bg-white rounded-lg p-1 border border-slate-100"><p class="text-[9px] text-slate-400 font-bold mb-0.5">寬(cm)</p><p class="font-black text-slate-700 text-xs">${w}</p></div>
-                        <div class="bg-white rounded-lg p-1 border border-slate-100"><p class="text-[9px] text-slate-400 font-bold mb-0.5">高(cm)</p><p class="font-black text-slate-700 text-xs">${h}</p></div>
-                        <div class="bg-white rounded-lg p-1 border border-slate-100 col-span-1"><p class="text-[9px] text-slate-400 font-bold mb-0.5">摺數</p><p class="font-black text-sky-700 text-xs">${f}</p></div>
-                        <div class="bg-white rounded-lg p-1 border border-slate-100 col-span-2"><p class="text-[9px] text-slate-400 font-bold mb-0.5">面積</p><p class="font-black text-sky-700 text-xs">${a}</p></div>
+                    <div class="grid grid-cols-3 gap-1.5 md:gap-2 text-center bg-slate-50 p-2 md:p-3 rounded-xl mb-3 border border-slate-100 shadow-inner">
+                        <div class="bg-white rounded-lg p-1 border border-slate-100"><p class="text-[9px] md:text-[10px] text-slate-400 font-bold mb-0.5">長(cm)</p><p class="font-black text-slate-700 text-xs md:text-sm">${l}</p></div>
+                        <div class="bg-white rounded-lg p-1 border border-slate-100"><p class="text-[9px] md:text-[10px] text-slate-400 font-bold mb-0.5">寬(cm)</p><p class="font-black text-slate-700 text-xs md:text-sm">${w}</p></div>
+                        <div class="bg-white rounded-lg p-1 border border-slate-100"><p class="text-[9px] md:text-[10px] text-slate-400 font-bold mb-0.5">高(cm)</p><p class="font-black text-slate-700 text-xs md:text-sm">${h}</p></div>
+                        <div class="bg-white rounded-lg p-1 border border-slate-100 col-span-1"><p class="text-[9px] md:text-[10px] text-slate-400 font-bold mb-0.5">摺數</p><p class="font-black text-sky-700 text-xs md:text-sm">${f}</p></div>
+                        <div class="bg-white rounded-lg p-1 border border-slate-100 col-span-2"><p class="text-[9px] md:text-[10px] text-slate-400 font-bold mb-0.5">面積(m²)</p><p class="font-black text-sky-700 text-xs md:text-sm">${a}</p></div>
                     </div>
 
-                    <div class="bg-blue-50/50 p-2.5 rounded-lg border border-blue-100 text-[10px] space-y-1 mt-auto">
-                        <div class="flex items-start"><span class="font-bold text-blue-700 shrink-0 mr-1 w-10">車型:</span><span class="font-black text-slate-700 break-words flex-1">${m}</span></div>
-                        <div class="flex items-start"><span class="font-bold text-blue-700 shrink-0 mr-1 w-10">年份:</span><span class="font-black text-slate-700 break-words flex-1">${y}</span></div>
+                    <div class="bg-blue-50/50 p-2.5 md:p-3 rounded-lg border border-blue-100 text-[10px] md:text-xs space-y-1.5 mt-auto">
+                        <div class="flex items-start"><span class="font-bold text-blue-700 shrink-0 mr-1 w-10 md:w-12">車型:</span><span class="font-black text-slate-700 break-words flex-1 whitespace-pre-line">${m}</span></div>
+                        <div class="flex items-start border-t border-blue-100 pt-1.5"><span class="font-bold text-blue-700 shrink-0 mr-1 w-10 md:w-12">年份:</span><span class="font-black text-slate-700 break-words flex-1 whitespace-pre-line">${y}</span></div>
                     </div>
                 </div>`;
             }).join('');
         }
 
-        // 🌟 警示列表一鍵採購的功能
         function quickAddPO(id) {
             poCart.add(id);
             updateTopReqBar();
@@ -936,7 +971,6 @@
             const v = document.getElementById('i-category').value; 
             document.getElementById('i-custom-category').classList.toggle('hidden', v !== 'custom'); 
             
-            // 🌟 如果是冷氣濾網，展開專屬欄位
             if(v === '汽車冷氣濾網') {
                 document.getElementById('cf-extra-fields').classList.remove('hidden');
             } else {
@@ -1052,16 +1086,16 @@
                 
                 let borderClass = 'border-slate-200 bg-white'; 
                 let stockClass = 'text-emerald-600';
-                let statusBadge = '<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-lg font-black border border-emerald-200 shadow-sm">庫存正常</span>';
+                let statusBadge = '<span class="text-[9px] md:text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-lg font-black border border-emerald-200 shadow-sm">庫存正常</span>';
 
                 if (isLow) { 
                     borderClass = 'border-red-400 bg-red-50/60'; 
                     stockClass = 'text-red-600'; 
-                    statusBadge = '<span class="text-[9px] bg-red-600 text-white px-2 py-0.5 rounded-lg font-black shadow-sm animate-pulse tracking-widest">🚨 庫存過低</span>';
+                    statusBadge = '<span class="text-[9px] md:text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-lg font-black shadow-sm animate-pulse tracking-widest">🚨 庫存過低</span>';
                 } else if (isWarn) { 
                     borderClass = 'border-amber-400 bg-amber-50/60'; 
                     stockClass = 'text-amber-600'; 
-                    statusBadge = '<span class="text-[9px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-lg font-black border border-amber-300 shadow-sm">⚠️ 庫存警示</span>';
+                    statusBadge = '<span class="text-[9px] md:text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-lg font-black border border-amber-300 shadow-sm">⚠️ 庫存警示</span>';
                 }
 
                 const chk = window.latestChecks[i.id]; 
@@ -1069,34 +1103,34 @@
                 let lastCheckText = chk ? `${chk.date} (${chk.emp})` : `<span class="text-red-500">從未盤點過</span>`;
 
                 return `
-                <div class="p-4 rounded-[1.5rem] border-2 ${borderClass} flex flex-col shadow-sm transition-all relative bg-white hover:shadow-md">
+                <div class="p-4 md:p-5 rounded-[1.5rem] border-2 ${borderClass} flex flex-col shadow-sm transition-all relative bg-white hover:shadow-md">
                     <div class="flex justify-between items-start mb-3 border-b border-slate-100/80 pb-3">
                         <div class="flex flex-col pr-3 min-w-0 flex-1">
                             <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
-                                <span class="text-[11px] font-mono font-black text-white bg-slate-800 px-2 py-0.5 rounded-md shadow-sm tracking-widest">${i.item_code}</span>
+                                <span class="text-[11px] md:text-xs font-mono font-black text-white bg-slate-800 px-2 py-0.5 rounded-md shadow-sm tracking-widest">${i.item_code}</span>
                                 ${statusBadge}
                             </div>
-                            <h4 class="font-black text-[15px] text-slate-800 leading-snug mb-1 truncate">${i.item_name}</h4>
-                            <p class="text-[10px] text-slate-500 font-bold truncate">分類: ${i.item_type} / ${i.category || '未分類'} <span class="mx-1 text-slate-300">|</span> 規格: ${i.specification || '無'}</p>
+                            <h4 class="font-black text-[15px] md:text-lg text-slate-800 leading-snug mb-1 truncate">${i.item_name}</h4>
+                            <p class="text-[10px] md:text-xs text-slate-500 font-bold truncate">分類: ${i.item_type} / ${i.category || '未分類'} <span class="mx-1 text-slate-300">|</span> 規格: ${i.specification || '無'}</p>
                         </div>
-                        <label class="flex flex-col items-center justify-center cursor-pointer bg-slate-50 border border-slate-200 p-2.5 rounded-xl shadow-sm z-10 hover:bg-sky-50 hover:border-sky-300 transition active:scale-95 shrink-0 h-14 w-14">
-                            <input type="checkbox" class="w-4 h-4 accent-sky-600 mb-1" onchange="togglePO('${i.id}', this)" ${inCart}>
-                            <span class="text-[8px] font-black text-slate-600 tracking-widest">採購</span>
+                        <label class="flex flex-col items-center justify-center cursor-pointer bg-slate-50 border border-slate-200 p-2.5 md:p-3 rounded-xl shadow-sm z-10 hover:bg-sky-50 hover:border-sky-300 transition active:scale-95 shrink-0 h-14 w-14 md:h-16 md:w-16">
+                            <input type="checkbox" class="w-4 h-4 md:w-5 md:h-5 accent-sky-600 mb-1" onchange="togglePO('${i.id}', this)" ${inCart}>
+                            <span class="text-[8px] md:text-[10px] font-black text-slate-600 tracking-widest">採購</span>
                         </label>
                     </div>
                     
-                    <div class="grid grid-cols-4 gap-1.5 text-center bg-slate-50 p-2 rounded-xl mb-3 border border-slate-100">
+                    <div class="grid grid-cols-4 gap-1.5 text-center bg-slate-50 p-2 md:p-3 rounded-xl mb-3 border border-slate-100">
                         <div class="flex flex-col justify-center bg-white rounded-lg p-1.5 shadow-sm border border-slate-100">
-                            <span class="text-[9px] text-slate-400 font-bold mb-1">現有庫存</span>
-                            <input type="number" value="${i.current_stock}" onchange="inlineUpdateCurrentStock('${i.id}', ${i.current_stock}, this.value, this)" class="w-full bg-transparent text-center font-black text-lg ${stockClass} outline-none focus:border-b-2 focus:border-emerald-500 transition-all p-0">
+                            <span class="text-[9px] md:text-[10px] text-slate-400 font-bold mb-1">現有庫存</span>
+                            <input type="number" value="${i.current_stock}" onchange="inlineUpdateCurrentStock('${i.id}', ${i.current_stock}, this.value, this)" class="w-full bg-transparent text-center font-black text-lg md:text-xl ${stockClass} outline-none focus:border-b-2 focus:border-emerald-500 transition-all p-0">
                         </div>
                         <div class="flex flex-col justify-center bg-white rounded-lg p-1.5 shadow-sm border border-slate-100">
-                            <span class="text-[9px] text-slate-400 font-bold mb-1">低水位</span>
-                            <input type="number" value="${safe}" onchange="inlineUpdateSafeStock('${i.id}', this.value, ${safe}, this)" class="w-full bg-transparent text-center font-black text-sm text-red-500 outline-none focus:border-b-2 focus:border-red-400 transition-all p-0">
+                            <span class="text-[9px] md:text-[10px] text-slate-400 font-bold mb-1">低水位</span>
+                            <input type="number" value="${safe}" onchange="inlineUpdateSafeStock('${i.id}', this.value, ${safe}, this)" class="w-full bg-transparent text-center font-black text-sm md:text-base text-red-500 outline-none focus:border-b-2 focus:border-red-400 transition-all p-0">
                         </div>
                         <div class="flex flex-col justify-center bg-white rounded-lg p-1.5 shadow-sm border border-slate-100">
-                            <span class="text-[9px] text-slate-400 font-bold mb-1">生產週期</span>
-                            <select onchange="inlineUpdateLeadTime('${i.id}', this.value)" class="w-full bg-transparent font-black text-xs text-slate-700 outline-none text-center-last appearance-none p-0">
+                            <span class="text-[9px] md:text-[10px] text-slate-400 font-bold mb-1">生產週期</span>
+                            <select onchange="inlineUpdateLeadTime('${i.id}', this.value)" class="w-full bg-transparent font-black text-xs md:text-sm text-slate-700 outline-none text-center-last appearance-none p-0">
                                 <option value="15" ${i.lead_time_days==15?'selected':''}>15天</option>
                                 <option value="30" ${i.lead_time_days==30?'selected':''}>30天</option>
                                 <option value="45" ${i.lead_time_days==45?'selected':''}>45天</option>
@@ -1105,8 +1139,8 @@
                             </select>
                         </div>
                         <div class="flex flex-col justify-center bg-white rounded-lg p-1.5 shadow-sm border border-slate-100">
-                            <span class="text-[9px] text-slate-400 font-bold mb-1">盤點頻率</span>
-                            <select onchange="inlineUpdateCycle('${i.id}', this.value)" class="w-full bg-transparent font-black text-xs text-slate-700 outline-none text-center-last appearance-none p-0">
+                            <span class="text-[9px] md:text-[10px] text-slate-400 font-bold mb-1">盤點頻率</span>
+                            <select onchange="inlineUpdateCycle('${i.id}', this.value)" class="w-full bg-transparent font-black text-xs md:text-sm text-slate-700 outline-none text-center-last appearance-none p-0">
                                 <option value="7" ${i.stocktake_cycle==7?'selected':''}>7天</option>
                                 <option value="30" ${i.stocktake_cycle==30?'selected':''}>30天</option>
                                 <option value="60" ${i.stocktake_cycle==60?'selected':''}>60天</option>
@@ -1115,8 +1149,8 @@
                         </div>
                     </div>
 
-                    <div class="text-[10px] font-bold bg-slate-100/80 px-3 py-2 rounded-lg text-slate-500 flex items-center justify-between border border-slate-200/50 mt-auto">
-                        <span class="flex items-center tracking-widest"><span class="mr-1 text-sm">🕒</span> 最新盤點</span>
+                    <div class="text-[10px] md:text-xs font-bold bg-slate-100/80 px-3 py-2 md:py-2.5 rounded-lg text-slate-500 flex items-center justify-between border border-slate-200/50 mt-auto">
+                        <span class="flex items-center tracking-widest"><span class="mr-1 text-sm md:text-base">🕒</span> 最新盤點</span>
                         <span class="text-slate-800 font-black" id="last-check-${i.id}">${lastCheckText}</span>
                     </div>
                 </div>`;
@@ -1127,7 +1161,6 @@
             const newVal = parseInt(newValStr) || 0; 
             if(newVal === oldVal) return; 
 
-            // 本地瞬間更新
             let item = window.inventoryData.find(x => x.id === id);
             if(item) item.safe_stock_level = newVal;
             if(inputEl) inputEl.setAttribute('onchange', `inlineUpdateSafeStock('${id}', this.value, ${newVal}, this)`);
@@ -1434,7 +1467,6 @@
             document.getElementById('c-total-qty').value = Math.max(0, parseInt(document.getElementById('c-total-qty').value) + val); 
         }
 
-        // 🌟 防護盤點寫入錯誤機制
         async function submitCount() { 
             const id = document.getElementById('c-item-id').value; 
             const newVal = parseInt(document.getElementById('c-total-qty').value); 
@@ -1496,11 +1528,11 @@
                 html += `
                 <tr>
                     <td class="p-2 text-slate-300 text-center font-black">${i+1}</td>
-                    <td class="p-1"><select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold bom-mat select-arrow truncate text-slate-700 focus:border-sky-500 outline-none shadow-inner">${opts}</select></td>
-                    <td class="p-1"><input type="number" step="any" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-black text-sky-700 text-center bom-qty outline-none focus:border-sky-500 shadow-inner" value="${r.usage}" oninput="calcBomLoss(this)"></td>
-                    <td class="p-1"><input type="number" step="any" class="w-full p-2 bg-amber-50 border border-amber-200 rounded-lg text-xs font-black text-amber-700 text-center bom-loss outline-none focus:border-amber-500 shadow-inner" value="${r.loss||0}" oninput="calcBomLoss(this)"></td>
+                    <td class="p-1"><select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] md:text-xs font-bold bom-mat select-arrow truncate text-slate-700 focus:border-sky-500 outline-none shadow-inner">${opts}</select></td>
+                    <td class="p-1"><input type="number" step="any" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs md:text-sm font-black text-sky-700 text-center bom-qty outline-none focus:border-sky-500 shadow-inner" value="${r.usage}" oninput="calcBomLoss(this)"></td>
+                    <td class="p-1"><input type="number" step="any" class="w-full p-2 bg-amber-50 border border-amber-200 rounded-lg text-xs md:text-sm font-black text-amber-700 text-center bom-loss outline-none focus:border-amber-500 shadow-inner" value="${r.loss||0}" oninput="calcBomLoss(this)"></td>
                     <td class="p-1">
-                        <select class="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold select-arrow bom-unit outline-none focus:border-sky-500 shadow-sm">
+                        <select class="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs md:text-sm font-bold select-arrow bom-unit outline-none focus:border-sky-500 shadow-sm">
                             <option value="米平方" ${r.unit==='米平方'?'selected':''}>米平方</option>
                             <option value="米" ${r.unit==='米'?'selected':''}>米</option>
                             <option value="個" ${r.unit==='個'?'selected':''}>個</option>
@@ -1508,7 +1540,7 @@
                             <option value="條" ${r.unit==='條'?'selected':''}>條</option>
                         </select>
                     </td>
-                    <td class="p-1"><input type="number" class="w-full p-2 bg-slate-100 border border-transparent rounded-lg text-xs font-black text-sky-900 text-center bom-total shadow-inner" value="${r.total_qty}" readonly></td>
+                    <td class="p-1"><input type="number" class="w-full p-2 bg-slate-100 border border-transparent rounded-lg text-xs md:text-sm font-black text-sky-900 text-center bom-total shadow-inner" value="${r.total_qty}" readonly></td>
                 </tr>`;
             }
             document.getElementById(tbodyId).innerHTML = html;
@@ -1519,26 +1551,6 @@
             const usage = parseFloat(tr.querySelector('.bom-qty').value) || 0; 
             const loss = parseFloat(tr.querySelector('.bom-loss').value) || 0; 
             tr.querySelector('.bom-total').value = usage > 0 ? (usage * (1 + loss / 100)).toFixed(2) : ''; 
-        }
-
-        function checkCustomCategory() { 
-            const v = document.getElementById('i-category').value; 
-            document.getElementById('i-custom-category').classList.toggle('hidden', v !== 'custom'); 
-            
-            if(v === '汽車冷氣濾網') {
-                document.getElementById('cf-extra-fields').classList.remove('hidden');
-            } else {
-                document.getElementById('cf-extra-fields').classList.add('hidden');
-            }
-        }
-        
-        function checkFrontEditCategory() {
-            const v = document.getElementById('fe-item-cat').value; 
-            if(v === '汽車冷氣濾網') {
-                document.getElementById('fe-cf-extra-fields').classList.remove('hidden');
-            } else {
-                document.getElementById('fe-cf-extra-fields').classList.add('hidden');
-            }
         }
 
         function extractBomData(tbodyId) { 
@@ -1602,31 +1614,31 @@
             
             if(!container) return;
             if(res.length === 0) { 
-                container.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 italic">無符合結果。</div>'; 
+                container.innerHTML = '<div class="text-center text-xs md:text-sm text-slate-400 py-6 italic col-span-full">無符合結果。</div>'; 
                 return; 
             }
 
             container.innerHTML = res.map(i => {
                 let safeBom = getSafeArray(i.bom_data);
                 let bomHtml = safeBom.length > 0 ? `<div class="mt-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200"><p class="text-[10px] font-black text-slate-500 mb-1.5 border-b border-slate-200 pb-1 uppercase tracking-widest flex items-center"><span class="mr-1">⚙️</span> BOM 原料構成</p><div class="space-y-1">` + 
-                    safeBom.map(b => `<div class="flex justify-between text-xs items-center"><span class="font-bold text-slate-700">${b.material}</span><span class="font-black text-indigo-700 bg-white px-1.5 py-0.5 rounded shadow-sm border border-slate-100">${b.total_qty} <span class="text-[9px] text-slate-400">${b.unit}</span></span></div>`).join('') + `</div></div>` : `<p class="text-[10px] text-slate-400 italic mt-2 text-center bg-slate-50 py-1.5 rounded-lg">無綁定 BOM 表資料</p>`;
+                    safeBom.map(b => `<div class="flex justify-between text-xs md:text-sm items-center"><span class="font-bold text-slate-700">${b.material}</span><span class="font-black text-indigo-700 bg-white px-1.5 py-0.5 rounded shadow-sm border border-slate-100">${b.total_qty} <span class="text-[9px] text-slate-400">${b.unit}</span></span></div>`).join('') + `</div></div>` : `<p class="text-[10px] md:text-xs text-slate-400 italic mt-2 text-center bg-slate-50 py-1.5 rounded-lg">無綁定 BOM 表資料</p>`;
 
                 return `
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm relative transition-all flex flex-col">
+                <div class="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm relative transition-all flex flex-col hover:shadow-lg">
                     <div class="flex items-center space-x-2 mb-1">
-                        <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">${i.category || '未分類'}</span>
-                        <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">${i.item_type}</span>
+                        <span class="text-[10px] md:text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">${i.category || '未分類'}</span>
+                        <span class="text-[10px] md:text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">${i.item_type}</span>
                     </div>
                     
-                    <h4 class="font-black text-2xl text-indigo-700 font-mono mb-1 tracking-wider">${i.item_code}</h4>
-                    <p class="font-black text-base text-slate-800 leading-tight mb-3">${i.item_name}</p>
+                    <h4 class="font-black text-2xl md:text-3xl text-indigo-700 font-mono mb-1 tracking-wider">${i.item_code}</h4>
+                    <p class="font-black text-base md:text-lg text-slate-800 leading-tight mb-3">${i.item_name}</p>
                     
-                    <div class="flex space-x-2 text-xs font-bold mt-2 border-t border-slate-100 pt-3">
+                    <div class="flex space-x-2 text-xs md:text-sm font-bold mt-2 border-t border-slate-100 pt-3">
                         <div class="bg-emerald-50 text-emerald-700 px-2.5 py-1.5 rounded-lg border border-emerald-100 flex-1 flex items-center justify-between shadow-inner">
-                            <span class="text-[10px]">📦 現庫</span><span class="text-sm font-black">${i.current_stock}</span>
+                            <span class="text-[10px] md:text-xs">📦 現庫</span><span class="text-sm md:text-base font-black">${i.current_stock}</span>
                         </div>
                         <div class="bg-sky-50 text-sky-700 px-2.5 py-1.5 rounded-lg border border-sky-100 flex-1 flex items-center justify-between shadow-inner">
-                            <span class="text-[10px]">生產週期</span><span class="text-sm font-black">${i.lead_time_days}<span class="text-[9px] font-bold ml-0.5">天</span></span>
+                            <span class="text-[10px] md:text-xs">生產週期</span><span class="text-sm md:text-base font-black">${i.lead_time_days}<span class="text-[9px] md:text-[10px] font-bold ml-0.5">天</span></span>
                         </div>
                     </div>
                     
@@ -1637,12 +1649,12 @@
                             <svg class="item-barcode w-full h-12 object-contain" data-value="${i.item_code}"></svg>
                         </div>
                         <div class="flex space-x-2">
-                            <button onclick="downloadBarcode('${i.item_code}')" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-2 rounded-xl shadow-md active:scale-95 transition flex justify-center items-center text-xs tracking-widest"><span class="mr-1">📥</span>下載圖片</button>
-                            <button onclick="printInlineBarcode('${i.id}')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-black py-2 rounded-xl shadow-md active:scale-95 transition flex justify-center items-center text-xs tracking-widest"><span class="mr-1">🖨️</span>列印標籤</button>
+                            <button onclick="downloadBarcode('${i.item_code}')" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-black py-2 md:py-2.5 rounded-xl shadow-md active:scale-95 transition flex justify-center items-center text-xs md:text-sm tracking-widest"><span class="mr-1">📥</span>下載圖片</button>
+                            <button onclick="printInlineBarcode('${i.id}')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-black py-2 md:py-2.5 rounded-xl shadow-md active:scale-95 transition flex justify-center items-center text-xs md:text-sm tracking-widest"><span class="mr-1">🖨️</span>列印標籤</button>
                         </div>
                         
-                        <button onclick="openFrontEdit('${i.id}')" class="w-full bg-white hover:bg-sky-50 text-sky-700 font-black py-2.5 rounded-lg text-xs active:scale-95 transition border border-slate-200 shadow-sm flex justify-center items-center">
-                            <span class="mr-1.5 text-sm">✏️</span> 編輯基本資料與 BOM
+                        <button onclick="openFrontEdit('${i.id}')" class="w-full bg-white hover:bg-sky-50 text-sky-700 font-black py-2.5 md:py-3 rounded-lg text-xs md:text-sm active:scale-95 transition border border-slate-200 shadow-sm flex justify-center items-center">
+                            <span class="mr-1.5 text-sm md:text-base">✏️</span> 編輯基本資料與 BOM
                         </button>
                     </div>
                 </div>`;
