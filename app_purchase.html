@@ -9,24 +9,32 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        body { background: #e2e8f0; font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; padding-bottom: 80px;}
-        #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
+        /* 手機版保留底部空間 */
+        @media (max-width: 767px) { body { padding-bottom: 80px; } }
+        /* 電腦版移除底部空間與特定背景設定 */
+        @media (min-width: 768px) { body { background: #f8fafc; } }
+        
         .view-panel { display: none; animation: fadeIn 0.3s ease; } .view-panel.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.8); }
+        .glass-card { background: #ffffff; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(226, 232, 240, 0.8); }
         .modal { display: none !important; } .modal.active { display: flex !important; z-index: 200; }
         .select-arrow { appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-size: 1.5em 1.5em; background-position: right 0.5rem center; background-repeat: no-repeat; padding-right: 2rem; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         
-        nav { display: none !important; }
-        #core-bottom-nav { display: flex !important; }
-        
+        @media print {
+            body * { visibility: hidden; }
+            #pdf-preview-modal, #pdf-preview-modal * { visibility: visible; }
+            #app-container, nav, aside { display: none !important; }
+            .print-break { page-break-after: always; }
+        }
+
         @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         .toast-msg { animation: slideInLeft 0.4s ease-out forwards; }
     </style>
 </head>
-<body class="text-slate-800 relative">
+<body class="text-slate-800 bg-slate-50 md:flex md:h-screen md:overflow-hidden relative w-full">
 
     <div id="pdf-preview-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-sm z-[9999] hidden flex-col">
         <div class="flex justify-between items-center p-4 bg-slate-800 text-white shrink-0 shadow-md">
@@ -49,8 +57,29 @@
         <p class="text-xs font-bold text-slate-400 tracking-wider">系統載入中...</p>
     </div>
 
-    <div id="app-container" class="max-w-md mx-auto shadow-2xl relative hidden">
-        <header class="bg-slate-900 text-white px-4 py-3 shadow-md sticky top-0 z-50 flex items-center justify-between h-14 relative">
+    <aside class="hidden md:flex w-64 bg-slate-900 text-white flex-col h-full shadow-2xl shrink-0 z-20 overflow-y-auto no-scrollbar">
+        <div class="p-6 pb-4 border-b border-slate-800 mb-4 sticky top-0 bg-slate-900 z-10">
+            <h1 class="text-3xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-300">HYPASS</h1>
+            <span class="text-[10px] text-slate-400 tracking-[0.2em] uppercase font-bold mt-1 block">ERP Frontend</span>
+        </div>
+        <nav class="flex-1 px-4 space-y-2 pb-6">
+            <button onclick="window.location.href='app_hr.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">👨‍💼</span> 員工中心</button>
+            <button onclick="window.location.href='app_inventory.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">📦</span> 庫存大盤</button>
+            <button onclick="window.location.href='app_purchase.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition bg-amber-600 text-white shadow-md"><span class="mr-3 text-xl">🛒</span> 採購中心</button>
+            <button onclick="window.location.href='app_sales.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">💼</span> 業務中心</button>
+            <button onclick="window.location.href='app_finance.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">💰</span> 財務中心</button>
+            <div class="pt-4 mt-4 border-t border-slate-800"></div>
+            <button onclick="window.location.href='admin.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-amber-500 hover:text-amber-400 hover:bg-slate-800 border border-slate-700"><span class="mr-3 text-xl">👑</span> 指揮中心 (老闆)</button>
+        </nav>
+        <div class="p-4 border-t border-slate-800 bg-slate-900/50 sticky bottom-0">
+            <div class="text-[10px] text-slate-400 mb-1 px-2 font-bold tracking-widest">登入身分</div>
+            <div id="desktop-user-badge" class="font-black text-amber-400 px-2 truncate">載入中...</div>
+        </div>
+    </aside>
+
+    <div id="app-container" class="flex-1 flex-col h-full relative hidden overflow-y-auto md:overflow-y-hidden w-full max-w-full">
+        
+        <header class="md:hidden bg-slate-900 text-white px-4 py-3 shadow-md sticky top-0 z-50 flex items-center justify-between h-14 relative shrink-0">
             <button id="btn-back" onclick="backToDash()" class="hidden mr-2 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition shrink-0 flex items-center">🔙 返回</button>
             <div class="flex-1 min-w-0 flex justify-center text-center">
                 <h1 class="text-base sm:text-lg font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-200 truncate px-2" id="header-title">採購管理中心</h1>
@@ -58,114 +87,112 @@
             <div class="shrink-0 text-[10px] font-bold bg-white/10 px-2 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
         </header>
 
-        <main class="p-4 relative z-10">
-            
-            <div id="view-dashboard" class="view-panel active space-y-4">
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 relative z-10 w-full pb-24 md:pb-8">
+            <div class="max-w-7xl mx-auto w-full">
                 
-                <div class="glass-card p-3 rounded-[1.5rem] shadow-sm border-t-4 border-amber-500 relative overflow-hidden">
-                    <h3 class="font-black text-slate-800 text-sm mb-3 flex items-center justify-between px-1">
-                        <span class="flex items-center"><span class="mr-1.5 text-lg">📤</span> 最新採購狀況</span>
-                        <span class="text-[9px] bg-amber-100 text-amber-700 px-2 py-1 rounded-md font-black border border-amber-200 shadow-sm">進行中單據</span>
-                    </h3>
-                    <div class="border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1">
-                        <table class="w-full text-left text-[10px] table-fixed">
-                            <thead class="text-slate-500 border-b border-slate-200 bg-slate-100/50">
-                                <tr>
-                                    <th class="py-1.5 px-1 font-bold text-left w-[36%]">單號/供應商</th>
-                                    <th class="py-1.5 px-1 font-bold text-left w-[42%]">摘要 (品名與數量)</th>
-                                    <th class="py-1.5 px-1 font-bold text-center w-[22%]">狀態</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ui-dash-po-status" class="divide-y divide-slate-100 bg-white rounded-lg">
-                                <tr><td colspan="3" class="p-4 text-center text-slate-400 font-bold">資料讀取中...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 mt-4">
-                    <button onclick="openPoManagement()" class="glass-card p-5 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-amber-200 hover:bg-amber-50 col-span-2 bg-amber-50/50">
-                        <span class="text-3xl mb-2 drop-shadow-md">📝</span>
-                        <span class="font-black text-amber-800 tracking-wider text-base mb-0.5">待處理採購單</span>
-                        <span class="font-bold text-amber-600/70 text-[10px] tracking-wider">核准庫存需求 / 產出 PDF</span>
-                    </button>
+                <div id="view-dashboard" class="view-panel active space-y-4 md:space-y-6">
                     
-                    <button onclick="openSupplierList()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-indigo-200 hover:bg-indigo-50">
-                        <span class="text-3xl mb-1.5 drop-shadow-md">🏢</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">供應商管理</span>
-                    </button>
-
-                    <button onclick="openHistory()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
-                        <span class="text-3xl mb-1.5 drop-shadow-md">🗂️</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">採購紀錄</span>
-                    </button>
-                </div>
-            </div>
-
-            <div id="view-supplier-list" class="view-panel space-y-4">
-                <div class="glass-card p-4 rounded-[2rem] shadow-sm border-t-4 border-indigo-500 relative pb-10">
-                    <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">🏢</span>供應商紀錄</h3>
-                        <button onclick="openView('supplier-add', '新增供應商')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow-sm active:scale-95 transition">➕ 新增</button>
-                    </div>
-                    <div id="ui-supplier-list" class="space-y-3 max-h-[65vh] overflow-y-auto no-scrollbar pr-1">
-                        <p class="text-center text-xs text-slate-400 py-6">載入中...</p>
-                    </div>
-                </div>
-            </div>
-
-            <div id="view-supplier-add" class="view-panel space-y-5">
-                <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-indigo-500">
-                    <h3 class="font-black text-slate-800 pl-1 text-lg mb-4 flex items-center"><span class="mr-2">🏢</span> 建立供應商檔案</h3>
-                    <form onsubmit="saveSupplier(event)" class="space-y-4">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="col-span-2"><input type="text" id="s-name" placeholder="供應商名稱 (必填)" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none focus:border-indigo-500" required></div>
-                            <div><input type="text" id="s-code" placeholder="廠商代號 (例: S001)" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 uppercase outline-none focus:border-indigo-500" required></div>
-                            <div><input type="text" id="s-tax" placeholder="統一編號" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none focus:border-indigo-500"></div>
-                            
-                            <div class="col-span-2 border-t border-slate-100 pt-3"><h5 class="text-[10px] font-black text-slate-500 mb-2">📞 聯絡窗口</h5></div>
-                            <div><input type="text" id="s-contact" placeholder="聯絡人姓名" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500"></div>
-                            <div><input type="text" id="s-phone" placeholder="聯絡電話" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500"></div>
-
-                            <div class="col-span-2 border-t border-slate-100 pt-3"><h5 class="text-[10px] font-black text-slate-500 mb-2">💰 財務與付款</h5></div>
-                            <div class="col-span-2"><select id="s-pay" class="w-full p-3 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-indigo-500" required><option value="月結30天">月結 30 天</option><option value="月結60天">月結 60 天</option><option value="貨到付款">貨到付款 (C.O.D)</option><option value="匯款預付">匯款預付 (T/T)</option></select></div>
-                            <div class="col-span-2"><input type="text" id="s-bank" placeholder="匯款銀行帳號資訊 (銀行/代碼/帳號/戶名)" class="w-full p-3 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500"></div>
+                    <div class="glass-card p-3 md:p-5 rounded-[1.5rem] md:rounded-[2rem] shadow-sm border-t-4 border-amber-500 relative overflow-hidden">
+                        <h3 class="font-black text-slate-800 text-sm md:text-base mb-3 flex items-center justify-between px-1">
+                            <span class="flex items-center"><span class="mr-1.5 text-lg md:text-xl">📤</span> 最新採購狀況</span>
+                            <span class="text-[9px] md:text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-md font-black border border-amber-200 shadow-sm">進行中單據</span>
+                        </h3>
+                        <div class="border border-slate-200 rounded-xl shadow-inner bg-slate-50 p-1 md:p-2">
+                            <table class="w-full text-left text-[10px] md:text-sm table-fixed">
+                                <thead class="text-slate-500 border-b border-slate-200 bg-slate-100/50">
+                                    <tr>
+                                        <th class="py-1.5 px-1 font-bold text-left w-[36%] md:w-[35%]">單號/供應商</th>
+                                        <th class="py-1.5 px-1 font-bold text-left w-[42%] md:w-[45%]">摘要 (品名與數量)</th>
+                                        <th class="py-1.5 px-1 font-bold text-center w-[22%] md:w-[20%]">狀態</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ui-dash-po-status" class="divide-y divide-slate-100 bg-white rounded-lg">
+                                    <tr><td colspan="3" class="p-4 text-center text-slate-400 font-bold">資料讀取中...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-2xl shadow-md active:scale-95 transition tracking-widest text-base mt-4">💾 儲存供應商檔案</button>
-                    </form>
-                </div>
-            </div>
+                    </div>
 
-            <div id="view-po-management" class="view-panel space-y-4">
-                <div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-amber-600 relative pb-10">
-                    <div class="flex flex-col mb-4 border-b border-slate-100 pb-3">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center mb-1"><span class="mr-2 text-xl">📝</span>待處理採購單</h3>
-                        <p class="text-[10px] text-slate-500 font-bold">此處顯示由庫存端提出之採購需求。需具備<strong class="text-red-600">核准權限</strong>方可產出正式 PDF 採購單。</p>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mt-4 md:mt-8">
+                        <button onclick="openPoManagement()" class="glass-card p-5 md:p-8 rounded-[1.5rem] md:rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-amber-200 hover:bg-amber-50 col-span-2 md:col-span-1 bg-amber-50/50 h-full">
+                            <span class="text-3xl md:text-5xl mb-2 drop-shadow-md">📝</span>
+                            <span class="font-black text-amber-800 tracking-wider text-base md:text-lg mb-0.5 md:mb-1">待處理採購單</span>
+                            <span class="font-bold text-amber-600/70 text-[10px] md:text-xs tracking-wider">核准庫存需求 / 產出 PDF</span>
+                        </button>
+                        
+                        <button onclick="openSupplierList()" class="glass-card p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-indigo-200 hover:bg-indigo-50 h-full">
+                            <span class="text-3xl md:text-5xl mb-1.5 md:mb-3 drop-shadow-md">🏢</span>
+                            <span class="font-black text-slate-700 text-xs md:text-base tracking-widest mb-0.5">供應商管理</span>
+                        </button>
+
+                        <button onclick="openHistory()" class="glass-card p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50 h-full">
+                            <span class="text-3xl md:text-5xl mb-1.5 md:mb-3 drop-shadow-md">🗂️</span>
+                            <span class="font-black text-slate-700 text-xs md:text-base tracking-widest mb-0.5">採購紀錄</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="view-supplier-list" class="view-panel space-y-4 md:space-y-6 h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-4 md:mb-6">
+                        <h3 class="font-black text-slate-800 text-lg md:text-2xl flex items-center"><span class="mr-2 text-xl md:text-3xl">🏢</span>供應商紀錄</h3>
+                        <button onclick="openView('supplier-add', '新增供應商')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-black shadow-md active:scale-95 transition flex items-center">
+                            <span class="mr-1">➕</span> 新增
+                        </button>
+                    </div>
+                    <div id="ui-supplier-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-16 md:pb-4">
+                        <div class="col-span-full text-center text-xs text-slate-400 py-6">載入中...</div>
+                    </div>
+                </div>
+
+                <div id="view-supplier-add" class="view-panel space-y-5">
+                    <div class="max-w-3xl mx-auto glass-card p-5 md:p-8 rounded-[2rem] shadow-sm border-t-4 border-indigo-500">
+                        <h3 class="font-black text-slate-800 pl-1 text-lg md:text-xl mb-4 flex items-center"><span class="mr-2">🏢</span> 建立供應商檔案</h3>
+                        <form onsubmit="saveSupplier(event)" class="space-y-4">
+                            <div class="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-4">
+                                <div class="col-span-2"><input type="text" id="s-name" placeholder="供應商名稱 (必填)" class="w-full p-3 md:p-3.5 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none focus:border-indigo-500" required></div>
+                                <div><input type="text" id="s-code" placeholder="廠商代號 (例: S001)" class="w-full p-3 md:p-3.5 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 uppercase outline-none focus:border-indigo-500" required></div>
+                                <div><input type="text" id="s-tax" placeholder="統一編號" class="w-full p-3 md:p-3.5 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 outline-none focus:border-indigo-500"></div>
+                                
+                                <div class="col-span-2 border-t border-slate-100 pt-3 md:pt-4"><h5 class="text-[10px] md:text-xs font-black text-slate-500 mb-2">📞 聯絡窗口</h5></div>
+                                <div><input type="text" id="s-contact" placeholder="聯絡人姓名" class="w-full p-3 md:p-3.5 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500"></div>
+                                <div><input type="text" id="s-phone" placeholder="聯絡電話" class="w-full p-3 md:p-3.5 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500"></div>
+
+                                <div class="col-span-2 border-t border-slate-100 pt-3 md:pt-4"><h5 class="text-[10px] md:text-xs font-black text-slate-500 mb-2">💰 財務與付款</h5></div>
+                                <div class="col-span-2"><select id="s-pay" class="w-full p-3 md:p-3.5 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 select-arrow outline-none focus:border-indigo-500" required><option value="月結30天">月結 30 天</option><option value="月結60天">月結 60 天</option><option value="貨到付款">貨到付款 (C.O.D)</option><option value="匯款預付">匯款預付 (T/T)</option></select></div>
+                                <div class="col-span-2"><input type="text" id="s-bank" placeholder="匯款銀行帳號資訊 (銀行/代碼/帳號/戶名)" class="w-full p-3 md:p-3.5 bg-white rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500"></div>
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-2xl shadow-md active:scale-95 transition tracking-widest text-base md:text-lg mt-6">💾 儲存供應商檔案</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="view-po-management" class="view-panel space-y-4 md:space-y-6 h-full flex flex-col">
+                    <div class="flex flex-col mb-2 md:mb-6 border-b border-slate-200 pb-3 md:pb-4">
+                        <h3 class="font-black text-slate-800 text-lg md:text-2xl flex items-center mb-1"><span class="mr-2 text-xl md:text-3xl">📝</span>待處理採購單</h3>
+                        <p class="text-[10px] md:text-xs text-slate-500 font-bold">此處顯示由庫存端提出之採購需求。需具備<strong class="text-red-600">核准權限</strong>方可產出正式 PDF 採購單。</p>
                     </div>
                     
-                    <div id="ui-pending-pos" class="space-y-3 max-h-[65vh] overflow-y-auto no-scrollbar pr-1">
-                        <p class="text-center text-xs text-slate-400 py-6">載入中...</p>
+                    <div id="ui-pending-pos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-16 md:pb-4">
+                        <div class="col-span-full text-center text-xs text-slate-400 py-6">載入中...</div>
                     </div>
                 </div>
-            </div>
 
-            <div id="view-history" class="view-panel space-y-4">
-                <div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-slate-700 relative pb-10">
-                    <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-1 text-xl">🗂️</span>採購紀錄</h3>
-                        <input type="month" id="hist-month-filter" class="bg-slate-50 border border-slate-300 rounded-lg p-1.5 text-xs font-black text-slate-700 outline-none focus:border-slate-500 shadow-inner" onchange="openHistory()">
+                <div id="view-history" class="view-panel space-y-4 md:space-y-6 h-full flex flex-col">
+                    <div class="flex justify-between items-end mb-2 md:mb-6 border-b border-slate-200 pb-3 md:pb-4">
+                        <h3 class="font-black text-slate-800 text-lg md:text-2xl flex items-center"><span class="mr-1 text-xl md:text-3xl">🗂️</span>採購紀錄</h3>
+                        <div class="flex flex-col items-end">
+                            <label class="text-[9px] md:text-[10px] font-bold text-slate-500 mb-0.5 mr-1">選擇月份</label>
+                            <input type="month" id="hist-month-filter" class="bg-white border border-slate-300 rounded-lg p-1.5 md:p-2 text-xs md:text-sm font-black text-slate-700 outline-none focus:border-slate-500 shadow-sm transition hover:border-slate-400 cursor-pointer" onchange="openHistory()">
+                        </div>
                     </div>
                     
-                    <div id="ui-hist-po" class="space-y-3 max-h-[70vh] overflow-y-auto no-scrollbar pr-1 pb-4">
-                        <p class="text-center text-xs text-slate-400 py-6">載入中...</p>
+                    <div id="ui-hist-po" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-16 md:pb-4">
+                        <div class="col-span-full text-center text-xs text-slate-400 py-6">載入中...</div>
                     </div>
                 </div>
-            </div>
 
-        </main>
-    </div>
-
-    <div id="supplier-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
+            </div> </main>
+    </div> <div id="supplier-edit-modal" class="modal fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 z-[100]">
         <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-5 relative flex flex-col shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
             <h3 class="font-black text-lg border-b pb-3 mb-4 text-slate-800 flex items-center"><span class="mr-2 text-xl">✏️</span> 編輯供應商資料</h3>
             <input type="hidden" id="edit-s-id">
@@ -223,7 +250,7 @@
         </div>
     </div>
 
-    <nav id="core-bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9990] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+    <nav id="core-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9990] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <div onclick="event.stopPropagation(); window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
         <div onclick="event.stopPropagation(); window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></div>
         <div onclick="event.stopPropagation(); window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-amber-600"><span class="text-xl mb-1">🛒</span><span class="scale-90">採購</span></div>
@@ -270,11 +297,15 @@
                 if(!isAuth) return; 
 
                 document.getElementById('user-badge').innerText = window.currentUser?.full_name || '使用者'; 
+                if(document.getElementById('desktop-user-badge')) {
+                    document.getElementById('desktop-user-badge').innerText = window.currentUser?.full_name || '使用者'; 
+                }
                 
                 document.getElementById('loading-screen').classList.add('opacity-0');
                 setTimeout(() => { 
                     document.getElementById('loading-screen').style.display = 'none'; 
                     document.getElementById('app-container').classList.remove('hidden'); 
+                    document.getElementById('app-container').classList.add('flex');
                 }, 500);
 
                 await loadSuppliers();
@@ -507,7 +538,7 @@
             const pos = await fetchSafePOs();
             const pending = pos.filter(r => r.status === '待審核' || r.status === '待處理');
 
-            if(pending.length === 0) { container.innerHTML = '<p class="text-center text-sm font-bold text-slate-400 py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">目前無待處理的採購單</p>'; return; }
+            if(pending.length === 0) { container.innerHTML = '<div class="col-span-full"><p class="text-center text-sm font-bold text-slate-400 py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">目前無待處理的採購單</p></div>'; return; }
 
             container.innerHTML = pending.map(p => {
                 let safePoItems = getSafeArray(p.items_json);
@@ -516,23 +547,23 @@
                 let dateText = p.expected_date ? String(p.expected_date).slice(5) : '未定';
 
                 return `
-                <div class="bg-white p-4 rounded-2xl border-2 border-amber-200 shadow-sm relative mb-3">
+                <div class="bg-white p-4 rounded-2xl border-2 border-amber-200 shadow-sm relative h-full flex flex-col transition hover:shadow-md">
                     <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
                         <span class="text-[10px] font-mono font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">${formatPO(p.po_no)}</span>
                         <span class="text-[10px] font-black px-2 py-0.5 rounded-md border text-sky-700 bg-sky-50 border-sky-200 shadow-sm">${p.status}</span>
                     </div>
-                    <div class="flex justify-between items-end mb-2">
+                    <div class="flex justify-between items-end mb-3">
                         <h4 class="font-black text-base text-slate-800 leading-tight flex-1 pr-2 truncate">🏢 ${p.supplier_name}</h4>
                         <div class="text-right shrink-0">
                             <span class="text-[9px] text-slate-500 font-bold block mb-0.5">要求到貨</span>
                             <span class="font-black text-amber-600 text-sm tracking-tight leading-none">${dateText}</span>
                         </div>
                     </div>
-                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-inner text-[11px] font-bold mb-3">
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-inner text-[11px] font-bold mb-4 flex-1">
                         ${itemsStr || '<span class="text-slate-400 italic">無明細資料</span>'}
                     </div>
-                    <button onclick="approveAndSendPO('${p.id}', ${p.is_legacy?true:false})" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-3 rounded-xl shadow-md transition tracking-widest text-sm flex justify-center items-center active:scale-95">
-                        <span class="mr-2 text-lg">✅</span> 核准並發送採購單
+                    <button onclick="approveAndSendPO('${p.id}', ${p.is_legacy?true:false})" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-3.5 rounded-xl shadow-md transition tracking-widest text-sm flex justify-center items-center active:scale-95 mt-auto">
+                        <span class="mr-2 text-lg">✅</span> 核准並生成 PDF
                     </button>
                 </div>`;
             }).join('');
@@ -540,6 +571,7 @@
 
         // 🌟 嚴格審核權限判定
         async function approveAndSendPO(id, isLegacy) {
+            // 權限檢查
             if (!window.currentUser || !window.currentUser.perm_purchase_approve) {
                 alert('🚨 權限不足：您尚未被授權「採購核准權限」！\n請聯繫系統管理員 (老闆) 至後台員工資料為您開通權限。');
                 return;
@@ -553,13 +585,13 @@
                 }
                 showSysToast('✅ 採購單已核准發送！');
                 processAdminPO_PDF(id, isLegacy, 'view');
-                openPoManagement(); // Refresh
+                openPoManagement(); // Refresh the background list
             } catch(e) {
                 alert('核准失敗: ' + e.message);
             }
         }
 
-        // 🌟 採購紀錄中心 (包含月份篩選與分享功能，2x2 網格按鈕)
+        // 🌟 單一採購紀錄中心 (包含月份篩選與分享功能，大螢幕網格化)
         async function openHistory() {
             openView('history', '🗂️ 採購紀錄');
             const elPo = document.getElementById('ui-hist-po');
@@ -571,7 +603,7 @@
             }
             
             const selectedMonth = monthInput.value;
-            elPo.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">載入中...</p>';
+            elPo.innerHTML = '<div class="col-span-full text-center text-xs text-slate-400 py-6">載入中...</div>';
 
             const pos = await fetchSafePOs();
             
@@ -592,10 +624,10 @@
                     let safeNote = (p.note || '').replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n");
 
                     return `
-                    <div class="bg-white p-4 rounded-[1rem] border border-slate-200 shadow-sm flex flex-col mb-3 transition hover:bg-slate-50">
+                    <div class="bg-white p-4 rounded-[1.5rem] border border-slate-200 shadow-sm flex flex-col transition hover:shadow-md h-full">
                         <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
                             <div>
-                                <h4 class="text-xs font-black text-slate-800 font-mono">${formatPO(p.po_no)}</h4>
+                                <h4 class="text-sm font-black text-slate-800 font-mono tracking-wider">${formatPO(p.po_no)}</h4>
                                 <span class="text-[9px] text-slate-400 font-bold">${new Date(p.created_at).toLocaleDateString('zh-TW')}</span>
                             </div>
                             <div class="text-right flex flex-col items-end">
@@ -603,16 +635,16 @@
                                 <span class="text-[9px] font-bold text-amber-600 mt-1">交期: ${dateText}</span>
                             </div>
                         </div>
-                        <div class="text-[11px] font-bold text-slate-700 mb-2 flex items-center">
-                            <span class="mr-1">🏢</span> 供應商: ${p.supplier_name}
+                        <div class="text-[12px] font-black text-slate-700 mb-2 flex items-center truncate">
+                            <span class="mr-1 text-lg">🏢</span> ${p.supplier_name}
                         </div>
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-inner mb-3 text-[11px] font-bold space-y-1">
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-inner mb-3 text-[11px] font-bold space-y-1 flex-1">
                             ${itemsStr || '<span class="text-slate-400 italic">無明細資料</span>'}
                         </div>
                         ${p.note ? `<p class="text-[10px] text-slate-500 font-bold bg-amber-50 p-2 rounded-lg border border-amber-100 mb-3 line-clamp-2">備註: ${p.note}</p>` : ''}
                         
-                        <div class="grid grid-cols-2 gap-2 mt-1">
-                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'view')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm">👁️</span> 預覽</button>
+                        <div class="grid grid-cols-2 gap-2 mt-auto pt-2">
+                            <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'view')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm">👁️</span> 預覽單據</button>
                             <button onclick="sharePO('${p.id}', ${p.is_legacy?true:false})" class="text-[11px] bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm">📲</span> 傳送 LINE (PDF)</button>
                             <button onclick="processAdminPO_PDF('${p.id}', ${p.is_legacy?true:false}, 'download')" class="text-[11px] bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition flex justify-center items-center"><span class="mr-1 text-sm">📥</span> 下載檔案</button>
                             <button onclick="openPOEdit('${p.id}', ${p.is_legacy?true:false}, '${p.status}', '${safeNote}', '${p.expected_date||''}')" class="text-[11px] bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 py-2.5 rounded-xl font-black shadow-sm transition active:scale-95 flex justify-center items-center"><span class="mr-1 text-sm">✏️</span> 編輯狀態</button>
@@ -620,7 +652,43 @@
                         </div>
                     </div>
                 `;}).join('');
-            } else { elPo.innerHTML = `<p class="text-xs text-slate-400 py-6 text-center border border-dashed border-slate-200 rounded-xl bg-white">此月份無採購單紀錄</p>`; }
+            } else { elPo.innerHTML = `<div class="col-span-full"><p class="text-xs text-slate-400 py-6 text-center border border-dashed border-slate-200 rounded-xl bg-white">此月份無採購單紀錄</p></div>`; }
+        }
+
+        // 🌟 手機專用：直接產生 PDF 檔案並呼叫手機分享 (分享到 LINE / Email)
+        async function sharePO(id, isLegacy) {
+            showSysToast('⏳ 正在產生 PDF 檔案，請稍候...');
+            try {
+                const { html, poNo } = await getPoHtmlContent(id, isLegacy);
+                
+                const opt = { 
+                    margin: [0.5, 0.5], 
+                    filename: `HYPASS_採購單_${poNo}.pdf`, 
+                    image: { type: 'jpeg', quality: 0.98 }, 
+                    html2canvas: { scale: 2, useCORS: true }, 
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } 
+                };
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                tempDiv.style.padding = '20px';
+                
+                const pdfBlob = await html2pdf().set(opt).from(tempDiv).output('blob');
+                const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+                
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'HYPASS 採購單',
+                        text: `您好，附上採購單 ${poNo}，請查收。`
+                    });
+                    showSysToast('✅ 檔案分享成功！');
+                } else {
+                    showSysToast('您的裝置不支援直接分享檔案，已改為自動下載...');
+                    executePdfDownload(html, poNo);
+                }
+            } catch(e) {
+                alert('分享中斷或失敗: ' + e.message);
+            }
         }
 
         // 🌟 進階版編輯 Modal
@@ -683,7 +751,7 @@
             } 
         }
 
-        // 🌟 終極引擎：產生 HTML 內容以供轉 PDF
+        // 🌟 終極引擎：產生 HTML 內容以供轉 PDF 或預覽
         async function getPoHtmlContent(id, isLegacy) {
             let poData = null;
             try { 
@@ -789,36 +857,6 @@
             } catch(e) { alert(e.message); }
         }
 
-        // 🌟 黑科技：手機端分享實體 PDF 檔案至 LINE
-        async function sharePO(id, isLegacy) {
-            showSysToast('⏳ 正在產生 PDF 檔案，請稍候...');
-            try {
-                const { html, poNo } = await getPoHtmlContent(id, isLegacy);
-                
-                const opt = { margin: [0.5, 0.5], filename: `HYPASS_採購單_${poNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = html;
-                tempDiv.style.padding = '20px';
-                
-                const pdfBlob = await html2pdf().set(opt).from(tempDiv).output('blob');
-                const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
-                
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        files: [file],
-                        title: 'HYPASS 採購單',
-                        text: `您好，附上採購單 ${poNo}，請查收。`
-                    });
-                    showSysToast('✅ 檔案分享成功！');
-                } else {
-                    showSysToast('您的裝置不支援直接分享檔案，改為自動下載...');
-                    executePdfDownload(html, poNo);
-                }
-            } catch(e) {
-                alert('分享中斷或失敗: ' + e.message);
-            }
-        }
-
         function closePdfModal() {
             const modal = document.getElementById('pdf-preview-modal');
             modal.classList.add('hidden');
@@ -841,6 +879,7 @@
             };
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = htmlContent;
+            // 確保匯出的 PDF 不會貼邊
             tempDiv.style.padding = '20px';
             html2pdf().set(opt).from(tempDiv).save().then(() => {
                 showSysToast('✅ PDF 下載完成！');
