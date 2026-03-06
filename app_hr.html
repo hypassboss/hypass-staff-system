@@ -9,23 +9,29 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
-        /* 雙模態底層設定 */
-        @media (max-width: 767px) { body { padding-bottom: 80px; background: #e2e8f0; } }
-        @media (min-width: 768px) { body { background: #f8fafc; } }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; -webkit-tap-highlight-color: transparent;}
         
-        #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; }
-        /* 雙模態：電腦版讓大廳變成獨立捲動區 */
-        @media (min-width: 768px) { #app-container { min-height: auto; height: 100%; border-radius: 0; box-shadow: none; background: transparent; overflow-y: auto; } }
+        /* 🌟 雙模態底層設定 */
+        @media (max-width: 767px) { body { padding-bottom: 80px; background: #e2e8f0; } }
+        @media (min-width: 768px) { body { background: #e2e8f0; } }
 
-        .view-panel { display: none; animation: fadeIn 0.3s ease; } .view-panel.active { display: block; }
+        /* 🌟 核心：確保主容器在電腦上也是完美的手機比例 (不拉伸) */
+        #app-wrapper { display: flex; width: 100%; height: 100vh; overflow: hidden; }
+        #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; width: 100%; max-width: 28rem; margin: 0 auto; display: flex; flex-direction: column;}
+        
+        @media (min-width: 768px) { 
+            #app-wrapper { align-items: center; justify-content: center; padding: 20px; }
+            #app-container { height: 100%; min-height: auto; max-height: 900px; border-radius: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow-y: auto; }
+            nav#core-bottom-nav { display: none !important; } /* 電腦版隱藏底部導覽 */
+        }
+
+        .view-panel { display: none; animation: fadeIn 0.3s ease; } .view-panel.active { display: block; flex: 1; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .glass-card { background: rgba(255, 255, 255, 0.98); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.8); }
         .modal { display: none !important; } .modal.active { display: flex !important; z-index: 200; }
         .select-arrow { appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-size: 1.5em 1.5em; background-position: right 0.5rem center; background-repeat: no-repeat; padding-right: 2rem; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        nav { display: none !important; }
-        #core-bottom-nav { display: flex !important; }
+        
         .punch-btn { position: relative; overflow: hidden; transition: all 0.2s; }
         .punch-btn:active { transform: scale(0.95); }
         
@@ -42,21 +48,23 @@
             body * { visibility: hidden; }
             #salary-print-zone, #salary-print-zone * { visibility: visible; }
             #salary-print-zone { display: block !important; position: absolute; left: 0; top: 0; width: 100vw; background: white; z-index: 9999; padding: 20px;}
-            #app-container, nav, aside { display: none !important; }
+            #app-wrapper, #app-container, nav, aside { display: none !important; }
             .print-break { page-break-after: always; }
         }
 
         #canvas-container { position: relative; width: 100%; height: 160px; background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 1rem; overflow: hidden; }
         #signature-pad { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
         
+        nav { display: none !important; }
+        #core-bottom-nav { display: flex !important; }
         @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-        .toast-msg { animation: slideInLeft 0.4s ease-out forwards; }
+        .toast-msg { animation: slideInLeft 0.4s ease-out forwards; z-index: 9999; }
     </style>
 </head>
-<body class="text-slate-800 md:flex md:h-screen md:overflow-hidden relative w-full">
+<body class="text-slate-800 relative md:flex md:h-screen md:overflow-hidden w-full">
 
     <div id="salary-print-zone" style="display:none; font-family: 'Microsoft JhengHei', sans-serif;"></div>
-    <div id="toast-container" class="fixed bottom-24 left-4 z-[9999] flex flex-col space-y-3 pointer-events-none"></div>
+    <div id="toast-container" class="fixed bottom-24 md:bottom-10 left-1/2 transform -translate-x-1/2 z-[9999] flex flex-col space-y-3 pointer-events-none w-11/12 max-w-sm"></div>
 
     <div id="loading-screen" class="fixed inset-0 bg-slate-900 z-[9999] flex flex-col items-center justify-center text-white transition-opacity duration-500">
         <div class="text-6xl mb-4 animate-bounce">🛡️</div>
@@ -91,14 +99,15 @@
         </div>
     </aside>
 
-    <div id="app-container" class="flex-1 w-full max-w-md mx-auto shadow-2xl relative hidden md:mx-auto md:shadow-none md:max-w-xl lg:max-w-2xl">
-        <header class="bg-slate-900 text-white px-5 py-4 shadow-md sticky top-0 z-50 flex items-center justify-between md:rounded-b-2xl">
+    <div id="app-wrapper">
+    <div id="app-container" class="shadow-2xl relative hidden">
+        <header class="bg-slate-900 text-white px-5 py-4 shadow-md sticky top-0 z-50 flex items-center justify-between shrink-0 md:rounded-t-2xl">
             <button id="btn-back" onclick="backToDash()" class="hidden bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center shrink-0">🔙 返回</button>
             <div class="flex-1 text-center"><h1 class="text-lg font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-200 truncate" id="header-title">員工大廳</h1></div>
             <div class="shrink-0 text-[10px] font-bold bg-white/10 px-2 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
         </header>
 
-        <main class="p-4 relative z-10 md:pb-12">
+        <main class="p-4 relative z-10 flex-1 overflow-y-auto no-scrollbar">
             <div id="view-dashboard" class="view-panel active space-y-4">
                 
                 <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-white p-6 rounded-[2rem] shadow-xl relative overflow-hidden">
@@ -162,6 +171,17 @@
                         <span class="text-3xl mb-1.5 drop-shadow-md">🪪</span>
                         <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">基本資料與合約</span>
                     </button>
+                </div>
+            </div>
+
+            <div id="view-bulletin" class="view-panel space-y-4">
+                <div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-amber-500 relative pb-10">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">📢</span>公司最新公告</h3>
+                    </div>
+                    <div id="ui-bulletin-list" class="space-y-3 max-h-[65vh] overflow-y-auto no-scrollbar pr-1">
+                        <p class="text-center text-xs text-slate-400 py-6">載入中...</p>
+                    </div>
                 </div>
             </div>
 
@@ -332,9 +352,7 @@
             </div>
 
         </main>
-    </div>
-
-    <nav id="core-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9990] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+    </div> </div> <nav id="core-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9990] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <div onclick="event.stopPropagation(); window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-sky-600"><span class="text-xl mb-1">👨‍💼</span><span class="scale-90">員工</span></div>
         <div onclick="event.stopPropagation(); window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></div>
         <div onclick="event.stopPropagation(); window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></div>
@@ -361,37 +379,23 @@
             setTimeout(() => { toast.style.animation = 'slideInLeft 0.4s ease-in reverse forwards'; setTimeout(() => toast.remove(), 400); }, 5000);
         }
 
-        // 🌟 防死迴圈驗證引擎
         async function bootHr() {
             try {
-                // 強制超時保護
-                let authTimeout = setTimeout(() => {
-                    const ls = document.getElementById('loading-screen');
-                    if(ls) ls.innerHTML = '<div class="text-4xl mb-4">⚠️</div><h2 class="text-xl font-black text-white">載入超時</h2><p class="text-slate-400 mt-2">請檢查網路或重新登入</p><button onclick="window.location.href=\'index.html\'" class="mt-6 bg-white text-slate-900 px-6 py-2 rounded-full font-bold">重新登入</button>';
-                }, 5000);
-
-                const isAuth = await authGuard(); 
-                clearTimeout(authTimeout);
-
-                if(!isAuth) { return; } // authGuard 會負責跳轉，這裡只要安靜停止就好
-
-                const empId = window.currentUser.id;
-                const { data: emp, error } = await window._sb.from('employees').select('*').eq('id', empId).single();
-                if(error || !emp) throw new Error('讀取員工資料失敗');
-                window.currentUser = emp;
-
-                document.getElementById('user-badge').innerText = emp.full_name || '員工';
+                // 🌟 使用新版防死迴圈驗證引擎
+                const isAuth = await authGuard('hr');
+                if(!isAuth) return;
+                
+                document.getElementById('user-badge').innerText = window.currentUser?.full_name || '員工';
                 if(document.getElementById('desktop-user-badge')) {
-                    document.getElementById('desktop-user-badge').innerText = emp.full_name || '員工'; 
+                    document.getElementById('desktop-user-badge').innerText = window.currentUser?.full_name || '員工';
                 }
-
-                // 移除載入遮罩
+                
                 document.getElementById('loading-screen').classList.add('opacity-0');
                 setTimeout(() => { 
                     document.getElementById('loading-screen').style.display = 'none'; 
                     document.getElementById('app-container').classList.remove('hidden'); 
-                    // 為了保留原版 max-w-md，這裡不加上 flex，確保排版 100% 不變
-                }, 400);
+                    document.getElementById('app-container').classList.add('flex'); 
+                }, 500);
 
                 const now = new Date();
                 document.getElementById('dash-date').innerText = now.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'long' });
@@ -416,16 +420,9 @@
                 loadBulletins();
                 loadPersonalBulletins();
                 loadCalendarAndStats(); 
-                loadLeaveHistory();
+                loadLeaveHistory(); 
                 
-                // 背景載入合約
-                fetchLatestContract();
-
-            } catch(e) {
-                console.error(e);
-                const ls = document.getElementById('loading-screen');
-                if(ls) ls.innerHTML = '<div class="text-4xl mb-4">💥</div><h2 class="text-xl font-black text-white">系統發生錯誤</h2><p class="text-slate-400 mt-2 px-4 text-xs break-all">' + e.message + '</p><button onclick="window.location.href=\'index.html\'" class="mt-6 bg-white text-slate-900 px-6 py-2 rounded-full font-bold">重新登入</button>';
-            }
+            } catch(e) { console.error(e); }
         }
 
         async function fetchHolidays(year) {
@@ -463,6 +460,14 @@
         async function openContractView() { 
             openView('contract', '基本資料與合約'); 
             
+            try {
+                const { data } = await window._sb.from('company_forms').select('*').eq('form_type', 'employment_contract').single();
+                if(data) {
+                    latestContractVersion = data.form_version;
+                    latestContractContent = `<h4 class="text-center font-black text-base text-slate-900 mb-4 border-b border-slate-200 pb-2">${data.title}</h4>${data.content}`;
+                }
+            } catch(e) {}
+
             document.getElementById('cv-version-badge').innerText = latestContractVersion;
             document.getElementById('cv-contract-content').innerHTML = latestContractContent || '<p>合約載入中...</p>';
 
@@ -518,6 +523,7 @@
         
         function openStatsAndCalendar() { openView('calendar', '打卡與行事曆'); renderCalendarUI(); }
 
+        // 🌟 新增：精準扣除午休與非上班時間的過濾器
         function calculateLeaveHours(startStr, endStr, workStartStr, workEndStr) {
             let sDate = new Date(startStr);
             let eDate = new Date(endStr);
@@ -550,7 +556,9 @@
                     let lOverlapStart = actualStartLimit > lunchStart ? actualStartLimit : lunchStart;
                     let lOverlapEnd = actualEndLimit < lunchEnd ? actualEndLimit : lunchEnd;
                     let lunchMs = lOverlapEnd - lOverlapStart;
-                    if (lunchMs > 0) { ms -= lunchMs; }
+                    if (lunchMs > 0) {
+                        ms -= lunchMs;
+                    }
                     totalHours += ms / (1000 * 60 * 60);
                 }
                 curDate.setDate(curDate.getDate() + 1);
@@ -587,6 +595,7 @@
             const targetStart = window.currentUser.work_start_time ? window.currentUser.work_start_time.slice(0,5) : '09:00';
             const targetEnd = window.currentUser.work_end_time ? window.currentUser.work_end_time.slice(0,5) : '18:00';
 
+            // 🌟 採用智慧請假過濾器計算時數
             if(leaves) {
                 leaves.forEach(l => {
                     let ls = new Date(l.start_time);
@@ -831,11 +840,14 @@
             const { data } = await window._sb.from('bulletin_board').select('*').order('created_at', {ascending: false});
             if(data && data.length > 0) {
                 document.getElementById('latest-bulletin').innerText = data[0].title;
+                document.getElementById('ui-bulletin-list').innerHTML = data.map(b => `<div class="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm"><div class="text-[10px] text-amber-600 font-black mb-1">${new Date(b.created_at).toLocaleDateString('zh-TW')}</div><h4 class="font-black text-sm text-slate-800 mb-2">${b.title}</h4><p class="text-xs text-slate-600 leading-relaxed font-bold whitespace-pre-line">${b.content}</p></div>`).join('');
             } else {
                 document.getElementById('latest-bulletin').innerText = '目前無新公告';
+                document.getElementById('ui-bulletin-list').innerHTML = '<p class="text-xs text-slate-400 text-center py-4">無資料</p>';
             }
         }
 
+        // 🌟 假單歷史紀錄載入引擎
         async function loadLeaveHistory() {
             const container = document.getElementById('leave-history-list');
             if(!container) return;
@@ -876,6 +888,7 @@
             }
         }
 
+        // 🌟 強制補登阻擋邏輯核心
         async function openPunch(type) {
             if (type === 'IN') {
                 try {
@@ -890,6 +903,7 @@
                         const lastPunchDate = new Date(lastLog.punch_time).toLocaleDateString('en-CA');
                         const todayDate = new Date().toLocaleDateString('en-CA');
 
+                        // 如果上一次是 IN，而且不是今天 (代表忘記下班)
                         if (lastLog.punch_type === 'IN' && lastPunchDate < todayDate) {
                             const { data: pendingRetros } = await window._sb.from('leave_requests')
                                 .select('*')
@@ -899,6 +913,7 @@
                                 .eq('status', '審核中')
                                 .gte('created_at', lastLog.punch_time);
 
+                            // 如果沒有送出審核中的補登單，直接阻擋
                             if (!pendingRetros || pendingRetros.length === 0) {
                                 alert("🚨 系統強制攔截：\n\n系統偵測到您昨日（或上一個工作日）尚未打卡下班！\n請先至『請假單與補登』完成下班補登申請。\n\n送出申請後，系統即會自動解鎖今日的上班打卡權限。");
                                 openView('leave', '請假單與補登');
@@ -1056,6 +1071,8 @@
                 window._sb.functions.invoke('line-webhook', { body: { action: 'leave_request', name: window.currentUser.full_name, type: t, reason: res, message: bossMsg } }).catch(err=>{});
                 
                 e.target.reset(); toggleLeaveType(); 
+                
+                // 🌟 刷新歷史紀錄並停留在此畫面讓員工確認
                 loadLeaveHistory();
                 
             } catch(error) { 
@@ -1226,46 +1243,6 @@
             });
         }
 
-        function initSignaturePad() {
-            sigCanvas = document.getElementById('signature-pad');
-            if(!sigCanvas) return;
-            sigCtx = sigCanvas.getContext('2d');
-            
-            const ratio = Math.max(window.devicePixelRatio || 1, 1);
-            sigCanvas.width = sigCanvas.offsetWidth * ratio;
-            sigCanvas.height = sigCanvas.offsetHeight * ratio;
-            sigCtx.scale(ratio, ratio);
-            
-            sigCtx.lineWidth = 3;
-            sigCtx.lineCap = 'round';
-            sigCtx.strokeStyle = '#0f172a';
-
-            const startPos = (e) => { isDrawing = true; draw(e); };
-            const endPos = () => { isDrawing = false; sigCtx.beginPath(); };
-            const draw = (e) => {
-                if(!isDrawing) return;
-                e.preventDefault();
-                let x = e.clientX || (e.touches && e.touches[0].clientX);
-                let y = e.clientY || (e.touches && e.touches[0].clientY);
-                let rect = sigCanvas.getBoundingClientRect();
-                sigCtx.lineTo(x - rect.left, y - rect.top);
-                sigCtx.stroke();
-                sigCtx.beginPath();
-                sigCtx.moveTo(x - rect.left, y - rect.top);
-            };
-
-            sigCanvas.addEventListener('mousedown', startPos);
-            sigCanvas.addEventListener('mouseup', endPos);
-            sigCanvas.addEventListener('mousemove', draw);
-            sigCanvas.addEventListener('touchstart', startPos, {passive: false});
-            sigCanvas.addEventListener('touchend', endPos);
-            sigCanvas.addEventListener('touchmove', draw, {passive: false});
-        }
-
-        function clearSignature() {
-            if(sigCtx && sigCanvas) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-        }
-
         async function updateContractSignature() {
             const isAgreed = document.getElementById('contract-agree-chk').checked;
             if(!isAgreed) { alert('請勾選同意法律效力核取方塊！'); return; }
@@ -1302,6 +1279,8 @@
         }
 
         window.onload = bootHr;
+        const enforceNavObserver = new MutationObserver(() => { const oldNav = document.querySelector('nav:not(#core-bottom-nav)'); if (oldNav) oldNav.remove(); });
+        enforceNavObserver.observe(document.body, { childList: true, subtree: true });
     </script>
 </body>
 </html>
