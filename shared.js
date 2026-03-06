@@ -20,7 +20,7 @@ async function authGuard(moduleName = null) {
         return false;
     }
 
-    // 🌟 已徹底移除「非 LINE 環境」的確認彈窗，提升電腦版操作流暢度與安全性！
+    // 🌟 已徹底移除「非 LINE 環境」的確認彈窗，提升電腦版與手機瀏覽器操作流暢度與安全性！
 
     // 2. 驗證資料庫身分與權限
     try {
@@ -40,6 +40,7 @@ async function authGuard(moduleName = null) {
         // 3. 各模組專屬權限檢查 (溫和退回機制：回傳 false 讓前端顯示警告，絕不強制跳轉造成死迴圈)
         if (moduleName) {
             let hasPerm = false;
+            if (moduleName === 'hr') hasPerm = true; // HR 員工大廳只要在職皆可進入
             if (moduleName === 'inv') hasPerm = data.perm_inventory;
             if (moduleName === 'purchase') hasPerm = data.perm_purchase;
             if (moduleName === 'sales') hasPerm = data.perm_sales;
