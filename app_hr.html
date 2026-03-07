@@ -69,6 +69,10 @@
         <div class="text-6xl mb-4 animate-bounce">🛡️</div>
         <h2 class="text-xl font-black tracking-widest mb-2">HYPASS</h2>
         <p class="text-xs font-bold text-slate-400 tracking-wider">安全驗證與身分核實中...</p>
+        
+        <div id="rescue-btn" class="hidden flex-col items-center mt-6">
+            <button onclick="forceUnlock()" class="bg-sky-600 hover:bg-sky-500 text-white font-black px-6 py-3 rounded-full shadow-lg active:scale-95 transition tracking-widest text-xs">強制解除遮罩</button>
+        </div>
     </div>
 
     <aside class="hidden md:flex w-64 bg-slate-900 text-white flex-col h-full shadow-2xl shrink-0 z-20 overflow-y-auto no-scrollbar">
@@ -97,7 +101,7 @@
             <div class="shrink-0 text-[10px] font-bold bg-white/10 px-2 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
         </header>
 
-        <main class="p-4 relative z-10 flex-1 overflow-y-auto no-scrollbar">
+        <main class="p-4 relative z-10 flex-1 overflow-y-auto no-scrollbar pb-24">
             <div id="view-dashboard" class="view-panel active space-y-4">
                 
                 <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-white p-6 rounded-[2rem] shadow-xl relative overflow-hidden">
@@ -105,11 +109,11 @@
                     <div class="flex justify-between items-end mb-4 relative z-10">
                         <div>
                             <p class="text-[10px] text-sky-300 font-black tracking-widest mb-1" id="dash-date">載入中...</p>
-                            <h2 class="text-2xl font-black" id="dash-time">--:--</h2>
+                            <h2 class="text-3xl font-black font-mono tracking-wider" id="dash-time">--:--</h2>
                         </div>
                         <div class="text-right">
                             <p class="text-[10px] text-slate-400 font-bold mb-0.5">預定班別</p>
-                            <p class="text-sm font-black text-sky-100" id="dash-shift">--:-- ~ --:--</p>
+                            <p class="text-sm font-black text-sky-100 font-mono tracking-wider" id="dash-shift">--:-- ~ --:--</p>
                         </div>
                     </div>
                     
@@ -246,11 +250,11 @@
                         <input type="month" id="cal-month-picker" class="p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-sky-500 text-slate-700" onchange="renderCalendarUI()">
                     </div>
                     
-                    <div class="flex flex-wrap items-center justify-center gap-3 text-[10px] md:text-xs font-bold text-slate-500 mb-4 bg-slate-50 p-2.5 rounded-xl border border-slate-200 shadow-inner mt-2">
+                    <div class="flex flex-wrap items-center justify-center gap-3 text-[10px] font-bold text-slate-500 mb-4 bg-slate-50 p-2.5 rounded-xl border border-slate-200 shadow-inner">
                         <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-1.5 shadow-sm"></span>正常</span>
-                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-red-500 mr-1.5 shadow-sm"></span>異常(遲/早/曠)</span>
+                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-red-500 mr-1.5 shadow-sm"></span>異常</span>
                         <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 mr-1.5 shadow-sm"></span>請假/補登</span>
-                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-transparent border border-slate-400 mr-1.5 shadow-sm"></span>未到/休假</span>
+                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 mr-1.5 shadow-sm border border-slate-400"></span>未到/休假</span>
                     </div>
 
                     <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-inner mb-4">
@@ -322,14 +326,13 @@
                 <div class="glass-card p-5 md:p-6 rounded-[2rem] shadow-sm border-t-4 border-slate-700 relative pb-10">
                     <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-5">
                         <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">🪪</span>基本資料與合約</h3>
-                        <span id="cv-version-badge" class="text-[10px] bg-slate-800 text-white px-2 py-0.5 rounded font-black shadow-sm tracking-widest">載入中</span>
+                        <span id="cv-version-badge" class="text-[10px] bg-slate-800 text-white px-2 py-0.5 rounded font-black shadow-sm tracking-widest hidden">載入中</span>
                     </div>
                     
                     <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner">
-                        <h5 class="text-sm font-black text-slate-700 mb-3 border-l-4 border-sky-500 pl-2">👤 員工個人檔案</h5>
-                        <div class="space-y-3 text-[11px] md:text-[13px]" id="ui-profile-details">
-                            <p class="text-center text-slate-400 font-bold py-4">資料載入中...</p>
-                        </div>
+                        <h5 class="text-sm font-black text-slate-700 mb-4 border-l-4 border-sky-500 pl-2">👤 員工個人檔案</h5>
+                        <div class="space-y-3 text-[11px] md:text-xs" id="ui-profile-details">
+                            </div>
                     </div>
 
                     <div id="cv-contract-content" class="space-y-4 bg-white p-4 rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed text-justify mb-6 h-64 overflow-y-auto shadow-sm">
@@ -341,7 +344,9 @@
             </div>
 
         </main>
-    </div> </div> <nav id="core-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9990] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+    </div> </div> 
+    
+    <nav id="core-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9990] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <div onclick="event.stopPropagation(); window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-sky-600"><span class="text-xl mb-1">👨‍💼</span><span class="scale-90">員工</span></div>
         <div onclick="event.stopPropagation(); window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></div>
         <div onclick="event.stopPropagation(); window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></div>
@@ -358,11 +363,31 @@
         </div>
     </div>
 
-    <script src="shared.js?v=999"></script>
+    <div id="contract-modal" class="modal fixed inset-0 bg-slate-900/90 backdrop-blur-md items-center justify-center p-4 z-[9999] hidden">
+        <div class="bg-white w-full max-w-2xl m-auto rounded-3xl flex flex-col shadow-2xl h-[90vh] overflow-hidden">
+            <div class="p-5 border-b border-slate-200 bg-slate-50 shrink-0 text-center">
+                <h3 class="font-black text-xl text-slate-800">📜 系統合約更新通知</h3>
+                <p class="text-xs text-red-600 font-bold mt-1">公司發布了新版勞動契約，請閱讀後於下方簽名以繼續使用系統。</p>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6 text-sm text-slate-700 leading-relaxed font-medium bg-white" id="contract-content-area"></div>
+            <div class="p-5 bg-slate-50 border-t border-slate-200 shrink-0">
+                <div class="flex justify-between items-center mb-2"><span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">數位簽名區</span><button onclick="clearSignature()" class="text-[10px] bg-slate-200 text-slate-700 px-3 py-1 rounded font-bold hover:bg-slate-300 transition">清除重簽</button></div>
+                <div class="w-full h-32 bg-white border-2 border-dashed border-slate-300 rounded-xl overflow-hidden relative mb-4 shadow-inner">
+                    <canvas id="sig-canvas" class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
+                </div>
+                <label class="flex items-start space-x-3 cursor-pointer bg-white p-3 rounded-xl border border-slate-200 mb-4 shadow-sm">
+                    <input type="checkbox" id="contract-agree" class="w-5 h-5 mt-0.5 accent-slate-900">
+                    <span class="text-xs font-bold text-slate-700 leading-relaxed">本人已詳細閱讀並完全同意上述合約，並確認數位簽章具備法律效力。</span>
+                </label>
+                <button onclick="submitContractSign()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition text-base tracking-widest hover:bg-slate-800">確認簽署並進入系統</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
     <script>
         let currentPunchType = ''; let currentBranch = null; let scanAnim = null;
         let twHolidays = {}; 
-        
         let sigCanvas, sigCtx, isDrawing = false;
         let currentPayrollData = null; 
         let latestContractVersion = "V1.0";
@@ -370,20 +395,30 @@
         window.pbulls = [];
         window.bulls = [];
 
-        // 🌟 無敵安全日期轉換器 (防止手機版 iOS 崩潰)
+        // 🌟 無敵安全日期轉換器 (防止 iOS 手機報錯)
         function getSafeDateStr(d) {
             return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
         }
 
-        // 強制隱藏遮罩安全機制 (4秒強制觸發)
+        // 🌟 終極防卡死機制 (4秒後強制解除遮罩)
         setTimeout(() => {
             const ls = document.getElementById('loading-screen');
             if(ls && ls.style.display !== 'none') {
-                ls.style.display = 'none';
-                document.getElementById('app-container').classList.remove('hidden');
-                document.getElementById('app-container').classList.add('flex');
+                const btn = document.getElementById('rescue-btn');
+                if(btn) btn.classList.remove('hidden');
+                if(btn) btn.classList.add('flex');
             }
         }, 4000);
+
+        window.forceUnlock = function() {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('app-container').classList.add('flex');
+            if(!window.currentUser) {
+                window.currentUser = { id: 'unknown', full_name: '員工(離線模式)', is_admin: false };
+            }
+            finishBoot();
+        }
 
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
@@ -463,8 +498,10 @@
             if(scanAnim) clearInterval(scanAnim);
         }
 
-        // 🌟 個人資料滿血呈現
-        async function renderProfileInfo() {
+        // 🌟 滿血個人資料與權限載入
+        async function openContractView() { 
+            openView('contract', '基本資料與合約'); 
+            
             const u = window.currentUser;
             let branchName = '未綁定';
             if (u.default_branch_id) {
@@ -479,30 +516,31 @@
             if(u.perm_purchase) perms.push('<span class="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded shadow-sm font-bold">🛒 採購</span>');
             if(u.perm_sales) perms.push('<span class="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded shadow-sm font-bold">💼 業務</span>');
             if(u.perm_finance) perms.push('<span class="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded shadow-sm font-bold">💰 財務</span>');
-            if(u.is_admin) perms.push('<span class="bg-rose-200 text-rose-700 px-1.5 py-0.5 rounded shadow-sm font-black">👑 權限</span>');
-            if(perms.length === 0) perms.push('<span class="text-slate-400 font-bold">無權限</span>');
+            if(u.is_admin) perms.push('<span class="bg-rose-200 text-rose-700 px-1.5 py-0.5 rounded shadow-sm font-black">👑 最高權限</span>');
+            if(perms.length === 0) perms.push('<span class="text-slate-400 font-bold">無</span>');
 
             document.getElementById('ui-profile-details').innerHTML = `
-                <div class="flex justify-between border-b border-slate-100 pb-2 mb-2"><span class="text-slate-500 font-bold">員工編號</span><span class="font-black text-sky-700">${u.employee_no || '未設定'}</span></div>
-                <div class="flex justify-between border-b border-slate-100 pb-2 mb-2"><span class="text-slate-500 font-bold">真實姓名</span><span class="font-black text-slate-800">${u.full_name}</span></div>
-                <div class="flex justify-between border-b border-slate-100 pb-2 mb-2"><span class="text-slate-500 font-bold">工作據點</span><span class="font-black text-slate-800">${branchName}</span></div>
-                <div class="flex justify-between border-b border-slate-100 pb-2 mb-2"><span class="text-slate-500 font-bold">上下班時間</span><span class="font-black text-slate-800 font-mono tracking-wider">${(u.work_start_time||'09:00').slice(0,5)} - ${(u.work_end_time||'18:00').slice(0,5)}</span></div>
-                <div class="flex justify-between border-b border-slate-100 pb-2 mb-2"><span class="text-slate-500 font-bold">入職日期</span><span class="font-black text-slate-800">${u.onboarding_date || '--'}</span></div>
-                <div class="flex justify-between border-b border-slate-100 pb-2 mb-2 items-center"><span class="text-slate-500 font-bold">模組存取權限</span><div class="flex flex-wrap gap-1 justify-end">${perms.join('')}</div></div>
-                <div class="flex justify-between border-b border-slate-100 pb-2 mb-2"><span class="text-slate-500 font-bold">庫存盤點員</span><span class="font-black ${u.is_inventory_manager?'text-emerald-600':'text-slate-400'}">${u.is_inventory_manager?'✔️ 是':'否'}</span></div>
-                <div class="flex justify-between items-center"><span class="text-slate-500 font-bold w-1/2">採購核准與 PDF</span><span class="font-black text-right ${u.perm_purchase_approve?'text-amber-600':'text-slate-400'} w-1/2">${u.perm_purchase_approve?'✔️ 已授權':'無權限'}</span></div>
+                <div class="flex justify-between border-b border-slate-100 pb-2 mb-1.5"><span class="text-slate-500 font-bold">員工編號</span><span class="font-black text-sky-700">${u.employee_no || '未設定'}</span></div>
+                <div class="flex justify-between border-b border-slate-100 pb-2 mb-1.5"><span class="text-slate-500 font-bold">真實姓名</span><span class="font-black text-slate-800">${u.full_name}</span></div>
+                <div class="flex justify-between border-b border-slate-100 pb-2 mb-1.5"><span class="text-slate-500 font-bold">身分證字號</span><span class="font-black text-slate-800 font-mono uppercase">${u.id_number || '--'}</span></div>
+                <div class="flex justify-between border-b border-slate-100 pb-2 mb-1.5"><span class="text-slate-500 font-bold">聯絡電話</span><span class="font-black text-slate-800 font-mono">${u.phone || '--'}</span></div>
+                <div class="flex justify-between border-b border-slate-100 pb-2 mb-1.5"><span class="text-slate-500 font-bold">通訊地址</span><span class="font-black text-slate-800 text-right w-2/3 truncate">${u.address || '--'}</span></div>
+                <div class="flex justify-between border-b border-slate-100 pb-2 mb-1.5"><span class="text-slate-500 font-bold text-red-500">緊急聯絡人</span><span class="font-black text-red-700">${u.emergency_contact || '--'}</span></div>
+                <div class="flex justify-between border-b border-slate-100 pb-2 mb-1.5"><span class="text-slate-500 font-bold text-red-500">緊急電話</span><span class="font-black text-red-700 font-mono">${u.emergency_phone || '--'}</span></div>
+                <div class="flex justify-between border-b border-slate-100 pb-2 mb-1.5"><span class="text-slate-500 font-bold">撥薪銀行與帳號</span><span class="font-black text-slate-800 font-mono text-right">${u.bank_code || '--'} - ${u.bank_account || '--'}</span></div>
+                <div class="flex justify-between border-b border-slate-100 pb-2 mb-1.5"><span class="text-slate-500 font-bold">打卡據點</span><span class="font-black text-slate-800">${branchName}</span></div>
+                <div class="flex justify-between border-b border-slate-100 pb-2 mb-1.5"><span class="text-slate-500 font-bold">上下班時間</span><span class="font-black text-slate-800 font-mono">${(u.work_start_time||'09:00').slice(0,5)} - ${(u.work_end_time||'18:00').slice(0,5)}</span></div>
+                <div class="flex justify-between border-b border-slate-100 pb-2 mb-1.5"><span class="text-slate-500 font-bold">入職日期</span><span class="font-black text-slate-800">${u.onboarding_date || '--'}</span></div>
+                <div class="flex justify-between border-b border-slate-100 pb-2 mb-1.5 items-center"><span class="text-slate-500 font-bold w-1/3">模組權限</span><div class="flex flex-wrap gap-1 justify-end w-2/3">${perms.join('')}</div></div>
+                <div class="flex justify-between border-b border-slate-100 pb-2 mb-1.5"><span class="text-slate-500 font-bold">庫存盤點員</span><span class="font-black ${u.is_inventory_manager?'text-emerald-600':'text-slate-400'}">${u.is_inventory_manager?'✔️ 是':'否'}</span></div>
+                <div class="flex justify-between items-center"><span class="text-slate-500 font-bold w-1/2">採購核准與 PDF</span><span class="font-black text-right ${u.perm_purchase_approve?'text-amber-600':'text-slate-400'} w-1/2">${u.perm_purchase_approve?'✔️ 已授權':'無'}</span></div>
             `;
-        }
 
-        async function openContractView() { 
-            openView('contract', '基本資料與合約'); 
-            renderProfileInfo(); // 🌟 確保點開時渲染滿血個人資料
-            
             try {
                 const { data } = await window._sb.from('company_forms').select('*').eq('form_type', 'employment_contract').limit(1);
                 if(data && data.length > 0) {
                     latestContractVersion = data[0].form_version;
-                    latestContractContent = `<h4 class="text-center font-black text-base text-slate-900 mb-4 border-b border-slate-200 pb-2">${data[0].title || '勞動契約'}</h4>${data[0].content}`;
+                    latestContractContent = `<h4 class="text-center font-black text-base text-slate-900 mb-4 border-b border-slate-200 pb-2">${data[0].form_name||'勞動契約'}</h4>${data[0].content}`;
                 }
             } catch(e) {}
 
@@ -589,7 +627,7 @@
             } catch(e){}
         }
 
-        // 🌟 員工通知已讀同步寫入機制
+        // 🌟 通知已讀同步寫入機制
         async function viewPBull(id) {
             const b = window.pbulls.find(x => x.id === id);
             if(!b) return;
@@ -644,7 +682,7 @@
             } catch(e) {}
         }
 
-        // 🌟 打卡防呆機制：防週末、防請假
+        // 🌟 終極打卡防呆機制 (防週末、防請假)
         async function openPunch(type) {
             const u = window.currentUser;
             if(!u) return;
@@ -720,7 +758,7 @@
             const eEnd = (u.work_end_time || '18:00').slice(0,5);
             
             let status = '正常';
-            // 🌟 修正：下班晚打卡一律為正常
+            // 🌟 修正：下班晚打卡一律顯示為正常，拔除加班判定
             if (pType === 'IN' && tStr > eStart) {
                 status = '遲到';
             } else if (pType === 'OUT' && tStr < eEnd) {
@@ -841,7 +879,7 @@
                     list.innerHTML = data.map(l => {
                         let stCol = l.status === '核准' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : (l.status === '核駁' ? 'text-red-700 bg-red-50 border-red-200' : 'text-amber-700 bg-amber-50 border-amber-200');
                         let timeStr = l.leave_type === '忘記打卡(補登)' ? `補登: ${new Date(l.start_time).toLocaleString('zh-TW').slice(0,-3)} (${l.target_punch_type==='IN'?'上班':'下班'})` : `${new Date(l.start_time).toLocaleString('zh-TW', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} ~ ${new Date(l.end_time).toLocaleString('zh-TW', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}`;
-                        return `<div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col mb-2 transition hover:shadow-md"><div class="flex justify-between items-center mb-1"><span class="text-xs font-black text-slate-800">${l.leave_type}</span><span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${stCol}">${l.status}</span></div><div class="text-[10px] font-mono font-bold text-slate-500 mb-1.5">${timeStr}</div><div class="text-[10px] text-slate-600 font-bold bg-slate-50 p-1.5 rounded-lg border border-slate-100">事由: ${l.reason}</div></div>`;
+                        return `<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col mb-3 transition hover:shadow-md"><div class="flex justify-between items-center mb-2"><span class="text-sm font-black text-slate-800">${l.leave_type}</span><span class="text-[10px] font-black px-2 py-1 rounded-lg border ${stCol}">${l.status}</span></div><div class="text-xs font-mono font-bold text-slate-500 mb-2">${timeStr}</div><div class="text-[11px] text-slate-600 font-bold bg-slate-50 p-2 rounded-lg border border-slate-100">📝 ${l.reason}</div></div>`;
                     }).join('');
                 } else { list.innerHTML = '<p class="text-center text-xs font-bold text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl">尚無任何紀錄</p>'; }
             } catch(e) {}
@@ -923,7 +961,7 @@
             document.getElementById('sm-pnt').innerText = (window.currentUser.penalty_points || 0) + '點';
         }
 
-        // 🌟 行事曆與打卡紀錄渲染引擎
+        // 🌟 行事曆與打卡紀錄渲染引擎 (補齊錯字防報錯)
         async function renderCalendarUI() {
             const mStr = document.getElementById('cal-month-picker').value;
             if(!mStr) return;
@@ -1000,7 +1038,6 @@
                 } else {
                     if (dayD.in > targetStart) status = { text: '遲到', col: 'text-red-600 bg-red-50 border-red-300' };
                     if (dayD.out < targetEnd) status = { text: '早退', col: 'text-red-600 bg-red-50 border-red-300' };
-                    // 移除加班判定
                 }
 
                 if(dayD.isRet) extraBadge += `<span class="text-[9px] font-black px-1.5 py-0.5 rounded border text-amber-700 bg-amber-50 border-amber-200 ml-1">補打卡</span>`;
@@ -1027,6 +1064,8 @@
 
             const daysContainer = document.getElementById('calendar-days');
             let html = '';
+            
+            // 🌟 修正 `firstDay` 變數正確使用，防止 JS 中斷報錯
             for(let i=0; i<firstDay; i++) { html += `<div class="cal-day empty"></div>`; }
 
             for(let d=1; d<=daysInMonth; d++) {
@@ -1258,8 +1297,8 @@
 
         function logout() { localStorage.removeItem('hypass_emp_id'); window.location.href = 'index.html'; }
 
-        // 啟動入口
-        window.onload = bootHr;
+        // 🌟 啟動入口：使用較安全的 DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => { setTimeout(bootHr, 100); });
     </script>
 </body>
 </html>
