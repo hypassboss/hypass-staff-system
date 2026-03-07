@@ -110,10 +110,10 @@
                         <table class="w-full min-w-[450px] text-left text-[10px] md:text-xs table-fixed">
                             <thead class="text-slate-500 border-b border-slate-200 bg-slate-100/50">
                                 <tr>
-                                    <th class="py-2 px-1 font-bold text-left w-[40%]">料號/品名</th>
+                                    <th class="py-2 px-1 font-bold text-left w-[30%]">料號/品名</th>
                                     <th class="py-2 px-1 font-bold text-center text-emerald-700 w-[15%]">現庫</th>
                                     <th class="py-2 px-1 font-bold text-center text-sky-600 w-[15%]">已購</th>
-                                    <th class="py-2 px-1 font-bold text-center w-[30%]">狀態/操作</th>
+                                    <th class="py-2 px-1 font-bold text-center w-[40%]">狀態/操作</th>
                                 </tr>
                             </thead>
                             <tbody id="ui-filter-status-table-alert" class="divide-y divide-slate-100 bg-white rounded-lg">
@@ -415,7 +415,7 @@
                         <div class="col-span-2 flex items-center mb-1"><span class="text-xl mr-1">❄️</span><h5 class="text-[11px] md:text-sm font-black text-blue-800 tracking-widest">冷氣濾網專屬擴充規格</h5></div>
                         <div>
                             <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">摺數</label>
-                            <input type="number" id="fe-item-folds" oninput="calcEditArea()" class="w-full p-2.5 md:p-3 bg-white rounded-lg text-sm md:text-base font-black text-center border-0 outline-none shadow-sm text-blue-900">
+                            <input type="number" id="fe-item-folds" oninput="calcEditArea()" class="w-full p-2.5 md:p-3 bg-white rounded-lg text-sm md:text-base font-black text-center border-0 outline-none shadow-sm text-blue-900" placeholder="例如: 30">
                         </div>
                         <div>
                             <label class="text-[10px] md:text-xs font-bold text-blue-700 ml-1 block mb-1">面積 (自動換算) 單位M2</label>
@@ -438,10 +438,9 @@
                         <table class="w-full text-left text-[10px] md:text-xs whitespace-nowrap min-w-[500px]">
                             <thead class="text-slate-500 border-b border-slate-200">
                                 <tr>
-                                    <th class="p-1 font-bold">項次</th>
-                                    <th class="p-1 font-bold">原料名稱</th>
+                                    <th class="p-1 font-bold w-32">原料名稱</th>
                                     <th class="p-1 font-bold w-16 text-center">用量</th>
-                                    <th class="p-1 font-bold w-16 text-center text-amber-600">損耗(%)</th>
+                                    <th class="p-1 font-bold w-16 text-center">損耗(%)</th>
                                     <th class="p-1 font-bold w-16 text-center">單位</th>
                                     <th class="p-1 font-bold text-sky-700 w-20 text-center">總用量</th>
                                 </tr>
@@ -468,14 +467,6 @@
             </div>
         </div>
     </div>
-
-    <nav id="core-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9990] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <div onclick="event.stopPropagation(); window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-sky-600"><span class="text-xl mb-1 opacity-60 grayscale">👨‍💼</span><span class="scale-90">員工</span></div>
-        <div onclick="event.stopPropagation(); window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-emerald-600"><span class="text-xl mb-1">📦</span><span class="scale-90">庫存</span></div>
-        <div onclick="event.stopPropagation(); window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></div>
-        <div onclick="event.stopPropagation(); window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
-        <div onclick="event.stopPropagation(); window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
-    </nav>
 
     <audio id="beep-sound" src="data:audio/mp3;base64,//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//OExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
 
@@ -673,10 +664,11 @@
                         let dbDate = new Date(c.created_at);
                         let local = nextChecks[c.item_id];
                         if (!local || dbDate > new Date(local.rawDate)) {
+                            // 🌟 需求 3：變更為盤點員工姓名
                             nextChecks[c.item_id] = { 
                                 rawDate: c.created_at, 
                                 date: dbDate.toLocaleDateString('zh-TW'), 
-                                emp: c.employees?.full_name || '系統紀錄' 
+                                emp: c.employees?.full_name || '系統強制盤點' 
                             };
                         }
                     }); 
@@ -859,13 +851,14 @@
                         let stockClass = isLow ? 'text-red-600 animate-pulse' : 'text-amber-500';
                         let typeIcon = i.item_type === '原料' ? '🏭' : '📦';
                         
+                        // 🌟 需求 1：縮減料號與品名的欄位寬度與佔位
                         let displayHtml = `
                             <div class="flex flex-col overflow-hidden pr-0.5">
                                 <div class="flex items-center mb-0.5">
-                                    <span class="text-[8px] md:text-[10px] bg-slate-200 text-slate-600 px-1 rounded-sm mr-1 shrink-0 shadow-sm">${typeIcon}</span>
-                                    <span class="font-mono font-black text-slate-800 text-[10px] md:text-xs truncate tracking-wider">${i.item_code}</span>
+                                    <span class="text-[8px] md:text-[9px] bg-slate-200 text-slate-600 px-1 rounded-sm mr-1 shrink-0 shadow-sm">${typeIcon}</span>
+                                    <span class="font-mono font-black text-slate-800 text-[9px] md:text-[11px] truncate tracking-wider">${i.item_code}</span>
                                 </div>
-                                <div class="text-[9px] md:text-xs font-bold text-slate-500 truncate pl-[18px] md:pl-[24px] leading-tight">${i.item_name}</div>
+                                <div class="text-[9px] md:text-[11px] font-bold text-slate-500 truncate pl-[18px] md:pl-[24px] leading-tight">${i.item_name}</div>
                             </div>
                         `;
 
@@ -1102,6 +1095,7 @@
 
                 const chk = window.latestChecks[i.id]; 
                 const inCart = poCart.has(i.id) ? 'checked' : '';
+                // 🌟 需求 3：變更系統紀錄為盤點人員姓名
                 let lastCheckText = chk ? `${chk.date} (${chk.emp})` : `<span class="text-red-500">從未盤點過</span>`;
 
                 return `
@@ -1121,18 +1115,18 @@
                         </label>
                     </div>
                     
-                    <div class="grid grid-cols-4 gap-1.5 text-center bg-slate-50 p-2 md:p-3 rounded-xl mb-3 border border-slate-100">
-                        <div class="flex flex-col justify-center bg-white rounded-lg p-1.5 shadow-sm border border-slate-100">
-                            <span class="text-[9px] md:text-[10px] text-slate-400 font-bold mb-1">現有庫存</span>
-                            <input type="number" value="${i.current_stock}" onchange="inlineUpdateCurrentStock('${i.id}', ${i.current_stock}, this.value, this)" class="w-full bg-transparent text-center font-black text-lg md:text-xl ${stockClass} outline-none focus:border-b-2 focus:border-emerald-500 transition-all p-0">
+                    <div class="grid grid-cols-4 gap-1 md:gap-1.5 text-center bg-slate-50 p-1.5 md:p-2 rounded-xl mb-3 border border-slate-100">
+                        <div class="flex flex-col justify-center bg-white rounded-lg p-1 shadow-sm border border-slate-100">
+                            <span class="text-[8px] md:text-[9px] text-slate-400 font-bold mb-0.5">現有庫存</span>
+                            <input type="number" value="${i.current_stock}" onchange="inlineUpdateCurrentStock('${i.id}', ${i.current_stock}, this.value, this)" class="w-full bg-transparent text-center font-black text-sm md:text-base ${stockClass} outline-none focus:border-b-2 focus:border-emerald-500 transition-all p-0">
                         </div>
-                        <div class="flex flex-col justify-center bg-white rounded-lg p-1.5 shadow-sm border border-slate-100">
-                            <span class="text-[9px] md:text-[10px] text-slate-400 font-bold mb-1">低水位</span>
-                            <input type="number" value="${safe}" onchange="inlineUpdateSafeStock('${i.id}', this.value, ${safe}, this)" class="w-full bg-transparent text-center font-black text-sm md:text-base text-red-500 outline-none focus:border-b-2 focus:border-red-400 transition-all p-0">
+                        <div class="flex flex-col justify-center bg-white rounded-lg p-1 shadow-sm border border-slate-100">
+                            <span class="text-[8px] md:text-[9px] text-slate-400 font-bold mb-0.5">低水位</span>
+                            <input type="number" value="${safe}" onchange="inlineUpdateSafeStock('${i.id}', this.value, ${safe}, this)" class="w-full bg-transparent text-center font-black text-[11px] md:text-sm text-red-500 outline-none focus:border-b-2 focus:border-red-400 transition-all p-0">
                         </div>
-                        <div class="flex flex-col justify-center bg-white rounded-lg p-1.5 shadow-sm border border-slate-100">
-                            <span class="text-[9px] md:text-[10px] text-slate-400 font-bold mb-1">生產週期</span>
-                            <select onchange="inlineUpdateLeadTime('${i.id}', this.value)" class="w-full bg-transparent font-black text-xs md:text-sm text-slate-700 outline-none text-center-last appearance-none p-0">
+                        <div class="flex flex-col justify-center bg-white rounded-lg p-1 shadow-sm border border-slate-100">
+                            <span class="text-[8px] md:text-[9px] text-slate-400 font-bold mb-0.5">生產週期</span>
+                            <select onchange="inlineUpdateLeadTime('${i.id}', this.value)" class="w-full bg-transparent font-black text-[10px] md:text-[11px] text-slate-700 outline-none text-center-last appearance-none p-0">
                                 <option value="15" ${i.lead_time_days==15?'selected':''}>15天</option>
                                 <option value="30" ${i.lead_time_days==30?'selected':''}>30天</option>
                                 <option value="45" ${i.lead_time_days==45?'selected':''}>45天</option>
@@ -1140,9 +1134,9 @@
                                 <option value="90" ${i.lead_time_days==90?'selected':''}>90天</option>
                             </select>
                         </div>
-                        <div class="flex flex-col justify-center bg-white rounded-lg p-1.5 shadow-sm border border-slate-100">
-                            <span class="text-[9px] md:text-[10px] text-slate-400 font-bold mb-1">盤點頻率</span>
-                            <select onchange="inlineUpdateCycle('${i.id}', this.value)" class="w-full bg-transparent font-black text-xs md:text-sm text-slate-700 outline-none text-center-last appearance-none p-0">
+                        <div class="flex flex-col justify-center bg-white rounded-lg p-1 shadow-sm border border-slate-100">
+                            <span class="text-[8px] md:text-[9px] text-slate-400 font-bold mb-0.5">盤點頻率</span>
+                            <select onchange="inlineUpdateCycle('${i.id}', this.value)" class="w-full bg-transparent font-black text-[10px] md:text-[11px] text-slate-700 outline-none text-center-last appearance-none p-0">
                                 <option value="7" ${i.stocktake_cycle==7?'selected':''}>7天</option>
                                 <option value="30" ${i.stocktake_cycle==30?'selected':''}>30天</option>
                                 <option value="60" ${i.stocktake_cycle==60?'selected':''}>60天</option>
@@ -1151,8 +1145,8 @@
                         </div>
                     </div>
 
-                    <div class="text-[10px] md:text-xs font-bold bg-slate-100/80 px-3 py-2 md:py-2.5 rounded-lg text-slate-500 flex items-center justify-between border border-slate-200/50 mt-auto">
-                        <span class="flex items-center tracking-widest"><span class="mr-1 text-sm md:text-base">🕒</span> 最新盤點</span>
+                    <div class="text-[9px] md:text-[10px] font-bold bg-slate-100/80 px-2 py-1.5 md:py-2 rounded-lg text-slate-500 flex items-center justify-between border border-slate-200/50 mt-auto">
+                        <span class="flex items-center tracking-widest"><span class="mr-1 text-xs md:text-sm">🕒</span> 最新盤點</span>
                         <span class="text-slate-800 font-black" id="last-check-${i.id}">${lastCheckText}</span>
                     </div>
                 </div>`;
@@ -1469,7 +1463,6 @@
             document.getElementById('c-total-qty').value = Math.max(0, parseInt(document.getElementById('c-total-qty').value) + val); 
         }
 
-        // 🌟 防護盤點寫入錯誤機制
         async function submitCount() { 
             const id = document.getElementById('c-item-id').value; 
             const newVal = parseInt(document.getElementById('c-total-qty').value); 
@@ -1773,10 +1766,7 @@
             setTimeout(() => { window.print(); }, 150); 
         }
 
-        window.onload = bootInventory;
-
-        const enforceNavObserver = new MutationObserver(() => { const oldNav = document.querySelector('nav:not(#core-bottom-nav)'); if (oldNav) oldNav.remove(); });
-        enforceNavObserver.observe(document.body, { childList: true, subtree: true });
+        document.addEventListener('DOMContentLoaded', () => { setTimeout(bootInventory, 100); });
     </script>
 </body>
 </html>
