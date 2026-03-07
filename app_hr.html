@@ -97,7 +97,7 @@
             <div class="shrink-0 text-[10px] font-bold bg-white/10 px-2 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
         </header>
 
-        <main class="p-4 relative z-10 flex-1 overflow-y-auto no-scrollbar">
+        <main class="p-4 pb-28 relative z-10 flex-1 overflow-y-auto no-scrollbar">
             <div id="view-dashboard" class="view-panel active space-y-4">
                 
                 <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-white p-6 rounded-[2rem] shadow-xl relative overflow-hidden">
@@ -245,14 +245,14 @@
                         <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2">🗓️</span>行事曆與打卡</h3>
                         <input type="month" id="cal-month-picker" class="p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-sky-500 text-slate-700" onchange="renderCalendarUI()">
                     </div>
-                    
+
                     <div class="flex flex-wrap items-center justify-center gap-3 text-[10px] md:text-xs font-bold text-slate-500 mb-4 bg-slate-50 p-2.5 rounded-xl border border-slate-200 shadow-inner">
                         <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-1.5 shadow-sm"></span>正常</span>
                         <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-red-500 mr-1.5 shadow-sm"></span>異常(遲/早/曠)</span>
                         <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 mr-1.5 shadow-sm"></span>請假/補登</span>
-                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-slate-200 mr-1.5 shadow-sm border border-slate-300"></span>未到/休假</span>
+                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 mr-1.5 shadow-sm border border-slate-400"></span>未到/休假</span>
                     </div>
-
+                    
                     <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-inner mb-4">
                         <div class="cal-grid cal-header mb-1 border-b border-slate-200 pb-2">
                             <div class="text-red-500">日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div class="text-red-500">六</div>
@@ -326,9 +326,9 @@
                     </div>
                     
                     <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner">
-                        <h5 class="text-sm font-black text-slate-700 mb-3 border-l-4 border-sky-500 pl-2">👤 員工基本資料與權限</h5>
-                        <div class="space-y-3 text-[11px] md:text-sm" id="ui-profile-details">
-                            <p class="text-center py-4 text-slate-400 font-bold">載入中...</p>
+                        <h5 class="text-sm font-black text-slate-700 mb-3 border-l-4 border-sky-500 pl-2">👤 員工基本資料</h5>
+                        <div class="space-y-3 text-[11px] md:text-xs" id="ui-profile-details">
+                            <p class="text-center py-4 text-slate-400 font-bold">資料載入中...</p>
                         </div>
                     </div>
 
@@ -381,10 +381,11 @@
         </div>
     </div>
 
-    <script src="shared.js?v=999"></script>
+    <script src="shared.js"></script>
     <script>
         let currentPunchType = ''; let currentBranch = null; let scanAnim = null;
         let twHolidays = {}; 
+        
         let sigCanvas, sigCtx, isDrawing = false;
         let currentPayrollData = null; 
         let latestContractVersion = "V1.0";
@@ -476,7 +477,7 @@
             if(scanAnim) clearInterval(scanAnim);
         }
 
-        // 🌟 滿血個人資料讀取
+        // 🌟 滿血個人資料擴充顯示
         async function loadProfile() {
             const u = window.currentUser;
             if(!u) return;
@@ -490,22 +491,22 @@
             }
 
             let perms = [];
-            if(u.perm_inventory) perms.push('<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">📦 庫存</span>');
-            if(u.perm_purchase) perms.push('<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">🛒 採購</span>');
-            if(u.perm_sales) perms.push('<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">💼 業務</span>');
-            if(u.perm_finance) perms.push('<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">💰 財務</span>');
-            if(u.is_admin) perms.push('<span class="bg-rose-100 text-rose-600 px-2 py-0.5 rounded font-black border border-rose-200">👑 最高權限</span>');
-            if(perms.length === 0) perms.push('<span class="text-slate-400 font-bold">無</span>');
+            if(u.perm_inventory) perms.push('<span class="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded shadow-sm">📦 庫存</span>');
+            if(u.perm_purchase) perms.push('<span class="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded shadow-sm">🛒 採購</span>');
+            if(u.perm_sales) perms.push('<span class="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded shadow-sm">💼 業務</span>');
+            if(u.perm_finance) perms.push('<span class="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded shadow-sm">💰 財務</span>');
+            if(u.is_admin) perms.push('<span class="bg-rose-200 text-rose-700 px-1.5 py-0.5 rounded shadow-sm font-black">👑 權限</span>');
+            if(perms.length === 0) perms.push('<span class="text-slate-400 font-bold">無權限</span>');
 
             document.getElementById('ui-profile-details').innerHTML = `
-                <div class="flex justify-between border-b border-slate-100 pb-2.5"><span class="text-slate-500 font-bold">員工編號</span><span class="font-black text-sky-700">${u.employee_no || '未設定'}</span></div>
-                <div class="flex justify-between border-b border-slate-100 pb-2.5"><span class="text-slate-500 font-bold">真實姓名</span><span class="font-black text-slate-800">${u.full_name}</span></div>
-                <div class="flex justify-between border-b border-slate-100 pb-2.5"><span class="text-slate-500 font-bold">打卡工作據點</span><span class="font-black text-slate-800">${branchName}</span></div>
-                <div class="flex justify-between border-b border-slate-100 pb-2.5"><span class="text-slate-500 font-bold">上下班時間</span><span class="font-black text-slate-800 font-mono">${(u.work_start_time||'09:00').slice(0,5)} - ${(u.work_end_time||'18:00').slice(0,5)}</span></div>
-                <div class="flex justify-between border-b border-slate-100 pb-2.5"><span class="text-slate-500 font-bold">入職日期</span><span class="font-black text-slate-800">${u.onboarding_date || '未設定'}</span></div>
-                <div class="flex justify-between border-b border-slate-100 pb-2.5 items-center"><span class="text-slate-500 font-bold">模組存取權限</span><div class="flex flex-wrap gap-1 justify-end w-2/3">${perms.join('')}</div></div>
-                <div class="flex justify-between border-b border-slate-100 pb-2.5"><span class="text-slate-500 font-bold">庫存盤點員身份</span><span class="font-black ${u.is_inventory_manager?'text-emerald-600':'text-slate-400'}">${u.is_inventory_manager?'✔️ 是':'否'}</span></div>
-                <div class="flex justify-between items-center"><span class="text-slate-500 font-bold w-1/2">授權核准採購單與產出 PDF</span><span class="font-black text-right ${u.perm_purchase_approve?'text-amber-600':'text-slate-400'} w-1/2">${u.perm_purchase_approve?'✔️ 已授權':'無權限'}</span></div>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2.5"><span class="text-slate-500 font-bold">員工編號</span><span class="font-black text-sky-700 text-sm bg-sky-50 px-2 rounded border border-sky-100 shadow-sm">${u.employee_no || '未設定'}</span></div>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2.5 pt-1.5"><span class="text-slate-500 font-bold">真實姓名</span><span class="font-black text-slate-800 text-sm">${u.full_name}</span></div>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2.5 pt-1.5"><span class="text-slate-500 font-bold">工作據點</span><span class="font-black text-slate-800">${branchName}</span></div>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2.5 pt-1.5"><span class="text-slate-500 font-bold">上下班時間</span><span class="font-black text-slate-800 font-mono tracking-wider">${(u.work_start_time||'09:00').slice(0,5)} - ${(u.work_end_time||'18:00').slice(0,5)}</span></div>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2.5 pt-1.5"><span class="text-slate-500 font-bold">入職日期</span><span class="font-black text-slate-800">${u.onboarding_date || '--'}</span></div>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2.5 pt-1.5"><span class="text-slate-500 font-bold w-1/3">模組存取權限</span><div class="flex flex-wrap gap-1 justify-end w-2/3 text-[10px]">${perms.join('')}</div></div>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2.5 pt-1.5"><span class="text-slate-500 font-bold">庫存盤點員</span><span class="font-black ${u.is_inventory_manager?'text-emerald-600':'text-slate-400'}">${u.is_inventory_manager?'✔️ 是':'否'}</span></div>
+                <div class="flex justify-between items-center pt-1.5"><span class="text-slate-500 font-bold w-1/2">授權核准採購單與產出 PDF</span><span class="font-black text-right ${u.perm_purchase_approve?'text-amber-600':'text-slate-400'} w-1/2">${u.perm_purchase_approve?'✔️ 已授權':'無'}</span></div>
             `;
         }
 
@@ -515,23 +516,21 @@
                 const { data } = await window._sb.from('company_forms').select('*').eq('form_type', 'employment_contract').limit(1);
                 if(data && data.length > 0) {
                     latestContractVersion = data[0].form_version;
-                    latestContractContent = `<h4 class="text-center font-black text-base text-slate-900 mb-4 border-b border-slate-200 pb-2">${data[0].title||'勞動契約'}</h4>${data[0].content}`;
+                    latestContractContent = `<h4 class="text-center font-black text-base text-slate-900 mb-4 border-b border-slate-200 pb-2">${data[0].form_name||'勞動契約'}</h4>${data[0].content}`;
                 }
             } catch(e) {}
 
             document.getElementById('cv-version-badge').innerText = latestContractVersion;
             document.getElementById('cv-version-badge').classList.remove('hidden');
-            document.getElementById('cv-contract-content').classList.remove('hidden');
             document.getElementById('cv-contract-content').innerHTML = latestContractContent || '<p>合約載入中...</p>';
 
             const actionArea = document.getElementById('cv-signature-action-area');
-            actionArea.classList.remove('hidden');
             const empSignedVersion = window.currentUser.signed_contract_version || '未簽署';
             
             if (empSignedVersion === latestContractVersion && window.currentUser.signature_data) {
                 const signDate = new Date(window.currentUser.nda_signed_at).toLocaleString('zh-TW');
                 actionArea.innerHTML = `
-                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 text-center shadow-sm mt-6">
+                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 text-center shadow-sm">
                         <span class="text-3xl mb-1 block">✅</span>
                         <h4 class="font-black text-emerald-800 text-sm mb-1">您已簽署最新版合約</h4>
                         <p class="text-[10px] font-bold text-emerald-600 mb-3">簽署時間：${signDate}</p>
@@ -543,78 +542,51 @@
                 `;
             } else {
                 let alertMsg = empSignedVersion === '未簽署' ? '您尚未完成合約簽署，請立即補簽。' : `公司合約已更新至 ${latestContractVersion} (您舊版為 ${empSignedVersion})，請重新確認並簽署。`;
-                
                 actionArea.innerHTML = `
-                    <div class="bg-red-50 text-red-700 p-3 rounded-lg border border-red-200 text-xs font-bold mb-4 shadow-sm animate-pulse mt-6">
-                        ⚠️ ${alertMsg}
-                    </div>
+                    <div class="bg-red-50 text-red-700 p-3 rounded-lg border border-red-200 text-xs font-bold mb-4 shadow-sm animate-pulse">⚠️ ${alertMsg}</div>
                     <div class="mb-4">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">數位簽名區</span>
-                            <button type="button" onclick="clearSignature()" class="text-[10px] bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg font-bold hover:bg-slate-300 transition">清除重簽</button>
-                        </div>
-                        <div id="canvas-container">
-                            <canvas id="signature-pad"></canvas>
-                        </div>
+                        <div class="flex justify-between items-center mb-2"><span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">數位簽名區</span><button type="button" onclick="clearSignature()" class="text-[10px] bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg font-bold hover:bg-slate-300 transition">清除重簽</button></div>
+                        <div id="canvas-container"><canvas id="signature-pad"></canvas></div>
                     </div>
-                    <label class="flex items-start space-x-3 cursor-pointer bg-slate-50 p-3 rounded-xl border border-slate-200 mb-6 shadow-sm">
-                        <input type="checkbox" id="contract-agree-chk" class="w-5 h-5 mt-0.5 accent-slate-900">
-                        <span class="text-xs font-bold text-slate-700 leading-relaxed">本人已詳細閱讀並完全同意上述聘僱合約與管理規章，並確認數位簽章具備法律效力。</span>
-                    </label>
+                    <label class="flex items-start space-x-3 cursor-pointer bg-slate-50 p-3 rounded-xl border border-slate-200 mb-6 shadow-sm"><input type="checkbox" id="contract-agree-chk" class="w-5 h-5 mt-0.5 accent-slate-900"><span class="text-xs font-bold text-slate-700 leading-relaxed">本人已詳細閱讀並完全同意上述聘僱合約與管理規章，並確認數位簽章具備法律效力。</span></label>
                     <button onclick="updateContractSignature()" id="btn-update-sig" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition text-base tracking-widest">確認簽署並更新合約</button>
                 `;
-                
                 setTimeout(() => {
                     initSignaturePad();
-                    if(sigCanvas) {
-                        const rect = sigCanvas.parentElement.getBoundingClientRect();
-                        sigCanvas.width = rect.width;
-                        sigCanvas.height = 160;
-                    }
+                    if(sigCanvas) { const rect = sigCanvas.parentElement.getBoundingClientRect(); sigCanvas.width = rect.width; sigCanvas.height = 160; }
                 }, 100);
             }
         }
 
-        async function loadPersonalBulletins() {
+        async function checkBulletins() {
             try {
-                const { data } = await window._sb.from('personal_bulletins').select('*').eq('employee_id', window.currentUser.id).order('created_at', { ascending: false });
-                window.pbulls = data || [];
-                const container = document.getElementById('ui-personal-bulletin-list');
-                const badge = document.getElementById('unread-bulletin-badge');
-                
-                if (!data || data.length === 0) {
-                    container.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">目前無任何個人通知</p>';
-                    document.getElementById('latest-p-bulletin').innerText = '目前無個人通知';
-                    if(badge) badge.classList.add('hidden');
-                    return;
-                }
-
+                const { data: pb } = await window._sb.from('personal_bulletins').select('*').eq('employee_id', window.currentUser.id).order('created_at', { ascending: false });
+                window.pbulls = pb || [];
                 let unreadCount = 0;
-                document.getElementById('latest-p-bulletin').innerText = data[0].title;
                 
-                container.innerHTML = data.map(b => {
+                document.getElementById('ui-personal-bulletin-list').innerHTML = window.pbulls.map(b => {
                     if (!b.is_read) unreadCount++;
-                    let borderClass = b.is_read ? 'border-slate-200 bg-white' : 'border-red-400 bg-red-50/50';
-                    let badgeHtml = b.is_read ? '<span class="text-[9px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-bold">已讀</span>' : '<span class="text-[9px] bg-red-600 text-white px-2 py-0.5 rounded font-black shadow-sm animate-pulse tracking-widest">未讀</span>';
-                    
-                    return `
-                    <div class="p-4 rounded-xl border-2 ${borderClass} shadow-sm mb-3 transition-all cursor-pointer" onclick="viewPBull('${b.id}')">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-[10px] text-slate-500 font-bold">${new Date(b.created_at).toLocaleDateString('zh-TW')} ${new Date(b.created_at).toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'})}</span>
-                            ${badgeHtml}
-                        </div>
-                        <h4 class="font-black text-sm ${b.is_read ? 'text-slate-800' : 'text-red-800'} mb-1.5">${b.title}</h4>
-                        <p class="text-xs text-slate-600 leading-relaxed font-bold break-words whitespace-pre-line line-clamp-2">${b.content || ''}</p>
-                    </div>`;
-                }).join('');
+                    let badge = b.is_read ? '<span class="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded font-bold border border-slate-200">已讀</span>' : '<span class="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-black border border-red-200 animate-pulse shadow-sm">未讀</span>';
+                    return `<div onclick="viewPBull('${b.id}')" class="p-3.5 bg-slate-50 hover:bg-red-50 transition cursor-pointer rounded-xl border border-slate-200 shadow-sm mb-3"><div class="flex justify-between items-center mb-1.5"><span class="text-[10px] text-slate-500 font-mono">${new Date(b.created_at).toLocaleDateString('zh-TW')}</span>${badge}</div><h5 class="font-black text-sm text-slate-800 truncate">${b.title}</h5></div>`;
+                }).join('') || '<p class="text-xs text-slate-400 font-bold text-center py-4 border border-dashed rounded-xl">無個人通知</p>';
 
-                if (badge) {
-                    if (unreadCount > 0) { badge.innerText = unreadCount; badge.classList.remove('hidden'); } 
-                    else { badge.classList.add('hidden'); }
+                const badgeEl = document.getElementById('unread-bulletin-badge');
+                if (badgeEl) {
+                    if (unreadCount > 0) { badgeEl.innerText = unreadCount; badgeEl.classList.remove('hidden'); } 
+                    else { badgeEl.classList.add('hidden'); }
                 }
-            } catch (e) {}
+                if(window.pbulls.length > 0) document.getElementById('latest-p-bulletin').innerText = window.pbulls[0].title;
+
+                const { data: bb } = await window._sb.from('bulletin_board').select('*').order('created_at', {ascending: false});
+                window.bulls = bb || [];
+                document.getElementById('ui-bull-list').innerHTML = window.bulls.map(b => {
+                    return `<div onclick="viewBull('${b.id}')" class="p-3.5 bg-slate-50 hover:bg-amber-50 transition cursor-pointer rounded-xl border border-slate-200 shadow-sm mb-3"><div class="text-[10px] text-amber-600 font-black mb-1 font-mono">${new Date(b.created_at).toLocaleDateString('zh-TW')}</div><h5 class="font-black text-sm text-slate-800 truncate">${b.title}</h5></div>`;
+                }).join('') || '<p class="text-xs text-slate-400 font-bold text-center py-4 border border-dashed rounded-xl">無公司公告</p>';
+
+                if(window.bulls.length > 0) document.getElementById('latest-bulletin').innerText = window.bulls[0].title;
+            } catch(e){}
         }
-        
+
         // 🌟 員工最新通知已讀寫入機制
         async function viewPBull(id) {
             const b = window.pbulls.find(x => x.id === id);
@@ -634,28 +606,12 @@
                 b.read_at = nowIso;
                 try {
                     await window._sb.from('personal_bulletins').update({ is_read: true, read_at: nowIso }).eq('id', id);
-                    loadPersonalBulletins(); // 靜默重整列表
+                    checkBulletins();
                 } catch(e) {}
             }
 
             document.getElementById('bull-modal-content').innerText = (b.content || '') + readInfo;
             openModal('bull-modal');
-        }
-
-        function openPersonalBulletins() { openView('personal-bulletins', '🔔 員工最新通知'); loadPersonalBulletins(); }
-
-        async function loadBulletins() {
-            try {
-                const { data } = await window._sb.from('bulletin_board').select('*').order('created_at', {ascending: false});
-                window.bulls = data || [];
-                if(data && data.length > 0) {
-                    document.getElementById('latest-bulletin').innerText = data[0].title;
-                    document.getElementById('ui-bulletin-list').innerHTML = data.map(b => `<div onclick="viewBull('${b.id}')" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:bg-amber-50 transition"><div class="text-[10px] text-amber-600 font-black mb-1">${new Date(b.created_at).toLocaleDateString('zh-TW')}</div><h4 class="font-black text-sm text-slate-800 mb-2">${b.title}</h4><p class="text-xs text-slate-600 leading-relaxed font-bold whitespace-pre-line line-clamp-2">${b.content}</p></div>`).join('');
-                } else {
-                    document.getElementById('latest-bulletin').innerText = '目前無新公告';
-                    document.getElementById('ui-bulletin-list').innerHTML = '<p class="text-xs text-slate-400 text-center py-4">無資料</p>';
-                }
-            } catch(e){}
         }
 
         function viewBull(id) {
@@ -666,218 +622,7 @@
             openModal('bull-modal');
         }
 
-        function openStatsAndCalendar() { openView('calendar', '行事曆與打卡'); renderCalendarUI(); }
-
-        // 🌟 請假換算邏輯
-        function calculateLeaveHours(startStr, endStr, workStartStr, workEndStr) {
-            let sDate = new Date(startStr); let eDate = new Date(endStr); let totalHours = 0;
-            let [wsH, wsM] = (workStartStr || '09:00').split(':').map(Number);
-            let [weH, weM] = (workEndStr || '18:00').split(':').map(Number);
-            let curDate = new Date(sDate); curDate.setHours(0,0,0,0);
-            let endDay = new Date(eDate); endDay.setHours(0,0,0,0);
-
-            while(curDate <= endDay) {
-                let dayStart = new Date(curDate); dayStart.setHours(wsH, wsM, 0, 0);
-                let dayEnd = new Date(curDate); dayEnd.setHours(weH, weM, 0, 0);
-                let lunchStart = new Date(curDate); lunchStart.setHours(12, 0, 0, 0);
-                let lunchEnd = new Date(curDate); lunchEnd.setHours(13, 0, 0, 0);
-
-                let isStartDay = (curDate.getFullYear() === sDate.getFullYear() && curDate.getMonth() === sDate.getMonth() && curDate.getDate() === sDate.getDate());
-                let isEndDay = (curDate.getFullYear() === eDate.getFullYear() && curDate.getMonth() === eDate.getMonth() && curDate.getDate() === eDate.getDate());
-                let actualStartLimit = isStartDay ? (sDate > dayStart ? sDate : dayStart) : dayStart;
-                let actualEndLimit = isEndDay ? (eDate < dayEnd ? eDate : dayEnd) : dayEnd;
-
-                if (actualStartLimit < actualEndLimit) {
-                    let ms = actualEndLimit - actualStartLimit;
-                    let lOverlapStart = actualStartLimit > lunchStart ? actualStartLimit : lunchStart;
-                    let lOverlapEnd = actualEndLimit < lunchEnd ? actualEndLimit : lunchEnd;
-                    let lunchMs = lOverlapEnd - lOverlapStart;
-                    if (lunchMs > 0) ms -= lunchMs;
-                    totalHours += ms / (1000 * 60 * 60);
-                }
-                curDate.setDate(curDate.getDate() + 1);
-            }
-            return Math.round(totalHours * 10) / 10;
-        }
-
-        async function loadCalendarAndStats() {
-            const now = new Date(); const currYear = now.getFullYear(); const currMonth = now.getMonth() + 1;
-            document.getElementById('stat-month-label').innerText = `${currYear}年${currMonth}月`;
-            document.getElementById('stat-year-label').innerText = `${currYear}年`;
-
-            let mPer = 0, mSic = 0, mLat = 0, mAnn = 0;
-            const targetStart = window.currentUser.work_start_time ? window.currentUser.work_start_time.slice(0,5) : '09:00';
-            const targetEnd = window.currentUser.work_end_time ? window.currentUser.work_end_time.slice(0,5) : '18:00';
-
-            const sTY = new Date(`${currYear}-01-01T00:00:00Z`);
-            const eTY = new Date(`${currYear}-12-31T23:59:59Z`);
-            
-            try {
-                const { data: logs } = await window._sb.from('attendance_logs').select('*').eq('employee_id', window.currentUser.id).gte('punch_time', sTY.toISOString()).lte('punch_time', eTY.toISOString());
-                const { data: leaves } = await window._sb.from('leave_requests').select('*').eq('employee_id', window.currentUser.id).eq('status', '核准').gte('start_time', sTY.toISOString()).lte('end_time', eTY.toISOString());
-
-                if(leaves) {
-                    leaves.forEach(l => {
-                        let hrs = calculateLeaveHours(l.start_time, l.end_time, targetStart, targetEnd);
-                        if(hrs < 0) hrs = 0;
-                        if(l.leave_type === '事假') { if(new Date(l.start_time).getMonth()+1 === currMonth) mPer += hrs; }
-                        if(l.leave_type === '病假') { if(new Date(l.start_time).getMonth()+1 === currMonth) mSic += hrs; }
-                        if(l.leave_type === '特休') { if(new Date(l.start_time).getMonth()+1 === currMonth) mAnn += hrs; }
-                    });
-                }
-                if(logs) {
-                    let latSetM = new Set(); let earSetM = new Set();
-                    logs.forEach(l => {
-                        const pt = new Date(l.punch_time); const tStr = pt.toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'}); const dStr = getSafeDateStr(pt);
-                        if(l.punch_type === 'IN' && tStr > targetStart) { if(pt.getMonth()+1 === currMonth) latSetM.add(dStr); }
-                        if(l.punch_type === 'OUT' && tStr < targetEnd) { if(pt.getMonth()+1 === currMonth) earSetM.add(dStr); }
-                    });
-                    mLat = latSetM.size + earSetM.size;
-                }
-            } catch(e) {}
-
-            document.getElementById('sm-ann').innerText = Math.floor(mAnn/8)+'天'+(mAnn%8)+'h';
-            document.getElementById('sm-per').innerText = mPer + 'h';
-            document.getElementById('sm-sic').innerText = mSic + 'h';
-            document.getElementById('sm-lat').innerText = mLat + '次'; 
-            document.getElementById('sm-pnt').innerText = (window.currentUser.penalty_points || 0) + '點';
-        }
-
-        // 🌟 行事曆與打卡渲染引擎
-        async function renderCalendarUI() {
-            const mStr = document.getElementById('cal-month-picker').value;
-            if(!mStr) return;
-            const [yStr, moStr] = mStr.split('-');
-            const year = parseInt(yStr); const month = parseInt(moStr);
-            
-            if(!twHolidays[`${year}-01-01`]) { await fetchHolidays(year); }
-
-            document.getElementById('cal-month-title').innerText = `${year}年 ${month}月`;
-            const firstDay = new Date(year, month - 1, 1).getDay();
-            const daysInMonth = new Date(year, month, 0).getDate();
-            const sT = new Date(year, month - 1, 1);
-            const eT = new Date(year, month, 0, 23, 59, 59);
-
-            const { data: logs } = await window._sb.from('attendance_logs').select('*').eq('employee_id', window.currentUser.id).gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString());
-            const { data: leaves } = await window._sb.from('leave_requests').select('*').eq('employee_id', window.currentUser.id).eq('status', '核准').gte('start_time', sT.toISOString()).lte('end_time', eT.toISOString());
-            
-            const targetStart = window.currentUser.work_start_time ? window.currentUser.work_start_time.slice(0,5) : '09:00';
-            const targetEnd = window.currentUser.work_end_time ? window.currentUser.work_end_time.slice(0,5) : '18:00';
-
-            let daysData = {};
-            for(let i=1; i<=daysInMonth; i++) {
-                let d = new Date(year, month - 1, i);
-                let dStr = getSafeDateStr(d);
-                daysData[dStr] = { in: null, out: null, leave: null, isRet: false, isPast: d <= new Date(), isWeekend: (d.getDay()===0||d.getDay()===6), holiday: twHolidays[dStr] };
-            }
-
-            if(leaves) {
-                leaves.forEach(l => {
-                    let ls = new Date(l.start_time); let le = new Date(l.end_time);
-                    for(let i=1; i<=daysInMonth; i++) {
-                        let d = new Date(year, month - 1, i);
-                        let dStr = getSafeDateStr(d);
-                        let dStart = new Date(d); dStart.setHours(0,0,0,0);
-                        let dEnd = new Date(d); dEnd.setHours(23,59,59,999);
-                        if(ls <= dEnd && le >= dStart) { daysData[dStr].leave = l.leave_type; }
-                    }
-                });
-            }
-
-            if(logs) {
-                logs.forEach(l => {
-                    let dStr = getSafeDateStr(new Date(l.punch_time));
-                    if(!daysData[dStr]) return;
-                    const tStr = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
-                    if(l.punch_type === 'IN' && !daysData[dStr].in) daysData[dStr].in = tStr;
-                    if(l.punch_type === 'OUT') daysData[dStr].out = tStr; 
-                    if(l.note && l.note.includes('[補登核准]')) daysData[dStr].isRet = true;
-                });
-            }
-
-            const listEl = document.getElementById('ui-history-list');
-            let listHtml = '';
-            
-            const todaySafeStr = getSafeDateStr(new Date());
-
-            for(let i=daysInMonth; i>=1; i--) {
-                let dDate = new Date(year, month - 1, i);
-                let dStr = getSafeDateStr(dDate);
-                let dayD = daysData[dStr];
-                
-                if(!dayD.isPast && dStr !== todaySafeStr) continue;
-
-                let status = { text: '正常', col: 'text-emerald-700 bg-emerald-50 border-emerald-200' };
-                let extraBadge = '';
-
-                if (dayD.leave) { 
-                    status = { text: dayD.leave.replace('(補登)',''), col: 'text-amber-700 bg-amber-50 border-amber-300' }; 
-                } else if (!dayD.in && !dayD.out) {
-                    if (dayD.isPast && !dayD.isWeekend && !dayD.holiday) status = { text: '曠職', col: 'text-white bg-red-600 border-red-700 animate-pulse shadow-md' };
-                    else status = { text: '無紀錄', col: 'text-slate-400 bg-slate-100 border-slate-200' };
-                } else if (dayD.in && !dayD.out) {
-                    if (dayD.isPast && dStr !== todaySafeStr) status = { text: '忘記打卡', col: 'text-amber-600 bg-amber-50 border-amber-300' };
-                    else status = { text: '上班中', col: 'text-sky-700 bg-sky-50 border-sky-300' };
-                } else {
-                    if (dayD.in > targetStart) status = { text: '遲到', col: 'text-red-600 bg-red-50 border-red-300' };
-                    if (dayD.out < targetEnd) status = { text: '早退', col: 'text-red-600 bg-red-50 border-red-300' };
-                    // 🌟 完全移除加班判定 (晚下班只會顯示正常)
-                }
-
-                if(dayD.isRet) extraBadge += `<span class="text-[9px] font-black px-1.5 py-0.5 rounded border text-amber-700 bg-amber-50 border-amber-200 ml-1">補打卡</span>`;
-
-                if(status.text !== '無紀錄' || dStr === todaySafeStr) {
-                    let timeText = (dayD.in||'--:--') + ' ~ ' + (dayD.out||'--:--');
-                    let titleText = `${dDate.toLocaleDateString('zh-TW', {month:'numeric', day:'numeric'})} (${['日','一','二','三','四','五','六'][dDate.getDay()]})`;
-                    
-                    listHtml += `
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between mb-2">
-                        <div>
-                            <h4 class="font-black text-slate-800 text-sm mb-0.5">${titleText}</h4>
-                            <p class="font-mono text-[10px] font-bold text-slate-500">${timeText}</p>
-                        </div>
-                        <div class="flex items-center">
-                            <span class="text-[10px] md:text-xs font-black tracking-widest px-2.5 py-1 rounded-lg border shadow-sm ${status.col}">${status.text}</span>
-                            ${extraBadge}
-                        </div>
-                    </div>`;
-                }
-            }
-            if(!listHtml) listHtml = '<p class="text-center text-xs font-bold text-slate-400 py-4 border border-dashed border-slate-200 rounded-xl">本月尚無出勤紀錄</p>';
-            listEl.innerHTML = listHtml;
-
-            const daysContainer = document.getElementById('calendar-days');
-            let html = '';
-            for(let i=0; i<firstDay; i++) { html += `<div class="cal-day empty"></div>`; }
-
-            for(let d=1; d<=daysInMonth; d++) {
-                let dDate = new Date(year, month - 1, d);
-                let dStr = getSafeDateStr(dDate);
-                let dayD = daysData[dStr];
-                
-                let extraClass = '';
-                if(dStr === todaySafeStr) extraClass = 'today';
-                else if(dayD.holiday) extraClass = 'holiday';
-                else if(dayD.isWeekend) extraClass = 'weekend';
-
-                let dotHtml = '';
-                if(dayD.leave) {
-                    dotHtml = '<span class="w-1.5 h-1.5 bg-amber-500 rounded-full mx-auto mt-1 block shadow-sm"></span>';
-                } else if(dayD.in && dayD.out) {
-                    let hasAbnormal = (dayD.in > targetStart || dayD.out < targetEnd);
-                    dotHtml = hasAbnormal ? '<span class="w-1.5 h-1.5 bg-red-500 rounded-full mx-auto mt-1 block shadow-sm"></span>' : '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mx-auto mt-1 block shadow-sm"></span>';
-                } else if(dayD.in || dayD.out) {
-                    dotHtml = '<span class="w-1.5 h-1.5 bg-red-500 rounded-full mx-auto mt-1 block shadow-sm"></span>';
-                } else if (dayD.isPast && !dayD.isWeekend && !dayD.holiday) {
-                    dotHtml = '<span class="w-1.5 h-1.5 bg-red-500 rounded-full mx-auto mt-1 block shadow-sm"></span>';
-                }
-
-                let badgeHtml = dayD.holiday ? `<span class="holiday-badge text-red-500">${dayD.holiday}</span>` : '';
-
-                html += `<div class="cal-day flex flex-col justify-start items-center ${extraClass}"><span>${d}</span>${badgeHtml}${dotHtml}</div>`;
-            }
-            daysContainer.innerHTML = html;
-        }
+        function openPersonalBulletins() { openView('personal-bulletins', '🔔 員工最新通知'); }
 
         async function loadTodayPunch() {
             const dStr = getSafeDateStr(new Date());
@@ -913,7 +658,7 @@
             const todayStr = getSafeDateStr(today);
             try {
                 const { data: leaves } = await window._sb.from('leave_requests')
-                    .select('id')
+                    .select('*')
                     .eq('employee_id', u.id)
                     .eq('status', '核准')
                     .lte('start_time', todayStr + 'T23:59:59')
@@ -974,7 +719,7 @@
             const eEnd = (u.work_end_time || '18:00').slice(0,5);
             
             let status = '正常';
-            // 🌟 拔除加班與異常判定 (下班晚打卡＝正常)
+            // 🌟 下班晚打卡＝正常 (不再顯示為加班或異常)
             if (pType === 'IN' && eStart) {
                 if (tStr > eStart) status = '遲到';
             } else if (pType === 'OUT' && eEnd) {
@@ -996,7 +741,7 @@
                 
                 await window._sb.from('attendance_logs').insert([payload]);
                 showSysToast(`✅ ${pType==='IN'?'上班':'下班'}打卡成功！`);
-                loadTodayStatus();
+                loadTodayPunch();
                 loadCalendarAndStats();
                 backToDash(); 
 
@@ -1103,6 +848,218 @@
             } catch(e) {}
         }
 
+        function changeMonth(d) { currentMonth.setMonth(currentMonth.getMonth() + d); renderCalendarUI(); }
+
+        function calculateLeaveHours(startStr, endStr, workStartStr, workEndStr) {
+            let sDate = new Date(startStr); let eDate = new Date(endStr); let totalHours = 0;
+            let [wsH, wsM] = (workStartStr || '09:00').split(':').map(Number);
+            let [weH, weM] = (workEndStr || '18:00').split(':').map(Number);
+            let curDate = new Date(sDate); curDate.setHours(0,0,0,0);
+            let endDay = new Date(eDate); endDay.setHours(0,0,0,0);
+
+            while(curDate <= endDay) {
+                let dayStart = new Date(curDate); dayStart.setHours(wsH, wsM, 0, 0);
+                let dayEnd = new Date(curDate); dayEnd.setHours(weH, weM, 0, 0);
+                let lunchStart = new Date(curDate); lunchStart.setHours(12, 0, 0, 0);
+                let lunchEnd = new Date(curDate); lunchEnd.setHours(13, 0, 0, 0);
+
+                let isStartDay = (curDate.getFullYear() === sDate.getFullYear() && curDate.getMonth() === sDate.getMonth() && curDate.getDate() === sDate.getDate());
+                let isEndDay = (curDate.getFullYear() === eDate.getFullYear() && curDate.getMonth() === eDate.getMonth() && curDate.getDate() === eDate.getDate());
+                let actualStartLimit = isStartDay ? (sDate > dayStart ? sDate : dayStart) : dayStart;
+                let actualEndLimit = isEndDay ? (eDate < dayEnd ? eDate : dayEnd) : dayEnd;
+
+                if (actualStartLimit < actualEndLimit) {
+                    let ms = actualEndLimit - actualStartLimit;
+                    let lOverlapStart = actualStartLimit > lunchStart ? actualStartLimit : lunchStart;
+                    let lOverlapEnd = actualEndLimit < lunchEnd ? actualEndLimit : lunchEnd;
+                    let lunchMs = lOverlapEnd - lOverlapStart;
+                    if (lunchMs > 0) ms -= lunchMs;
+                    totalHours += ms / (1000 * 60 * 60);
+                }
+                curDate.setDate(curDate.getDate() + 1);
+            }
+            return Math.round(totalHours * 10) / 10;
+        }
+
+        async function loadCalendarAndStats() {
+            const now = new Date(); const currYear = now.getFullYear(); const currMonth = now.getMonth() + 1;
+            document.getElementById('stat-month-label').innerText = `${currYear}年${currMonth}月`;
+            document.getElementById('stat-year-label').innerText = `${currYear}年`;
+
+            let mPer = 0, mSic = 0, mLat = 0, mAnn = 0;
+            const targetStart = window.currentUser.work_start_time ? window.currentUser.work_start_time.slice(0,5) : '09:00';
+            const targetEnd = window.currentUser.work_end_time ? window.currentUser.work_end_time.slice(0,5) : '18:00';
+
+            const sTY = new Date(`${currYear}-01-01T00:00:00Z`);
+            const eTY = new Date(`${currYear}-12-31T23:59:59Z`);
+            
+            try {
+                const { data: logs } = await window._sb.from('attendance_logs').select('*').eq('employee_id', window.currentUser.id).gte('punch_time', sTY.toISOString()).lte('punch_time', eTY.toISOString());
+                const { data: leaves } = await window._sb.from('leave_requests').select('*').eq('employee_id', window.currentUser.id).eq('status', '核准').gte('start_time', sTY.toISOString()).lte('end_time', eTY.toISOString());
+
+                if(leaves) {
+                    leaves.forEach(l => {
+                        let hrs = calculateLeaveHours(l.start_time, l.end_time, targetStart, targetEnd);
+                        if(hrs < 0) hrs = 0;
+                        if(l.leave_type === '事假') { if(new Date(l.start_time).getMonth()+1 === currMonth) mPer += hrs; }
+                        if(l.leave_type === '病假') { if(new Date(l.start_time).getMonth()+1 === currMonth) mSic += hrs; }
+                        if(l.leave_type === '特休') { if(new Date(l.start_time).getMonth()+1 === currMonth) mAnn += hrs; }
+                    });
+                }
+                if(logs) {
+                    let latSetM = new Set(); let earSetM = new Set();
+                    logs.forEach(l => {
+                        const pt = new Date(l.punch_time); const tStr = pt.toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'}); const dStr = getSafeDateStr(pt);
+                        if(l.punch_type === 'IN' && tStr > targetStart) { if(pt.getMonth()+1 === currMonth) latSetM.add(dStr); }
+                        if(l.punch_type === 'OUT' && tStr < targetEnd) { if(pt.getMonth()+1 === currMonth) earSetM.add(dStr); }
+                    });
+                    mLat = latSetM.size + earSetM.size;
+                }
+            } catch(e) {}
+
+            document.getElementById('sm-ann').innerText = Math.floor(mAnn/8)+'天'+(mAnn%8)+'h';
+            document.getElementById('sm-per').innerText = mPer + 'h';
+            document.getElementById('sm-sic').innerText = mSic + 'h';
+            document.getElementById('sm-lat').innerText = mLat + '次'; 
+            document.getElementById('sm-pnt').innerText = (window.currentUser.penalty_points || 0) + '點';
+        }
+
+        // 🌟 行事曆與打卡紀錄渲染引擎
+        async function renderCalendarUI() {
+            const mStr = document.getElementById('cal-month-picker').value;
+            if(!mStr) return;
+            const [yStr, moStr] = mStr.split('-');
+            const year = parseInt(yStr); const month = parseInt(moStr);
+            
+            if(!twHolidays[`${year}-01-01`]) { await fetchHolidays(year); }
+
+            document.getElementById('cal-month-title').innerText = `${year}年 ${month}月`;
+            const firstDay = new Date(year, month - 1, 1).getDay();
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const sT = new Date(year, month - 1, 1);
+            const eT = new Date(year, month, 0, 23, 59, 59);
+
+            const { data: logs } = await window._sb.from('attendance_logs').select('*').eq('employee_id', window.currentUser.id).gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString());
+            const { data: leaves } = await window._sb.from('leave_requests').select('*').eq('employee_id', window.currentUser.id).eq('status', '核准').gte('start_time', sT.toISOString()).lte('end_time', eT.toISOString());
+            
+            const targetStart = window.currentUser.work_start_time ? window.currentUser.work_start_time.slice(0,5) : '09:00';
+            const targetEnd = window.currentUser.work_end_time ? window.currentUser.work_end_time.slice(0,5) : '18:00';
+
+            let daysData = {};
+            for(let i=1; i<=daysInMonth; i++) {
+                let d = new Date(year, month - 1, i);
+                let dStr = getSafeDateStr(d);
+                daysData[dStr] = { in: null, out: null, leave: null, isRet: false, isPast: d <= new Date(), isWeekend: (d.getDay()===0||d.getDay()===6), holiday: twHolidays[dStr] };
+            }
+
+            if(leaves) {
+                leaves.forEach(l => {
+                    let ls = new Date(l.start_time); let le = new Date(l.end_time);
+                    for(let i=1; i<=daysInMonth; i++) {
+                        let d = new Date(year, month - 1, i);
+                        let dStr = getSafeDateStr(d);
+                        let dStart = new Date(d); dStart.setHours(0,0,0,0);
+                        let dEnd = new Date(d); dEnd.setHours(23,59,59,999);
+                        if(ls <= dEnd && le >= dStart) { daysData[dStr].leave = l.leave_type; }
+                    }
+                });
+            }
+
+            if(logs) {
+                logs.forEach(l => {
+                    let dStr = getSafeDateStr(new Date(l.punch_time));
+                    if(!daysData[dStr]) return;
+                    const tStr = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
+                    if(l.punch_type === 'IN' && !daysData[dStr].in) daysData[dStr].in = tStr;
+                    if(l.punch_type === 'OUT') daysData[dStr].out = tStr; 
+                    if(l.note && l.note.includes('[補登核准]')) daysData[dStr].isRet = true;
+                });
+            }
+
+            const listEl = document.getElementById('ui-history-list');
+            let listHtml = '';
+            
+            const todaySafeStr = getSafeDateStr(new Date());
+
+            for(let i=daysInMonth; i>=1; i--) {
+                let dDate = new Date(year, month - 1, i);
+                let dStr = getSafeDateStr(dDate);
+                let dayD = daysData[dStr];
+                
+                if(!dayD.isPast && dStr !== todaySafeStr) continue;
+
+                let status = { text: '正常', col: 'text-emerald-700 bg-emerald-50 border-emerald-200' };
+                let extraBadge = '';
+
+                if (dayD.leave) { 
+                    status = { text: dayD.leave.replace('(補登)',''), col: 'text-amber-700 bg-amber-50 border-amber-300' }; 
+                } else if (!dayD.in && !dayD.out) {
+                    if (dayD.isPast && !dayD.isWeekend && !dayD.holiday) status = { text: '曠職', col: 'text-white bg-red-600 border-red-700 animate-pulse shadow-md' };
+                    else status = { text: '無紀錄', col: 'text-slate-400 bg-slate-100 border-slate-200' };
+                } else if (dayD.in && !dayD.out) {
+                    if (dayD.isPast && dStr !== todaySafeStr) status = { text: '忘記打卡', col: 'text-amber-600 bg-amber-50 border-amber-300' };
+                    else status = { text: '上班中', col: 'text-sky-700 bg-sky-50 border-sky-300' };
+                } else {
+                    if (dayD.in > targetStart) status = { text: '遲到', col: 'text-red-600 bg-red-50 border-red-300' };
+                    if (dayD.out < targetEnd) status = { text: '早退', col: 'text-red-600 bg-red-50 border-red-300' };
+                    // 移除加班判定
+                }
+
+                if(dayD.isRet) extraBadge += `<span class="text-[9px] font-black px-1.5 py-0.5 rounded border text-amber-700 bg-amber-50 border-amber-200 ml-1">補打卡</span>`;
+
+                if(status.text !== '無紀錄' || dStr === todaySafeStr) {
+                    let timeText = (dayD.in||'--:--') + ' ~ ' + (dayD.out||'--:--');
+                    let titleText = `${dDate.toLocaleDateString('zh-TW', {month:'numeric', day:'numeric'})} (${['日','一','二','三','四','五','六'][dDate.getDay()]})`;
+                    
+                    listHtml += `
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between mb-2">
+                        <div>
+                            <h4 class="font-black text-slate-800 text-sm mb-0.5">${titleText}</h4>
+                            <p class="font-mono text-[10px] font-bold text-slate-500">${timeText}</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-[10px] md:text-xs font-black tracking-widest px-2.5 py-1 rounded-lg border shadow-sm ${status.col}">${status.text}</span>
+                            ${extraBadge}
+                        </div>
+                    </div>`;
+                }
+            }
+            if(!listHtml) listHtml = '<p class="text-center text-xs font-bold text-slate-400 py-4 border border-dashed border-slate-200 rounded-xl">本月尚無出勤紀錄</p>';
+            listEl.innerHTML = listHtml;
+
+            const daysContainer = document.getElementById('calendar-days');
+            let html = '';
+            for(let i=0; i<firstDay; i++) { html += `<div class="cal-day empty"></div>`; }
+
+            for(let d=1; d<=daysInMonth; d++) {
+                let dDate = new Date(year, month - 1, d);
+                let dStr = getSafeDateStr(dDate);
+                let dayD = daysData[dStr];
+                
+                let extraClass = '';
+                if(dStr === todaySafeStr) extraClass = 'today';
+                else if(dayD.holiday) extraClass = 'holiday';
+                else if(dayD.isWeekend) extraClass = 'weekend';
+
+                let dotHtml = '';
+                if(dayD.leave) {
+                    dotHtml = '<span class="w-1.5 h-1.5 bg-amber-500 rounded-full mx-auto mt-1 block shadow-sm"></span>';
+                } else if(dayD.in && dayD.out) {
+                    let hasAbnormal = (dayD.in > targetStart || dayD.out < targetEnd);
+                    dotHtml = hasAbnormal ? '<span class="w-1.5 h-1.5 bg-red-500 rounded-full mx-auto mt-1 block shadow-sm"></span>' : '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mx-auto mt-1 block shadow-sm"></span>';
+                } else if(dayD.in || dayD.out) {
+                    dotHtml = '<span class="w-1.5 h-1.5 bg-red-500 rounded-full mx-auto mt-1 block shadow-sm"></span>';
+                } else if (dayD.isPast && !dayD.isWeekend && !dayD.holiday) {
+                    dotHtml = '<span class="w-1.5 h-1.5 bg-red-500 rounded-full mx-auto mt-1 block shadow-sm"></span>';
+                }
+
+                let badgeHtml = dayD.holiday ? `<span class="holiday-badge text-red-500">${dayD.holiday}</span>` : '';
+
+                html += `<div class="cal-day flex flex-col justify-start items-center ${extraClass}"><span>${d}</span>${badgeHtml}${dotHtml}</div>`;
+            }
+            daysContainer.innerHTML = html;
+        }
+
         function initSig() {
             sigCanvas = document.getElementById('sig-canvas');
             if(!sigCanvas) return;
@@ -1136,7 +1093,6 @@
 
         function logout() { localStorage.removeItem('hypass_emp_id'); window.location.href = 'index.html'; }
 
-        // 啟動入口
         window.onload = bootHr;
     </script>
 </body>
