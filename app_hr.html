@@ -7,18 +7,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; -webkit-tap-highlight-color: transparent; background: #e2e8f0;}
-        
-        /* 🌟 雙模態底層設定 */
         @media (max-width: 767px) { body { padding-bottom: 80px; } }
         @media (min-width: 768px) { body { overflow: hidden; } }
 
-        /* 🌟 核心：手機版黃金比例 */
         #app-wrapper { display: flex; width: 100%; height: 100vh; overflow: hidden; justify-content: center; }
         #app-container { background: #f1f5f9; min-height: 100vh; position: relative; overflow-x: hidden; width: 100%; max-width: 28rem; margin: 0 auto; display: flex; flex-direction: column;}
         
-        /* 🌟 核心升級：電腦版滿版解放 */
         @media (min-width: 768px) { 
             #app-wrapper { align-items: flex-start; justify-content: center; padding: 24px; flex: 1; }
             #app-container { height: 100%; min-height: auto; max-height: none; width: 100%; max-width: 1400px; border-radius: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow-y: auto; background: #f8fafc; margin: 0; }
@@ -74,7 +71,7 @@
         
         <div id="rescue-btn" class="hidden flex-col items-center mt-6">
             <p class="text-amber-400 text-[10px] font-bold mb-3 bg-slate-800 px-3 py-1 rounded">網路較慢或遇到資料讀取瓶頸</p>
-            <button onclick="forceUnlock()" class="bg-sky-600 hover:bg-sky-500 text-white font-black px-6 py-3 rounded-full shadow-lg active:scale-95 transition tracking-widest">強制進入系統</button>
+            <button onclick="forceUnlock()" class="bg-sky-600 hover:bg-sky-500 text-white font-black px-6 py-3 rounded-full shadow-lg active:scale-95 transition tracking-widest">強制進入大廳</button>
             <button onclick="logout()" class="mt-4 text-slate-500 font-bold text-xs underline">重新登入</button>
         </div>
     </div>
@@ -108,7 +105,7 @@
     <div id="app-wrapper">
     <div id="app-container" class="shadow-2xl relative hidden flex-col w-full">
         <header class="bg-slate-900 text-white px-5 py-4 md:py-5 shadow-md sticky top-0 z-50 flex items-center justify-between shrink-0 md:rounded-t-2xl">
-            <button id="btn-back" onclick="backToDash()" class="hidden bg-white/10 hover:bg-white/20 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold transition flex items-center shrink-0">🔙 返回</button>
+            <button id="btn-back" onclick="backToDash()" class="hidden bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center shrink-0">🔙 返回</button>
             <div class="flex-1 text-center"><h1 class="text-lg md:text-xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-200 truncate" id="header-title">首頁大廳</h1></div>
             <div class="shrink-0 text-[10px] md:text-xs font-bold bg-white/10 px-3 py-1.5 rounded-full border border-white/20" id="user-badge">載入中</div>
         </header>
@@ -172,7 +169,7 @@
                         <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">薪資單</span>
                     </button>
                     <button onclick="openView('profile', '個人基本資料')" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
-                        <span class="text-3xl mb-1.5 drop-shadow-md">🪪</span>
+                        <span class="text-3xl mb-1.5 drop-shadow-md">👤</span>
                         <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">基本資料與權限</span>
                     </button>
                 </div>
@@ -240,18 +237,18 @@
                         
                         <div id="normal-leave-fields" class="space-y-4">
                             <div class="grid grid-cols-2 gap-3">
-                                <div><label class="text-[11px] md:text-xs font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">開始時間</label><input type="datetime-local" id="l-start" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs md:text-sm font-black outline-none focus:border-indigo-500"></div>
-                                <div><label class="text-[11px] md:text-xs font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">結束時間</label><input type="datetime-local" id="l-end" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs md:text-sm font-black outline-none focus:border-indigo-500"></div>
+                                <div><label class="text-[11px] md:text-xs font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">開始時間</label><input type="datetime-local" id="l-start" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-500 shadow-sm"></div>
+                                <div><label class="text-[11px] md:text-xs font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">結束時間</label><input type="datetime-local" id="l-end" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-500 shadow-sm"></div>
                             </div>
                         </div>
 
                         <div id="retro-punch-fields" class="hidden bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-inner space-y-3">
                             <p class="text-[10px] md:text-xs font-bold text-amber-700 leading-relaxed mb-2">📌 補登提醒：每月僅限補登三次，超過將依規定扣點。審核通過後即生效。</p>
-                            <div><label class="text-[11px] md:text-xs font-black text-amber-800 uppercase tracking-widest ml-1 mb-1 block">補登日期與時間</label><input type="datetime-local" id="l-retro-time" class="w-full p-3 bg-white border border-amber-300 rounded-xl text-xs md:text-sm font-black outline-none focus:border-amber-500"></div>
-                            <div><label class="text-[11px] md:text-xs font-black text-amber-800 uppercase tracking-widest ml-1 mb-1 block">補登類型</label><select id="l-retro-type" class="w-full p-3 bg-white border border-amber-300 rounded-xl text-sm font-black select-arrow outline-none"><option value="IN">上班打卡補登</option><option value="OUT">下班打卡補登</option></select></div>
+                            <div><label class="text-[11px] md:text-xs font-black text-amber-800 uppercase tracking-widest ml-1 mb-1 block">補登日期與時間</label><input type="datetime-local" id="l-retro-time" class="w-full p-3 bg-white border border-amber-300 rounded-xl text-sm font-bold outline-none focus:border-amber-500 shadow-sm"></div>
+                            <div><label class="text-[11px] md:text-xs font-black text-amber-800 uppercase tracking-widest ml-1 mb-1 block">補登類型</label><select id="l-retro-type" class="w-full p-3 bg-white border border-amber-300 rounded-xl text-sm font-black select-arrow outline-none shadow-sm"><option value="IN">上班打卡補登</option><option value="OUT">下班打卡補登</option></select></div>
                         </div>
 
-                        <div><label class="text-[11px] md:text-xs font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">事由與備註</label><textarea id="l-reason" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none h-24 resize-none focus:border-indigo-500 shadow-inner" placeholder="請簡述原因..."></textarea></div>
+                        <div><label class="text-[11px] md:text-xs font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">事由與備註</label><textarea id="l-reason" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none h-24 resize-none focus:border-indigo-500 shadow-sm" placeholder="請簡述原因..."></textarea></div>
                         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 md:py-5 rounded-xl shadow-md active:scale-95 transition text-base md:text-lg tracking-widest mt-2">🚀 送出申請至主管簽核</button>
                     </form>
                 </div>
@@ -265,16 +262,13 @@
             </div>
 
             <div id="view-calendar" class="view-panel space-y-4 md:space-y-6 max-w-3xl mx-auto">
-                <div class="glass-card p-4 md:p-6 rounded-[2rem] shadow-sm border-t-4 border-sky-500">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-black text-slate-800 text-lg md:text-2xl flex items-center"><span class="mr-2">📅</span>行事曆與打卡</h3>
-                        <input type="month" id="cal-month-picker" class="p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-black outline-none focus:border-sky-500 text-slate-700 shadow-sm cursor-pointer" onchange="renderCalendarUI()">
-                    </div>
+                <div class="glass-card p-4 md:p-6 rounded-[2rem] shadow-sm border-t-4 border-indigo-500">
+                    <h3 class="font-black text-slate-800 text-lg md:text-2xl flex items-center mb-3"><span class="mr-2">📅</span>行事曆與打卡</h3>
                     
                     <div class="flex flex-wrap items-center justify-center gap-3 text-[10px] md:text-xs font-bold text-slate-500 mb-5 bg-slate-50 p-2.5 rounded-xl border border-slate-200 shadow-inner">
-                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-500 mr-1.5 shadow-sm"></span>正常打卡</span>
-                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-red-500 mr-1.5 shadow-sm"></span>異常(遲早曠)</span>
-                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-amber-500 mr-1.5 shadow-sm"></span>請假</span>
+                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-500 mr-1.5 shadow-sm"></span>正常</span>
+                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-red-500 mr-1.5 shadow-sm"></span>異常(遲/早/曠)</span>
+                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-amber-500 mr-1.5 shadow-sm"></span>請假/補登</span>
                         <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-slate-300 mr-1.5 shadow-sm border border-slate-400"></span>未到/休假</span>
                     </div>
 
@@ -299,13 +293,11 @@
                 <div class="glass-card p-5 md:p-8 rounded-[2rem] shadow-sm border-t-4 border-emerald-500">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
                         <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">💰</span>我的薪資單</h3>
-                        <button onclick="downloadSalaryPDF()" class="bg-slate-800 text-white px-4 py-2.5 rounded-xl text-xs font-black shadow-md hover:bg-slate-700 transition active:scale-95">📥 下載 PDF</button>
+                        <button onclick="downloadSalaryPDF()" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow-sm transition active:scale-95">📥 下載 PDF</button>
                     </div>
-                    
                     <div class="flex space-x-2 mb-5">
                         <input type="month" id="sal-month" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-black outline-none focus:border-emerald-500 shadow-sm cursor-pointer" onchange="loadSalary()">
                     </div>
-                    
                     <div id="ui-salary-detail" class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner min-h-[250px] flex flex-col justify-center relative overflow-hidden">
                         <p class="text-center text-xs font-bold text-slate-400">請選擇月份查詢</p>
                     </div>
@@ -315,17 +307,19 @@
             <div id="view-profile" class="view-panel space-y-4 md:space-y-6 max-w-2xl mx-auto">
                 <div class="glass-card p-6 md:p-8 rounded-[2rem] shadow-sm border-t-4 border-slate-700 relative pb-10">
                     <div class="flex justify-between items-center border-b border-slate-200 pb-4 mb-6">
-                        <h3 class="font-black text-xl md:text-2xl text-slate-800 flex items-center"><span class="mr-2 text-2xl">👤</span>員工基本資料</h3>
-                        <span id="cv-version-badge" class="text-[10px] bg-slate-800 text-white px-2 py-1 rounded font-black shadow-sm tracking-widest hidden">載入中</span>
+                        <h3 class="font-black text-xl md:text-2xl text-slate-800 flex items-center"><span class="mr-2 text-2xl">👤</span>個人基本資料</h3>
+                        <span id="cv-version-badge" class="text-[10px] bg-slate-800 text-white px-2 py-0.5 rounded font-black shadow-sm tracking-widest hidden">載入中</span>
                     </div>
                     
-                    <div class="space-y-4 text-sm md:text-base bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner mb-6" id="ui-profile-details">
-                        <div class="text-center py-6 text-slate-400 font-bold">資料讀取中...</div>
+                    <div class="mb-6 bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
+                        <h5 class="text-sm font-black text-slate-700 mb-4 border-l-4 border-sky-500 pl-2">👤 員工檔案與權限</h5>
+                        <div class="space-y-4 text-sm md:text-base" id="ui-profile-details">
+                            <div class="text-center py-6 text-slate-400 font-bold">資料讀取中...</div>
+                        </div>
                     </div>
 
                     <div id="cv-contract-content" class="hidden"></div>
                     <div id="cv-signature-action-area" class="hidden"></div>
-                    
                     <button onclick="logout()" class="mt-8 w-full bg-red-50 hover:bg-red-100 text-red-600 font-black py-4 md:py-5 rounded-xl active:scale-95 transition shadow-sm border border-red-200 tracking-widest">登出系統</button>
                 </div>
             </div>
@@ -371,7 +365,7 @@
         <div onclick="openView('profile', '個人基本資料')" class="nav-btn flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600" data-target="profile"><span class="text-xl mb-1 opacity-60 grayscale nav-icon">👤</span><span class="scale-90">我</span></div>
     </nav>
 
-    <script src="shared.js?v=2026030733"></script>
+    <script src="shared.js?v=2026030740"></script>
     <script>
         let currentMonth = new Date();
         let sigCanvas, sigCtx, isDrawing = false;
@@ -380,9 +374,18 @@
         window.bulls = [];
         let twHolidays = {};
 
-        // 🌟 終極防卡死救援：即使無法連線也能強制解開畫面
+        // 🌟 無敵安全日期轉換器 (徹底解決 iOS / 手機版報錯)
+        function getSafeDateStr(dateObj) {
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        // 🌟 終極防卡死救援 (即使連線失敗也能打開系統)
         window.forceUnlock = function() {
-            document.getElementById('loading-screen').style.display = 'none';
+            const ls = document.getElementById('loading-screen');
+            if(ls) ls.style.display = 'none';
             document.getElementById('app-container').classList.remove('hidden');
             document.getElementById('app-container').classList.add('flex');
             if(!window.currentUser) {
@@ -433,7 +436,7 @@
         }
         setInterval(updateTime, 1000); updateTime();
 
-        // 🌟 強化版啟動引擎 (防卡死設計 + maybeSingle替代方案)
+        // 🌟 強化版啟動引擎 (防卡死設計)
         async function bootHR() {
             let authTimeout = setTimeout(() => {
                 const msg = document.getElementById('loading-msg');
@@ -454,12 +457,10 @@
                 const u = window.currentUser;
                 document.getElementById('user-badge').innerText = u.full_name || '員工';
                 if(document.getElementById('desktop-user-badge')) document.getElementById('desktop-user-badge').innerText = u.full_name || '員工';
-                
-                if (u.is_admin) { document.getElementById('admin-entrance').classList.remove('hidden'); }
+                if(u.is_admin) { document.getElementById('admin-entrance').classList.remove('hidden'); }
 
                 let latestForm = null;
                 try {
-                    // 🌟 移除容易報錯的 .maybeSingle()，改用最安全的陣列取值
                     const { data } = await window._sb.from('company_forms').select('*').eq('form_type', 'employment_contract').limit(1);
                     if(data && data.length > 0) latestForm = data[0];
                 } catch(e) { console.warn('合約讀取失敗', e); }
@@ -485,12 +486,16 @@
         }
 
         function finishBoot() {
-            document.getElementById('loading-screen').classList.add('opacity-0');
-            setTimeout(() => { 
-                document.getElementById('loading-screen').style.display = 'none'; 
-                document.getElementById('app-container').classList.remove('hidden'); 
-                document.getElementById('app-container').classList.add('flex');
-            }, 400);
+            const ls = document.getElementById('loading-screen');
+            if(ls) {
+                ls.classList.add('opacity-0');
+                setTimeout(() => { ls.style.display = 'none'; }, 400);
+            }
+            const ac = document.getElementById('app-container');
+            if(ac) {
+                ac.classList.remove('hidden'); 
+                ac.classList.add('flex');
+            }
 
             if (!window.currentUser) return;
 
@@ -504,7 +509,7 @@
                     loadTodayStatus();
                     loadLeaves();
                     checkBulletins();
-                    loadProfile(); // 載入滿血個人資料
+                    loadProfile(); 
                     loadCalendarAndStats();
                 });
             } catch (e) { console.error("finishBoot Error", e); }
@@ -526,7 +531,7 @@
             } catch(e) { twHolidays = {}; }
         }
 
-        // 🌟 個人基本資料滿血版 (顯示各種權限與據點)
+        // 🌟 滿血個人資料載入
         async function loadProfile() {
             const u = window.currentUser;
             if(!u) return;
@@ -558,11 +563,11 @@
                     <span class="font-black text-slate-800 text-base md:text-lg">${u.full_name}</span>
                 </div>
                 <div class="flex justify-between items-center border-b border-slate-100 pb-4 pt-2">
-                    <span class="text-slate-500 font-bold text-xs md:text-sm">打卡工作據點</span>
+                    <span class="text-slate-500 font-bold text-xs md:text-sm">工作據點</span>
                     <span class="font-black text-slate-800">${branchName}</span>
                 </div>
                 <div class="flex justify-between items-center border-b border-slate-100 pb-4 pt-2">
-                    <span class="text-slate-500 font-bold text-xs md:text-sm">表定上下班時間</span>
+                    <span class="text-slate-500 font-bold text-xs md:text-sm">上下班時間</span>
                     <span class="font-black text-slate-800 font-mono bg-slate-50 px-3 py-1 rounded-lg border border-slate-200 shadow-inner tracking-wider">${(u.work_start_time||'09:00').slice(0,5)} - ${(u.work_end_time||'18:00').slice(0,5)}</span>
                 </div>
                 <div class="flex justify-between items-center border-b border-slate-100 pb-4 pt-2">
@@ -650,9 +655,9 @@
         function openPersonalBulletins() { openView('personal-bulletins', '🔔 員工最新通知'); }
 
         async function loadTodayStatus() {
-            const d = new Date().toLocaleDateString('en-CA');
+            const dStr = getSafeDateStr(new Date());
             try {
-                const { data } = await window._sb.from('attendance_logs').select('*').eq('employee_id', window.currentUser.id).gte('punch_time', d + 'T00:00:00').lte('punch_time', d + 'T23:59:59');
+                const { data } = await window._sb.from('attendance_logs').select('*').eq('employee_id', window.currentUser.id).gte('punch_time', dStr + 'T00:00:00').lte('punch_time', dStr + 'T23:59:59');
                 if(data) {
                     let inTime = '--:--'; let outTime = '--:--';
                     data.forEach(l => {
@@ -680,7 +685,7 @@
             }
 
             // 防呆 2：當日已有請假紀錄禁止打卡
-            const todayStr = today.toLocaleDateString('en-CA');
+            const todayStr = getSafeDateStr(today);
             try {
                 const { data: leaves } = await window._sb.from('leave_requests')
                     .select('*')
@@ -744,21 +749,21 @@
             const eEnd = (u.work_end_time || '18:00').slice(0,5);
             
             let status = '正常';
-            // 🌟 下班晚打卡＝正常 (徹底拔除加班誤判)
+            // 🌟 拔除加班與異常判定 (下班晚打卡＝正常)
             if (pType === 'IN' && eStart) {
                 if (tStr > eStart) status = '遲到';
             } else if (pType === 'OUT' && eEnd) {
                 if (tStr < eEnd) {
                     status = '早退';
                 } else {
-                    status = '正常'; 
+                    status = '正常'; // 晚下班依然算正常
                 }
             }
 
             try {
                 const payload = { 
                     employee_id: u.id, punch_type: pType,
-                    latitude: 22.9908, longitude: 120.2133, // Demo coordinates
+                    latitude: 22.9908, longitude: 120.2133,
                     device_info: navigator.userAgent,
                     location_status: '正常',
                     status: status, note: ''
@@ -933,7 +938,7 @@
                 if(logs) {
                     let latSetM = new Set(); let earSetM = new Set();
                     logs.forEach(l => {
-                        const pt = new Date(l.punch_time); const tStr = pt.toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'}); const dStr = pt.toLocaleDateString('en-CA');
+                        const pt = new Date(l.punch_time); const tStr = pt.toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'}); const dStr = getSafeDateStr(pt);
                         if(l.punch_type === 'IN' && tStr > targetStart) latSetM.add(dStr);
                         if(l.punch_type === 'OUT' && tStr < targetEnd) earSetM.add(dStr);
                     });
@@ -972,7 +977,7 @@
             let daysData = {};
             for(let i=1; i<=daysInMonth; i++) {
                 let d = new Date(year, month - 1, i);
-                let dStr = d.toLocaleDateString('en-CA');
+                let dStr = getSafeDateStr(d);
                 daysData[dStr] = { in: null, out: null, leave: null, isRet: false, isPast: d <= new Date(), isWeekend: (d.getDay()===0||d.getDay()===6), holiday: twHolidays[dStr] };
             }
 
@@ -981,7 +986,7 @@
                     let ls = new Date(l.start_time); let le = new Date(l.end_time);
                     for(let i=1; i<=daysInMonth; i++) {
                         let d = new Date(year, month - 1, i);
-                        let dStr = d.toLocaleDateString('en-CA');
+                        let dStr = getSafeDateStr(d);
                         let dStart = new Date(d); dStart.setHours(0,0,0,0);
                         let dEnd = new Date(d); dEnd.setHours(23,59,59,999);
                         if(ls <= dEnd && le >= dStart) { daysData[dStr].leave = l.leave_type; }
@@ -991,7 +996,7 @@
 
             if(logs) {
                 logs.forEach(l => {
-                    let dStr = new Date(l.punch_time).toLocaleDateString('en-CA');
+                    let dStr = getSafeDateStr(new Date(l.punch_time));
                     if(!daysData[dStr]) return;
                     const tStr = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
                     if(l.punch_type === 'IN' && !daysData[dStr].in) daysData[dStr].in = tStr;
@@ -1003,12 +1008,14 @@
             const listEl = document.getElementById('ui-history-list');
             let listHtml = '';
             
+            const todaySafeStr = getSafeDateStr(new Date());
+
             for(let i=daysInMonth; i>=1; i--) {
                 let dDate = new Date(year, month - 1, i);
-                let dStr = dDate.toLocaleDateString('en-CA');
+                let dStr = getSafeDateStr(dDate);
                 let dayD = daysData[dStr];
                 
-                if(!dayD.isPast && dStr !== new Date().toLocaleDateString('en-CA')) continue;
+                if(!dayD.isPast && dStr !== todaySafeStr) continue;
 
                 let status = { text: '正常', col: 'text-emerald-700 bg-emerald-50 border-emerald-200' };
                 let extraBadge = '';
@@ -1019,16 +1026,17 @@
                     if (dayD.isPast && !dayD.isWeekend && !dayD.holiday) status = { text: '曠職', col: 'text-white bg-red-600 border-red-700 animate-pulse shadow-md' };
                     else status = { text: '無紀錄', col: 'text-slate-400 bg-slate-100 border-slate-200' };
                 } else if (dayD.in && !dayD.out) {
-                    if (dayD.isPast && dStr !== new Date().toLocaleDateString('en-CA')) status = { text: '忘記打卡', col: 'text-amber-600 bg-amber-50 border-amber-300' };
+                    if (dayD.isPast && dStr !== todaySafeStr) status = { text: '忘記打卡', col: 'text-amber-600 bg-amber-50 border-amber-300' };
                     else status = { text: '上班中', col: 'text-sky-700 bg-sky-50 border-sky-300' };
                 } else {
                     if (dayD.in > targetStart) status = { text: '遲到', col: 'text-red-600 bg-red-50 border-red-300' };
                     if (dayD.out < targetEnd) status = { text: '早退', col: 'text-red-600 bg-red-50 border-red-300' };
+                    // 移除加班判定
                 }
 
                 if(dayD.isRet) extraBadge += `<span class="text-[9px] font-black px-1.5 py-0.5 rounded border text-amber-700 bg-amber-50 border-amber-200 ml-1">補打卡</span>`;
 
-                if(status.text !== '無紀錄' || dStr === new Date().toLocaleDateString('en-CA')) {
+                if(status.text !== '無紀錄' || dStr === todaySafeStr) {
                     let timeText = (dayD.in||'--:--') + ' ~ ' + (dayD.out||'--:--');
                     let titleText = `${dDate.toLocaleDateString('zh-TW', {month:'numeric', day:'numeric'})} (${['日','一','二','三','四','五','六'][dDate.getDay()]})`;
                     
@@ -1052,14 +1060,13 @@
             let html = '';
             for(let i=0; i<firstDay; i++) { html += `<div class="cal-day empty"></div>`; }
 
-            const todayStr = new Date().toLocaleDateString('en-CA');
             for(let d=1; d<=daysInMonth; d++) {
                 let dDate = new Date(year, month - 1, d);
-                let dStr = dDate.toLocaleDateString('en-CA');
+                let dStr = getSafeDateStr(dDate);
                 let dayD = daysData[dStr];
                 
                 let extraClass = '';
-                if(dStr === todayStr) extraClass = 'today';
+                if(dStr === todaySafeStr) extraClass = 'today';
                 else if(dayD.holiday) extraClass = 'holiday';
                 else if(dayD.isWeekend) extraClass = 'weekend';
 
