@@ -59,54 +59,69 @@
         .toast-msg { animation: slideInLeft 0.4s ease-out forwards; z-index: 9999; }
     </style>
 </head>
-<body class="text-slate-800 relative md:flex md:h-screen md:overflow-hidden w-full">
+<body class="text-slate-800 relative md:flex md:h-screen w-full">
 
     <div id="salary-print-zone" style="display:none; font-family: 'Microsoft JhengHei', sans-serif;"></div>
-    <div id="toast-container" class="fixed bottom-24 md:bottom-10 left-1/2 transform -translate-x-1/2 z-[9999] flex flex-col space-y-3 pointer-events-none w-11/12 max-w-sm"></div>
+    <div id="toast-container" class="fixed top-14 md:top-10 left-1/2 transform -translate-x-1/2 z-[9999] flex flex-col space-y-3 pointer-events-none w-11/12 max-w-sm"></div>
 
     <div id="loading-screen" class="fixed inset-0 bg-slate-900 z-[9999] flex flex-col items-center justify-center text-white transition-opacity duration-500">
-        <div class="text-6xl mb-4 animate-bounce">🛡️</div>
-        <h2 class="text-xl font-black tracking-widest mb-2">HYPASS</h2>
-        <p class="text-xs font-bold text-slate-400 tracking-wider">安全驗證與身分核實中...</p>
+        <div class="w-20 h-20 mb-6 relative">
+            <div class="absolute inset-0 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+            <div class="absolute inset-2 border-4 border-indigo-400 border-b-transparent rounded-full animate-spin-reverse" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
+        </div>
+        <h2 class="text-2xl font-black tracking-widest mb-2 text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">HYPASS 員工系統</h2>
+        <p class="text-sm font-bold text-slate-400 tracking-wider" id="loading-msg">安全驗證與身分核實中...</p>
+        
+        <div id="rescue-btn" class="hidden flex-col items-center mt-6">
+            <p class="text-amber-400 text-[10px] font-bold mb-3 bg-slate-800 px-3 py-1 rounded">網路較慢或遇到資料讀取瓶頸</p>
+            <button onclick="forceUnlock()" class="bg-sky-600 hover:bg-sky-500 text-white font-black px-6 py-3 rounded-full shadow-lg active:scale-95 transition tracking-widest">強制進入系統</button>
+            <button onclick="logout()" class="mt-4 text-slate-500 font-bold text-xs underline">重新登入</button>
+        </div>
     </div>
 
     <aside class="hidden md:flex w-64 bg-slate-900 text-white flex-col h-full shadow-2xl shrink-0 z-20 overflow-y-auto no-scrollbar">
         <div class="p-6 pb-4 border-b border-slate-800 mb-4 sticky top-0 bg-slate-900 z-10">
-            <h1 class="text-3xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-300">HYPASS</h1>
+            <h1 class="text-3xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-300">HYPASS</h1>
             <span class="text-[10px] text-slate-400 tracking-[0.2em] uppercase font-bold mt-1 block">ERP Frontend</span>
         </div>
-        <nav class="flex-1 px-4 space-y-2 pb-6">
-            <button onclick="openView('dashboard', '員工中心')" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition bg-sky-600 text-white shadow-md"><span class="mr-3 text-xl">👨‍💼</span> 員工中心</button>
+        <div class="flex-1 px-4 space-y-2 pb-6">
+            <button onclick="openView('dashboard', '首頁大廳')" id="nav-dashboard" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition bg-sky-600 text-white shadow-md nav-btn"><span class="mr-3 text-xl">🏠</span> 首頁大廳</button>
+            <button onclick="openView('leave', '假單與補登申請')" id="nav-leave" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800 nav-btn"><span class="mr-3 text-xl opacity-60 nav-icon">📝</span> 假單申請</button>
+            <button onclick="openView('calendar', '行事曆與打卡')" id="nav-calendar" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800 nav-btn"><span class="mr-3 text-xl opacity-60 nav-icon">📅</span> 行事曆與打卡</button>
+            <button onclick="openView('profile', '個人基本資料')" id="nav-profile" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800 nav-btn"><span class="mr-3 text-xl opacity-60 nav-icon">👤</span> 基本資料</button>
+            
+            <div class="my-4 border-t border-slate-800 mx-2"></div>
+            <p class="text-[10px] text-slate-500 font-bold px-4 mb-2 tracking-widest">授權模組入口</p>
+            
             <button onclick="window.location.href='app_inventory.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">📦</span> 庫存管理中心</button>
             <button onclick="window.location.href='app_purchase.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">🛒</span> 採購管理中心</button>
             <button onclick="window.location.href='app_sales.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">💼</span> 業務中心</button>
             <button onclick="window.location.href='app_finance.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-bold flex items-center transition text-slate-400 hover:text-white hover:bg-slate-800"><span class="mr-3 text-xl opacity-60">💰</span> 財務中心</button>
-            <div id="admin-entrance" class="hidden"><button onclick="window.location.href='admin.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-black flex items-center transition text-rose-400 hover:text-white hover:bg-rose-900 border border-rose-900 mt-4 shadow-sm"><span class="mr-3 text-xl">👑</span> 老闆指揮中心</button></div>
-        </nav>
+            <div id="admin-entrance" class="hidden"><button onclick="window.location.href='admin.html'" class="w-full text-left px-4 py-3.5 rounded-xl font-black flex items-center transition text-rose-400 hover:text-white hover:bg-rose-900 border border-rose-900 mt-2 shadow-sm"><span class="mr-3 text-xl">👑</span> 老闆指揮中心</button></div>
+        </div>
         <div class="p-4 border-t border-slate-800 bg-slate-900/50 sticky bottom-0">
             <div class="text-[10px] text-slate-400 mb-1 px-2 font-bold tracking-widest">登入身分</div>
-            <div id="desktop-user-badge" class="font-black text-sky-400 px-2 truncate">載入中...</div>
+            <div id="desktop-user-badge" class="font-black text-sky-400 px-2 truncate text-sm">載入中...</div>
         </div>
     </aside>
 
     <div id="app-wrapper">
-    <div id="app-container" class="shadow-2xl relative hidden flex-col">
-        <header class="bg-slate-900 text-white px-5 py-4 shadow-md sticky top-0 z-50 flex items-center justify-between shrink-0 md:rounded-t-2xl">
-            <button id="btn-back" onclick="backToDash()" class="hidden bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center shrink-0">🔙 返回</button>
-            <div class="flex-1 text-center"><h1 class="text-lg font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-200 truncate" id="header-title">員工大廳</h1></div>
-            <div class="shrink-0 text-[10px] font-bold bg-white/10 px-2 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
+    <div id="app-container" class="shadow-2xl relative hidden flex-col w-full">
+        <header class="bg-slate-900 text-white px-5 py-4 md:py-5 shadow-md sticky top-0 z-50 flex items-center justify-between shrink-0 md:rounded-t-2xl">
+            <button id="btn-back" onclick="backToDash()" class="hidden bg-white/10 hover:bg-white/20 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold transition flex items-center shrink-0">🔙 返回</button>
+            <div class="flex-1 text-center"><h1 class="text-lg md:text-xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-200 truncate" id="header-title">首頁大廳</h1></div>
+            <div class="shrink-0 text-[10px] md:text-xs font-bold bg-white/10 px-3 py-1.5 rounded-full border border-white/20" id="user-badge">載入中</div>
         </header>
 
-        <main class="p-4 relative z-10 flex-1 overflow-y-auto no-scrollbar">
+        <main class="p-4 md:p-8 relative z-10 flex-1 overflow-y-auto no-scrollbar pb-10">
             
-            <div id="view-dashboard" class="view-panel active space-y-4">
-                
-                <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-white p-6 rounded-[2rem] shadow-xl relative overflow-hidden max-w-xl mx-auto border-t-4 border-sky-500">
+            <div id="view-dashboard" class="view-panel active space-y-4 md:space-y-6">
+                <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-white p-6 md:p-8 rounded-[2rem] shadow-xl relative overflow-hidden max-w-2xl mx-auto border-t-4 border-sky-500">
                     <div class="absolute -right-4 -top-4 text-7xl opacity-10">⏱️</div>
                     <div class="flex justify-between items-end mb-4 relative z-10">
                         <div>
                             <p class="text-[10px] text-sky-300 font-black tracking-widest mb-1" id="dash-date">載入中...</p>
-                            <h2 class="text-3xl font-black font-mono tracking-tighter" id="dash-time">--:--</h2>
+                            <h2 class="text-5xl md:text-6xl font-black text-slate-800 tracking-tighter mb-6 font-mono" id="current-time">00:00</h2>
                         </div>
                         <div class="text-right">
                             <p class="text-[10px] text-slate-400 font-bold mb-0.5">預定班別</p>
@@ -115,60 +130,56 @@
                     </div>
                     
                     <div class="grid grid-cols-2 gap-3 relative z-10 mt-5">
-                        <button onclick="openPunch('IN')" class="punch-btn bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white py-4 rounded-2xl shadow-lg flex flex-col items-center justify-center border border-sky-400/50">
+                        <button onclick="openPunch('IN')" class="punch-btn bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white py-4 md:py-5 rounded-2xl shadow-lg active:scale-95 transition text-lg tracking-widest">
                             <span class="text-2xl mb-1">👋</span><span class="text-sm font-black tracking-widest">上班打卡</span>
                             <span class="text-[9px] font-bold text-sky-100 mt-1" id="status-in">尚未打卡</span>
                         </button>
-                        <button onclick="openPunch('OUT')" class="punch-btn bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white py-4 rounded-2xl shadow-lg flex flex-col items-center justify-center border border-indigo-400/50">
+                        <button onclick="openPunch('OUT')" class="punch-btn bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white py-4 md:py-5 rounded-2xl shadow-lg active:scale-95 transition text-lg tracking-widest">
                             <span class="text-2xl mb-1">🏃</span><span class="text-sm font-black tracking-widest">下班打卡</span>
                             <span class="text-[9px] font-bold text-indigo-100 mt-1" id="status-out">尚未打卡</span>
                         </button>
                     </div>
                 </div>
 
-                <div class="max-w-xl mx-auto">
-                    <div class="bg-amber-50 border border-amber-200 rounded-[1.5rem] p-4 flex items-center shadow-sm cursor-pointer active:scale-95 transition mb-3 hover:bg-amber-100" onclick="openView('bulletin', '公司最新公告')">
-                        <span class="text-2xl mr-3 shrink-0">📢</span>
-                        <div class="flex-1 min-w-0 overflow-hidden">
-                            <div class="text-[10px] font-black text-amber-700 mb-0.5">公司最新公告</div>
-                            <div class="text-sm font-bold text-slate-700 truncate" id="latest-bulletin">載入中...</div>
+                <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="glass-card p-5 rounded-[1.5rem] shadow-sm border-l-4 border-red-500 flex flex-col h-full bg-white cursor-pointer hover:bg-red-50 transition" onclick="openPersonalBulletins()">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
+                            <h4 class="font-black text-slate-800 text-sm flex items-center"><span class="mr-1.5 text-lg">🔔</span> 員工最新通知</h4>
+                            <span id="unread-bulletin-badge" class="bg-red-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full hidden animate-pulse shadow-md mr-2">0</span>
                         </div>
-                        <span class="text-slate-400 ml-2 font-black">➔</span>
+                        <div id="latest-p-bulletin" class="text-xs font-bold text-slate-600 truncate py-2">點擊查看通知...</div>
                     </div>
 
-                    <div class="bg-red-50 border border-red-200 rounded-[1.5rem] p-4 flex items-center shadow-sm cursor-pointer active:scale-95 transition hover:bg-red-100" onclick="openPersonalBulletins()">
-                        <span class="text-2xl mr-3 shrink-0">🔔</span>
-                        <div class="flex-1 min-w-0 overflow-hidden">
-                            <div class="text-[10px] font-black text-red-700 mb-0.5">員工最新通知 (個人警告)</div>
-                            <div class="text-sm font-bold text-slate-700 truncate" id="latest-p-bulletin">點擊查看通知...</div>
+                    <div class="glass-card p-5 rounded-[1.5rem] shadow-sm border-l-4 border-amber-500 flex flex-col h-full bg-white cursor-pointer hover:bg-amber-50 transition" onclick="openView('bulletin', '公司最新公告')">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
+                            <h4 class="font-black text-slate-800 text-sm flex items-center"><span class="mr-1.5 text-lg">📢</span> 公司最新公告</h4>
                         </div>
-                        <span id="unread-bulletin-badge" class="bg-red-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full hidden animate-pulse shadow-md mr-2">0</span>
-                        <span class="text-slate-400 ml-2 font-black">➔</span>
+                        <div id="latest-bulletin" class="text-xs font-bold text-slate-600 truncate py-2">載入中...</div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 mt-5 max-w-xl mx-auto">
-                    <button onclick="openStatsAndCalendar()" class="glass-card p-5 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
-                        <span class="text-3xl mb-2 drop-shadow-md">📅</span>
+                <div class="grid grid-cols-2 gap-3 mt-4 max-w-4xl mx-auto">
+                    <button onclick="openStatsAndCalendar()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
+                        <span class="text-3xl mb-1.5 drop-shadow-md">📅</span>
                         <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">行事曆與打卡</span>
                     </button>
-                    <button onclick="openView('leave', '請假單與補登')" class="glass-card p-5 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
-                        <span class="text-3xl mb-2 drop-shadow-md">📝</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">請假與補登</span>
+                    <button onclick="openView('leave', '請假單與補登')" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
+                        <span class="text-3xl mb-1.5 drop-shadow-md">📝</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">請假單與補登</span>
                     </button>
-                    <button onclick="openSalaryView()" class="glass-card p-5 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
-                        <span class="text-3xl mb-2 drop-shadow-md">💰</span>
+                    <button onclick="openSalaryView()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
+                        <span class="text-3xl mb-1.5 drop-shadow-md">💰</span>
                         <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">薪資單</span>
                     </button>
-                    <button onclick="openContractView()" class="glass-card p-5 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
-                        <span class="text-3xl mb-2 drop-shadow-md">🪪</span>
-                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">個人資料</span>
+                    <button onclick="openContractView()" class="glass-card p-4 rounded-[1.5rem] flex flex-col items-center justify-center active:scale-95 transition shadow-sm border border-slate-200 hover:bg-slate-50">
+                        <span class="text-3xl mb-1.5 drop-shadow-md">🪪</span>
+                        <span class="font-black text-slate-700 text-xs tracking-widest mb-0.5">基本資料與合約</span>
                     </button>
                 </div>
             </div>
 
             <div id="view-bulletin" class="view-panel space-y-4 max-w-2xl mx-auto">
-                <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-amber-500 relative pb-10">
+                <div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-amber-500 relative pb-10">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
                         <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">📢</span>公司最新公告</h3>
                     </div>
@@ -179,7 +190,7 @@
             </div>
 
             <div id="view-personal-bulletins" class="view-panel space-y-4 max-w-2xl mx-auto">
-                <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-red-500 relative pb-10">
+                <div class="glass-card p-4 md:p-5 rounded-[2rem] shadow-sm border-t-4 border-red-500 relative pb-10">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
                         <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">🔔</span>員工最新通知</h3>
                     </div>
@@ -190,11 +201,11 @@
             </div>
 
             <div id="view-punch" class="view-panel space-y-4 max-w-md mx-auto">
-                <div class="glass-card p-6 rounded-[2rem] shadow-sm border-t-4 border-sky-500 text-center">
+                <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-sky-500 text-center">
                     <h3 class="font-black text-lg text-slate-800 mb-1" id="punch-title">執行打卡</h3>
                     <p class="text-[10px] font-bold text-slate-500 mb-5">系統僅採用高精度 GPS 定位</p>
                     
-                    <div class="bg-slate-50 rounded-2xl p-4 mb-6 border border-slate-200 text-left space-y-4 shadow-inner">
+                    <div class="bg-slate-50 rounded-xl p-4 mb-5 border border-slate-200 text-left space-y-4 shadow-inner">
                         <div class="flex items-start">
                             <span class="mr-3 text-xl mt-0.5">📍</span>
                             <div class="flex-1">
@@ -216,142 +227,103 @@
                 </div>
             </div>
 
-            <div id="view-calendar" class="view-panel space-y-4 max-w-3xl mx-auto">
-                <div class="glass-card p-5 rounded-[1.5rem] shadow-sm border-t-4 border-indigo-500 mb-4">
-                    <h3 class="font-black text-slate-800 text-sm mb-4 flex justify-between items-center">
-                        <span class="flex items-center"><span class="mr-1.5 text-lg">📊</span> 當月出勤統計</span>
-                        <span class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-1 rounded font-black border border-indigo-200 shadow-sm" id="stat-month-label">載入中</span>
-                    </h3>
-                    <div class="grid grid-cols-5 gap-1 text-center bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-inner">
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-1">特休</p><p class="font-black text-sky-600 text-xs sm:text-sm whitespace-nowrap" id="sm-ann">--</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-1">事假</p><p class="font-black text-amber-600 text-xs sm:text-sm" id="sm-per">--</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-1">病假</p><p class="font-black text-amber-600 text-xs sm:text-sm" id="sm-sic">--</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-1">遲/早</p><p class="font-black text-red-500 text-xs sm:text-sm" id="sm-lat">--</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-500 mb-1">計點</p><p class="font-black text-red-600 text-xs sm:text-sm" id="sm-pnt">--</p></div>
-                    </div>
+            <div id="view-leave" class="view-panel space-y-5 md:space-y-8 max-w-2xl mx-auto">
+                <div class="glass-card p-6 md:p-8 rounded-[2rem] shadow-sm border-t-4 border-indigo-500">
+                    <h3 class="font-black text-xl mb-5 text-slate-800 flex items-center"><span class="mr-2">📝</span> 送出申請單</h3>
+                    <form onsubmit="submitLeave(event)" class="space-y-4">
+                        <div>
+                            <label class="text-[11px] md:text-xs font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">申請類別</label>
+                            <select id="l-type" onchange="toggleLeaveType()" class="w-full p-3.5 md:p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm md:text-base font-bold select-arrow outline-none focus:border-indigo-500 transition shadow-inner">
+                                <option value="事假">事假</option><option value="病假">病假 (需證明)</option><option value="特休">特休 (年假)</option><option value="忘記打卡(補登)" class="font-black text-amber-600">⚠️ 忘記打卡(補登)</option>
+                            </select>
+                        </div>
+                        
+                        <div id="normal-leave-fields" class="space-y-4">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div><label class="text-[11px] md:text-xs font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">開始時間</label><input type="datetime-local" id="l-start" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs md:text-sm font-black outline-none focus:border-indigo-500"></div>
+                                <div><label class="text-[11px] md:text-xs font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">結束時間</label><input type="datetime-local" id="l-end" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs md:text-sm font-black outline-none focus:border-indigo-500"></div>
+                            </div>
+                        </div>
+
+                        <div id="retro-punch-fields" class="hidden bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-inner space-y-3">
+                            <p class="text-[10px] md:text-xs font-bold text-amber-700 leading-relaxed mb-2">📌 補登提醒：每月僅限補登三次，超過將依規定扣點。審核通過後即生效。</p>
+                            <div><label class="text-[11px] md:text-xs font-black text-amber-800 uppercase tracking-widest ml-1 mb-1 block">補登日期與時間</label><input type="datetime-local" id="l-retro-time" class="w-full p-3 bg-white border border-amber-300 rounded-xl text-xs md:text-sm font-black outline-none focus:border-amber-500"></div>
+                            <div><label class="text-[11px] md:text-xs font-black text-amber-800 uppercase tracking-widest ml-1 mb-1 block">補登類型</label><select id="l-retro-type" class="w-full p-3 bg-white border border-amber-300 rounded-xl text-sm font-black select-arrow outline-none"><option value="IN">上班打卡補登</option><option value="OUT">下班打卡補登</option></select></div>
+                        </div>
+
+                        <div><label class="text-[11px] md:text-xs font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">事由與備註</label><textarea id="l-reason" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none h-24 resize-none focus:border-indigo-500 shadow-inner" placeholder="請簡述原因..."></textarea></div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 md:py-5 rounded-xl shadow-md active:scale-95 transition text-base md:text-lg tracking-widest mt-2">🚀 送出申請至主管簽核</button>
+                    </form>
                 </div>
 
-                <div class="glass-card p-5 rounded-[2rem] shadow-sm border-t-4 border-sky-500">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">📅</span>行事曆與打卡</h3>
-                        <input type="month" id="cal-month-picker" class="p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-black outline-none focus:border-sky-500 text-slate-700 shadow-sm cursor-pointer" onchange="renderCalendarUI()">
+                <div class="glass-card p-5 md:p-8 rounded-[2rem] shadow-sm">
+                    <h3 class="font-black text-lg md:text-xl mb-4 text-slate-800 flex items-center border-b border-slate-100 pb-3"><span class="mr-2">📜</span> 歷史申請紀錄</h3>
+                    <div id="ui-leave-hist" class="space-y-3">
+                        <div class="text-center text-xs text-slate-400 py-6">載入中...</div>
                     </div>
+                </div>
+            </div>
+
+            <div id="view-calendar" class="view-panel space-y-4 md:space-y-6 max-w-3xl mx-auto">
+                <div class="glass-card p-4 md:p-6 rounded-[2rem] shadow-sm">
+                    <h3 class="font-black text-slate-800 text-lg md:text-2xl flex items-center mb-3"><span class="mr-2">📅</span>行事曆與打卡</h3>
                     
-                    <div class="flex flex-wrap items-center justify-center gap-3 text-[10px] font-bold text-slate-500 mb-5 bg-slate-50 p-2.5 rounded-xl border border-slate-200 shadow-inner">
-                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-100 border border-emerald-400 mr-1.5 shadow-sm flex items-center justify-center text-[8px] text-emerald-600 font-black">✓</span>正常打卡</span>
-                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-red-100 border border-red-400 mr-1.5 shadow-sm flex items-center justify-center text-[8px] text-red-600 font-black">!</span>異常(遲/早/曠)</span>
-                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-amber-100 border border-amber-400 mr-1.5 shadow-sm"></span>請假</span>
-                        <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-slate-100 border border-slate-300 mr-1.5 shadow-sm"></span>未到/休假</span>
+                    <div class="flex flex-wrap items-center justify-center gap-3 text-[10px] md:text-xs font-bold text-slate-500 mb-5 bg-slate-50 p-2.5 rounded-xl border border-slate-200 shadow-inner">
+                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-1.5 shadow-sm"></span>正常</span>
+                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-red-500 mr-1.5 shadow-sm"></span>異常(遲早曠)</span>
+                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 mr-1.5 shadow-sm"></span>請假</span>
+                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-slate-200 mr-1.5 shadow-sm"></span>未到/休假</span>
                     </div>
 
                     <div class="flex justify-between items-center mb-4">
-                        <button onclick="changeMonth(-1)" class="w-10 h-10 bg-white border border-slate-200 rounded-full font-black text-slate-600 hover:bg-slate-50 shadow-sm active:scale-90 transition">❮</button>
-                        <h4 id="cal-month-title" class="font-black text-base text-slate-800 tracking-widest">載入中...</h4>
-                        <button onclick="changeMonth(1)" class="w-10 h-10 bg-white border border-slate-200 rounded-full font-black text-slate-600 hover:bg-slate-50 shadow-sm active:scale-90 transition">❯</button>
+                        <button onclick="changeMonth(-1)" class="w-10 h-10 md:w-12 md:h-12 bg-white border border-slate-200 rounded-full font-black text-slate-600 hover:bg-slate-50 shadow-sm active:scale-90 transition">❮</button>
+                        <h4 id="cal-month-title" class="font-black text-base md:text-xl text-slate-800 tracking-widest">載入中...</h4>
+                        <button onclick="changeMonth(1)" class="w-10 h-10 md:w-12 md:h-12 bg-white border border-slate-200 rounded-full font-black text-slate-600 hover:bg-slate-50 shadow-sm active:scale-90 transition">❯</button>
                     </div>
-                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 shadow-inner mb-5">
-                        <div class="cal-grid cal-header mb-2 border-b border-slate-200 pb-2">
-                            <div class="text-red-500">日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div class="text-red-500">六</div>
-                        </div>
-                        <div id="calendar-days" class="cal-grid"></div>
+                    <div class="grid grid-cols-7 gap-1 md:gap-2 text-center text-[10px] md:text-sm font-black text-slate-400 mb-2">
+                        <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
                     </div>
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-1 md:gap-2 mb-5"></div>
 
-                    <h4 class="text-[11px] font-black text-slate-500 mb-3 border-b border-slate-200 pb-2 pl-1">📜 該月每日出勤狀態明細</h4>
+                    <h4 class="text-[11px] font-black text-slate-500 mb-3 border-b border-slate-200 pb-1">📜 該月每日出勤狀態明細</h4>
                     <div id="ui-history-list" class="space-y-2 max-h-[40vh] overflow-y-auto no-scrollbar pr-1 pb-4"></div>
                 </div>
             </div>
 
-            <div id="view-leave" class="view-panel space-y-5 max-w-2xl mx-auto">
-                <div class="glass-card p-6 rounded-[2rem] shadow-sm border-t-4 border-amber-500">
-                    <h3 class="font-black text-slate-800 text-lg mb-5 flex items-center"><span class="mr-2 text-xl">📝</span>送出申請單</h3>
-                    <form onsubmit="submitLeave(event)" class="space-y-4">
-                        <div>
-                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">申請類別</label>
-                            <select id="l-type" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 select-arrow shadow-sm" onchange="toggleLeaveType()">
-                                <option value="事假">事假</option>
-                                <option value="病假">病假 (需證明)</option>
-                                <option value="特休">特休 (年假)</option>
-                                <option value="公假">公假</option>
-                                <option value="颱風假">颱風假</option>
-                                <option value="忘記打卡(補登)" class="font-black text-sky-700">⚠️ 忘記打卡 (補登申請)</option>
-                            </select>
-                        </div>
-                        
-                        <div id="leave-datetime-group" class="grid grid-cols-2 gap-3">
-                            <div class="col-span-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">開始時間</label><input type="datetime-local" id="l-start" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 shadow-sm"></div>
-                            <div class="col-span-2"><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">結束時間</label><input type="datetime-local" id="l-end" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 shadow-sm"></div>
-                        </div>
-
-                        <div id="retro-group" class="hidden grid grid-cols-2 gap-3 bg-sky-50 p-4 rounded-xl border border-sky-200 shadow-inner">
-                            <p class="text-[10px] font-bold text-sky-800 leading-relaxed mb-2 col-span-2">📌 補登提醒：審核通過後即生效。</p>
-                            <div class="col-span-2"><label class="text-[10px] font-black text-sky-800 uppercase tracking-widest ml-1 mb-1 block">補登日期與時間</label><input type="datetime-local" id="l-retro-time" class="w-full p-3 bg-white border border-sky-300 rounded-xl text-sm font-bold outline-none focus:border-sky-600 shadow-sm"></div>
-                            <div class="col-span-2"><label class="text-[10px] font-black text-sky-800 uppercase tracking-widest ml-1 mb-1 block">補登班別</label><select id="l-retro-type" class="w-full p-3 bg-white border border-sky-300 rounded-xl text-sm font-bold outline-none focus:border-sky-600 select-arrow shadow-sm"><option value="IN">上班補登</option><option value="OUT">下班補登</option></select></div>
-                        </div>
-
-                        <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">事由說明</label><textarea id="l-reason" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 h-24 resize-none shadow-sm" placeholder="請簡述原因..." required></textarea></div>
-                        
-                        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-lg active:scale-95 transition tracking-widest text-base mt-2">🚀 送出申請至主管簽核</button>
-                    </form>
-
-                    <h4 class="text-[11px] font-black text-slate-500 mb-3 mt-8 border-b border-slate-200 pb-1 pl-1">📜 歷史請假與補登紀錄</h4>
-                    <div id="leave-history-list" class="space-y-3 max-h-[40vh] overflow-y-auto no-scrollbar pr-1 pb-2">
-                        <p class="text-center text-xs font-bold text-slate-400 py-4 border border-dashed border-slate-200 rounded-xl">載入中...</p>
-                    </div>
-                </div>
-            </div>
-
             <div id="view-salary" class="view-panel space-y-4 max-w-2xl mx-auto">
-                <div class="glass-card p-6 rounded-[2rem] shadow-sm border-t-4 border-emerald-500">
-                    <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
+                <div class="glass-card p-5 md:p-8 rounded-[2rem] shadow-sm border-t-4 border-emerald-500">
+                    <div class="flex justify-between items-center mb-4">
                         <h3 class="font-black text-slate-800 text-lg flex items-center"><span class="mr-2 text-xl">💰</span>我的薪資單</h3>
-                        <button onclick="downloadSalaryPDF()" class="bg-slate-800 text-white px-4 py-2.5 rounded-xl text-xs font-black shadow-md hover:bg-slate-700 transition active:scale-95">📥 下載 PDF</button>
+                        <button onclick="downloadSalaryPDF()" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow-sm hover:bg-slate-700 transition active:scale-95">📥 下載 PDF</button>
                     </div>
-                    
-                    <div class="flex space-x-2 mb-5">
-                        <input type="month" id="sal-month" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-black outline-none focus:border-emerald-500 shadow-sm cursor-pointer" onchange="loadSalary()">
-                    </div>
-                    
-                    <div id="ui-salary-detail" class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner min-h-[250px] flex flex-col justify-center relative overflow-hidden">
+                    <div class="flex space-x-2 mb-4"><input type="month" id="sal-month" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-emerald-500 shadow-sm cursor-pointer" onchange="loadSalary()"></div>
+                    <div id="ui-salary-detail" class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner min-h-[200px] flex flex-col justify-center relative overflow-hidden">
                         <p class="text-center text-xs font-bold text-slate-400">請選擇月份查詢</p>
                     </div>
                 </div>
             </div>
 
-            <div id="view-profile" class="view-panel space-y-4 max-w-2xl mx-auto">
+            <div id="view-profile" class="view-panel space-y-4 md:space-y-6 max-w-2xl mx-auto">
                 <div class="glass-card p-6 md:p-8 rounded-[2rem] shadow-sm border-t-4 border-slate-700 relative pb-10">
-                    <div class="flex justify-between items-center border-b border-slate-200 pb-4 mb-6">
-                        <h3 class="font-black text-slate-800 text-xl flex items-center"><span class="mr-2 text-2xl">🪪</span>個人基本資料</h3>
-                        <span id="cv-version-badge" class="text-[10px] bg-slate-800 text-white px-2 py-1 rounded font-black shadow-sm tracking-widest">合約版本載入中</span>
+                    <div class="flex justify-between items-center border-b border-slate-200 pb-3 mb-5">
+                        <h3 class="font-black text-xl md:text-2xl text-slate-800 flex items-center"><span class="mr-2 text-2xl">👤</span>員工基本資料</h3>
+                        <span id="cv-version-badge" class="text-[10px] bg-slate-800 text-white px-2 py-0.5 rounded font-black shadow-sm tracking-widest">載入中</span>
                     </div>
                     
-                    <div class="mb-8 bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
-                        <div class="space-y-4 text-sm" id="ui-profile-details">
-                            <div class="text-center py-6 text-slate-400 font-bold">資料讀取中...</div>
-                        </div>
+                    <div class="space-y-4 text-sm md:text-base bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner mb-6" id="ui-profile-details">
+                        <div class="text-center py-6 text-slate-400 font-bold">資料讀取中...</div>
                     </div>
 
-                    <div class="mb-6">
-                        <h5 class="text-sm font-black text-slate-700 mb-3 border-l-4 border-sky-500 pl-2">📜 已簽署勞動契約</h5>
-                        <div id="cv-contract-content" class="bg-white p-5 rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed text-justify h-64 overflow-y-auto shadow-sm">
-                            <p class="text-center font-bold text-slate-400 py-10">合約內容載入中...</p>
-                        </div>
-                    </div>
-
+                    <div id="cv-contract-content" class="hidden"></div>
                     <div id="cv-signature-action-area"></div>
                     
-                    <button onclick="logout()" class="mt-8 w-full bg-red-50 hover:bg-red-100 text-red-600 font-black py-4 rounded-xl active:scale-95 transition shadow-sm border border-red-200 tracking-widest">登出系統</button>
+                    <button onclick="logout()" class="mt-8 w-full bg-red-50 hover:bg-red-100 text-red-600 font-black py-4 md:py-5 rounded-xl active:scale-95 transition shadow-sm border border-red-200 tracking-widest">登出系統</button>
                 </div>
             </div>
 
         </main>
-    </div> </div>
-
-    <nav id="core-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9990] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <div onclick="openView('dashboard', '首頁大廳')" class="nav-btn flex-1 flex flex-col items-center py-1 cursor-pointer transition text-sky-600" data-target="dashboard"><span class="text-xl mb-1 nav-icon">🏠</span><span class="scale-90">首頁</span></div>
-        <div onclick="openView('leave', '假單與補登申請')" class="nav-btn flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600" data-target="leave"><span class="text-xl mb-1 opacity-60 grayscale nav-icon">📝</span><span class="scale-90">假單</span></div>
-        <div onclick="openView('calendar', '行事曆與打卡')" class="nav-btn flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600" data-target="calendar"><span class="text-xl mb-1 opacity-60 grayscale nav-icon">📅</span><span class="scale-90">行事曆</span></div>
-        <div onclick="openView('profile', '個人基本資料')" class="nav-btn flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600" data-target="profile"><span class="text-xl mb-1 opacity-60 grayscale nav-icon">👤</span><span class="scale-90">我</span></div>
-    </nav>
+    </div> 
+    </div>
 
     <div id="contract-modal" class="modal fixed inset-0 bg-slate-900/90 backdrop-blur-md items-center justify-center p-4 z-[9999] hidden">
         <div class="bg-white w-full max-w-2xl m-auto rounded-3xl flex flex-col shadow-2xl h-[90vh] overflow-hidden">
@@ -375,15 +347,22 @@
     </div>
 
     <div id="bull-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-sm items-center justify-center p-4 z-[9990]">
-        <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-6 relative flex flex-col shadow-2xl">
+        <div class="bg-white w-full max-w-md m-auto rounded-[2rem] p-6 md:p-8 relative flex flex-col shadow-2xl">
             <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-2xl mb-4 shadow-inner mx-auto">📢</div>
-            <h3 class="font-black text-lg border-b border-slate-100 pb-3 mb-4 text-slate-800 text-center" id="bull-modal-title">公告標題</h3>
+            <h3 class="font-black text-lg md:text-xl border-b border-slate-100 pb-3 mb-4 text-slate-800 text-center" id="bull-modal-title">公告標題</h3>
             <div class="text-sm text-slate-600 font-bold leading-relaxed whitespace-pre-wrap max-h-[50vh] overflow-y-auto no-scrollbar mb-6" id="bull-modal-content">內容</div>
-            <button onclick="closeModal('bull-modal')" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl active:scale-95 transition tracking-widest shadow-md hover:bg-slate-800">我知道了</button>
+            <button onclick="closeModal('bull-modal')" class="w-full bg-slate-900 text-white font-black py-3.5 md:py-4 rounded-xl active:scale-95 transition tracking-widest shadow-md hover:bg-slate-800">我知道了</button>
         </div>
     </div>
 
-    <script src="shared.js?v=2026030730"></script>
+    <nav id="core-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9990] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <div onclick="openView('dashboard', '首頁大廳')" class="nav-btn flex-1 flex flex-col items-center py-1 cursor-pointer transition text-sky-600" data-target="dashboard"><span class="text-xl mb-1 nav-icon">🏠</span><span class="scale-90">首頁</span></div>
+        <div onclick="openView('leave', '假單與補登申請')" class="nav-btn flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600" data-target="leave"><span class="text-xl mb-1 opacity-60 grayscale nav-icon">📝</span><span class="scale-90">假單</span></div>
+        <div onclick="openView('calendar', '行事曆與打卡')" class="nav-btn flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600" data-target="calendar"><span class="text-xl mb-1 opacity-60 grayscale nav-icon">📅</span><span class="scale-90">行事曆</span></div>
+        <div onclick="openView('profile', '個人基本資料')" class="nav-btn flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600" data-target="profile"><span class="text-xl mb-1 opacity-60 grayscale nav-icon">👤</span><span class="scale-90">我</span></div>
+    </nav>
+
+    <script src="shared.js?v=2026030733"></script>
     <script>
         let currentMonth = new Date();
         let sigCanvas, sigCtx, isDrawing = false;
@@ -391,6 +370,18 @@
         window.pbulls = [];
         window.bulls = [];
         let twHolidays = {};
+
+        // 🌟 終極防卡死救援：如果網路出錯或 API 無回應，使用者可以強制點擊進入
+        window.forceUnlock = function() {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('app-container').classList.add('flex');
+            
+            if(!window.currentUser) {
+                window.currentUser = { id: 'unknown', full_name: '員工(離線模式)', is_admin: false };
+            }
+            finishBoot();
+        }
 
         function showSysToast(msg) {
             const container = document.getElementById('toast-container');
@@ -434,28 +425,54 @@
         }
         setInterval(updateTime, 1000); updateTime();
 
+        // 🌟 強化版啟動引擎
         async function bootHR() {
+            let authTimeout = setTimeout(() => {
+                const msg = document.getElementById('loading-msg');
+                const btn = document.getElementById('rescue-btn');
+                if(msg) msg.style.display = 'none';
+                if(btn) btn.classList.remove('hidden');
+                if(btn) btn.classList.add('flex');
+            }, 3000);
+
             try {
                 if(typeof authGuard === 'undefined') throw new Error("shared.js 未載入");
                 const isAuth = await authGuard('hr');
                 if(!isAuth) return;
 
+                clearTimeout(authTimeout);
+                if (!window.currentUser) throw new Error("無使用者資料");
+
                 const u = window.currentUser;
-                document.getElementById('user-badge').innerText = u.full_name;
-                if(document.getElementById('desktop-user-badge')) document.getElementById('desktop-user-badge').innerText = u.full_name;
+                document.getElementById('user-badge').innerText = u.full_name || '員工';
+                if(document.getElementById('desktop-user-badge')) document.getElementById('desktop-user-badge').innerText = u.full_name || '員工';
                 
                 if (u.is_admin) { document.getElementById('admin-entrance').classList.remove('hidden'); }
 
-                const { data: latestForm } = await window._sb.from('company_forms').select('*').eq('form_type', 'employment_contract').single();
+                let latestForm = null;
+                try {
+                    const { data } = await window._sb.from('company_forms').select('*').eq('form_type', 'employment_contract').maybeSingle();
+                    latestForm = data;
+                } catch(e) { console.warn('合約讀取失敗', e); }
+
                 if(latestForm && u.signed_contract_version !== latestForm.form_version) {
                     pendingContractVersion = latestForm.form_version;
-                    document.getElementById('contract-content-area').innerHTML = latestForm.content;
+                    document.getElementById('contract-content-area').innerHTML = latestForm.content || '';
                     openModal('contract-modal');
                     initSig();
+                    document.getElementById('loading-screen').style.display = 'none';
                 } else {
                     finishBoot();
                 }
-            } catch(e) { console.error("Boot error", e); }
+            } catch(e) { 
+                console.error("Boot error", e); 
+                clearTimeout(authTimeout);
+                const msg = document.getElementById('loading-msg');
+                const btn = document.getElementById('rescue-btn');
+                if(msg) msg.style.display = 'none';
+                if(btn) btn.classList.remove('hidden');
+                if(btn) btn.classList.add('flex');
+            }
         }
 
         function finishBoot() {
@@ -466,18 +483,22 @@
                 document.getElementById('app-container').classList.add('flex');
             }, 400);
 
-            const now = new Date();
-            document.getElementById('dash-shift').innerText = `${(window.currentUser.work_start_time||'09:00').slice(0,5)} ~ ${(window.currentUser.work_end_time||'18:00').slice(0,5)}`;
-            let curMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-            document.getElementById('cal-month-picker').value = curMonthStr;
+            if (!window.currentUser) return;
 
-            fetchHolidays(now.getFullYear()).then(() => {
-                loadTodayStatus();
-                loadLeaves();
-                checkBulletins();
-                loadProfile();
-                loadCalendarAndStats();
-            });
+            try {
+                const now = new Date();
+                document.getElementById('dash-shift').innerText = `${(window.currentUser.work_start_time||'09:00').slice(0,5)} ~ ${(window.currentUser.work_end_time||'18:00').slice(0,5)}`;
+                let curMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                document.getElementById('cal-month-picker').value = curMonthStr;
+
+                fetchHolidays(now.getFullYear()).then(() => {
+                    loadTodayStatus();
+                    loadLeaves();
+                    checkBulletins();
+                    loadProfile();
+                    loadCalendarAndStats();
+                });
+            } catch (e) { console.error("finishBoot Error", e); }
         }
 
         async function fetchHolidays(year) {
@@ -510,46 +531,46 @@
             }
 
             let perms = [];
-            if(u.perm_inventory) perms.push('<span class="bg-slate-100 text-slate-600 px-2 py-1 rounded font-bold text-xs border border-slate-200 shadow-sm">📦 庫存</span>');
-            if(u.perm_purchase) perms.push('<span class="bg-slate-100 text-slate-600 px-2 py-1 rounded font-bold text-xs border border-slate-200 shadow-sm">🛒 採購</span>');
-            if(u.perm_sales) perms.push('<span class="bg-slate-100 text-slate-600 px-2 py-1 rounded font-bold text-xs border border-slate-200 shadow-sm">💼 業務</span>');
-            if(u.perm_finance) perms.push('<span class="bg-slate-100 text-slate-600 px-2 py-1 rounded font-bold text-xs border border-slate-200 shadow-sm">💰 財務</span>');
-            if(u.is_admin) perms.push('<span class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-black text-xs border border-rose-200 shadow-sm">👑 最高權限</span>');
+            if(u.perm_inventory) perms.push('<span class="bg-slate-100 text-slate-600 px-2 py-1 rounded font-bold text-[10px] md:text-xs border border-slate-200 shadow-sm">📦 庫存</span>');
+            if(u.perm_purchase) perms.push('<span class="bg-slate-100 text-slate-600 px-2 py-1 rounded font-bold text-[10px] md:text-xs border border-slate-200 shadow-sm">🛒 採購</span>');
+            if(u.perm_sales) perms.push('<span class="bg-slate-100 text-slate-600 px-2 py-1 rounded font-bold text-[10px] md:text-xs border border-slate-200 shadow-sm">💼 業務</span>');
+            if(u.perm_finance) perms.push('<span class="bg-slate-100 text-slate-600 px-2 py-1 rounded font-bold text-[10px] md:text-xs border border-slate-200 shadow-sm">💰 財務</span>');
+            if(u.is_admin) perms.push('<span class="bg-rose-100 text-rose-600 px-2 py-1 rounded font-black text-[10px] md:text-xs border border-rose-200 shadow-sm">👑 最高權限</span>');
             
             if(perms.length === 0) perms.push('<span class="text-slate-400 font-bold text-xs">無模組權限</span>');
 
             const html = `
-                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                    <span class="text-slate-500 font-bold text-xs">員工編號</span>
-                    <span class="font-black text-sky-700 text-base bg-sky-50 px-3 py-0.5 rounded-lg border border-sky-100 shadow-sm">${u.employee_no || '未設定'}</span>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                    <span class="text-slate-500 font-bold text-xs md:text-sm">員工編號</span>
+                    <span class="font-black text-sky-700 text-base md:text-lg bg-sky-50 px-3 py-0.5 rounded-lg border border-sky-100 shadow-sm">${u.employee_no || '未設定'}</span>
                 </div>
-                <div class="flex justify-between items-center border-b border-slate-100 pb-3 pt-2">
-                    <span class="text-slate-500 font-bold text-xs">真實姓名</span>
-                    <span class="font-black text-slate-800 text-base">${u.full_name}</span>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-4 pt-2">
+                    <span class="text-slate-500 font-bold text-xs md:text-sm">真實姓名</span>
+                    <span class="font-black text-slate-800 text-base md:text-lg">${u.full_name}</span>
                 </div>
-                <div class="flex justify-between items-center border-b border-slate-100 pb-3 pt-2">
-                    <span class="text-slate-500 font-bold text-xs">工作據點</span>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-4 pt-2">
+                    <span class="text-slate-500 font-bold text-xs md:text-sm">工作據點</span>
                     <span class="font-black text-slate-800">${branchName}</span>
                 </div>
-                <div class="flex justify-between items-center border-b border-slate-100 pb-3 pt-2">
-                    <span class="text-slate-500 font-bold text-xs">上下班時間</span>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-4 pt-2">
+                    <span class="text-slate-500 font-bold text-xs md:text-sm">上下班時間</span>
                     <span class="font-black text-slate-800 font-mono bg-slate-50 px-3 py-1 rounded-lg border border-slate-200 shadow-inner tracking-wider">${(u.work_start_time||'09:00').slice(0,5)} - ${(u.work_end_time||'18:00').slice(0,5)}</span>
                 </div>
-                <div class="flex justify-between items-center border-b border-slate-100 pb-3 pt-2">
-                    <span class="text-slate-500 font-bold text-xs">入職日期</span>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-4 pt-2">
+                    <span class="text-slate-500 font-bold text-xs md:text-sm">入職日期</span>
                     <span class="font-black text-slate-800">${u.onboarding_date || '未設定'}</span>
                 </div>
-                <div class="flex justify-between items-center border-b border-slate-100 pb-3 pt-2">
-                    <span class="text-slate-500 font-bold text-xs w-1/3">模組權限</span>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-4 pt-2">
+                    <span class="text-slate-500 font-bold text-xs md:text-sm w-1/3">模組權限</span>
                     <div class="w-2/3 text-right flex flex-wrap justify-end gap-1.5">${perms.join('')}</div>
                 </div>
-                <div class="flex justify-between items-center border-b border-slate-100 pb-3 pt-2">
-                    <span class="text-slate-500 font-bold text-xs">庫存盤點員</span>
-                    <span class="font-black ${u.is_inventory_manager ? 'text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 shadow-sm':'text-slate-400'}">${u.is_inventory_manager ? '✔️ 是' : '否'}</span>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-4 pt-2">
+                    <span class="text-slate-500 font-bold text-xs md:text-sm">庫存盤點員</span>
+                    <span class="font-black ${u.is_inventory_manager ? 'text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 shadow-sm':'text-slate-400'}">${u.is_inventory_manager ? '✔️ 是' : '否'}</span>
                 </div>
                 <div class="flex justify-between items-center pt-2">
-                    <span class="text-slate-500 font-bold text-xs">採購核准與產PDF</span>
-                    <span class="font-black ${u.perm_purchase_approve ? 'text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 shadow-sm':'text-slate-400'}">${u.perm_purchase_approve ? '✔️ 已授權' : '無權限'}</span>
+                    <span class="text-slate-500 font-bold text-xs md:text-sm">採購核准與產出PDF</span>
+                    <span class="font-black ${u.perm_purchase_approve ? 'text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 shadow-sm':'text-slate-400'}">${u.perm_purchase_approve ? '✔️ 已授權' : '無權限'}</span>
                 </div>
             `;
             document.getElementById('ui-profile-details').innerHTML = html;
@@ -582,7 +603,7 @@
             } catch(e){}
         }
 
-        // 🌟 員工最新通知已讀機制寫入
+        // 🌟 員工最新通知已讀機制寫入 (同步更新資料庫時間)
         async function viewPBull(id) {
             const b = window.pbulls.find(x => x.id === id);
             if(!b) return;
@@ -707,14 +728,14 @@
             const eEnd = (u.work_end_time || '18:00').slice(0,5);
             
             let status = '正常';
-            // 🌟 下班晚打卡＝正常 (移除加班與異常判定)
+            // 🌟 拔除加班與異常判定 (下班晚打卡＝正常)
             if (pType === 'IN' && eStart) {
                 if (tStr > eStart) status = '遲到';
             } else if (pType === 'OUT' && eEnd) {
                 if (tStr < eEnd) {
                     status = '早退';
                 } else {
-                    status = '正常'; // 晚下班依然算正常
+                    status = '正常';
                 }
             }
 
@@ -838,7 +859,6 @@
 
         function changeMonth(d) { currentMonth.setMonth(currentMonth.getMonth() + d); renderCalendarUI(); }
 
-        // 🌟 新增：計算請假扣除時數過濾器
         function calculateLeaveHours(startStr, endStr, workStartStr, workEndStr) {
             let sDate = new Date(startStr); let eDate = new Date(endStr); let totalHours = 0;
             let [wsH, wsM] = (workStartStr || '09:00').split(':').map(Number);
@@ -911,8 +931,6 @@
             document.getElementById('sm-lat').innerText = mLat + '次'; 
             document.getElementById('sm-pnt').innerText = (window.currentUser.penalty_points || 0) + '點';
         }
-
-        function openStatsAndCalendar() { openView('calendar', '打卡與行事曆'); renderCalendarUI(); }
 
         // 🌟 行事曆與打卡紀錄渲染引擎
         async function renderCalendarUI() {
@@ -990,7 +1008,7 @@
                 } else {
                     if (dayD.in > targetStart) status = { text: '遲到', col: 'text-red-600 bg-red-50 border-red-300' };
                     if (dayD.out < targetEnd) status = { text: '早退', col: 'text-red-600 bg-red-50 border-red-300' };
-                    // 移除了加班判定
+                    // 移除加班判定
                 }
 
                 if(dayD.isRet) extraBadge += `<span class="text-[9px] font-black px-1.5 py-0.5 rounded border text-amber-700 bg-amber-50 border-amber-200 ml-1">補打卡</span>`;
@@ -1049,9 +1067,6 @@
             daysContainer.innerHTML = html;
         }
 
-        // ==========================================
-        // 其他附屬功能
-        // ==========================================
         function initSig() {
             sigCanvas = document.getElementById('sig-canvas');
             if(!sigCanvas) return;
@@ -1071,9 +1086,7 @@
             sigCanvas.addEventListener('mousedown', start); sigCanvas.addEventListener('mouseup', end); sigCanvas.addEventListener('mousemove', draw);
             sigCanvas.addEventListener('touchstart', start, {passive:false}); sigCanvas.addEventListener('touchend', end); sigCanvas.addEventListener('touchmove', draw, {passive:false});
         }
-        
         function clearSignature() { if(sigCtx && sigCanvas) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height); }
-        
         async function submitContractSign() {
             if(!document.getElementById('contract-agree').checked) { alert('請勾選同意合約'); return; }
             try {
@@ -1085,182 +1098,9 @@
             } catch(e) { alert('簽署失敗'); }
         }
 
-        function openSalaryView() {
-            openView('salary', '我的薪資單');
-            const now = new Date();
-            const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-            document.getElementById('sal-month').value = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth()+1).padStart(2,'0')}`;
-            loadSalary();
-        }
-
-        async function loadSalary() {
-            const m = document.getElementById('sal-month').value;
-            if(!m) return;
-            const container = document.getElementById('ui-salary-detail');
-            container.innerHTML = '<p class="text-center text-xs font-bold text-slate-400">撈取資料中...</p>';
-            try {
-                const { data } = await window._sb.from('payroll_records').select('*').eq('employee_id', window.currentUser.id).eq('pay_month', m).single();
-                if(!data) {
-                    container.innerHTML = `<div class="text-center"><span class="text-4xl mb-2 block opacity-30">📭</span><p class="text-xs font-bold text-slate-400">本月份薪資單尚未發放</p></div>`;
-                } else {
-                    currentPayrollData = data;
-                    let yebHtml = ''; let ulpHtml = '';
-                    if(data.year_end_bonus > 0) yebHtml = `<div class="flex justify-between items-center bg-amber-50 p-2.5 rounded-lg border border-amber-100 mt-2"><span class="text-[10px] md:text-xs font-black text-amber-700">🎁 年終獎金</span><span class="text-sm md:text-base font-black text-amber-600">+ ${data.year_end_bonus.toLocaleString()}</span></div>`;
-                    if(data.unused_leave_pay > 0) ulpHtml = `<div class="flex justify-between items-center bg-sky-50 p-2.5 rounded-lg border border-sky-100 mt-2"><span class="text-[10px] md:text-xs font-black text-sky-700">🏖️ 未休假折現</span><span class="text-sm md:text-base font-black text-sky-600">+ ${data.unused_leave_pay.toLocaleString()}</span></div>`;
-
-                    let attStatsHtml = '';
-                    if (data.attendance_stats) {
-                        let st = data.attendance_stats;
-                        attStatsHtml = `
-                        <div class="space-y-2.5 border-t border-slate-200 pt-4 mt-2">
-                            <h4 class="text-[10px] md:text-xs font-black text-indigo-700 border-l-2 border-indigo-500 pl-2">當月出勤狀況分析</h4>
-                            <div class="grid grid-cols-3 gap-2 bg-indigo-50 p-3 rounded-lg border border-indigo-100 text-center text-[10px] md:text-xs font-bold text-indigo-800 shadow-inner">
-                                <div>遲到<br><span class="text-sm md:text-base font-black mt-0.5 block">${st.late||0}次</span></div>
-                                <div>早退<br><span class="text-sm md:text-base font-black mt-0.5 block">${st.early||0}次</span></div>
-                                <div>曠職<br><span class="text-sm md:text-base font-black text-red-600 mt-0.5 block">${st.absent||0}日</span></div>
-                                <div>事假<br><span class="text-sm md:text-base font-black mt-0.5 block">${st.per||0}h</span></div>
-                                <div>病假<br><span class="text-sm md:text-base font-black mt-0.5 block">${st.sic||0}h</span></div>
-                                <div>計點<br><span class="text-sm md:text-base font-black text-red-600 mt-0.5 block">${st.pnt||0}點</span></div>
-                            </div>
-                        </div>`;
-                    }
-
-                    container.innerHTML = `
-                    <div class="space-y-4">
-                        <div class="text-center border-b border-slate-200 pb-4">
-                            <p class="text-[10px] md:text-xs font-black tracking-widest text-slate-400 mb-1 uppercase">綜合結算實領金額</p>
-                            <h2 class="text-4xl md:text-5xl font-black text-sky-600 tracking-tighter">NT$ ${data.total_net_pay.toLocaleString()}</h2>
-                        </div>
-                        <div class="space-y-2.5">
-                            <h4 class="text-[10px] md:text-xs font-black text-slate-500 border-l-2 border-emerald-400 pl-2">應發項目</h4>
-                            <div class="flex justify-between items-center px-2"><span class="text-xs md:text-sm font-bold text-slate-600">本薪</span><span class="text-sm md:text-base font-black text-slate-800">${data.base_pay.toLocaleString()}</span></div>
-                            <div class="flex justify-between items-center px-2"><span class="text-xs md:text-sm font-bold text-slate-600">獎金津貼</span><span class="text-sm md:text-base font-black text-slate-800">${data.bonus.toLocaleString()}</span></div>
-                            ${yebHtml} ${ulpHtml}
-                        </div>
-                        <div class="space-y-2.5 border-t border-slate-200 pt-4 mt-2">
-                            <h4 class="text-[10px] md:text-xs font-black text-slate-500 border-l-2 border-red-400 pl-2">應扣項目</h4>
-                            <div class="flex justify-between items-center px-2"><span class="text-xs md:text-sm font-bold text-slate-600">勞健保費自付額</span><span class="text-sm md:text-base font-black text-red-600">- ${data.insurance_deduction.toLocaleString()}</span></div>
-                            <div class="flex justify-between items-center px-2"><span class="text-xs md:text-sm font-bold text-slate-600">二代健保補充保費</span><span class="text-sm md:text-base font-black text-red-600">- ${data.second_gen_health.toLocaleString()}</span></div>
-                            <div class="flex justify-between items-center px-2"><span class="text-xs md:text-sm font-bold text-slate-600">請假扣薪</span><span class="text-sm md:text-base font-black text-red-600">- ${data.leave_deduction.toLocaleString()}</span></div>
-                        </div>
-                        ${attStatsHtml}
-                        <div class="bg-slate-100 p-3 rounded-xl mt-4 border border-slate-200 shadow-sm">
-                            <p class="text-[10px] md:text-xs font-bold text-slate-500 flex justify-between items-center"><span>提撥勞退 6% (公司給付)</span><span class="font-black text-slate-700 text-sm md:text-base">${data.labor_pension.toLocaleString()}</span></p>
-                        </div>
-                    </div>`;
-                }
-            } catch(e) {}
-        }
-
-        function downloadSalaryPDF() {
-            if(!currentPayrollData) { alert('請先查詢薪資單後再點擊下載！'); return; }
-            showSysToast('PDF 檔案生成中，請稍候...');
-            const d = currentPayrollData;
-            const m = document.getElementById('sal-month').value;
-            
-            let attHtml = '';
-            if (d.attendance_stats) {
-                let st = d.attendance_stats;
-                attHtml = `
-                <div style="margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;">
-                    <h4 style="font-size: 14px; font-weight: bold; color: #334155; margin-bottom: 10px;">當月出勤狀況分析</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: center;">
-                        <tr style="background: #f1f5f9;">
-                            <th style="padding: 8px; border: 1px solid #e2e8f0;">遲到</th>
-                            <th style="padding: 8px; border: 1px solid #e2e8f0;">早退</th>
-                            <th style="padding: 8px; border: 1px solid #e2e8f0;">曠職</th>
-                            <th style="padding: 8px; border: 1px solid #e2e8f0;">事假</th>
-                            <th style="padding: 8px; border: 1px solid #e2e8f0;">病假</th>
-                            <th style="padding: 8px; border: 1px solid #e2e8f0;">計點</th>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold;">${st.late||0}次</td>
-                            <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold;">${st.early||0}次</td>
-                            <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold; color: red;">${st.absent||0}日</td>
-                            <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold;">${st.per||0}h</td>
-                            <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold;">${st.sic||0}h</td>
-                            <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold; color: red;">${st.pnt||0}點</td>
-                        </tr>
-                    </table>
-                </div>`;
-            }
-
-            const html = `
-                <div class="print-break" style="width: 100%; font-family: sans-serif; background: white; padding: 40px; color: #1e293b;">
-                    <div style="text-align: center; border-bottom: 4px solid #0f172a; padding-bottom: 15px; margin-bottom: 20px;">
-                        <h1 style="font-size: 28px; font-weight: 900; margin: 0; letter-spacing: 2px;">HYPASS 薪資明細單</h1>
-                        <p style="font-size: 14px; color: #64748b; margin-top: 5px; font-weight: bold;">PAYROLL SLIP</p>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px;">
-                        <p><strong>員工姓名：</strong>${window.currentUser.full_name}</p>
-                        <p><strong>結算月份：</strong>${m}</p>
-                    </div>
-
-                    <div style="text-align: center; background: #f8fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
-                        <p style="font-size: 12px; color: #64748b; margin-bottom: 5px; font-weight: bold;">綜合結算實領總額</p>
-                        <h2 style="font-size: 36px; font-weight: 900; color: #0284c7; margin: 0;">NT$ ${d.total_net_pay.toLocaleString()}</h2>
-                    </div>
-
-                    <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 20px;">
-                        <thead style="background: #1e293b; color: white;">
-                            <tr><th style="padding: 10px; text-align: left;" colspan="2">應發項目</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">本薪</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: bold;">${d.base_pay.toLocaleString()}</td></tr>
-                            <tr><td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">獎金津貼</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: bold;">${d.bonus.toLocaleString()}</td></tr>
-                            ${d.year_end_bonus > 0 ? `<tr><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; color: #d97706; font-weight: bold;">年終獎金</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: bold; color: #d97706;">${d.year_end_bonus.toLocaleString()}</td></tr>` : ''}
-                            ${d.unused_leave_pay > 0 ? `<tr><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; color: #0284c7; font-weight: bold;">未休假折現</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: bold; color: #0284c7;">${d.unused_leave_pay.toLocaleString()}</td></tr>` : ''}
-                        </tbody>
-                    </table>
-
-                    <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 20px;">
-                        <thead style="background: #ef4444; color: white;">
-                            <tr><th style="padding: 10px; text-align: left;" colspan="2">應扣項目</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">勞健保費</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: bold; color: red;">- ${d.insurance_deduction.toLocaleString()}</td></tr>
-                            <tr><td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">二代健保</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: bold; color: red;">- ${d.second_gen_health.toLocaleString()}</td></tr>
-                            <tr><td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">請假扣薪</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: bold; color: red;">- ${d.leave_deduction.toLocaleString()}</td></tr>
-                        </tbody>
-                    </table>
-                    
-                    <p style="font-size: 12px; color: #64748b; font-weight: bold;">公司提撥勞退 6%：${d.labor_pension.toLocaleString()}</p>
-                    ${attHtml}
-                </div>
-            `;
-            
-            const opt = {
-                margin:       [0.5, 0.5],
-                filename:     `HYPASS_${m}_薪資單_${window.currentUser.full_name}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-            
-            const tempDiv = document.createElement('div'); 
-            tempDiv.innerHTML = html; 
-            tempDiv.style.padding = '20px';
-            
-            html2pdf().set(opt).from(tempDiv).outputPdf('blob').then(function(pdfBlob) {
-                const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    navigator.share({ files: [file], title: '我的薪資單' }).then(()=> showSysToast('✅ 檔案分享/下載成功！')).catch(()=> fallbackDownload(pdfBlob, opt.filename));
-                } else {
-                    fallbackDownload(pdfBlob, opt.filename);
-                }
-            }).catch(function(err) { alert('PDF 產生失敗：' + err.message); });
-        }
-
-        function fallbackDownload(blob, filename) {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = filename;
-            document.body.appendChild(a); a.click();
-            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); showSysToast('✅ PDF 下載完成！'); }, 100);
-        }
-
         function logout() { localStorage.removeItem('hypass_emp_id'); window.location.href = 'index.html'; }
+
+        // 啟動入口
         window.onload = bootHR;
     </script>
 </body>
