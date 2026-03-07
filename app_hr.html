@@ -58,6 +58,17 @@
         
         @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         .toast-msg { animation: slideInLeft 0.4s ease-out forwards; z-index: 9999; }
+
+        /* 🌟 純 CSS 終極防卡死機制 */
+        @keyframes autoShowRescue {
+            0% { opacity: 0; pointer-events: none; }
+            90% { opacity: 0; pointer-events: none; }
+            100% { opacity: 1; pointer-events: auto; }
+        }
+        .rescue-layer {
+            animation: autoShowRescue 4s forwards;
+            opacity: 0; pointer-events: none;
+        }
     </style>
 </head>
 <body class="text-slate-800 relative md:flex md:h-screen md:overflow-hidden w-full">
@@ -69,8 +80,10 @@
         <div class="text-6xl mb-4 animate-bounce">🛡️</div>
         <h2 class="text-xl font-black tracking-widest mb-2">HYPASS</h2>
         <p class="text-xs font-bold text-slate-400 tracking-wider">安全驗證與身分核實中...</p>
-        <div id="rescue-btn" class="hidden flex-col items-center mt-6">
-            <button onclick="forceUnlock()" class="bg-sky-600 hover:bg-sky-500 text-white font-black px-6 py-3 rounded-full shadow-lg active:scale-95 transition tracking-widest text-xs border border-sky-400">強制解除遮罩</button>
+        
+        <div class="rescue-layer flex flex-col items-center mt-6">
+            <p class="text-amber-400 text-[10px] font-bold mb-3 bg-slate-800 px-3 py-1 rounded">資料載入超時，可能是網路連線問題</p>
+            <button onclick="forceUnlock()" class="bg-sky-600 hover:bg-sky-500 text-white font-black px-6 py-3 rounded-full shadow-lg active:scale-95 transition tracking-widest border border-sky-400">強制解除遮罩進入系統</button>
         </div>
     </div>
 
@@ -100,7 +113,7 @@
             <div class="shrink-0 text-[10px] font-bold bg-white/10 px-2 py-1 rounded-full border border-white/20" id="user-badge">載入中</div>
         </header>
 
-        <main class="p-4 relative z-10 flex-1 overflow-y-auto no-scrollbar pb-28">
+        <main class="p-4 pb-28 relative z-10 flex-1 overflow-y-auto no-scrollbar">
             <div id="view-dashboard" class="view-panel active space-y-4">
                 
                 <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-white p-6 rounded-[2rem] shadow-xl relative overflow-hidden">
@@ -250,7 +263,7 @@
                     </div>
                     
                     <div class="flex flex-wrap items-center justify-center gap-3 text-[10px] font-bold text-slate-500 mb-4 bg-slate-50 p-2.5 rounded-xl border border-slate-200 shadow-inner mt-2">
-                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-1.5 shadow-sm"></span>正常</span>
+                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-1.5 shadow-sm"></span>正常打卡</span>
                         <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-red-500 mr-1.5 shadow-sm"></span>異常(遲/早/曠)</span>
                         <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 mr-1.5 shadow-sm"></span>請假/補登</span>
                         <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-transparent border border-slate-400 mr-1.5 shadow-sm"></span>未到/休假</span>
@@ -329,10 +342,9 @@
                     </div>
                     
                     <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner">
-                        <h5 class="text-sm font-black text-slate-700 mb-3 border-l-4 border-sky-500 pl-2">👤 員工基本資料</h5>
+                        <h5 class="text-sm font-black text-slate-700 mb-3 border-l-4 border-sky-500 pl-2">👤 員工個人檔案</h5>
                         <div class="space-y-3 text-[11px] md:text-[13px]" id="ui-profile-details">
-                            <p class="text-center text-slate-400 font-bold py-4">資料載入中...</p>
-                        </div>
+                            </div>
                     </div>
 
                     <div id="cv-contract-content" class="space-y-4 bg-white p-4 rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed text-justify mb-6 h-64 overflow-y-auto shadow-sm">
@@ -347,10 +359,11 @@
     </div> </div> 
     
     <nav id="core-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around text-[10px] font-bold text-slate-400 pb-5 pt-2 z-[9990] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <div onclick="openView('dashboard', '首頁大廳')" class="nav-btn flex-1 flex flex-col items-center py-1 cursor-pointer transition text-sky-600" data-target="dashboard"><span class="text-xl mb-1 nav-icon">🏠</span><span class="scale-90">首頁</span></div>
-        <div onclick="openView('leave', '假單與補登申請')" class="nav-btn flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600" data-target="leave"><span class="text-xl mb-1 opacity-60 grayscale nav-icon">📝</span><span class="scale-90">假單</span></div>
-        <div onclick="openView('calendar', '行事曆與打卡')" class="nav-btn flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600" data-target="calendar"><span class="text-xl mb-1 opacity-60 grayscale nav-icon">📅</span><span class="scale-90">行事曆</span></div>
-        <div onclick="openView('contract', '基本資料與合約')" class="nav-btn flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600" data-target="contract"><span class="text-xl mb-1 opacity-60 grayscale nav-icon">👤</span><span class="scale-90">我</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_hr.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition text-sky-600"><span class="text-xl mb-1">👨‍💼</span><span class="scale-90">員工</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_inventory.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-emerald-600"><span class="text-xl mb-1 opacity-60 grayscale">📦</span><span class="scale-90">庫存</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_purchase.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-amber-600"><span class="text-xl mb-1 opacity-60 grayscale">🛒</span><span class="scale-90">採購</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_sales.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-indigo-600"><span class="text-xl mb-1 opacity-60 grayscale">💼</span><span class="scale-90">業務</span></div>
+        <div onclick="event.stopPropagation(); window.location.href='app_finance.html'" class="flex-1 flex flex-col items-center py-1 cursor-pointer transition hover:text-blue-600"><span class="text-xl mb-1 opacity-60 grayscale">💰</span><span class="scale-90">財務</span></div>
     </nav>
 
     <div id="bull-modal" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-sm items-center justify-center p-4 z-[9990]">
@@ -459,10 +472,12 @@
                 loadTodayPunch();
                 loadBulletins();
                 loadPersonalBulletins();
-                loadCalendarAndStats(); 
-                loadLeaveHistory(); 
                 
             } catch(e) { console.error(e); }
+        }
+
+        function finishBoot() {
+            // Not used in this version but kept for compatibility
         }
 
         async function fetchHolidays(year) {
@@ -488,11 +503,14 @@
             document.getElementById('btn-back').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
             
-            // 確保點擊行事曆與合約時能觸發渲染
+            // 🌟 確保點擊時觸發渲染
             if(viewId === 'calendar') {
+                loadCalendarAndStats();
                 renderCalendarUI();
             } else if (viewId === 'contract') {
                 renderProfileInfo();
+            } else if (viewId === 'leave') {
+                loadLeaveHistory();
             }
         }
 
@@ -549,7 +567,7 @@
                 const { data } = await window._sb.from('company_forms').select('*').eq('form_type', 'employment_contract').limit(1);
                 if(data && data.length > 0) {
                     latestContractVersion = data[0].form_version;
-                    latestContractContent = `<h4 class="text-center font-black text-base text-slate-900 mb-4 border-b border-slate-200 pb-2">${data[0].title || '勞動契約'}</h4>${data[0].content}`;
+                    latestContractContent = `<h4 class="text-center font-black text-base text-slate-900 mb-4 border-b border-slate-200 pb-2">${data[0].form_name||'勞動契約'}</h4>${data[0].content}`;
                 }
             } catch(e) {}
 
@@ -636,7 +654,7 @@
             } catch(e){}
         }
 
-        // 🌟 員工最新通知已讀寫入機制
+        // 🌟 員工最新通知已讀同步寫入機制
         async function viewPBull(id) {
             const b = window.pbulls.find(x => x.id === id);
             if(!b) return;
@@ -891,22 +909,6 @@
             } catch(error) { alert('送出失敗: ' + (error.message || '資料庫錯誤')); }
         }
 
-        async function loadLeaveHistory() {
-            try {
-                const { data } = await window._sb.from('leave_requests').select('*').eq('employee_id', window.currentUser.id).order('created_at', {ascending: false}).limit(15);
-                const list = document.getElementById('leave-history-list');
-                if(data && data.length > 0) {
-                    list.innerHTML = data.map(l => {
-                        let stCol = l.status === '核准' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : (l.status === '核駁' ? 'text-red-700 bg-red-50 border-red-200' : 'text-amber-700 bg-amber-50 border-amber-200');
-                        let timeStr = l.leave_type === '忘記打卡(補登)' ? `補登: ${new Date(l.start_time).toLocaleString('zh-TW').slice(0,-3)} (${l.target_punch_type==='IN'?'上班':'下班'})` : `${new Date(l.start_time).toLocaleString('zh-TW', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} ~ ${new Date(l.end_time).toLocaleString('zh-TW', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}`;
-                        return `<div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col mb-2 transition hover:bg-slate-50"><div class="flex justify-between items-center mb-1"><span class="text-sm font-black text-slate-800">${l.leave_type}</span><span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${stCol} shadow-sm">${l.status}</span></div><div class="text-[10px] font-mono font-bold text-slate-500 mb-1.5">${timeStr}</div><div class="text-[11px] text-slate-600 font-bold bg-slate-50 p-2 rounded-lg border border-slate-100">📝 ${l.reason}</div></div>`;
-                    }).join('');
-                } else { list.innerHTML = '<p class="text-center text-xs font-bold text-slate-400 py-6 border border-dashed border-slate-200 rounded-xl">尚無任何紀錄</p>'; }
-            } catch(e) {}
-        }
-
-        function changeMonth(d) { currentMonth.setMonth(currentMonth.getMonth() + d); renderCalendarUI(); }
-
         function calculateLeaveHours(startStr, endStr, workStartStr, workEndStr) {
             let sDate = new Date(startStr); let eDate = new Date(endStr); let totalHours = 0;
             let [wsH, wsM] = (workStartStr || '09:00').split(':').map(Number);
@@ -938,12 +940,14 @@
             return Math.round(totalHours * 10) / 10;
         }
 
-        // 🌟 統計修復 (宣告所有變數，杜絕報錯)
+        // 🌟 統計與行事曆修復 (宣告所有變數，杜絕報錯卡死)
         async function loadCalendarAndStats() {
             try {
                 const now = new Date(); const currYear = now.getFullYear(); const currMonth = now.getMonth() + 1;
-                document.getElementById('stat-month-label').innerText = `${currYear}年${currMonth}月`;
-                document.getElementById('stat-year-label').innerText = `${currYear}年`;
+                const monthLabel = document.getElementById('stat-month-label');
+                if(monthLabel) monthLabel.innerText = `${currYear}年${currMonth}月`;
+                const yearLabel = document.getElementById('stat-year-label');
+                if(yearLabel) yearLabel.innerText = `${currYear}年`;
 
                 let yPer = 0, ySic = 0, yLat = 0, yEar = 0, yAnn = 0;
                 let mPer = 0, mSic = 0, mLat = 0, mEar = 0, mAnn = 0;
@@ -951,80 +955,94 @@
                 const targetStart = window.currentUser.work_start_time ? window.currentUser.work_start_time.slice(0,5) : '09:00';
                 const targetEnd = window.currentUser.work_end_time ? window.currentUser.work_end_time.slice(0,5) : '18:00';
 
-                const sTY = new Date(Date.UTC(currYear, 0, 1, 0, 0, 0));
-                const eTY = new Date(Date.UTC(currYear, 11, 31, 23, 59, 59));
+                const sTY = new Date(currYear, 0, 1);
+                const eTY = new Date(currYear, 11, 31, 23, 59, 59);
                 
-                const { data: logs } = await window._sb.from('attendance_logs').select('*').eq('employee_id', window.currentUser.id).gte('punch_time', sTY.toISOString()).lte('punch_time', eTY.toISOString());
-                const { data: leaves } = await window._sb.from('leave_requests').select('*').eq('employee_id', window.currentUser.id).eq('status', '核准').gte('start_time', sTY.toISOString()).lte('end_time', eTY.toISOString());
+                let logs = []; let leaves = [];
+                if(window._sb) {
+                    const lRes = await window._sb.from('attendance_logs').select('*').eq('employee_id', window.currentUser.id).gte('punch_time', sTY.toISOString()).lte('punch_time', eTY.toISOString());
+                    logs = lRes.data || [];
+                    const lvRes = await window._sb.from('leave_requests').select('*').eq('employee_id', window.currentUser.id).eq('status', '核准').gte('start_time', sTY.toISOString()).lte('end_time', eTY.toISOString());
+                    leaves = lvRes.data || [];
+                }
 
-                if(leaves) {
-                    leaves.forEach(l => {
-                        let ls = new Date(l.start_time);
-                        let hrs = calculateLeaveHours(l.start_time, l.end_time, targetStart, targetEnd);
-                        if(hrs < 0) hrs = 0;
-                        if(l.leave_type === '事假') { yPer += hrs; if(ls.getMonth()+1 === currMonth) mPer += hrs; }
-                        if(l.leave_type === '病假') { ySic += hrs; if(ls.getMonth()+1 === currMonth) mSic += hrs; }
-                        if(l.leave_type === '特休') { yAnn += hrs; if(ls.getMonth()+1 === currMonth) mAnn += hrs; }
-                    });
-                }
-                if(logs) {
-                    let latSetY = new Set(); let latSetM = new Set();
-                    let earSetY = new Set(); let earSetM = new Set();
-                    logs.forEach(l => {
-                        const pt = new Date(l.punch_time); 
-                        const tStr = pt.toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'}); 
-                        const dStr = getSafeDateStr(pt);
-                        
-                        if(l.punch_type === 'IN' && tStr > targetStart) { 
-                            latSetY.add(dStr);
-                            if(pt.getMonth()+1 === currMonth) latSetM.add(dStr); 
-                        }
-                        if(l.punch_type === 'OUT' && tStr < targetEnd) { 
-                            earSetY.add(dStr);
-                            if(pt.getMonth()+1 === currMonth) earSetM.add(dStr); 
-                        }
-                    });
-                    yLat = latSetY.size; mLat = latSetM.size;
-                    yEar = earSetY.size; mEar = earSetM.size;
-                }
+                leaves.forEach(l => {
+                    let ls = new Date(l.start_time);
+                    let hrs = calculateLeaveHours(l.start_time, l.end_time, targetStart, targetEnd);
+                    if(hrs < 0) hrs = 0;
+                    if(l.leave_type === '事假') { yPer += hrs; if(ls.getMonth()+1 === currMonth) mPer += hrs; }
+                    if(l.leave_type === '病假') { ySic += hrs; if(ls.getMonth()+1 === currMonth) mSic += hrs; }
+                    if(l.leave_type === '特休') { yAnn += hrs; if(ls.getMonth()+1 === currMonth) mAnn += hrs; }
+                });
+
+                let latSetY = new Set(); let latSetM = new Set();
+                let earSetY = new Set(); let earSetM = new Set();
+                
+                logs.forEach(l => {
+                    const pt = new Date(l.punch_time); 
+                    const tStr = pt.toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'}); 
+                    const dStr = getSafeDateStr(pt);
+                    
+                    if(l.punch_type === 'IN' && tStr > targetStart) { 
+                        latSetY.add(dStr);
+                        if(pt.getMonth()+1 === currMonth) latSetM.add(dStr); 
+                    }
+                    if(l.punch_type === 'OUT' && tStr < targetEnd) { 
+                        earSetY.add(dStr);
+                        if(pt.getMonth()+1 === currMonth) earSetM.add(dStr); 
+                    }
+                });
+                yLat = latSetY.size; mLat = latSetM.size;
+                yEar = earSetY.size; mEar = earSetM.size;
 
                 let pnts = window.currentUser.penalty_points || 0;
-                document.getElementById('sm-ann').innerText = Math.floor(mAnn/8)+'天'+(mAnn%8)+'h';
-                document.getElementById('sm-per').innerText = mPer + 'h';
-                document.getElementById('sm-sic').innerText = mSic + 'h';
-                document.getElementById('sm-lat').innerText = (mLat + mEar) + '次'; 
-                document.getElementById('sm-pnt').innerText = pnts + '點';
                 
-                document.getElementById('sy-ann').innerText = Math.floor(yAnn/8)+'天'+(yAnn%8)+'h';
-                document.getElementById('sy-per').innerText = yPer + 'h';
-                document.getElementById('sy-sic').innerText = ySic + 'h';
-                document.getElementById('sy-lat').innerText = (yLat + yEar) + '次'; 
-                document.getElementById('sy-pnt').innerText = pnts + '點';
+                const smAnn = document.getElementById('sm-ann'); if(smAnn) smAnn.innerText = Math.floor(mAnn/8)+'天'+(mAnn%8)+'h';
+                const smPer = document.getElementById('sm-per'); if(smPer) smPer.innerText = mPer + 'h';
+                const smSic = document.getElementById('sm-sic'); if(smSic) smSic.innerText = mSic + 'h';
+                const smLat = document.getElementById('sm-lat'); if(smLat) smLat.innerText = (mLat + mEar) + '次'; 
+                const smPnt = document.getElementById('sm-pnt'); if(smPnt) smPnt.innerText = pnts + '點';
+                
+                const syAnn = document.getElementById('sy-ann'); if(syAnn) syAnn.innerText = Math.floor(yAnn/8)+'天'+(yAnn%8)+'h';
+                const syPer = document.getElementById('sy-per'); if(syPer) syPer.innerText = yPer + 'h';
+                const sySic = document.getElementById('sy-sic'); if(sySic) sySic.innerText = ySic + 'h';
+                const syLat = document.getElementById('sy-lat'); if(syLat) syLat.innerText = (yLat + yEar) + '次'; 
+                const syPnt = document.getElementById('sy-pnt'); if(syPnt) syPnt.innerText = pnts + '點';
 
-            } catch(e) { console.error('Stats Error', e); }
+            } catch(e) { console.error('Stats Error:', e); }
         }
 
-        // 🌟 行事曆渲染引擎 (修正 firstDay 迴圈錯誤)
+        // 🌟 行事曆渲染引擎
         async function renderCalendarUI() {
             try {
-                const mStr = document.getElementById('cal-month-picker').value;
-                if(!mStr) return;
+                const picker = document.getElementById('cal-month-picker');
+                if(!picker || !picker.value) return;
+                const mStr = picker.value;
                 const [yStr, moStr] = mStr.split('-');
                 const year = parseInt(yStr); const month = parseInt(moStr);
                 
                 if(!twHolidays[`${year}-01-01`]) { await fetchHolidays(year); }
 
-                document.getElementById('cal-month-title').innerText = `${year}年 ${month}月`;
+                const titleEl = document.getElementById('cal-month-title');
+                if(titleEl) titleEl.innerText = `${year}年 ${month}月`;
+                
                 const firstDay = new Date(year, month - 1, 1).getDay();
                 const daysInMonth = new Date(year, month, 0).getDate();
                 const sT = new Date(year, month - 1, 1);
                 const eT = new Date(year, month, 0, 23, 59, 59);
 
-                const { data: logs } = await window._sb.from('attendance_logs').select('*').eq('employee_id', window.currentUser.id).gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString());
-                const { data: leaves } = await window._sb.from('leave_requests').select('*').eq('employee_id', window.currentUser.id).eq('status', '核准').gte('start_time', sT.toISOString()).lte('end_time', eT.toISOString());
+                let logs = []; let leaves = [];
+                if(window._sb) {
+                    const resLogs = await window._sb.from('attendance_logs').select('*').eq('employee_id', window.currentUser.id).gte('punch_time', sT.toISOString()).lte('punch_time', eT.toISOString()).order('punch_time', {ascending: false});
+                    logs = resLogs.data || [];
+                    const resLeaves = await window._sb.from('leave_requests').select('*').eq('employee_id', window.currentUser.id).eq('status', '核准').gte('start_time', sT.toISOString()).lte('end_time', eT.toISOString());
+                    leaves = resLeaves.data || [];
+                }
                 
-                const targetStart = window.currentUser.work_start_time ? window.currentUser.work_start_time.slice(0,5) : '09:00';
-                const targetEnd = window.currentUser.work_end_time ? window.currentUser.work_end_time.slice(0,5) : '18:00';
+                const wsStr = window.currentUser.work_start_time || '09:00';
+                const weStr = window.currentUser.work_end_time || '18:00';
+                const targetStart = wsStr.includes(':') ? wsStr.slice(0,5) : '09:00';
+                const targetEnd = weStr.includes(':') ? weStr.slice(0,5) : '18:00';
 
                 let daysData = {};
                 for(let i=1; i<=daysInMonth; i++) {
@@ -1033,29 +1051,26 @@
                     daysData[dStr] = { in: null, out: null, leave: null, isRet: false, isPast: d <= new Date(), isWeekend: (d.getDay()===0||d.getDay()===6), holiday: twHolidays[dStr] };
                 }
 
-                if(leaves) {
-                    leaves.forEach(l => {
-                        let ls = new Date(l.start_time); let le = new Date(l.end_time);
-                        for(let i=1; i<=daysInMonth; i++) {
-                            let d = new Date(year, month - 1, i);
-                            let dStr = getSafeDateStr(d);
-                            let dStart = new Date(d); dStart.setHours(0,0,0,0);
-                            let dEnd = new Date(d); dEnd.setHours(23,59,59,999);
-                            if(ls <= dEnd && le >= dStart) { daysData[dStr].leave = l.leave_type; }
-                        }
-                    });
-                }
+                leaves.forEach(l => {
+                    let ls = new Date(l.start_time); let le = new Date(l.end_time);
+                    for(let i=1; i<=daysInMonth; i++) {
+                        let d = new Date(year, month - 1, i);
+                        let dStr = getSafeDateStr(d);
+                        let dStart = new Date(d); dStart.setHours(0,0,0,0);
+                        let dEnd = new Date(d); dEnd.setHours(23,59,59,999);
+                        if(ls <= dEnd && le >= dStart) { daysData[dStr].leave = l.leave_type; }
+                    }
+                });
 
-                if(logs) {
-                    logs.forEach(l => {
-                        let dStr = getSafeDateStr(new Date(l.punch_time));
-                        if(!daysData[dStr]) return;
-                        const tStr = new Date(l.punch_time).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
-                        if(l.punch_type === 'IN' && !daysData[dStr].in) daysData[dStr].in = tStr;
-                        if(l.punch_type === 'OUT') daysData[dStr].out = tStr; 
-                        if(l.note && l.note.includes('[補登核准]')) daysData[dStr].isRet = true;
-                    });
-                }
+                logs.forEach(l => {
+                    let pt = new Date(l.punch_time);
+                    let dStr = getSafeDateStr(pt);
+                    if(!daysData[dStr]) return;
+                    const tStr = pt.toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
+                    if(l.punch_type === 'IN' && (!daysData[dStr].in || tStr < daysData[dStr].in)) daysData[dStr].in = tStr;
+                    if(l.punch_type === 'OUT' && (!daysData[dStr].out || tStr > daysData[dStr].out)) daysData[dStr].out = tStr; 
+                    if(l.note && l.note.includes('[補登核准]')) daysData[dStr].isRet = true;
+                });
 
                 const listEl = document.getElementById('ui-history-list');
                 let listHtml = '';
@@ -1103,13 +1118,11 @@
                         </div>`;
                     }
                 }
-                if(!listHtml) listHtml = '<p class="text-center text-xs font-bold text-slate-400 py-4 border border-dashed border-slate-200 rounded-xl">本月尚無出勤紀錄</p>';
-                listEl.innerHTML = listHtml;
+                if(listEl) listEl.innerHTML = listHtml || '<p class="text-center text-xs font-bold text-slate-400 py-4 border border-dashed border-slate-200 rounded-xl">本月尚無出勤紀錄</p>';
 
                 const daysContainer = document.getElementById('calendar-days');
                 let html = '';
                 
-                // 🌟 修正 firstDay 寫法，杜絕迴圈崩潰
                 for(let i=0; i<firstDay; i++) { html += `<div class="cal-day empty"></div>`; }
 
                 for(let d=1; d<=daysInMonth; d++) {
@@ -1138,8 +1151,10 @@
 
                     html += `<div class="cal-day flex flex-col justify-start items-center ${extraClass}"><span>${d}</span>${badgeHtml}${dotHtml}</div>`;
                 }
-                daysContainer.innerHTML = html;
-            } catch(err) { console.error('Render Calendar Error:', err); }
+                if(daysContainer) daysContainer.innerHTML = html;
+            } catch(err) { 
+                console.error('Render Calendar Error:', err); 
+            }
         }
 
         function openSalaryView() {
@@ -1342,6 +1357,7 @@
 
         function logout() { localStorage.removeItem('hypass_emp_id'); window.location.href = 'index.html'; }
 
+        // 防卡死啟動入口
         document.addEventListener('DOMContentLoaded', () => { setTimeout(bootHr, 100); });
     </script>
 </body>
